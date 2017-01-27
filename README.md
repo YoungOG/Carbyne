@@ -1,2 +1,6 @@
-# Carbyne
-The main core used on the Medieval Lords server, this is the largest plugin on the DreamZ.IO network.
+# CarbyneGear
+Recreation of Epic Gear MC Plugin.
+
+Authors: Dolphindalt, Crehop, and Frodenkvist.
+
+Reproduced with express permission from the previous owner Crehop.

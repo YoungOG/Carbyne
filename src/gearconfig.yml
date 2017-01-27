@@ -1,0 +1,304 @@
+# Config Tutorial
+#
+# Name: Name of the item.
+# DisplayName: ID for each item, important they are all different.
+# Durability: Number of hits until the item breaks.
+# Lore:
+# - 'String list format like this'
+# - 'Second string in lore'
+# Enchants:
+# - name,level
+# -  protection,2
+# DefensiveEffect: effect,chance 1 = 100% 0.5 = 50% etc,duration in ticks
+# ex. DefensiveEffect: DAMAGE_RESISTANCE,1,40
+# OffensiveEffect works exactly like defensive effect.
+# ====== List of Effects ===================================================================
+# ABSORPTION, BLINDNESS, CONFUSION, DAMAGE_RESISTANCE, FAST_DIGGING, FIRE_RESISTANCE, HARM
+# HEAL, HEALTH_BOOST, HUNGER, INCREASE_DAMAGE, INVISIBILITY, JUMP, NIGHT_VISION, POISON,
+# REGENERATION, SATURATION, SLOW, SLOW_DIGGING, SPEED, WATER_BREATHING, WEAKNESS, WITHER.
+# ==========================================================================================
+# For Weapons:
+# 	Special: Name of special
+# ============ List of Specials ============================
+# ForceBlast, LightningStorm, ShadowSweep, SummonHealing.
+# ==========================================================
+#	SpecialCost: Number of charges to cast. Maximum 50.
+# For Armour:
+# Armour Rating: Percent of damage blocked by this piece.
+# With armour rating keep in mind diamond blocks 0.80 or 80% damage in a full set.
+Carbyne-Armor:
+  1:
+    Helmet:
+      DisplayName: '&4Test Helmet'
+      GearCode: 'TH'
+      Color: '255,0,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Chestplate:
+      DisplayName: '&4Test Chestplate'
+      GearCode: 'TC'
+      Color: '255,0,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,1,3,0.2'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,2,3,0.1'
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Leggings:
+      DisplayName: '&4Test Leggings'
+      GearCode: 'TL'
+      Color: '255,0,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Boots:
+      DisplayName: '&4Test Boots'
+      GearCode: 'TB'
+      Color: '255,0,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+  2:
+    Helmet:
+      DisplayName: '&4Test Helmet'
+      GearCode: 'TH2'
+      Color: '0,255,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Chestplate:
+      DisplayName: '&4Test Chestplate'
+      GearCode: 'TC2'
+      Color: '0,255,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,1,3,0.2'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,2,3,0.1'
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Leggings:
+      DisplayName: '&4Test Leggings'
+      GearCode: 'TL2'
+      Color: '0,255,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+    Boots:
+      DisplayName: '&4Test Boots'
+      GearCode: 'TB2'
+      Color: '0,255,0'
+      Durability: 1000
+      Lore:
+        - '&eTest'
+      Enchantments: {}
+      Hidden: false
+      Cost: 10
+      ArmorRating: 0.20
+
+Carbyne-Weapons:
+  1:
+    DisplayName: '&4Test Sword'
+    Type: 'sword'
+    Material: 'diamond'
+    Durability: 100
+    Lore:
+      - '&ei cut you muhaha'
+    Enchantments:
+      - 'sharpness,2'
+      - 'unbreaking,10'
+    OffensivePotionEffects:
+      - 'POISON,1,3,0.2'
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,3,0.1'
+    Hidden: false
+    Cost: 10
+  2:
+    DisplayName: '&4Test Bow'
+    Type: 'bow'
+    Durability: 100
+    Lore:
+      - '&ei cut you muhaha'
+    Enchantments:
+      - 'sharpness,2'
+      - 'unbreaking,10'
+    OffensivePotionEffects:
+      - 'POISON,1,3,0.2'
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,3,0.1'
+    Hidden: false
+    Cost: 10
+  3:
+    DisplayName: '&4Test Axe'
+    Type: 'axe'
+    Material: 'iron'
+    Durability: 100
+    Lore:
+      - '&ei cut you muhaha'
+    Enchantments:
+      - 'sharpness,2'
+      - 'unbreaking,10'
+    OffensivePotionEffects:
+      - 'POISON,1,3,0.2'
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,3,0.1'
+    Hidden: false
+    Cost: 10
+  4:
+    DisplayName: '&4Test Hoe'
+    Type: 'hoe'
+    Material: 'gold'
+    Durability: 100
+    Lore:
+      - '&ei cut you muhaha'
+    Enchantments:
+      - 'sharpness,2'
+      - 'unbreaking,10'
+    OffensivePotionEffects:
+      - 'POISON,1,3,0.2'
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,3,0.1'
+    Hidden: false
+    Cost: 10
+  5:
+    DisplayName: '&4Test Spade'
+    Type: 'spade'
+    Material: 'stone'
+    Durability: 100
+    Lore:
+      - '&ei cut you muhaha'
+    Enchantments:
+      - 'sharpness,2'
+      - 'unbreaking,10'
+    OffensivePotionEffects:
+      - 'POISON,1,3,0.2'
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,3,0.1'
+    Hidden: false
+    Cost: 10
+
+#
+# This section is for configuring the default Minecraft armours and adding Carbyne versions of them
+#
+# These are the durability and armour ratings for the default Minecraft armours that CAN BE CRAFTED!
+Minecraft-Armor:
+    Diamond:
+        Helmet:
+            Durability: 1000
+            ArmorRating: 0.20
+        Chestplate:
+            Durability: 1200
+            ArmorRating: 0.20
+        Leggings:
+            Durability: 1100
+            ArmorRating: 0.20
+        Boots:
+            Durability: 950
+            ArmorRating: 0.20
+        Sword:
+    Iron:
+        Helmet:
+            Durability: 1000
+            ArmorRating: 0.10
+        Chestplate:
+            Durability: 1200
+            ArmorRating: 0.10
+        Leggings:
+            Durability: 1100
+            ArmorRating: 0.10
+        Boots:
+            Durability: 950
+            ArmorRating: 0.10
+    Gold:
+        Helmet:
+            Durability: 1000
+            ArmorRating: 0.10
+        Chestplate:
+            Durability: 1200
+            ArmorRating: 0.10
+        Leggings:
+            Durability: 1100
+            ArmorRating: 0.10
+        Boots:
+            Durability: 950
+            ArmorRating: 0.10
+    Chainmail:
+        Helmet:
+            Durability: 1000
+            ArmorRating: 0.10
+        Chestplate:
+            Durability: 1200
+            ArmorRating: 0.10
+        Leggings:
+            Durability: 1100
+            ArmorRating: 0.10
+        Boots:
+            Durability: 950
+            ArmorRating: 0.10
+
+Minecraft-Weapons:
+    Diamond:
+        Sword:
+            Durability: 1200
+        Axe:
+            Durability: 1000
+        Hoe:
+            Durability: 1600
+    Stone:
+        Sword:
+            Durability: 220
+        Axe:
+            Durability: 200
+        Hoe:
+            Durability: 300
+    Iron:
+        Sword:
+            Durability: 600
+        Axe:
+            Durability: 500
+        Hoe:
+            Durability: 800
+    Gold:
+        Sword:
+            Durability: 500
+        Axe:
+            Durability: 400
+        Hoe:
+            Durability: 700
+    Wood:
+        Sword:
+            Durability: 75
+        Axe:
+            Durability: 65
+        Hoe:
+            Durability: 85
