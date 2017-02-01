@@ -43,8 +43,8 @@ public class GearManager {
             }
         }.runTaskTimerAsynchronously(carbyne, 0L, 5L);
 
-        load(carbyne.getGearData());
-        loadStoreOptions(carbyne.getStoreData());
+        load(carbyne.getGearFileConfiguration());
+        loadStoreOptions(carbyne.getGearFileConfiguration());
     }
 
     public void load(FileConfiguration configuration) {
@@ -515,23 +515,19 @@ public class GearManager {
     private Material moneyItem;
 
     public boolean loadStoreOptions(FileConfiguration cs) {
-        enableStore = cs.getBoolean("EnableStore");
-
-        if (!enableStore)
+        if (cs.getString("Store.MoneyItem.Material") == null && Material.getMaterial(cs.getString("Store.MoneyItem.Material")) == null)
             return false;
-        if (cs.getString("MoneyItem.Material") == null && Material.getMaterial(cs.getString("MoneyItem.Material")) == null)
+        if (cs.getString("Store.MoneyItem.Name") == null)
             return false;
-        if (cs.getString("MoneyItem.Name") == null)
+        if (cs.getStringList("Store.MoneyItem.Lore") == null)
             return false;
-        if (cs.getStringList("MoneyItem.Lore") == null)
-            return false;
-        if (cs.getString("MoneyItem.MoneyCode") == null)
+        if (cs.getString("Store.MoneyItem.MoneyCode") == null)
             return false;
 
-        moneyCode = cs.getString("MoneyItem.MoneyCode");
-        moneyItem = Material.getMaterial(cs.getString("MoneyItem.Material"));
-        name = cs.getString("MoneyItem.Name");
-        lore = cs.getStringList("MoneyItem.Lore");
+        moneyCode = cs.getString("Store.MoneyItem.MoneyCode");
+        moneyItem = Material.getMaterial(cs.getString("Store.MoneyItem.Material"));
+        name = cs.getString("Store.MoneyItem.Name");
+        lore = cs.getStringList("Store.MoneyItem.Lore");
         lore.add(0, HiddenStringUtils.encodeString(moneyCode));
 
         Carbyne.getInstance().getLogger().info("Store loaded");

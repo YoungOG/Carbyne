@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -12,6 +13,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class PlayerUtility {
@@ -73,5 +75,15 @@ public class PlayerUtility {
                 }
             }
         }
+    }
+
+    public static ArrayList<Player> getPlayersInRadius(Location radiusCenter, int radius) {
+        ArrayList<Player> playerList = new ArrayList<>();
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.getLocation().distance(radiusCenter) < radius) {
+                playerList.add(onlinePlayer);
+            }
+        }
+        return playerList;
     }
 }

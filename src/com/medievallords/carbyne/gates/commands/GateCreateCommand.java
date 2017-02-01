@@ -26,7 +26,7 @@ public class GateCreateCommand extends BaseCommand {
         String gateId = args[0];
 
         if (getGateManager().getGate(gateId) != null) {
-            MessageManager.sendMessage(sender, "&cThere is already a gate named \"" + gateId + "\"");
+            MessageManager.sendMessage(sender, "&cThere is already a with the ID \"" + gateId + "\".");
             return;
         }
 

@@ -26,6 +26,7 @@ public class GateCommand extends BaseCommand {
             MessageManager.sendMessage(sender, "&a/gate addPP [name] &7- Adds a PressurePlate to a gate.");
             MessageManager.sendMessage(sender, "&a/gate addRSB [name] &7- Adds a RedstoneBlock to a gate.");
             MessageManager.sendMessage(sender, "&a/gate addB [name] &7- Adds a button to a gate.");
+            MessageManager.sendMessage(sender, "&a/gate list &7- Lists all available gates.");
             MessageManager.sendMessage(sender, "&a/gate status [name] &7- Checks a gates states.");
             MessageManager.sendMessage(sender, "&a/gate reset [name] &7- Resets a gate.");
             MessageManager.sendMessage(sender, "&a/gate rename [name] &7- Renames a gate.");

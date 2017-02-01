@@ -31,7 +31,7 @@ public class GateAddRSBCommand extends BaseCommand {
         Gate gate = getGateManager().getGate(gateId);
 
         if (gate == null) {
-            MessageManager.sendMessage(player, "&cCould not find a gate named \"" + gateId + "\"");
+            MessageManager.sendMessage(player, "&cCould not find a gate with the ID \"" + gateId + "\".");
             return;
         }
 

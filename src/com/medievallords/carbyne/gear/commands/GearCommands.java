@@ -35,7 +35,7 @@ public class GearCommands implements CommandExecutor{
                     gearManager.getDefaultArmors().clear();
                     gearManager.getDefaultWeapons().clear();
 
-                    gearManager.load(YamlConfiguration.loadConfiguration(new File(main.getDataFolder(), "gearconfig.yml")));
+                    gearManager.load(YamlConfiguration.loadConfiguration(new File(main.getDataFolder(), "gear.yml")));
                     gearManager.loadStoreOptions(YamlConfiguration.loadConfiguration(new File(main.getDataFolder(), "store.yml")));
 
                     main.getGuiManager().reloadStoreGuis();

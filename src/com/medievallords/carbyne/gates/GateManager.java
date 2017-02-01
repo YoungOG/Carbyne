@@ -32,11 +32,22 @@ public class GateManager {
         return null;
     }
 
-    public void loadGates() {
-        if (main.getGateData().getKeys(false).size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + main.getGateData().getKeys(false).size() + " gates.");
+    public Gate getGate(Location location) {
+        for (Gate gate : gates) {
+            if (gate.getButtonLocations().contains(location) || gate.getPressurePlateMap().containsKey(location) || gate.getRedstoneBlockLocations().contains(location)) {
+                return gate;
+            }
+        }
 
-            ConfigurationSection section = main.getGateData().getConfigurationSection("Gates");
+        return null;
+    }
+
+    public void loadGates() {
+        ConfigurationSection section = main.getGateFileConfiguration().getConfigurationSection("Gates");
+
+        if (section.getKeys(false).size() > 0) {
+            main.getLogger().log(Level.INFO, "Preparing to load " + section.getKeys(false).size() + " gates.");
+
             for (String id : section.getKeys(false)) {
                 int delay = section.getInt(id + ".Delay");
                 HashMap<Location, Boolean>  pressurePlateLocations = new HashMap<>();

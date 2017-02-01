@@ -31,7 +31,7 @@ public class GateAddPPCommand extends BaseCommand {
         Gate gate = getGateManager().getGate(gateId);
 
         if (gate == null) {
-            MessageManager.sendMessage(player, "&cCould not find a gate named \"" + gateId + "\"");
+            MessageManager.sendMessage(player, "&cCould not find a gate with the ID \"" + gateId + "\".");
             return;
         }
 
@@ -46,7 +46,7 @@ public class GateAddPPCommand extends BaseCommand {
         }
 
         gate.getPressurePlateMap().put(player.getTargetBlock((HashSet<Byte>) null,  50).getLocation(), false);
-        gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have added a Pressure Plate to the gate &b" + gate.getGateId() + "&a.");
+        gate.saveGate();
     }
 }

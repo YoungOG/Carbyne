@@ -1,10 +1,13 @@
 package com.medievallords.carbyne.gates.listeners;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.gates.Gate;
+import com.medievallords.carbyne.gates.GateManager;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 /**
@@ -13,12 +16,46 @@ import org.bukkit.event.player.PlayerInteractEvent;
  */
 public class GateListeners implements Listener {
 
+    //Basics of how we'll detect if a pressure plate is active or not.
+
+    private Carbyne carbyne = Carbyne.getInstance();
+    private GateManager gateManager = carbyne.getGateManager();
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-
         if (event.getAction() == Action.PHYSICAL) {
-            Bukkit.broadcastMessage("Click");
+            Block block = event.getClickedBlock();
+            Gate gate = gateManager.getGate(block.getLocation());
+
+            if (gate == null) {
+                return;
+            }
+
+            if (gate.getPressurePlateMap().containsKey(block.getLocation())) {
+                if (!gate.getPressurePlateMap().get(block.getLocation())) {
+                    gate.pressurePlateActivated(block.getLocation(), true);
+                }
+            }
+
+            if (gate.getButtonLocations().contains(block.getLocation())) {
+                gate.openGate();
+            }
+        }
+    }
+
+    @EventHandler
+    public void onRedstone(BlockRedstoneEvent event) {
+        Block block = event.getBlock();
+        Gate gate = gateManager.getGate(block.getLocation());
+
+        if (gate == null) {
+            return;
+        }
+
+        if (gate.getPressurePlateMap().containsKey(block.getLocation())) {
+            if (gate.getPressurePlateMap().get(block.getLocation()) && event.getOldCurrent() > 0) {
+                gate.pressurePlateActivated(block.getLocation(), false);
+            }
         }
     }
 }

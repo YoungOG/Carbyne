@@ -30,7 +30,7 @@ public class GateDelayCommand extends BaseCommand {
             Gate gate = getGateManager().getGate(gateId);
 
             if (gate == null) {
-                MessageManager.sendMessage(sender, "&cCould not find a gate named \"" + gateId + "\".");
+                MessageManager.sendMessage(sender, "&cCould not find a gate with the ID \"" + gateId + "\".");
                 return;
             }
 

@@ -36,9 +36,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 @Getter
 @Setter
@@ -46,14 +43,16 @@ public class Carbyne extends JavaPlugin {
 
     public static Carbyne instance;
 
-    private File gearconfigFile;
-    private File storeFile;
-    private File duelFile;
-    private File gateFile;
+    private File gearFile;
+    private FileConfiguration gearFileConfiguration;
 
-    private FileConfiguration gearData;
-    private FileConfiguration storeData;
-    private FileConfiguration gateData;
+    private File duelFile;
+    private FileConfiguration duelFileConfiguration;
+
+    private File gateFile;
+    private FileConfiguration gateFileConfiguration;
+
+    private CommandFramework commandFramework;
 
     private Permission permissions = null;
     private Economy economy = null;
@@ -64,8 +63,6 @@ public class Carbyne extends JavaPlugin {
     private CombatTagPlus combatTagPlus;
     private boolean combatTagPlusEnabled = false;
 
-    private CommandFramework commandFramework;
-
     private GearManager gearManager;
     private EffectManager effectManager;
     private GuiManager guiManager;
@@ -75,6 +72,12 @@ public class Carbyne extends JavaPlugin {
 
     public void onEnable() {
         instance = this;
+
+//        getConfig().options().copyDefaults(true);
+//        saveDefaultConfig();
+
+        registerConfigurations();
+
         PluginManager pm = Bukkit.getServer().getPluginManager();
 
         commandFramework = new CommandFramework(this);
@@ -92,19 +95,6 @@ public class Carbyne extends JavaPlugin {
             combatTagPlusEnabled = true;
         }
 
-        gearconfigFile = new File(getDataFolder(), "gearconfig.yml");
-        storeFile = new File(getDataFolder(), "store.yml");
-        duelFile = new File(getDataFolder(), "duel.yml");
-        gateFile = new File(getDataFolder(), "gate.yml");
-        try {
-            firstRun();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        gearData = YamlConfiguration.loadConfiguration(gearconfigFile);
-        storeData = YamlConfiguration.loadConfiguration(storeFile);
-        gateData = YamlConfiguration.loadConfiguration(gateFile);
-
         gearManager = new GearManager();
         guiManager = new GuiManager();
         effectManager = new EffectManager(this);
@@ -118,6 +108,7 @@ public class Carbyne extends JavaPlugin {
     }
 
     public void onDisable() {
+        gateManager.saveGates();
         effectManager.dispose();
         HandlerList.unregisterAll(this);
     }
@@ -144,13 +135,14 @@ public class Carbyne extends JavaPlugin {
         commandFramework.registerCommands(new GateCommand());
         commandFramework.registerCommands(new GateAddBCommand());
         commandFramework.registerCommands(new GateAddPPCommand());
-        commandFramework.registerCommands(new GateAddBCommand());
+        commandFramework.registerCommands(new GateAddRSBCommand());
         commandFramework.registerCommands(new GateCreateCommand());
         commandFramework.registerCommands(new GateDelayCommand());
         commandFramework.registerCommands(new GateRemoveCommand());
         commandFramework.registerCommands(new GateRenameCommand());
         commandFramework.registerCommands(new GateResetCommand());
         commandFramework.registerCommands(new GateStatusCommand());
+        commandFramework.registerCommands(new GateListCommand());
     }
 
     private void registerPackets() {
@@ -178,39 +170,19 @@ public class Carbyne extends JavaPlugin {
         return economy != null;
     }
 
-    private void firstRun() throws Exception {
-        if (!gearconfigFile.exists()) {
-            gearconfigFile.getParentFile().mkdirs();
-            copy(getResource("gearconfig.yml"), gearconfigFile);
-        }
-        if (!storeFile.exists()) {
-            storeFile.getParentFile().mkdirs();
-            copy(getResource("store.yml"), storeFile);
-        }
-        if (!duelFile.exists()) {
-            duelFile.getParentFile().mkdirs();
-            copy(getResource("duel.yml"), duelFile);
-        }
-        if (!gateFile.exists()) {
-            gateFile.getParentFile().mkdirs();
-            copy(getResource("gate.yml"), gateFile);
-        }
-    }
+    public void registerConfigurations() {
+        saveResource("gear.yml", false);
+        saveResource("duel.yml", false);
+        saveResource("gates.yml", false);
 
-    private void copy(InputStream in, File file) {
-        try {
-            OutputStream out = new FileOutputStream(file);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.flush();
-            out.close();
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        gearFile = new File(getDataFolder(), "gear.yml");
+        gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
+
+        duelFile = new File(getDataFolder(), "duel.yml");
+        duelFileConfiguration = YamlConfiguration.loadConfiguration(duelFile);
+
+        gateFile = new File(getDataFolder(), "gates.yml");
+        gateFileConfiguration = YamlConfiguration.loadConfiguration(gateFile);
     }
 
     public static Carbyne getInstance() {
