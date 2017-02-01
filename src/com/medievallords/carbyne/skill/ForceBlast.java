@@ -8,7 +8,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-public class ForceBlast extends Special {
+public class ForceBlast {
 
 	private final FireworkEffect.Builder builder = FireworkEffect.builder();
 	private final FireworkEffect fe = builder.flicker(true).with(Type.BURST).withColor(Color.BLUE).withColor(Color.ORANGE).trail(false).build();

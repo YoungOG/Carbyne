@@ -414,9 +414,8 @@ public class CarbyneListener implements Listener {
     }
 
     @EventHandler
-    public void onPick(PlayerPickupItemEvent e) {
+    public void onPick(final PlayerPickupItemEvent e) {
         new BukkitRunnable() {
-            @Override
             public void run() {
                 PlayerUtility.checkForIllegalItems(e.getPlayer(), e.getPlayer().getInventory());
             }

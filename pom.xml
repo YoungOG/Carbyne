@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.medievallords</groupId>
+    <artifactId>Carbyne</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>YoungOG</id>
+            <name>Carbyne-Maven</name>
+            <url>https://github.com/YoungOG/Carbyne-Maven</url>
+        </repository>
+
+		<!-- SpigotAPI Repo -->
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+		
+		<!-- CombatTagPlus Repo -->
+		<repository>
+            <id>minelink-repo</id>
+            <url>http://repo.minelink.net/content/repositories/public</url>
+        </repository>
+		
+		<!-- ProtocolLib Repo -->
+		<repository>
+            <id>dmulloy2-repo</id>
+            <url>http://repo.dmulloy2.net/content/groups/public/</url>
+        </repository>
+		
+		<!-- Vault Repo -->
+		<repository>
+            <id>vault-repo</id>
+            <url>http://nexus.hc.to/content/repositories/pub_releases</url>
+        </repository>
+		
+		<!-- MythicMobs Repo -->
+		<repository>
+			<id>betonquest-repo</id>
+			<url>http://betonquest.betoncraft.pl/mvn</url>
+		</repository>
+		
+		<!-- Towny Repo -->
+		<repository>
+			<id>towny-repo</id>
+			<url>http://maven.elmakers.com/repository/</url>
+		</repository>
+
+        <!-- PermissionsEx Repo -->
+        <repository>
+            <id>pex-repo</id>
+            <url>http://pex-repo.aoeu.xyz</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Spigot API -->
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--Bukkit API-->
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Towny plugin -->
+        <dependency>
+            <groupId>com.palmergames</groupId>
+            <artifactId>Towny</artifactId>
+            <version>0.89.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- CombatTagPlus plugin -->
+        <dependency>
+            <groupId>net.minelink</groupId>
+            <artifactId>CombatTagPlus</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>craftbukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusHook</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusFactions-v1_6</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-v1_7_R3</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusFactions-v1_8</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-v1_7_R4</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusWG-v5</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusWG-v6</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-API</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusFactions-v2_6</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-v1_8_R3</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusFactions-v2_7</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-v1_8_R2</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CombatTagPlusCompat-v1_8_R1</artifactId>
+                    <groupId>net.minelink</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>metrics-lite</artifactId>
+                    <groupId>org.mcstats.bukkit</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.minelink</groupId>
+                    <artifactId>CombatTagPlusCompat-v1_9_R1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.minelink</groupId>
+                    <artifactId>CombatTagPlusCompat-v1_9_R2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.minelink</groupId>
+                    <artifactId>
+                        CombatTagPlusCompat-v1_10_R1
+                    </artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+		 <!-- ProtocolLib plugin -->
+		<dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib-API</artifactId>
+            <version>4.2.0</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>cglib-nodep</artifactId>
+                    <groupId>cglib</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>BukkitExecutors</artifactId>
+                    <groupId>com.comphenix.executors</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- PermissionsEx plugin -->
+        <dependency>
+            <groupId>ru.tehkode</groupId>
+            <artifactId>PermissionsEx</artifactId>
+            <version>1.22.7</version>
+        </dependency>
+		
+        <!-- Vault plugin -->
+		<dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.6</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>craftbukkit</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- MythicMobs plugin -->
+		<dependency>
+			<groupId>net.elseland.xikage.MythicMobs</groupId>
+			<artifactId>mythicmobs</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+		
+        <!-- EffectLibs library -->
+		<dependency>
+			<groupId>de.slikey.effectlib</groupId>
+			<artifactId>EffectLib</artifactId>
+			<version>3.8</version>
+		</dependency>
+
+        <!-- Lombok library -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.12</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

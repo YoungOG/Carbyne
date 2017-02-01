@@ -6,6 +6,8 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.medievallords.carbyne.gates.GateManager;
+import com.medievallords.carbyne.gates.commands.*;
+import com.medievallords.carbyne.gates.listeners.GateListeners;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.GuiManager;
 import com.medievallords.carbyne.gear.commands.GearCommands;
@@ -17,7 +19,6 @@ import com.medievallords.carbyne.scoreboard.ScoreboardCommands;
 import com.medievallords.carbyne.scoreboard.ScoreboardHandler;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.CommandFramework;
-import com.medievallords.carbyne.utils.glaedr.Glaedr;
 import com.palmergames.bukkit.towny.Towny;
 import de.slikey.effectlib.EffectManager;
 import lombok.Getter;
@@ -48,11 +49,11 @@ public class Carbyne extends JavaPlugin {
     private File gearconfigFile;
     private File storeFile;
     private File duelFile;
+    private File gateFile;
 
     private FileConfiguration gearData;
     private FileConfiguration storeData;
-
-    private Glaedr glaedr;
+    private FileConfiguration gateData;
 
     private Permission permissions = null;
     private Economy economy = null;
@@ -91,11 +92,10 @@ public class Carbyne extends JavaPlugin {
             combatTagPlusEnabled = true;
         }
 
-        glaedr = new Glaedr(this, "&b&lMedieval Lords");
-
         gearconfigFile = new File(getDataFolder(), "gearconfig.yml");
         storeFile = new File(getDataFolder(), "store.yml");
         duelFile = new File(getDataFolder(), "duel.yml");
+        gateFile = new File(getDataFolder(), "gate.yml");
         try {
             firstRun();
         } catch (Exception e) {
@@ -103,6 +103,7 @@ public class Carbyne extends JavaPlugin {
         }
         gearData = YamlConfiguration.loadConfiguration(gearconfigFile);
         storeData = YamlConfiguration.loadConfiguration(storeFile);
+        gateData = YamlConfiguration.loadConfiguration(gateFile);
 
         gearManager = new GearManager();
         guiManager = new GuiManager();
@@ -128,14 +129,28 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new GuiListener(), this);
         pm.registerEvents(new TimingsFixListener(this), this);
         pm.registerEvents(new ChatListener(), this);
+        pm.registerEvents(new GateListeners(), this);
 
         if (townyEnabled)
             pm.registerEvents(new DamageListener(), this);
     }
 
     private void registerCommands() {
+        //Old Commands
         getCommand("cg").setExecutor(new GearCommands());
         getCommand("scoreboard").setExecutor(new ScoreboardCommands());
+
+        //New Commands
+        commandFramework.registerCommands(new GateCommand());
+        commandFramework.registerCommands(new GateAddBCommand());
+        commandFramework.registerCommands(new GateAddPPCommand());
+        commandFramework.registerCommands(new GateAddBCommand());
+        commandFramework.registerCommands(new GateCreateCommand());
+        commandFramework.registerCommands(new GateDelayCommand());
+        commandFramework.registerCommands(new GateRemoveCommand());
+        commandFramework.registerCommands(new GateRenameCommand());
+        commandFramework.registerCommands(new GateResetCommand());
+        commandFramework.registerCommands(new GateStatusCommand());
     }
 
     private void registerPackets() {
@@ -176,6 +191,10 @@ public class Carbyne extends JavaPlugin {
             duelFile.getParentFile().mkdirs();
             copy(getResource("duel.yml"), duelFile);
         }
+        if (!gateFile.exists()) {
+            gateFile.getParentFile().mkdirs();
+            copy(getResource("gate.yml"), gateFile);
+        }
     }
 
     private void copy(InputStream in, File file) {
@@ -186,6 +205,7 @@ public class Carbyne extends JavaPlugin {
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
+            out.flush();
             out.close();
             in.close();
         } catch (Exception e) {

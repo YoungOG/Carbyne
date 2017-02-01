@@ -11,9 +11,9 @@ commands:
         description: Scoreboard commands.
 
 permisions:
-    carbyne.admin:
-        description: Admin permissions for the entire plugin.
-        default: op
-    skills.ignore:
-        description: Ignore all skills for staff
-        default: op
+                       carbyne.admin:
+                           description: Admin permissions for the entire plugin.
+                           default: op
+                       skills.ignore:
+                           description: Ignore all skills for staff
+                           default: op

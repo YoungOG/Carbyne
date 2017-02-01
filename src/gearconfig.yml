@@ -143,6 +143,8 @@ Carbyne-Weapons:
       - 'INCREASE_DAMAGE,2,3,0.1'
     Hidden: false
     Cost: 10
+    Special: 'FIRESTORM'
+    SpecialCost: 50
   2:
     DisplayName: '&4Test Bow'
     Type: 'bow'

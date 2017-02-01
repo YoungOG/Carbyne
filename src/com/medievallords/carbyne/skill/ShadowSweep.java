@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class ShadowSweep extends Special {
+public class ShadowSweep {
 
 	private final PotionEffect pot = new PotionEffect(PotionEffectType.BLINDNESS, 80, 1);
 	

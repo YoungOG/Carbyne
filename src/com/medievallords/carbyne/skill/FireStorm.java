@@ -17,7 +17,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class FireStorm extends Special {
+public class FireStorm {
 
     private EffectManager effectManager = Carbyne.getInstance().getEffectManager();
     private final FireworkEffect fe = FireworkEffect.builder().flicker(true).with(Type.BURST).withColor(Color.RED).withColor(Color.ORANGE).trail(false).build();

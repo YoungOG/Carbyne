@@ -200,7 +200,7 @@ public class DamageListener implements Listener {
         Set<Location> locations = new HashSet<>();
 
         // Do nothing if player is not tagged
-        if (!main.combatTagPlus.getTagManager().isTagged(player.getUniqueId()))
+        if (!main.getCombatTagPlus().getTagManager().isTagged(player.getUniqueId()))
             return locations;
 
         // Find the radius around the player

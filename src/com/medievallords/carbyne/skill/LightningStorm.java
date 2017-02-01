@@ -8,7 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-public class LightningStorm extends Special {
+public class LightningStorm {
 
 	private final FireworkEffect.Builder builder = FireworkEffect.builder();
 	private final FireworkEffect fe = builder.flicker(true).with(Type.BURST).withColor(Color.AQUA).trail(false).build();

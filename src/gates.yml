@@ -1,0 +1,6 @@
+Gates:
+  ExampleGate:
+    Delay: 3
+    PressurePlateLocations: []
+    ButtonLocations: []
+    RedstoneBlockLocations: []
