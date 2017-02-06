@@ -16,8 +16,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
  */
 public class GateListeners implements Listener {
 
-    //Basics of how we'll detect if a pressure plate is active or not.
-
     private Carbyne carbyne = Carbyne.getInstance();
     private GateManager gateManager = carbyne.getGateManager();
 
@@ -36,10 +34,6 @@ public class GateListeners implements Listener {
                     gate.pressurePlateActivated(block.getLocation(), true);
                 }
             }
-
-            if (gate.getButtonLocations().contains(block.getLocation())) {
-                gate.openGate();
-            }
         }
     }
 
@@ -55,6 +49,12 @@ public class GateListeners implements Listener {
         if (gate.getPressurePlateMap().containsKey(block.getLocation())) {
             if (gate.getPressurePlateMap().get(block.getLocation()) && event.getOldCurrent() > 0) {
                 gate.pressurePlateActivated(block.getLocation(), false);
+            }
+        }
+
+        if (event.getOldCurrent() > 0) {
+            if (gate.getButtonLocations().contains(block.getLocation())) {
+                gate.buttonActivated(block.getLocation());
             }
         }
     }

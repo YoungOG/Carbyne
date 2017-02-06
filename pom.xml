@@ -21,12 +21,6 @@
     </build>
 
     <repositories>
-        <repository>
-            <id>YoungOG</id>
-            <name>Carbyne-Maven</name>
-            <url>https://github.com/YoungOG/Carbyne-Maven</url>
-        </repository>
-
 		<!-- SpigotAPI Repo -->
         <repository>
             <id>spigot-repo</id>
@@ -231,12 +225,7 @@
         </dependency>
 
         <!-- MythicMobs plugin -->
-		<dependency>
-			<groupId>net.elseland.xikage.MythicMobs</groupId>
-			<artifactId>mythicmobs</artifactId>
-			<version>2.0.4</version>
-		</dependency>
-		
+
         <!-- EffectLibs library -->
 		<dependency>
 			<groupId>de.slikey.effectlib</groupId>

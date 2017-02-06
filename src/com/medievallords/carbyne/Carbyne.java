@@ -8,14 +8,15 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
+import com.medievallords.carbyne.gates.listeners.GateMobListeners;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.GuiManager;
 import com.medievallords.carbyne.gear.commands.GearCommands;
 import com.medievallords.carbyne.gear.listeners.CarbyneListener;
 import com.medievallords.carbyne.gear.listeners.GuiListener;
+import com.medievallords.carbyne.heartbeat.HeartbeatRunnable;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
 import com.medievallords.carbyne.listeners.*;
-import com.medievallords.carbyne.scoreboard.ScoreboardCommands;
 import com.medievallords.carbyne.scoreboard.ScoreboardHandler;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.CommandFramework;
@@ -63,6 +64,10 @@ public class Carbyne extends JavaPlugin {
     private CombatTagPlus combatTagPlus;
     private boolean combatTagPlusEnabled = false;
 
+    private boolean mythicMobsEnabled = false;
+
+    private HeartbeatRunnable heartbeatRunnable;
+
     private GearManager gearManager;
     private EffectManager effectManager;
     private GuiManager guiManager;
@@ -95,6 +100,13 @@ public class Carbyne extends JavaPlugin {
             combatTagPlusEnabled = true;
         }
 
+        if (pm.isPluginEnabled("MythicMobs")) {
+            mythicMobsEnabled = true;
+        }
+
+        heartbeatRunnable = new HeartbeatRunnable();
+        heartbeatRunnable.runTaskTimer(Carbyne.getInstance(), 0L, 2L);
+
         gearManager = new GearManager();
         guiManager = new GuiManager();
         effectManager = new EffectManager(this);
@@ -122,25 +134,28 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new ChatListener(), this);
         pm.registerEvents(new GateListeners(), this);
 
+        if (mythicMobsEnabled)
+            pm.registerEvents(new GateMobListeners(), this);
+
         if (townyEnabled)
             pm.registerEvents(new DamageListener(), this);
     }
 
     private void registerCommands() {
-        //Old Commands
-        getCommand("cg").setExecutor(new GearCommands());
-        getCommand("scoreboard").setExecutor(new ScoreboardCommands());
-
-        //New Commands
+        commandFramework.registerCommands(new GearCommands());
         commandFramework.registerCommands(new GateCommand());
         commandFramework.registerCommands(new GateAddBCommand());
         commandFramework.registerCommands(new GateAddPPCommand());
         commandFramework.registerCommands(new GateAddRSBCommand());
+        commandFramework.registerCommands(new GateAddSpawnerCommand());
+        commandFramework.registerCommands(new GateDelBCommand());
+        commandFramework.registerCommands(new GateDelPPCommand());
+        commandFramework.registerCommands(new GateDelRSBCommand());
+        commandFramework.registerCommands(new GateDelSpawnerCommand());
         commandFramework.registerCommands(new GateCreateCommand());
-        commandFramework.registerCommands(new GateDelayCommand());
+        commandFramework.registerCommands(new GateActiveCommand());
         commandFramework.registerCommands(new GateRemoveCommand());
         commandFramework.registerCommands(new GateRenameCommand());
-        commandFramework.registerCommands(new GateResetCommand());
         commandFramework.registerCommands(new GateStatusCommand());
         commandFramework.registerCommands(new GateListCommand());
     }

@@ -6,7 +6,9 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import net.elseland.xikage.MythicMobs.Spawners.MythicSpawner;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -39,41 +41,26 @@ public class GateListCommand extends BaseCommand {
 
             MessageManager.sendMessage(sender, "&aAvailable Gates:");
 
-            JSONMessage message1 = JSONMessage.create("");
+            JSONMessage message = JSONMessage.create("");
 
             for (int i = 0; i < getGateManager().getGates().size(); i++) {
                 if (i < getGateManager().getGates().size() - 1) {
                     Gate gate = getGateManager().getGates().get(i);
 
-                    message1.then(gate.getGateId()).color(ChatColor.AQUA)
-                            .tooltip(ChatColor.translateAlternateColorCodes('&', "&aDelay: &b" + gate.getDelay()))
+
+
+                    message.then(gate.getGateId()).color(ChatColor.AQUA)
+                            .tooltip(getMessageForGate(gate))
                             .then(", ").color(ChatColor.GRAY);
                 } else {
                     Gate gate = getGateManager().getGates().get(i);
 
-                    message1.then(gate.getGateId()).color(ChatColor.AQUA)
-                            .tooltip(ChatColor.translateAlternateColorCodes('&', "&aDelay: &b" + gate.getDelay()));
+                    message.then(gate.getGateId()).color(ChatColor.AQUA)
+                            .tooltip(getMessageForGate(gate));
                 }
             }
 
-            message1.send(player);
-
-//            FancyMessage message = new FancyMessage("");
-//            for (int i = 0; i < getCrateManager().getCrates().size(); i++) {
-//                if (i < getCrateManager().getCrates().size() - 1) {
-//                    Crate crate = getCrateManager().getCrates().get(i);
-//
-//                    message.then(crate.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
-//                            .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "World: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()))
-//                            .then(", ").color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_COMMA_COLOR.toString()));
-//                } else {
-//                    Crate crate = getCrateManager().getCrates().get(i);
-//
-//                    message.then(crate.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
-//                            .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "World: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()));
-//                }
-//            }
-//            message.send(player);
+            message.send(player);
         } else {
             MessageManager.sendMessage(sender, "&aAvailable Gates:");
 
@@ -84,5 +71,66 @@ public class GateListCommand extends BaseCommand {
 
             MessageManager.sendMessage(sender, gateIds.toString().replace("[", "").replace("]", "").replace(",", ChatColor.GRAY + ","));
         }
+    }
+
+    public JSONMessage getMessageForGate(Gate gate) {
+        JSONMessage message2 = JSONMessage.create("");
+
+        message2.then(ChatColor.translateAlternateColorCodes('&', "&aGate Id: &b" + gate.getGateId()) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aHeartbeat Alive: &b" + (gate.getHeartbeat() != null ? gate.getHeartbeat().isAlive() : "False")) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aActive Length: &b" + gate.getActiveLength()) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aCurrent Length: &b" + gate.getCurrentLength()) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aIs Open: &b" + gate.isOpen()) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Open: &b" + gate.isKeepOpen()) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Closed: &b" + gate.isKeepClosed()) + "\n");
+        message2.then("\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aPressure Plates(&b" + gate.getPressurePlateMap().keySet().size() + "&a):") + "\n");
+
+        int id = 0;
+
+        for (Location location : gate.getPressurePlateMap().keySet()) {
+            id++;
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+        }
+
+        message2.then("\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aRedstone Blocks(&b" + gate.getRedstoneBlockLocations().size() + "&a):") + "\n");
+
+        id = 0;
+        for (Location location : gate.getRedstoneBlockLocations()) {
+            id++;
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+        }
+
+        message2.then("\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aButton(&b" + gate.getButtonLocations().size() + "&a):") + "\n");
+
+        id = 0;
+        for (Location location : gate.getButtonLocations()) {
+            id++;
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+        }
+
+        if (getCarbyne().isMythicMobsEnabled()) {
+            message2.then("\n");
+
+            int spawnerCount = 0;
+
+            for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
+                if (spawner != null) {
+                    spawnerCount++;
+                }
+            }
+
+            message2.then(ChatColor.translateAlternateColorCodes('&', " &aMythic Spawners(&b" + gate.getMythicSpawners().keySet().size() + "&a:&b" + spawnerCount + "&a):") + "\n");
+
+            id = 0;
+            for (String spawnerName : gate.getMythicSpawners().keySet()) {
+                id++;
+                message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aName: &b" + spawnerName + "&a, Null: &b" + (gate.getMythicSpawners().get(spawnerName) == null) + (gate.getMythicSpawners().get(spawnerName) != null ? "&a, Mob Count: &b" + gate.getMythicSpawners().get(spawnerName).getNumberOfMobs() : "")) + "\n");
+            }
+        }
+
+        return message2;
     }
 }

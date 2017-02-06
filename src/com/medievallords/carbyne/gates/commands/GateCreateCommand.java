@@ -31,6 +31,8 @@ public class GateCreateCommand extends BaseCommand {
         }
 
         Gate gate = new Gate(gateId);
+        gate.setActiveLength(1);
+        gate.setCurrentLength(1);
         getGateManager().getGates().add(gate);
         MessageManager.sendMessage(sender, "&aYou have created a new gate named \"&b" + gateId + "&a\".");
     }

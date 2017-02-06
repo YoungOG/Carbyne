@@ -1,6 +1,7 @@
 Gates:
   ExampleGate:
-    Delay: 3
+    ActiveLength: 1
+    MythicSpawnerNames: []
     PressurePlateLocations: []
     ButtonLocations: []
     RedstoneBlockLocations: []

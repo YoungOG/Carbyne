@@ -22,9 +22,8 @@ public class ScoreboardCommands implements CommandExecutor {
                     Player player = (Player) sender;
 
                     if (!scoreboardHandler.getPlayerTasks().containsKey(player.getUniqueId())) {
-                        scoreboardHandler.addTask(player);
+//                        scoreboardHandler.addTask(player);
                     } else {
-                        scoreboardHandler.getPlayerTasks().get(player.getUniqueId()).cancel();
                         scoreboardHandler.getPlayerTasks().remove(player.getUniqueId());
                         player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
                     }
