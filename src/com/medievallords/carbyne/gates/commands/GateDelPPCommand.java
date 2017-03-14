@@ -5,7 +5,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -26,7 +25,7 @@ public class GateDelPPCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType() != Material.STONE_PLATE) {
+        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Pressure Plate.");
             return;
         }

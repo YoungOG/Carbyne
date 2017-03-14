@@ -2,8 +2,8 @@ package com.medievallords.carbyne.gates;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.LocationSerialization;
-import net.elseland.xikage.MythicMobs.MythicMobs;
-import net.elseland.xikage.MythicMobs.Spawners.MythicSpawner;
+import io.lumine.xikage.mythicmobs.MythicMobs;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -85,7 +85,7 @@ public class GateManager {
                 gate.setPressurePlateMap(pressurePlateLocations);
                 gate.setRedstoneBlockLocations(redstoneBlockLocations);
 
-                for (MythicSpawner mythicSpawner : MythicMobs.inst().listSpawners) {
+                for (MythicSpawner mythicSpawner : MythicMobs.inst().getSpawnerManager().listSpawners) {
                     for (String spawnerName : mythicSpawners.keySet()) {
                         if (mythicSpawner.getInternalName().equalsIgnoreCase(spawnerName)) {
                             mythicSpawners.put(spawnerName, mythicSpawner);

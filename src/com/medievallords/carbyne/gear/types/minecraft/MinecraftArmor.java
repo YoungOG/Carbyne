@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.gear.types.minecraft;
 
+//import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.ItemBuilder;

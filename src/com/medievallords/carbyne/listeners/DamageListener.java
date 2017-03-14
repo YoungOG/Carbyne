@@ -8,7 +8,7 @@ import com.medievallords.carbyne.utils.PlayerUtility;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.*;
 import com.palmergames.bukkit.towny.utils.CombatUtil;
-import net.elseland.xikage.MythicMobs.API.Bukkit.Events.MythicMobDeathEvent;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

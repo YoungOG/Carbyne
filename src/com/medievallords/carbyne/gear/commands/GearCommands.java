@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.gear.commands;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
@@ -15,9 +14,6 @@ import java.io.File;
 
 public class GearCommands extends BaseCommand {
 
-    private Carbyne main = Carbyne.getInstance();
-    private GearManager gearManager = main.getGearManager();
-
 	@Command(name = "carbyne", aliases = {"cg"})
 	public void onCommand(CommandArgs commandArgs) {
         CommandSender sender = commandArgs.getSender();
@@ -25,28 +21,22 @@ public class GearCommands extends BaseCommand {
 
         if (args.length == 0) {
             MessageManager.sendMessage(sender, "&cUsage: /carbyne store");
-            return;
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("store")) {
-                if (!Carbyne.getInstance().getGearManager().isEnableStore()) {
-                    return;
-                }
-
-                ((Player) sender).openInventory(Carbyne.getInstance().getGuiManager().getStoreGui());
+                ((Player) sender).openInventory(getGearManager().getGearGuiManager().getStoreGui());
             } else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("carbyne.admin")) {
-                gearManager.getCarbyneGear().clear();
-                gearManager.getDefaultArmors().clear();
-                gearManager.getDefaultWeapons().clear();
+                getGearManager().getCarbyneGear().clear();
+                getGearManager().getDefaultArmors().clear();
+                getGearManager().getDefaultWeapons().clear();
 
-                gearManager.load(YamlConfiguration.loadConfiguration(new File(main.getDataFolder(), "gear.yml")));
-                gearManager.loadStoreOptions(YamlConfiguration.loadConfiguration(new File(main.getDataFolder(), "store.yml")));
+                getGearManager().load(YamlConfiguration.loadConfiguration(new File(getCarbyne().getDataFolder(), "gear.yml")));
+                getGearManager().loadStoreOptions(YamlConfiguration.loadConfiguration(new File(getCarbyne().getDataFolder(), "store.yml")));
 
-                main.getGuiManager().reloadStoreGuis();
+                getCarbyne().getGearManager().getGearGuiManager().reloadStoreGuis();
 
                 MessageManager.sendMessage(sender, "&aSuccessfully reloaded Carbyne configurations.");
             } else {
                 MessageManager.sendMessage(sender, "&cUsage: /carbyne store");
-                return;
             }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("money") && sender.hasPermission("carbyne.admin")) {
@@ -57,12 +47,10 @@ public class GearCommands extends BaseCommand {
                     MessageManager.sendMessage(sender, "&aSuccessfully received &c" + amount + " &aof &b" + Carbyne.getInstance().getGearManager().getMoneyItem() + "&a.");
                 } catch (NumberFormatException e) {
                     MessageManager.sendMessage(sender, "&cPlease enter a valid amount.");
-                    return;
                 }
             }
         } else {
             MessageManager.sendMessage(sender, "&cUsage: /carbyne store");
-            return ;
         }
 	}
 }

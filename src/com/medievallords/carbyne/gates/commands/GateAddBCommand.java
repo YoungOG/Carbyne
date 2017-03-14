@@ -5,7 +5,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -35,18 +34,18 @@ public class GateAddBCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType() != Material.STONE_BUTTON) {
+        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("BUTTON")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Stone Button.");
             return;
         }
 
         if (gate.getButtonLocations().contains(player.getTargetBlock((HashSet<Byte>) null, 50).getLocation())) {
-            MessageManager.sendMessage(player, "&cThat Stone Button is already added to the gate " + gateId + ".");
+            MessageManager.sendMessage(player, "&cThat Button is already added to the gate " + gateId + ".");
             return;
         }
 
         gate.getButtonLocations().add(player.getTargetBlock((HashSet<Byte>) null,  50).getLocation());
         gate.saveGate();
-        MessageManager.sendMessage(player, "&aYou have added a Stone Button to the gate &b" + gate.getGateId() + "&a.");
+        MessageManager.sendMessage(player, "&aYou have added a Button to the gate &b" + gate.getGateId() + "&a.");
     }
 }

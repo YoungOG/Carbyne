@@ -1,0 +1,6 @@
+economy:
+  sales-tax: 0.015;
+database:
+  host: ''
+  port: 27017
+  database-name: carbyne

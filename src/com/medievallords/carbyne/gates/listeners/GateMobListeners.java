@@ -3,11 +3,11 @@ package com.medievallords.carbyne.gates.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.gates.GateManager;
-import net.elseland.xikage.MythicMobs.API.Bukkit.Events.MythicMobDeathEvent;
-import net.elseland.xikage.MythicMobs.API.Bukkit.Events.MythicMobSpawnEvent;
-import net.elseland.xikage.MythicMobs.Mobs.ActiveMob;
-import net.elseland.xikage.MythicMobs.MythicMobs;
-import net.elseland.xikage.MythicMobs.Spawners.MythicSpawner;
+import io.lumine.xikage.mythicmobs.MythicMobs;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobSpawnEvent;
+import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -26,7 +26,7 @@ public class GateMobListeners implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                ActiveMob mob = MythicMobs.inst().getAPI().getMobAPI().getMythicMobInstance(event.getEntity());
+                ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
                 if (mob != null) {
                     if (mob.getSpawner() != null) {
                         for (Gate gate : gateManager.getGates()) {
@@ -45,7 +45,7 @@ public class GateMobListeners implements Listener {
 
     @EventHandler
     public void onEntityDeath(MythicMobDeathEvent event) {
-        ActiveMob mob = MythicMobs.inst().getAPI().getMobAPI().getMythicMobInstance(event.getEntity());
+        ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
 
         if (mob != null) {
             if (mob.getSpawner() != null) {

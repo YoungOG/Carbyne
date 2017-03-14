@@ -5,7 +5,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -26,7 +25,7 @@ public class GateDelBCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType() != Material.STONE_BUTTON) {
+        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("BUTTON")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Stone Button.");
             return;
         }
@@ -34,12 +33,12 @@ public class GateDelBCommand extends BaseCommand {
         Gate gate = getGateManager().getGate(player.getTargetBlock((HashSet<Byte>) null, 50).getLocation());
 
         if (gate == null) {
-            MessageManager.sendMessage(player, "&cThere is no gate that is using that Stone Button.");
+            MessageManager.sendMessage(player, "&cThere is no gate that is using that Button.");
             return;
         }
 
         gate.getButtonLocations().remove(player.getTargetBlock((HashSet<Byte>) null,  50).getLocation());
         gate.saveGate();
-        MessageManager.sendMessage(player, "&aYou have deleted a Stone Button from the gate &b" + gate.getGateId() + "&a.");
+        MessageManager.sendMessage(player, "&aYou have deleted a Button from the gate &b" + gate.getGateId() + "&a.");
     }
 }

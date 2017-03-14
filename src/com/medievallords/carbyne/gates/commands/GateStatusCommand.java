@@ -5,7 +5,7 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import net.elseland.xikage.MythicMobs.Spawners.MythicSpawner;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 

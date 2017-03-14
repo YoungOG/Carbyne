@@ -1,25 +1,32 @@
 package com.medievallords.carbyne;
 
+import com.bizarrealex.aether.Aether;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.medievallords.carbyne.economy.MarketManager;
+import com.medievallords.carbyne.economy.commands.*;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
 import com.medievallords.carbyne.gates.listeners.GateMobListeners;
 import com.medievallords.carbyne.gear.GearManager;
-import com.medievallords.carbyne.gear.GuiManager;
 import com.medievallords.carbyne.gear.commands.GearCommands;
-import com.medievallords.carbyne.gear.listeners.CarbyneListener;
-import com.medievallords.carbyne.gear.listeners.GuiListener;
+import com.medievallords.carbyne.gear.listeners.GearListeners;
 import com.medievallords.carbyne.heartbeat.HeartbeatRunnable;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
 import com.medievallords.carbyne.listeners.*;
-import com.medievallords.carbyne.scoreboard.ScoreboardHandler;
+import com.medievallords.carbyne.parties.PartyManager;
+import com.medievallords.carbyne.parties.commands.*;
+import com.medievallords.carbyne.utils.CarbyneBoardAdapter;
+import com.medievallords.carbyne.utils.ItemDb;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.CommandFramework;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.client.MongoDatabase;
 import com.palmergames.bukkit.towny.Towny;
 import de.slikey.effectlib.EffectManager;
 import lombok.Getter;
@@ -43,6 +50,9 @@ import java.io.File;
 public class Carbyne extends JavaPlugin {
 
     public static Carbyne instance;
+
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
 
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
@@ -68,20 +78,25 @@ public class Carbyne extends JavaPlugin {
 
     private HeartbeatRunnable heartbeatRunnable;
 
+    private Aether aether;
+
+    private MarketManager marketManager;
     private GearManager gearManager;
     private EffectManager effectManager;
-    private GuiManager guiManager;
-    private ScoreboardHandler scoreboardHandler;
     private GateManager gateManager;
     private LeaderboardManager leaderboardManager;
+    private PartyManager partyManager;
+    private ItemDb itemDb;
 
     public void onEnable() {
         instance = this;
 
-//        getConfig().options().copyDefaults(true);
-//        saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveDefaultConfig();
 
         registerConfigurations();
+
+        registerMongoConnection();
 
         PluginManager pm = Bukkit.getServer().getPluginManager();
 
@@ -107,12 +122,16 @@ public class Carbyne extends JavaPlugin {
         heartbeatRunnable = new HeartbeatRunnable();
         heartbeatRunnable.runTaskTimer(Carbyne.getInstance(), 0L, 2L);
 
+        itemDb = new ItemDb();
+
+        aether = new Aether(this, new CarbyneBoardAdapter(this));
+
+        marketManager = new MarketManager();
         gearManager = new GearManager();
-        guiManager = new GuiManager();
         effectManager = new EffectManager(this);
-        scoreboardHandler = new ScoreboardHandler();
         gateManager = new GateManager();
         leaderboardManager = new LeaderboardManager();
+        partyManager = new PartyManager();
 
         registerCommands();
         registerEvents(pm);
@@ -120,16 +139,23 @@ public class Carbyne extends JavaPlugin {
     }
 
     public void onDisable() {
+        marketManager.saveSales(false);
         gateManager.saveGates();
         effectManager.dispose();
         HandlerList.unregisterAll(this);
+        mongoClient.close();
+    }
+
+    public void registerMongoConnection() {
+        MongoClientOptions options = MongoClientOptions.builder().connectionsPerHost(200000).build();
+        mongoClient = new MongoClient(getConfig().getString("database.host"), options);
+        mongoDatabase = mongoClient.getDatabase(getConfig().getString("database.database-name"));
     }
 
     private void registerEvents(PluginManager pm) {
-        pm.registerEvents(new CarbyneListener(), this);
+        pm.registerEvents(new GearListeners(), this);
         pm.registerEvents(new CooldownListeners(), this);
         pm.registerEvents(new OptimizationListeners(), this);
-        pm.registerEvents(new GuiListener(), this);
         pm.registerEvents(new TimingsFixListener(this), this);
         pm.registerEvents(new ChatListener(), this);
         pm.registerEvents(new GateListeners(), this);
@@ -142,6 +168,7 @@ public class Carbyne extends JavaPlugin {
     }
 
     private void registerCommands() {
+        //Gate Commands
         commandFramework.registerCommands(new GearCommands());
         commandFramework.registerCommands(new GateCommand());
         commandFramework.registerCommands(new GateAddBCommand());
@@ -158,13 +185,33 @@ public class Carbyne extends JavaPlugin {
         commandFramework.registerCommands(new GateRenameCommand());
         commandFramework.registerCommands(new GateStatusCommand());
         commandFramework.registerCommands(new GateListCommand());
+
+        //Market Commands
+        commandFramework.registerCommands(new MarketBuyCommand());
+        commandFramework.registerCommands(new MarketSellCommand());
+        commandFramework.registerCommands(new MarketPriceCommand());
+        commandFramework.registerCommands(new MarketSalesCommand());
+        commandFramework.registerCommands(new MarketSetTaxCommand());
+        commandFramework.registerCommands(new MarketTaxCommand());
+
+        //Party Commands
+        commandFramework.registerCommands(new PartyCommand());
+        commandFramework.registerCommands(new PartyJoinCommand());
+        commandFramework.registerCommands(new PartyCreateCommand());
+        commandFramework.registerCommands(new PartyInviteCommand());
+        commandFramework.registerCommands(new PartyLeaveCommand());
+        commandFramework.registerCommands(new PartyDisbandCommand());
+        commandFramework.registerCommands(new PartyFriendlyFireCommand());
+        commandFramework.registerCommands(new PartySetCommand());
+        commandFramework.registerCommands(new PartyKickCommand());
+        commandFramework.registerCommands(new PartyChatCommand());
     }
 
     private void registerPackets() {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Client.CLIENT_COMMAND) {
             @Override
             public void onPacketReceiving(PacketEvent event){
-                if(event.getPacket().getClientCommands().read(0) == EnumWrappers.ClientCommand.OPEN_INVENTORY_ACHIEVEMENT) {
+                if (event.getPacket().getClientCommands().read(0) == EnumWrappers.ClientCommand.OPEN_INVENTORY_ACHIEVEMENT) {
                     Player player = event.getPlayer();
 
                     PlayerUtility.checkForIllegalItems(player, player.getInventory());
@@ -189,6 +236,7 @@ public class Carbyne extends JavaPlugin {
         saveResource("gear.yml", false);
         saveResource("duel.yml", false);
         saveResource("gates.yml", false);
+        saveResource("item.csv", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);

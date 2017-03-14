@@ -5,8 +5,8 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import net.elseland.xikage.MythicMobs.MythicMobs;
-import net.elseland.xikage.MythicMobs.Spawners.MythicSpawner;
+import io.lumine.xikage.mythicmobs.MythicMobs;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.entity.Player;
 
 /**
@@ -39,7 +39,7 @@ public class GateAddSpawnerCommand extends BaseCommand {
 
         MythicSpawner mythicSpawner = null;
 
-        for (MythicSpawner spawners : MythicMobs.inst().listSpawners) {
+        for (MythicSpawner spawners : MythicMobs.inst().getSpawnerManager().listSpawners) {
             if (spawners.getInternalName().equalsIgnoreCase(args[1])) {
                 mythicSpawner = spawners;
             }

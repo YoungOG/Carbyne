@@ -1,5 +1,7 @@
 package com.medievallords.carbyne.gear.types.carbyne;
 
+import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
@@ -20,10 +22,17 @@ import java.util.List;
 @Setter
 public class CarbyneWeapon extends CarbyneGear {
 
+    private GearManager gearManager;
     private List<String> enchantments = new ArrayList<>();
     private String material = "";
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
     private HashMap<PotionEffect, Double> defensivePotionEffects = new HashMap<>();
+    private Special special;
+    private int charge;
+
+    public CarbyneWeapon(GearManager gearManager) {
+        this.gearManager = gearManager;
+    }
 
     @Override
     public boolean load(ConfigurationSection cs, String index) {
@@ -71,6 +80,21 @@ public class CarbyneWeapon extends CarbyneGear {
                 } else if (split.length == 4) {
                     defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, true), Double.parseDouble(split[3]));
                 }
+            }
+        }
+
+        if (cs.getString(index + ".Special") != null) {
+            System.out.println("GearManager: " + gearManager);
+            System.out.println("Section: " + cs.getName());
+            System.out.println("Index: " + index);
+            System.out.println("String: " + cs.getString(index + ".Special"));
+            System.out.println("getSpecialByName: " + gearManager.getSpecialByName(cs.getString(index + ".Special")));
+
+            if (gearManager.getSpecialByName(cs.getString(index + ".Special")) != null) {
+                special = gearManager.getSpecialByName(cs.getString(index + ".Special"));
+                charge = 0;
+
+                System.out.println("Special: " + special.getSpecialName());
             }
         }
 

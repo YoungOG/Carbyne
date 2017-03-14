@@ -2,6 +2,11 @@ package com.medievallords.carbyne.gear;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.effects.PotionEffects;
+import com.medievallords.carbyne.gear.listeners.GearGuiListeners;
+import com.medievallords.carbyne.gear.specials.Special;
+import com.medievallords.carbyne.gear.specials.types.FireStorm;
+import com.medievallords.carbyne.gear.specials.types.LightningStorm;
+import com.medievallords.carbyne.gear.specials.types.WitherStorm;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
@@ -10,6 +15,7 @@ import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.Namer;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -29,9 +35,12 @@ import java.util.logging.Level;
 public class GearManager {
 
     private Carbyne carbyne = Carbyne.getInstance();
+    private GearGuiManager gearGuiManager;
+
     private List<CarbyneGear> carbyneGear = new ArrayList<>();
     private List<CarbyneGear> defaultArmors = new ArrayList<>();
     private List<CarbyneGear> defaultWeapons = new ArrayList<>();
+    private List<Special> specials = new ArrayList<>();
 
     public GearManager() {
         new BukkitRunnable() {
@@ -45,9 +54,17 @@ public class GearManager {
 
         load(carbyne.getGearFileConfiguration());
         loadStoreOptions(carbyne.getGearFileConfiguration());
+
+        gearGuiManager = new GearGuiManager(this);
+
+        Bukkit.getPluginManager().registerEvents(new GearGuiListeners(this), carbyne);
     }
 
     public void load(FileConfiguration configuration) {
+        specials.add(new FireStorm());
+        specials.add(new WitherStorm());
+        specials.add(new LightningStorm());
+
         carbyneGear.clear();
         defaultArmors.clear();
         defaultWeapons.clear();
@@ -70,7 +87,7 @@ public class GearManager {
 
         cs = configuration.getConfigurationSection("Carbyne-Weapons");
         for (String id : cs.getKeys(false)) {
-            CarbyneGear cg = new CarbyneWeapon();
+            CarbyneGear cg = new CarbyneWeapon(this);
 
             if (cg.load(configuration.getConfigurationSection("Carbyne-Weapons"), id)) {
                 carbyneGear.add(cg);
@@ -506,12 +523,21 @@ public class GearManager {
         return replacement;
     }
 
+    public Special getSpecialByName(String name) {
+        for (Special special : specials) {
+            if (special.getSpecialName().equalsIgnoreCase(name)) {
+                return special;
+            }
+        }
+
+        return null;
+    }
+
     // STORE RELATED STUFF BELOW
 
     private String name = "";
     private List<String> lore;
     private String moneyCode = "";
-    private boolean enableStore;
     private Material moneyItem;
 
     public boolean loadStoreOptions(FileConfiguration cs) {
@@ -550,10 +576,6 @@ public class GearManager {
         }
     }
 
-    public boolean isEnableStore() {
-        return enableStore;
-    }
-
     public Material getMoneyItem() {
         return moneyItem;
     }
@@ -572,5 +594,9 @@ public class GearManager {
 
     public List<CarbyneGear> getDefaultWeapons() {
         return defaultWeapons;
+    }
+
+    public GearGuiManager getGearGuiManager() {
+        return gearGuiManager;
     }
 }
