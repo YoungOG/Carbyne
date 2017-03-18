@@ -6,7 +6,9 @@ import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -28,7 +30,6 @@ public class CarbyneWeapon extends CarbyneGear {
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
     private HashMap<PotionEffect, Double> defensivePotionEffects = new HashMap<>();
     private Special special;
-    private int charge;
 
     public CarbyneWeapon(GearManager gearManager) {
         this.gearManager = gearManager;
@@ -40,7 +41,7 @@ public class CarbyneWeapon extends CarbyneGear {
         if ((this.type = cs.getString(index + ".Type")) == null) return false;
         if (!type.equalsIgnoreCase("Bow"))
             if ((this.material = cs.getString(index + ".Material")) == null) return false;
-        if ((durability = cs.getInt(index + ".Durability")) == -1) return false;
+        if ((maxDurability = cs.getInt(index + ".Durability")) == -1) return false;
         if ((lore = cs.getStringList(index + ".Lore")) == null || lore.size() <= 0) return false;
         if ((enchantments = cs.getStringList(index + ".Enchantments")) == null || enchantments.size() <= 0)
             return false;
@@ -51,10 +52,8 @@ public class CarbyneWeapon extends CarbyneGear {
         if (!type.equalsIgnoreCase("Bow"))
             material = cs.getString(index + ".Material");
         type = cs.getString(index + ".Type");
-        durability = cs.getInt(index + ".Durability");
+        maxDurability = cs.getInt(index + ".Durability");
         lore = cs.getStringList(index + ".Lore");
-        lore.add(0, "&aDurability&7: &c" + durability);
-        lore.add(0, HiddenStringUtils.encodeString(gearCode));
         enchantments = cs.getStringList(index + ".Enchantments");
         hidden = cs.getBoolean(index + ".Hidden");
         cost = cs.getInt(index + ".Cost");
@@ -84,17 +83,8 @@ public class CarbyneWeapon extends CarbyneGear {
         }
 
         if (cs.getString(index + ".Special") != null) {
-            System.out.println("GearManager: " + gearManager);
-            System.out.println("Section: " + cs.getName());
-            System.out.println("Index: " + index);
-            System.out.println("String: " + cs.getString(index + ".Special"));
-            System.out.println("getSpecialByName: " + gearManager.getSpecialByName(cs.getString(index + ".Special")));
-
             if (gearManager.getSpecialByName(cs.getString(index + ".Special")) != null) {
                 special = gearManager.getSpecialByName(cs.getString(index + ".Special"));
-                charge = 0;
-
-                System.out.println("Special: " + special.getSpecialName());
             }
         }
 
@@ -103,8 +93,27 @@ public class CarbyneWeapon extends CarbyneGear {
 
     @Override
     public ItemStack getItem(boolean storeItem) {
-        Material mat = Material.STONE;
+        List<String> loreDupe = new ArrayList<>();
 
+        loreDupe.addAll(lore);
+
+        if (special != null) {
+            loreDupe.add(0, "&aSpecial&7: &c" + special.getSpecialName());
+        }
+
+        loreDupe.add(0, "&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+        loreDupe.add(0, HiddenStringUtils.encodeString(gearCode));
+
+        if (!storeItem) {
+            if (special != null) {
+                loreDupe.add(3, "&aSpecial Charge&7: &c0/" + special.getRequiredCharge());
+                loreDupe.add(4, "");
+            }
+        } else {
+            loreDupe.add(3, "");
+        }
+
+        Material mat = Material.STONE;
         if (type.equalsIgnoreCase("sword")) {
             if (Material.getMaterial((material + "_SWORD").toUpperCase()) != null) {
                 mat = Material.getMaterial((material + "_SWORD").toUpperCase());
@@ -174,7 +183,7 @@ public class CarbyneWeapon extends CarbyneGear {
 
         return new ItemBuilder(mat)
                 .name(displayName)
-                .setLore(lore)
+                .setLore((loreDupe.size() > 0 ? loreDupe : lore))
                 .addEnchantments(enchantmentHashMap).hideFlags().build();
     }
 
@@ -207,6 +216,58 @@ public class CarbyneWeapon extends CarbyneGear {
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &c" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
             }
+        }
+    }
+
+    @Override
+    public void damageItem(Player wielder, ItemStack itemStack) {
+        int durability = getDurability(itemStack);
+
+        if (durability == -1) {
+            return;
+        }
+
+        if (durability >= 1) {
+            durability--;
+            Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
+        } else {
+            wielder.getInventory().remove(itemStack);
+            wielder.playSound(wielder.getLocation(), Sound.ITEM_BREAK, 1, 1);
+        }
+    }
+
+    @Override
+    public int getDurability(ItemStack itemStack) {
+        if (itemStack == null) {
+            return -1;
+        }
+
+        try {
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
+        } catch (Exception ez) {
+            return -1;
+        }
+    }
+
+    public void setSpecialCharge(ItemStack itemStack, int amount) {
+        int charge = getSpecialCharge(itemStack);
+
+        if (charge == -1) {
+            return;
+        }
+
+        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 3);
+    }
+
+    public int getSpecialCharge(ItemStack itemStack) {
+        if (itemStack == null) {
+            return 0;
+        }
+
+        try {
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1].split("/")[0]);
+        } catch (Exception ez) {
+            return 0;
         }
     }
 }

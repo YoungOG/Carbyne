@@ -5,7 +5,7 @@ import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
-import com.medievallords.carbyne.parties.PartyManager;
+import com.medievallords.carbyne.squads.SquadManager;
 import lombok.Getter;
 
 public class BaseCommand {
@@ -15,7 +15,7 @@ public class BaseCommand {
     @Getter private GateManager gateManager = carbyne.getGateManager();
     @Getter private LeaderboardManager leaderboardManager = carbyne.getLeaderboardManager();
     @Getter private MarketManager marketManager = carbyne.getMarketManager();
-    @Getter private PartyManager partyManager = carbyne.getPartyManager();
+    @Getter private SquadManager squadManager = carbyne.getSquadManager();
 
     public BaseCommand() {
         carbyne.getCommandFramework().registerCommands(this);

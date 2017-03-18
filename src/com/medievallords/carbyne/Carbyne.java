@@ -6,6 +6,9 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.medievallords.carbyne.controlpoints.ControlManager;
+import com.medievallords.carbyne.controlpoints.commands.*;
+import com.medievallords.carbyne.controlpoints.listeners.TimerListener;
 import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.economy.commands.*;
 import com.medievallords.carbyne.gates.GateManager;
@@ -18,8 +21,11 @@ import com.medievallords.carbyne.gear.listeners.GearListeners;
 import com.medievallords.carbyne.heartbeat.HeartbeatRunnable;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
 import com.medievallords.carbyne.listeners.*;
-import com.medievallords.carbyne.parties.PartyManager;
-import com.medievallords.carbyne.parties.commands.*;
+import com.medievallords.carbyne.spawners.commands.SpawnerCommand;
+import com.medievallords.carbyne.spawners.commands.SpawnerCreateCommand;
+import com.medievallords.carbyne.spawners.listeners.SpawnerListeners;
+import com.medievallords.carbyne.squads.SquadManager;
+import com.medievallords.carbyne.squads.commands.*;
 import com.medievallords.carbyne.utils.CarbyneBoardAdapter;
 import com.medievallords.carbyne.utils.ItemDb;
 import com.medievallords.carbyne.utils.PlayerUtility;
@@ -29,6 +35,7 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.palmergames.bukkit.towny.Towny;
 import de.slikey.effectlib.EffectManager;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 import lombok.Getter;
 import lombok.Setter;
 import net.milkbowl.vault.economy.Economy;
@@ -57,6 +64,9 @@ public class Carbyne extends JavaPlugin {
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
 
+    private File controlPointFile;
+    private FileConfiguration controlPointConfiguration;
+
     private File duelFile;
     private FileConfiguration duelFileConfiguration;
 
@@ -80,12 +90,15 @@ public class Carbyne extends JavaPlugin {
 
     private Aether aether;
 
+    private TimerListener timerListener;
+
     private MarketManager marketManager;
     private GearManager gearManager;
     private EffectManager effectManager;
     private GateManager gateManager;
     private LeaderboardManager leaderboardManager;
-    private PartyManager partyManager;
+    private ControlManager controlManager;
+    private SquadManager squadManager;
     private ItemDb itemDb;
 
     public void onEnable() {
@@ -126,19 +139,26 @@ public class Carbyne extends JavaPlugin {
 
         aether = new Aether(this, new CarbyneBoardAdapter(this));
 
+        timerListener = new TimerListener();
+
         marketManager = new MarketManager();
         gearManager = new GearManager();
         effectManager = new EffectManager(this);
         gateManager = new GateManager();
         leaderboardManager = new LeaderboardManager();
-        partyManager = new PartyManager();
+        squadManager = new SquadManager();
+        controlManager = new ControlManager();
 
         registerCommands();
         registerEvents(pm);
         registerPackets();
+        controlManager.loadControlPoints();
     }
 
     public void onDisable() {
+        MythicMobs.inst().getMobManager().removeAllAllMobs();
+        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "mm mobs killall");
+
         marketManager.saveSales(false);
         gateManager.saveGates();
         effectManager.dispose();
@@ -159,6 +179,9 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new TimingsFixListener(this), this);
         pm.registerEvents(new ChatListener(), this);
         pm.registerEvents(new GateListeners(), this);
+        pm.registerEvents(new LootListener(), this);
+        pm.registerEvents(timerListener, this);
+        pm.registerEvents(new SpawnerListeners(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -194,17 +217,30 @@ public class Carbyne extends JavaPlugin {
         commandFramework.registerCommands(new MarketSetTaxCommand());
         commandFramework.registerCommands(new MarketTaxCommand());
 
-        //Party Commands
-        commandFramework.registerCommands(new PartyCommand());
-        commandFramework.registerCommands(new PartyJoinCommand());
-        commandFramework.registerCommands(new PartyCreateCommand());
-        commandFramework.registerCommands(new PartyInviteCommand());
-        commandFramework.registerCommands(new PartyLeaveCommand());
-        commandFramework.registerCommands(new PartyDisbandCommand());
-        commandFramework.registerCommands(new PartyFriendlyFireCommand());
-        commandFramework.registerCommands(new PartySetCommand());
-        commandFramework.registerCommands(new PartyKickCommand());
-        commandFramework.registerCommands(new PartyChatCommand());
+        //Squad Commands
+        commandFramework.registerCommands(new SquadCommand());
+        commandFramework.registerCommands(new SquadJoinCommand());
+        commandFramework.registerCommands(new SquadCreateCommand());
+        commandFramework.registerCommands(new SquadInviteCommand());
+        commandFramework.registerCommands(new SquadLeaveCommand());
+        commandFramework.registerCommands(new SquadDisbandCommand());
+        commandFramework.registerCommands(new SquadFriendlyFireCommand());
+        commandFramework.registerCommands(new SquadSetCommand());
+        commandFramework.registerCommands(new SquadKickCommand());
+        commandFramework.registerCommands(new SquadChatCommand());
+
+        //ControlPoint Commands
+        commandFramework.registerCommands(new ControlListCommand());
+        commandFramework.registerCommands(new ControlCommand());
+        commandFramework.registerCommands(new ControlReloadCommand());
+        commandFramework.registerCommands(new ControlCreateCommand());
+        commandFramework.registerCommands(new ControlRemoveCommand());
+        commandFramework.registerCommands(new ControlTimerCommand());
+        commandFramework.registerCommands(new ControlTeleportCommand());
+
+        //Spawner Commands
+        commandFramework.registerCommands(new SpawnerCreateCommand());
+        commandFramework.registerCommands(new SpawnerCommand());
     }
 
     private void registerPackets() {
@@ -237,6 +273,7 @@ public class Carbyne extends JavaPlugin {
         saveResource("duel.yml", false);
         saveResource("gates.yml", false);
         saveResource("item.csv", false);
+        saveResource("controlpoints.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -246,6 +283,9 @@ public class Carbyne extends JavaPlugin {
 
         gateFile = new File(getDataFolder(), "gates.yml");
         gateFileConfiguration = YamlConfiguration.loadConfiguration(gateFile);
+
+        controlPointFile = new File(getDataFolder(), "controlpoints.yml");
+        controlPointConfiguration = YamlConfiguration.loadConfiguration(controlPointFile);
     }
 
     public static Carbyne getInstance() {

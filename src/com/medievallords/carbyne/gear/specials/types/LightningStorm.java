@@ -1,15 +1,16 @@
 package com.medievallords.carbyne.gear.specials.types;
 
 import com.medievallords.carbyne.gear.specials.Special;
-import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xwiena22 on 2017-03-13.
@@ -27,14 +28,15 @@ public class LightningStorm implements Special{
 
     @Override
     public int getRequiredCharge() {
-        return 0;
+        return 50;
     }
 
     @Override
-    public void callSpecial(Player caster, Location centerLocation, CarbyneWeapon carbyneWeapon) {
+    public void callSpecial(Player caster) {
+        Location center = caster.getTargetBlock((Set<Material>) null, 9).getLocation();
         List<LivingEntity> entitiesToHit = new ArrayList<>();
         int times = 0;
-        for (Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation, radius, radius, radius)) {
+        for (Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
             if (times >= maxTimes) {
                 return;
             }
@@ -57,7 +59,6 @@ public class LightningStorm implements Special{
                 damageEntity(entity, caster);
                 entity.getWorld().playEffect(entity.getEyeLocation(), Effect.VOID_FOG, 3);
             }
-            carbyneWeapon.setCharge(0);
         }
     }
 

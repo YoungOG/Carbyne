@@ -2,9 +2,7 @@ package com.medievallords.carbyne.gear.specials.types;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
-import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import org.bukkit.Color;
-import org.bukkit.Effect;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
@@ -21,7 +19,7 @@ public class WitherStorm implements Special{
 
     @Override
     public int getRequiredCharge() {
-        return 0;
+        return 50;
     }
 
     @Override
@@ -30,7 +28,8 @@ public class WitherStorm implements Special{
     }
 
     @Override
-    public void callSpecial(Player caster, Location centerLocation, CarbyneWeapon carbyneWeapon) {
+    public void callSpecial(Player caster) {
+        Location centerLocation = caster.getLocation();
         new BukkitRunnable() {
 
             double t = 0;
@@ -46,7 +45,7 @@ public class WitherStorm implements Special{
                 double x = Math.sin(t) + Math.sin(t) * radius;
                 double y = t-t+1;
                 double z = Math.cos(t) + Math.cos(t) * radius;
-                if (times == Math.floor(times)) {
+                if (times == 20 || times == 40 || times == 60) {
                     for (Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation, radius, radius, radius)) {
                         if (entity instanceof LivingEntity && !entity.equals(caster)) {
                             damageEntity((LivingEntity) entity, caster);
@@ -55,18 +54,17 @@ public class WitherStorm implements Special{
                 }
                 centerLocation.add(x, y, z);
                 Firework firework = (Firework) centerLocation.getWorld().spawnEntity(centerLocation, EntityType.FIREWORK);
-                centerLocation.getWorld().playEffect(centerLocation, Effect.FLAME, 5);
                 firework.setFireworkMeta(getFireworkMeta(firework));
                 fireworkTo = firework;
                 centerLocation.subtract(x, y, z);
 
-                times += 0.05;
-                if (times >= 3) {
+                times++;
+                radius -= 0.2;
+                if (times > 60) {
                     this.cancel();
                 }
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 1);
-        carbyneWeapon.setCharge(0);
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {

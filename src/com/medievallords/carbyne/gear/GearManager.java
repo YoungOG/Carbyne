@@ -4,9 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.effects.PotionEffects;
 import com.medievallords.carbyne.gear.listeners.GearGuiListeners;
 import com.medievallords.carbyne.gear.specials.Special;
-import com.medievallords.carbyne.gear.specials.types.FireStorm;
-import com.medievallords.carbyne.gear.specials.types.LightningStorm;
-import com.medievallords.carbyne.gear.specials.types.WitherStorm;
+import com.medievallords.carbyne.gear.specials.types.*;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
@@ -16,7 +14,6 @@ import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.Namer;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -64,6 +61,8 @@ public class GearManager {
         specials.add(new FireStorm());
         specials.add(new WitherStorm());
         specials.add(new LightningStorm());
+        specials.add(new BastionOfHealth());
+        specials.add(new HinderingShot());
 
         carbyneGear.clear();
         defaultArmors.clear();
@@ -181,20 +180,6 @@ public class GearManager {
         }
 
         return null;
-    }
-
-    public int getDurability(ItemStack is) {
-        try {
-            String key = ChatColor.stripColor(Namer.getLore(is).get(1));
-
-            if (key.contains("Durability:")) {
-                return Integer.valueOf(key.split(" ")[1]);
-            }
-
-            return -1;
-        } catch (Exception ez) {
-            return -1;
-        }
     }
 
     public CarbyneArmor getCarbyneArmor(ItemStack is) {
@@ -466,6 +451,24 @@ public class GearManager {
         }
 
         return null;
+    }
+
+    public int getDurability(ItemStack itemStack) {
+        if (itemStack == null) {
+            return -1;
+        }
+
+        if (isCarbyneArmor(itemStack)) {
+            return getCarbyneArmor(itemStack).getDurability(itemStack);
+        } else if (isCarbyneWeapon(itemStack)) {
+            return getCarbyneWeapon(itemStack).getDurability(itemStack);
+        } else if (isDefaultArmor(itemStack)) {
+            return getDefaultArmor(itemStack).getDurability(itemStack);
+        } else if (isDefaultWeapon(itemStack)) {
+            return getDefaultWeapon(itemStack).getDurability(itemStack);
+        } else {
+            return -1;
+        }
     }
 
     public List<CarbyneArmor> getCarbyneArmorByColor(Color color) {

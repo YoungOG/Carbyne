@@ -1,5 +1,8 @@
 package com.medievallords.carbyne.gear.listeners;
 
+import com.bizarrealex.aether.scoreboard.Board;
+import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
+import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
@@ -8,13 +11,10 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.Namer;
 import com.medievallords.carbyne.utils.PlayerUtility;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Animals;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,17 +28,14 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.util.List;
-import java.util.Set;
 
 public class GearListeners implements Listener {
 
@@ -59,23 +56,23 @@ public class GearListeners implements Listener {
             double armorReduction = 0.0;
 
             //Get DamageReduction values from all peices of currently worn armor.
-            for (ItemStack is : player.getInventory().getArmorContents()) {
-                if (is.getType().equals(Material.AIR))
+            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
+                if (itemStack.getType().equals(Material.AIR))
                     continue;
 
-                if (gearManager.isCarbyneArmor(is)) {
-                    CarbyneArmor ca = gearManager.getCarbyneArmor(is);
+                if (gearManager.isCarbyneArmor(itemStack)) {
+                    CarbyneArmor carbyneArmor = gearManager.getCarbyneArmor(itemStack);
 
-                    if (ca != null) {
-                        armorReduction = armorReduction + ca.getArmorRating();
+                    if (carbyneArmor != null) {
+                        armorReduction = armorReduction + carbyneArmor.getArmorRating();
                     }
                 }
 
-                if (gearManager.isDefaultArmor(is)) {
-                    MinecraftArmor ca = gearManager.getDefaultArmor(is);
+                if (gearManager.isDefaultArmor(itemStack)) {
+                    MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
 
-                    if (ca != null) {
-                        armorReduction = armorReduction + ca.getArmorRating();
+                    if (minecraftArmor != null) {
+                        armorReduction = armorReduction + minecraftArmor.getArmorRating();
                     }
                 }
             }
@@ -125,397 +122,366 @@ public class GearListeners implements Listener {
         }
     }
 
-    @EventHandler
-    public void onEntityDeath(EntityDeathEvent deathEvent) {
-        if (deathEvent.getEntity().getKiller() == null || deathEvent.getEntity().getKiller().getInventory().getItemInHand() == null) {
-            return;
-        }
-        CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(deathEvent.getEntity().getKiller().getInventory().getItemInHand());
-        if(carbyneWeapon.getSpecial() == null) {
-            return;
-        }
-        if (deathEvent.getEntity() instanceof Player) {
-           carbyneWeapon.setCharge(carbyneWeapon.getCharge() + 10);
-        }
-        else if (deathEvent.getEntity() instanceof Monster || deathEvent.getEntity() instanceof Animals) {
-            carbyneWeapon.setCharge(carbyneWeapon.getCharge() + 1);
-        }
-    }
-
     @EventHandler(ignoreCancelled = true)
-    public void onEntityDamagebyEntity(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player) {
-            Player attacked = (Player) e.getEntity();
+    public void onEntityDamagebyEntity(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player damaged = (Player) event.getEntity();
 
-            for (ItemStack is : attacked.getInventory().getArmorContents()) {
-                if (is.getType().equals(Material.LEATHER_CHESTPLATE) || is.getType().equals(Material.LEATHER_LEGGINGS)) {
-                    CarbyneArmor ca = gearManager.getCarbyneArmor(is);
+            for (ItemStack itemStack : damaged.getInventory().getArmorContents()) {
+                if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
+                    CarbyneGear carbyneGear = gearManager.getCarbyneGear(itemStack);
 
-                    if (ca != null) {
-                        if (ca.getDefensivePotionEffects().size() > 0) {
-                            ca.applyDefensiveEffect(attacked);
+                    if (carbyneGear != null) {
+                        if (carbyneGear instanceof CarbyneArmor) {
+                            CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
+
+                            if (itemStack.getType().equals(Material.LEATHER_CHESTPLATE) || itemStack.getType().equals(Material.LEATHER_LEGGINGS)) {
+                                if (carbyneArmor.getDefensivePotionEffects().size() > 0) {
+                                    carbyneArmor.applyDefensiveEffect(damaged);
+                                }
+
+                                if (carbyneArmor.getOffensivePotionEffects().size() > 0) {
+                                    if (event.getDamager() != null && event.getDamager() instanceof Player) {
+                                        carbyneArmor.applyOffensiveEffect((Player) event.getDamager());
+                                    }
+                                }
+                            }
+
+                            carbyneArmor.damageItem(damaged, itemStack);
                         }
 
-                        if (ca.getOffensivePotionEffects().size() > 0) {
-                            if (e.getDamager() != null && e.getDamager() instanceof Player) {
-                                ca.applyOffensiveEffect((Player) e.getDamager());
-                            }
+                        if (carbyneGear instanceof CarbyneWeapon) {
+                            CarbyneWeapon carbyneWeapon = (CarbyneWeapon) carbyneGear;
+
+                            carbyneWeapon.damageItem(damaged, itemStack);
                         }
                     }
                 }
 
-                CarbyneGear cg = gearManager.getCarbyneGear(is);
+                if (gearManager.isDefaultArmor(itemStack) || gearManager.isDefaultWeapon(itemStack)) {
+                    if (gearManager.isDefaultArmor(itemStack)) {
+                        MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
 
-                if (cg == null) {
-                    continue;
-                }
+                        minecraftArmor.damageItem(damaged, itemStack);
+                    }
 
-                int durability = gearManager.getDurability(is);
+                    if (gearManager.isDefaultWeapon(itemStack)) {
+                        MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(itemStack);
 
-                if (durability == -1) {
-                    return;
-                }
-
-                if (durability >= 1) {
-                    durability--;
-                    List<String> old = is.getItemMeta().getLore();
-                    old.remove(1);
-                    old.add(1, ChatColor.GREEN + "Durability" + ChatColor.GRAY + ": " + ChatColor.RED + durability);
-                    Namer.setLore(is, old);
-                } else {
-                    attacked.getInventory().remove(is);
-                    attacked.playSound(attacked.getLocation(), Sound.ITEM_BREAK, 1, 1);
+                        minecraftWeapon.damageItem(damaged, itemStack);
+                    }
                 }
             }
         }
 
-        if (e.getDamager() instanceof Player) {
-            Player damager = (Player) e.getDamager();
-            ItemStack is = damager.getItemInHand();
-            CarbyneWeapon cw = gearManager.getCarbyneWeapon(is);
+        if (event.getDamager() instanceof Player) {
+            Player damager = (Player) event.getDamager();
+            ItemStack itemStack = damager.getItemInHand();
 
-            if (cw != null) {
-                if (e.getEntity() != null && e.getEntity() instanceof Player) {
-                    if (cw.getOffensivePotionEffects().size() > 0) {
-                        cw.applyOffensiveEffect((Player) e.getEntity());
+            if (gearManager.isCarbyneWeapon(itemStack)) {
+                CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
+
+                if (carbyneWeapon != null) {
+                    if (event.getEntity() != null && event.getEntity() instanceof Player) {
+                        if (carbyneWeapon.getOffensivePotionEffects().size() > 0) {
+                            carbyneWeapon.applyOffensiveEffect((Player) event.getEntity());
+                        }
                     }
+
+                    if (carbyneWeapon.getDefensivePotionEffects().size() > 0) {
+                        carbyneWeapon.applyDefensiveEffect(damager);
+                    }
+
+                    carbyneWeapon.damageItem(damager, itemStack);
                 }
+            }
 
-                if (cw.getDefensivePotionEffects().size() > 0) {
-                    cw.applyDefensiveEffect(damager);
-                }
+            if (gearManager.isDefaultWeapon(itemStack)) {
+                MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(itemStack);
 
-                int durability = gearManager.getDurability(is);
+                minecraftWeapon.damageItem(damager, itemStack);
+            }
+        }
+    }
 
-                if (durability == -1) {
-                    return;
-                }
+    @EventHandler
+    public void onDurabilityLoss(PlayerItemDamageEvent event) {
+        ItemStack item = event.getItem();
 
-                if (durability >= 1) {
-                    durability--;
-                    List<String> old = is.getItemMeta().getLore();
-                    old.remove(1);
-                    old.add(1, ChatColor.GREEN + "Durability" + ChatColor.GRAY + ": " + ChatColor.RED + durability);
-                    Namer.setLore(is, old);
-                } else {
-                    damager.setItemInHand(new ItemStack(Material.AIR));
-                    damager.getWorld().playSound(damager.getLocation(), Sound.ITEM_BREAK, 1.0F, 1.0F);
+        if (gearManager.isCarbyneWeapon(item) || gearManager.isCarbyneArmor(item)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        PlayerUtility.checkForIllegalItems(event.getPlayer(), event.getPlayer().getInventory());
+
+        if (!event.getAction().equals(Action.RIGHT_CLICK_AIR) && !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+
+        if (!event.getPlayer().isSneaking()) {
+            return;
+        }
+
+        ItemStack itemStack = event.getPlayer().getInventory().getItemInHand();
+
+        if (itemStack == null) {
+            return;
+        }
+
+        CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
+
+        if (carbyneWeapon == null) {
+            return;
+        }
+
+        if (carbyneWeapon.getSpecial() != null) {
+            if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge() || event.getPlayer().hasPermission("carbyne.specials.bypass")) {
+                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
+                carbyneWeapon.setSpecialCharge(itemStack, 0);
+
+                if (!event.getPlayer().hasPermission("carbyne.specials.bypass")) {
+                    Board board = Board.getByPlayer(event.getPlayer());
+
+                    if (board != null) {
+                        BoardCooldown specialCooldown = board.getCooldown("special");
+
+                        if (specialCooldown != null) {
+                            MessageManager.sendMessage(event.getPlayer(), "&eYou cannot use another special for &6" + specialCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds.");
+                        } else {
+                            new BoardCooldown(board, "special", 60.0D);
+                        }
+                    }
                 }
             } else {
-                int durability = gearManager.getDurability(is);
-
-                if (durability == -1) {
-                    return;
-                }
-
-                if (durability >= 1) {
-                    durability--;
-                    List<String> old = is.getItemMeta().getLore();
-                    old.remove(1);
-                    old.add(1, ChatColor.GREEN + "Durability" + ChatColor.GRAY + ": " + ChatColor.RED + durability);
-                    Namer.setLore(is, old);
-                } else {
-                    damager.setItemInHand(new ItemStack(Material.AIR));
-                    damager.getWorld().playSound(damager.getLocation(), Sound.ITEM_BREAK, 1.0F, 1.0F);
-                }
-            }
-        }
-    }
-
-
-    @EventHandler
-    public  void onInteract(PlayerInteractEvent interactEvent) {
-        if ((interactEvent.getAction() == Action.RIGHT_CLICK_AIR || interactEvent.getAction() == Action.RIGHT_CLICK_BLOCK) && interactEvent.getPlayer().isSneaking()) {
-            CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(interactEvent.getPlayer().getInventory().getItemInHand());
-            if (carbyneWeapon == null || carbyneWeapon.getSpecial() == null)
-                return;
-
-            if (carbyneWeapon.getCharge() >= carbyneWeapon.getSpecial().getRequiredCharge()) {
-                carbyneWeapon.getSpecial().callSpecial(interactEvent.getPlayer(), interactEvent.getPlayer().getTargetBlock((Set<Material>) null, 10).getLocation(), carbyneWeapon);
-            }
-        }
-    }
-
-
-
-//    /**
-//     * If a player right clicks air and is sneaking, they are checked if they can use a special. If they can they use the special.
-//     *
-//     * @param e
-//     */
-//    @EventHandler
-//    public void onInteract(PlayerInteractEvent e) {
-//        PlayerUtility.checkForIllegalItems(e.getPlayer(), e.getPlayer().getInventory());
-//
-//        if (!e.getAction().equals(Action.RIGHT_CLICK_AIR) && !e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-//            return;
-//        }
-//
-//        if (!e.getPlayer().isSneaking()) {
-//            return;
-//        }
-//
-//        ItemStack is = e.getPlayer().getInventory().getItemInHand();
-//
-//        if (is == null) {
-//            return;
-//        }
-//
-//        CarbyneWeapon cw = gearManager.getCarbyneWeapon(is);
-//
-//        if (cw == null) {
-//            return;
-//        }
-//
-//        if (cw.getSpecialName() != null) {
-//            MessageManager.sendMessage(e.getPlayer(), "&cSpecials have been disabled.");
-////                cw.useSpecial(cw, cpm.getCPByName(e.getPlayer().getName()));
-//        }
-//    }
-//
-//    /**
-//     * On an entities death, if the killer is a player, his special charges will increase and update.
-//     *
-//     * @param e
-//     */
-//    @EventHandler
-//    public void onEntityDeath(EntityDeathEvent e) {
-//        LivingEntity le = e.getEntity();
-//
-//        if (le.getKiller() != null) {
-//            ItemStack is = le.getKiller().getItemInHand();
-//
-//            if (gearManager.isCarbyneWeapon(is)) {
-//                CarbyneWeapon cw = gearManager.getCarbyneWeapon(is);
-//
-//                if (cw == null) {
-//                    return;
-//                }
-//
-//                String[] chargeLine = is.getItemMeta().getLore().get(2).split("\\s+");
-//                int am = Integer.parseInt(chargeLine[1]);
-//
-//                if (am == cw.getSpecialCost()) {
-//                    return;
-//                }
-//
-//                am++;
-//                Namer.setLore(is, "Charge: " + am + " / " + cw.getSpecialCost(), 2);
-//                cw.setSpecialCharges(am);
-//            }
-//        }
-//    }
-
-    /**
-     * This method checks if the player is crafting a minecraft armor peice (excluding chain). The peice will be replaced
-     * by a MinecraftArmor getItem() itemstack. If the ItemStack is null a warning will display.
-     *
-     * @param e the craft item event in question
-     */
-    @EventHandler
-    public void onCraftItem(CraftItemEvent e) {
-        if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
-            if (gearManager.isDefaultArmor(e.getCurrentItem())) {
-                MinecraftArmor ma = gearManager.getDefaultArmor(e.getCurrentItem());
-
-                if (ma == null) {
-                    return;
-                }
-
-                e.setCurrentItem(ma.getItem(false));
-            } else if (gearManager.isDefaultWeapon(e.getCurrentItem())) {
-                MinecraftWeapon mw = gearManager.getDefaultWeapon(e.getCurrentItem());
-
-                if (mw == null) {
-                    return;
-                }
-
-                e.setCurrentItem(mw.getItem(false));
+                MessageManager.sendMessage(event.getPlayer(), "&cYour weapon must be fully charged.");
             }
         }
     }
 
     @EventHandler
-    public void onClick(InventoryClickEvent e) {
-        if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
-            if (gearManager.isDefaultArmor(e.getCurrentItem())) {
-                if (e.getInventory() != null) {
-                    if (gearManager.getGearGuiManager().isCustomInventory(e.getInventory())) {
+    public void onEntityDeath(EntityDeathEvent event) {
+        LivingEntity livingEntity = event.getEntity();
+
+        if (livingEntity.getKiller() != null) {
+            ItemStack itemStack = livingEntity.getKiller().getItemInHand();
+
+            if (gearManager.isCarbyneWeapon(itemStack)) {
+                CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
+
+                if (carbyneWeapon == null) {
+                    return;
+                }
+
+                if (carbyneWeapon.getSpecial() == null) {
+                    return;
+                }
+
+                int specialCharge = carbyneWeapon.getSpecialCharge(itemStack);
+
+                if (specialCharge >= carbyneWeapon.getSpecial().getRequiredCharge()) {
+                    MessageManager.sendMessage(livingEntity.getKiller(), "&7[&aCarbyne&7]: &aYour &b" + carbyneWeapon.getSpecial().getSpecialName() + " &aweapon special is fully charged!");
+                    carbyneWeapon.setSpecialCharge(itemStack, carbyneWeapon.getSpecial().getRequiredCharge());
+                    return;
+                }
+
+                if (livingEntity instanceof Player) {
+                    specialCharge += 5;
+                } else if (livingEntity instanceof Monster) {
+                    specialCharge += 1;
+                }
+
+                carbyneWeapon.setSpecialCharge(itemStack, specialCharge);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onCraftItem(CraftItemEvent event) {
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
+            if (gearManager.isDefaultArmor(event.getCurrentItem())) {
+                MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
+
+                if (minecraftArmor == null) {
+                    return;
+                }
+
+                event.setCurrentItem(minecraftArmor.getItem(false));
+            } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
+                MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
+
+                if (minecraftWeapon == null) {
+                    return;
+                }
+
+                event.setCurrentItem(minecraftWeapon.getItem(false));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
+            if (gearManager.isDefaultArmor(event.getCurrentItem())) {
+                if (event.getInventory() != null) {
+                    if (gearManager.getGearGuiManager().isCustomInventory(event.getInventory())) {
                         return;
                     }
                 }
 
-                MinecraftArmor ma = gearManager.getDefaultArmor(e.getCurrentItem());
+                MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
 
-                if (ma == null) {
+                if (minecraftArmor == null) {
                     return;
                 }
 
-                e.setCurrentItem(gearManager.convertDefaultItem(e.getCurrentItem()));
-            } else if (gearManager.isDefaultWeapon(e.getCurrentItem())) {
-                if (e.getInventory() != null) {
-                    if (gearManager.getGearGuiManager().isCustomInventory(e.getInventory())) {
+                event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
+            } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
+                if (event.getInventory() != null) {
+                    if (gearManager.getGearGuiManager().isCustomInventory(event.getInventory())) {
                         return;
                     }
                 }
 
-                MinecraftWeapon mw = gearManager.getDefaultWeapon(e.getCurrentItem());
+                MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
 
-                if (mw == null) {
+                if (minecraftWeapon == null) {
                     return;
                 }
 
-                e.setCurrentItem(gearManager.convertDefaultItem(e.getCurrentItem()));
+                event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
             }
         }
     }
 
     @EventHandler
-    public void onCraft(CraftItemEvent e) {
-        ItemStack item = e.getCurrentItem();
-        Player player = (Player) e.getWhoClicked();
+    public void onCraft(CraftItemEvent event) {
+        ItemStack itemStack = event.getCurrentItem();
+        Player player = (Player) event.getWhoClicked();
 
-        if (gearManager.isCarbyneArmor(item) || gearManager.isCarbyneWeapon(item)) {
-            e.setCancelled(true);
+        if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
+            event.setCancelled(true);
             MessageManager.sendMessage(player, "&cYou cannot craft with carbyne gear.");
         }
     }
 
     @EventHandler
-    public void onEnchant(EnchantItemEvent e) {
-        ItemStack item = e.getItem();
-        Player player = e.getEnchanter();
+    public void onEnchant(EnchantItemEvent event) {
+        ItemStack itemStack = event.getItem();
+        Player player = event.getEnchanter();
 
-        if (gearManager.isCarbyneArmor(item) || gearManager.isCarbyneWeapon(item)) {
-            e.setCancelled(true);
+        if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
+            event.setCancelled(true);
             MessageManager.sendMessage(player, "&cYou cannot enchant carbyne gear.");
             return;
         }
 
-        for (Enchantment enchantment : e.getEnchantsToAdd().keySet()) {
+        for (Enchantment enchantment : event.getEnchantsToAdd().keySet()) {
             if (enchantment == Enchantment.PROTECTION_ENVIRONMENTAL) {
-                if (e.getEnchantsToAdd().get(enchantment) > 2) {
-                    e.getEnchantsToAdd().put(enchantment, 2);
+                if (event.getEnchantsToAdd().get(enchantment) > 2) {
+                    event.getEnchantsToAdd().put(enchantment, 2);
                 }
             }
         }
     }
 
     @EventHandler
-    public void onAnvilUse(InventoryClickEvent e) {
-        Inventory inv = e.getInventory();
+    public void onAnvilUse(InventoryClickEvent event) {
+        Inventory inv = event.getInventory();
 
         if (inv instanceof AnvilInventory) {
             if (gearManager.isCarbyneArmor(inv.getItem(0)) || gearManager.isCarbyneWeapon(inv.getItem(0))) {
-                e.setCancelled(true);
-                MessageManager.sendMessage(e.getWhoClicked(), "&cYou cannot enchant carbyne gear.");
+                event.setCancelled(true);
+                MessageManager.sendMessage(event.getWhoClicked(), "&cYou cannot enchant carbyne gear.");
             }
         }
     }
 
     @EventHandler
-    public void onInventoryOpen(InventoryOpenEvent e) {
-        Player player = (Player) e.getPlayer();
-        Inventory inventory = e.getInventory();
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        Player player = (Player) event.getPlayer();
+        Inventory inventory = event.getInventory();
 
         PlayerUtility.checkForIllegalItems(player, inventory);
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
-        Player player = (Player) e.getWhoClicked();
-        Inventory inventory = e.getInventory();
+    public void onInventoryClick(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        Inventory inventory = event.getInventory();
 
         PlayerUtility.checkForIllegalItems(player, inventory);
     }
 
     @EventHandler
-    public void itemDrop(ItemSpawnEvent e) {
-        gearManager.convertToMoneyItem(e.getEntity().getItemStack());
+    public void itemDrop(ItemSpawnEvent event) {
+        gearManager.convertToMoneyItem(event.getEntity().getItemStack());
     }
 
     @EventHandler
-    public void onPick(final PlayerPickupItemEvent e) {
+    public void onPick(final PlayerPickupItemEvent event) {
         new BukkitRunnable() {
             public void run() {
-                PlayerUtility.checkForIllegalItems(e.getPlayer(), e.getPlayer().getInventory());
+                PlayerUtility.checkForIllegalItems(event.getPlayer(), event.getPlayer().getInventory());
             }
         }.runTaskLater(Carbyne.getInstance(), 5L);
     }
 
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent e) {
-        double[] a = {0, 0, 0, 0};
-        ItemStack[] ac = e.getPlayer().getInventory().getArmorContents();
-
-        for (int i = 0; i < 4; i++) {
-            if (ac[i].getType().equals(Material.AIR)) {
-                continue;
-            }
-
-            if (!ac[i].hasItemMeta() && ac[i].getItemMeta() == null) {
-                continue;
-            }
-
-            if (!ac[i].getItemMeta().hasLore()) {
-                continue;
-            }
-
-            if (ac[i].getItemMeta().getLore() == null) {
-                continue;
-            }
-
-            if (ac[i].getItemMeta().getLore().size() < 1) {
-                continue;
-            }
-
-            if (ac[i].getItemMeta().getLore().get(1) == null) {
-                continue;
-            }
-
-            if (ac[i].getItemMeta().getLore().get(1).split("\\s+")[1] == null) {
-                continue;
-            }
-
-            if (gearManager.isDefaultArmor(ac[i]) || gearManager.isCarbyneArmor(ac[i])) {
-                a[i] = Double.parseDouble(ChatColor.stripColor(ac[i].getItemMeta().getLore().get(1).split("\\s+")[1]));
-            }
-        }
-
-//        if (ac[0] != null && ac[1] != null && ac[2] != null && ac[3] != null) {
-//            if (ac[0].hasItemMeta() && ac[1].hasItemMeta() && ac[2].hasItemMeta() && ac[3].hasItemMeta()) {
-//                if (ac[0].getItemMeta().hasDisplayName() && ac[1].getItemMeta().hasDisplayName() && ac[2].getItemMeta().hasDisplayName() && ac[3].getItemMeta().hasDisplayName()) {
-//                    if (ac[0].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName()) && ac[1].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName()) && ac[2].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName())) {
-//                        EffectsTask.addPlayer((Player) e.getPlayer());
-//                    } else {
-//                        EffectsTask.removePlayer((Player) e.getPlayer());
-//                    }
-//                }
+//    @EventHandler
+//    public void onInventoryClose(InventoryCloseEvent event) {
+//        double[] a = {0, 0, 0, 0};
+//        ItemStack[] ac = e.getPlayer().getInventory().getArmorContents();
+//
+//        for (int i = 0; i < 4; i++) {
+//            if (ac[i].getType().equals(Material.AIR)) {
+//                continue;
 //            }
-    }
+//
+//            if (!ac[i].hasItemMeta() && ac[i].getItemMeta() == null) {
+//                continue;
+//            }
+//
+//            if (!ac[i].getItemMeta().hasLore()) {
+//                continue;
+//            }
+//
+//            if (ac[i].getItemMeta().getLore() == null) {
+//                continue;
+//            }
+//
+//            if (ac[i].getItemMeta().getLore().size() < 1) {
+//                continue;
+//            }
+//
+//            if (ac[i].getItemMeta().getLore().get(1) == null) {
+//                continue;
+//            }
+//
+//            if (ac[i].getItemMeta().getLore().get(1).split("\\s+")[1] == null) {
+//                continue;
+//            }
+//
+//            if (gearManager.isDefaultArmor(ac[i]) || gearManager.isCarbyneArmor(ac[i])) {
+//                a[i] = Double.parseDouble(ChatColor.stripColor(ac[i].getItemMeta().getLore().get(1).split("\\s+")[1]));
+//            }
+//        }
+//
+////        if (ac[0] != null && ac[1] != null && ac[2] != null && ac[3] != null) {
+////            if (ac[0].hasItemMeta() && ac[1].hasItemMeta() && ac[2].hasItemMeta() && ac[3].hasItemMeta()) {
+////                if (ac[0].getItemMeta().hasDisplayName() && ac[1].getItemMeta().hasDisplayName() && ac[2].getItemMeta().hasDisplayName() && ac[3].getItemMeta().hasDisplayName()) {
+////                    if (ac[0].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName()) && ac[1].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName()) && ac[2].getItemMeta().getDisplayName().equalsIgnoreCase(ac[3].getItemMeta().getDisplayName())) {
+////                        EffectsTask.addPlayer((Player) e.getPlayer());
+////                    } else {
+////                        EffectsTask.removePlayer((Player) e.getPlayer());
+////                    }
+////                }
+////            }
+//    }
 
     public double getProtectionReduction(Player player) {
-        double reduction = 0.0;
+        double damageReduction = 0.0;
 
         for (ItemStack is : player.getInventory().getArmorContents()) {
             if (is.getType().equals(Material.AIR))
@@ -524,29 +490,29 @@ public class GearListeners implements Listener {
             switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
                 case 1:
                     if (is.getType().toString().contains("HELMET")) {
-                        reduction += 0.015;
+                        damageReduction += 0.015;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        reduction += 0.04;
+                        damageReduction += 0.04;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        reduction += 0.03;
+                        damageReduction += 0.03;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        reduction += 0.015;
+                        damageReduction += 0.015;
                     }
                     break;
                 case 2:
                     if (is.getType().toString().contains("HELMET")) {
-                        reduction += 0.03;
+                        damageReduction += 0.03;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        reduction += 0.08;
+                        damageReduction += 0.08;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        reduction += 0.06;
+                        damageReduction += 0.06;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        reduction += 0.03;
+                        damageReduction += 0.03;
                     }
                     break;
             }
         }
 
-        return reduction;
+        return damageReduction;
     }
 }

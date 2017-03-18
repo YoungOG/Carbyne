@@ -4,8 +4,10 @@ import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -31,14 +33,14 @@ public class CarbyneArmor extends CarbyneGear {
     public boolean load(ConfigurationSection cs, String type) {
         if ((displayName = cs.getString(type + ".DisplayName")) == null) return false;
         if ((gearCode = cs.getString(type + ".GearCode")) == null) return false;
-        if ((durability = cs.getInt(type + ".Durability")) == -1) return false;
+        if ((maxDurability = cs.getInt(type + ".Durability")) == -1) return false;
         if ((cost = cs.getInt(type + ".Cost")) == -1) return false;
         if ((armorRating = cs.getDouble(type + ".ArmorRating")) == -1) return false;
 
         this.type = type;
         displayName = cs.getString(type + ".DisplayName");
         gearCode = cs.getString(type + ".GearCode");
-        durability = cs.getInt(type + ".Durability");
+        maxDurability = cs.getInt(type + ".Durability");
         lore = cs.getStringList(type + ".Lore");
         enchantments = cs.getStringList(type + ".Enchantments");
         cost = cs.getInt(type + ".Cost");
@@ -88,12 +90,10 @@ public class CarbyneArmor extends CarbyneGear {
 
         loreDupe.addAll(lore);
 
+        loreDupe.add(0, "");
+        loreDupe.add(0, "&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
         loreDupe.add(0, "&aDamage Reduction&7: &b" + (int) (armorRating * 100) + "%");
         loreDupe.add(0, HiddenStringUtils.encodeString(gearCode));
-
-        if (!storeItem) {
-            loreDupe.add(1, "&aDurability&7: &c" + durability);
-        }
 
         HashMap<Enchantment, Integer> enchantmentHashMap = new HashMap<>();
         for (String s : enchantments) {
@@ -157,6 +157,36 @@ public class CarbyneArmor extends CarbyneGear {
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &c" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
             }
+        }
+    }
+
+    @Override
+    public void damageItem(Player wielder, ItemStack itemStack) {
+        int durability = getDurability(itemStack);
+
+        if (durability == -1) {
+            return;
+        }
+
+        if (durability >= 1) {
+            durability--;
+            Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
+        } else {
+            wielder.getInventory().remove(itemStack);
+            wielder.playSound(wielder.getLocation(), Sound.ITEM_BREAK, 1, 1);
+        }
+    }
+
+    @Override
+    public int getDurability(ItemStack itemStack) {
+        if (itemStack == null) {
+            return -1;
+        }
+
+        try {
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1].split("/")[0]);
+        } catch (Exception ez) {
+            return -1;
         }
     }
 }

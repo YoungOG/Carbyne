@@ -71,7 +71,7 @@ public class GearGuiManager {
 
     public void setupWeaponsGui() {
         for (CarbyneWeapon carbyneWeapon : gearManager.getCarbyneWeapon()) {
-            weaponsGui.addItem(new ItemBuilder(carbyneWeapon.getItem(false)).addLore(" ").addLore("&eCost: " + carbyneWeapon.getCost()).build());
+            weaponsGui.addItem(new ItemBuilder(carbyneWeapon.getItem(true)).addLore(" ").addLore("&eCost: " + carbyneWeapon.getCost()).build());
         }
 
         weaponsGui.setItem(26, new ItemBuilder(Material.BARRIER).name("&c&lGo Back").build());
@@ -120,6 +120,7 @@ public class GearGuiManager {
 
                     inventory.setItem(slot, new ItemBuilder(set.getItem(true)).addLore(" ").addLore("&eCost: " + set.getCost()).build());
                 }
+
                 armorGuiList.put(carbyneArmor.getDisplayName(), inventory);
             }
         }
