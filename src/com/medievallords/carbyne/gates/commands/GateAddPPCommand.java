@@ -34,7 +34,7 @@ public class GateAddPPCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
+        if (!player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Stone Pressure Plate.");
             return;
         }

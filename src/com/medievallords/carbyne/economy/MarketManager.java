@@ -49,7 +49,7 @@ public class MarketManager {
     @SuppressWarnings("unchecked")
     public void loadSales() {
         if (salesCollection.count() > 0) {
-            main.getLogger().log(Level.INFO, "&7Preparing to load &c" + salesCollection.count() + " &7sales.");
+            main.getLogger().log(Level.INFO, "Preparing to load " + salesCollection.count() + " sales.");
 
             long startTime = System.currentTimeMillis();
             int salesCount = 0;
@@ -305,7 +305,7 @@ public class MarketManager {
     }
 
     public ArrayList<Sale> getSpecificSales(ItemStack itemStack) {
-        Collections.sort(getSales(), (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice()));
+        getSales().sort(Comparator.comparing(Sale::getPrice));
 
         ArrayList<Sale> results = new ArrayList<>();
 
@@ -316,13 +316,13 @@ public class MarketManager {
             }
         }
 
-        Collections.sort(results, (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice()));
+        results.sort(Comparator.comparing(Sale::getPrice));
 
         return results;
     }
 
     public ArrayList<Sale> getSpecificSales(ItemStack itemStack, double price) {
-        Collections.sort(getSales(), (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice()));
+        getSales().sort(Comparator.comparing(Sale::getPrice));
 
         ArrayList<Sale> results = new ArrayList<>();
 
@@ -336,7 +336,7 @@ public class MarketManager {
             }
         }
 
-        Collections.sort(results, (o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice()));
+        results.sort(Comparator.comparing(Sale::getPrice));
 
         return results;
     }

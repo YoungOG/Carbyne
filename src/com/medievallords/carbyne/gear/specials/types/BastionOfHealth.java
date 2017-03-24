@@ -4,7 +4,10 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -16,7 +19,7 @@ public class BastionOfHealth implements Special{
 
     @Override
     public String getSpecialName() {
-        return "BastionOfHealth";
+        return "Bastion_Of_Health";
     }
 
     @Override
@@ -54,10 +57,33 @@ public class BastionOfHealth implements Special{
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 1);
+        new BukkitRunnable() {
 
+            double t = 0;
+            double times = 0;
+
+            public void run() {
+                Location loc = caster.getLocation();
+                healPlayer(caster);
+
+                times += 0.5;
+                if (times > 5) {
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(Carbyne.getInstance(), 0, 10);
+
+        broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
     public void healPlayer(Player player) {
-
+        for (Entity entity : player.getWorld().getNearbyEntities(player.getLocation(), 4, 4, 4)) {
+            if (entity instanceof Player) {
+                Player to = (Player) entity;
+                if (isOnSameTeam(player, to)) {
+                    to.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 1));
+                }
+            }
+        }
     }
 }

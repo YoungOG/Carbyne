@@ -29,6 +29,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -36,6 +37,7 @@ import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 public class GearListeners implements Listener {
 
@@ -119,6 +121,17 @@ public class GearListeners implements Listener {
                 event.setDamage(0);
                 player.damage(damage);
             }
+        }
+    }
+
+    @EventHandler
+    public void onRodThrow(PlayerFishEvent event) {
+        if (event.getCaught() != null && event.getCaught() instanceof Player) {
+            Player caught = (Player) event.getCaught();
+            Vector direction = caught.getLocation().toVector().subtract(event.getPlayer().getLocation().toVector()).normalize().multiply(1.3);
+            direction.setX( direction.getX()*-1 );
+            direction.setZ( direction.getZ()*-1 );
+            caught.setVelocity(direction);
         }
     }
 

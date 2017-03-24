@@ -28,6 +28,7 @@ public class CarbyneArmor extends CarbyneGear {
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
     private HashMap<PotionEffect, Double> defensivePotionEffects = new HashMap<>();
     private double armorRating = -1;
+    private boolean rainbow;
 
     @Override
     public boolean load(ConfigurationSection cs, String type) {
@@ -80,6 +81,9 @@ public class CarbyneArmor extends CarbyneGear {
                 }
             }
         }
+        if (cs.get(type + ".Rainbow") != null) {
+            rainbow = cs.getBoolean(type + ".Rainbow");
+        }
 
         return true;
     }
@@ -118,6 +122,8 @@ public class CarbyneArmor extends CarbyneGear {
                 enchantmentHashMap.put(Enchantment.THORNS, Integer.valueOf(split[1]));
             } else if (split[0].equalsIgnoreCase("unbreaking")) {
                 enchantmentHashMap.put(Enchantment.DURABILITY, Integer.valueOf(split[1]));
+            } else {
+                enchantmentHashMap.put(Enchantment.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]));
             }
         }
 

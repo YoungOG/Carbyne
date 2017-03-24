@@ -45,6 +45,9 @@ public class GearManager {
             public void run() {
                 for (Player all : PlayerUtility.getOnlinePlayers()) {
                     PotionEffects.runEffect(all);
+                    if (all.getInventory().getArmorContents() != null) {
+
+                    }
                 }
             }
         }.runTaskTimerAsynchronously(carbyne, 0L, 5L);
@@ -63,6 +66,8 @@ public class GearManager {
         specials.add(new LightningStorm());
         specials.add(new BastionOfHealth());
         specials.add(new HinderingShot());
+        specials.add(new Frostbite());
+        specials.add(new WallSpecial());
 
         carbyneGear.clear();
         defaultArmors.clear();
@@ -535,6 +540,7 @@ public class GearManager {
 
         return null;
     }
+
 
     // STORE RELATED STUFF BELOW
 

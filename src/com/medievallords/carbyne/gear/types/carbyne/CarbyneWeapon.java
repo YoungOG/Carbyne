@@ -39,6 +39,7 @@ public class CarbyneWeapon extends CarbyneGear {
     public boolean load(ConfigurationSection cs, String index) {
         if ((displayName = cs.getString(index + ".DisplayName")) == null) return false;
         if ((this.type = cs.getString(index + ".Type")) == null) return false;
+        if ((gearCode = cs.getString(index + ".GearCode")) == null) return false;
         if (!type.equalsIgnoreCase("Bow"))
             if ((this.material = cs.getString(index + ".Material")) == null) return false;
         if ((maxDurability = cs.getInt(index + ".Durability")) == -1) return false;
@@ -56,6 +57,7 @@ public class CarbyneWeapon extends CarbyneGear {
         lore = cs.getStringList(index + ".Lore");
         enchantments = cs.getStringList(index + ".Enchantments");
         hidden = cs.getBoolean(index + ".Hidden");
+        gearCode = cs.getString(index + ".GearCode");
         cost = cs.getInt(index + ".Cost");
 
         if (cs.getStringList(index + ".OffensivePotionEffects") != null) {
@@ -98,7 +100,7 @@ public class CarbyneWeapon extends CarbyneGear {
         loreDupe.addAll(lore);
 
         if (special != null) {
-            loreDupe.add(0, "&aSpecial&7: &c" + special.getSpecialName());
+            loreDupe.add(0, "&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
         }
 
         loreDupe.add(0, "&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());

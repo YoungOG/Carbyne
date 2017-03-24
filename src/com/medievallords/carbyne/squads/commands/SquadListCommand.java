@@ -1,15 +1,21 @@
 package com.medievallords.carbyne.squads.commands;
 
 import com.medievallords.carbyne.squads.Squad;
+import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Williams on 2017-03-12
@@ -22,11 +28,6 @@ public class SquadListCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();
 
-        if (args.length != 0) {
-            MessageManager.sendMessage(sender, "&cUsage: /squad");
-            return;
-        }
-
         if (getSquadManager().getSquads().size() <= 0) {
             MessageManager.sendMessage(sender, "&cThere are no available squads to display.");
             return;
@@ -35,96 +36,53 @@ public class SquadListCommand extends BaseCommand {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            MessageManager.sendMessage(sender, "&aAvailable Squads:");
+            int page = 1;
 
-            JSONMessage message = JSONMessage.create("");
-
-            for (int i = 0; i < getSquadManager().getSquads().size(); i++) {
-                if (i < getSquadManager().getSquads().size() - 1) {
-                    Squad squad = getSquadManager().getSquads().get(i);
-
-                    Player leader = Bukkit.getServer().getPlayer(squad.getLeader());
-                    if (leader == null) {
-                        continue;
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("list")) {
+                    if (NumberUtils.isNumber(args[1])) {
+                        page = (int) Double.parseDouble(args[1]);
                     }
-
-                    message.then(leader.getName()).color(ChatColor.AQUA)
-                            .tooltip(getMessageForSquad(squad))
-                            .then(", ").color(ChatColor.GRAY);
-                } else {
-                    Squad squad = getSquadManager().getSquads().get(i);
-
-                    Player leader = Bukkit.getServer().getPlayer(squad.getLeader());
-                    if (leader == null) {
-                        continue;
-                    }
-
-                    message.then(leader.getName()).color(ChatColor.AQUA)
-                            .tooltip(getMessageForSquad(squad));
                 }
             }
 
-            message.send(player);
+            int listSize = Math.round(getSquadManager().getSquads().size() / 10);
+            if (listSize == 0) {
+                listSize = 1;
+            }
+
+            if (page > listSize) {
+                page = listSize;
+            }
+
+            MessageManager.sendMessage(player, "&aSquad List &7[Page " + page + "/" + listSize + "]");
+
+            for (int i = page * 10 - 10; i < page * 10; i++) {
+                if (getSquadManager().getSquads().size() > i) {
+                    Squad squad = getSquadManager().getSquads().get(i);
+
+                    JSONMessage message = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&7" + (i + 1) + ". &a" + Bukkit.getPlayer(squad.getLeader()).getName() + "'s Squad &7[&b" + squad.getAllPlayers().size() + "&7/5] [" + (squad.getType() == SquadType.PUBLIC ? "&bPublic" : "&cPrivate") + "&7]")).tooltip(getMessageForSquad(squad)).runCommand("/squad info " + squad.getLeader());
+                    message.send(player);
+                }
+            }
+
+            MessageManager.sendMessage(player, "&7You are currently on Page " + page + "/" + listSize + ".");
+            MessageManager.sendMessage(player, "&7To view other pages use &a/squad list <page>");
         }
     }
 
     public JSONMessage getMessageForSquad(Squad squad) {
         JSONMessage message2 = JSONMessage.create("");
 
-        message2.then(ChatColor.translateAlternateColorCodes('&', "&aType: &b" + squad.getType()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aMembers: &b" + (squad.getMembers().size()) + "\n"));
-        /*message2.then(ChatColor.translateAlternateColorCodes('&', " &aActive Length: &b" + gate.getActiveLength()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aCurrent Length: &b" + gate.getCurrentLength()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aIs Open: &b" + gate.isOpen()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Open: &b" + gate.isKeepOpen()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Closed: &b" + gate.isKeepClosed()) + "\n");
-        message2.then("\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aPressure Plates(&b" + gate.getPressurePlateMap().keySet().size() + "&a):") + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', "&aType&7: &b" + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1)) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', "&aMembers &7(&b" + squad.getAllPlayers().size() + "&7):\n"));
 
-        int id = 0;
-
-        for (Location location : gate.getPressurePlateMap().keySet()) {
-            id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+        List<String> memberNames = new ArrayList<>();
+        for (UUID uuid : squad.getAllPlayers()) {
+            memberNames.add(Bukkit.getPlayer(uuid).getName());
         }
 
-        message2.then("\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aRedstone Blocks(&b" + gate.getRedstoneBlockLocations().size() + "&a):") + "\n");
-
-        id = 0;
-        for (Location location : gate.getRedstoneBlockLocations()) {
-            id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
-        }
-
-        message2.then("\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aButton(&b" + gate.getButtonLocations().size() + "&a):") + "\n");
-
-        id = 0;
-        for (Location location : gate.getButtonLocations()) {
-            id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
-        }
-
-        if (getCarbyne().isMythicMobsEnabled()) {
-            message2.then("\n");
-
-            int spawnerCount = 0;
-
-            for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
-                if (spawner != null) {
-                    spawnerCount++;
-                }
-            }
-
-            message2.then(ChatColor.translateAlternateColorCodes('&', " &aMythic Spawners(&b" + gate.getMythicSpawners().keySet().size() + "&a:&b" + spawnerCount + "&a):") + "\n");
-
-            id = 0;
-            for (String spawnerName : gate.getMythicSpawners().keySet()) {
-                id++;
-                message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aName: &b" + spawnerName + "&a, Null: &b" + (gate.getMythicSpawners().get(spawnerName) == null) + (gate.getMythicSpawners().get(spawnerName) != null ? "&a, Mob Count: &b" + gate.getMythicSpawners().get(spawnerName).getNumberOfMobs() : "")) + "\n");
-            }
-        }*/
+        message2.then(ChatColor.translateAlternateColorCodes('&', "&b" + memberNames.toString().replace("[", "").replace("]", "").replace(",", "&7,&b")));
 
         return message2;
     }

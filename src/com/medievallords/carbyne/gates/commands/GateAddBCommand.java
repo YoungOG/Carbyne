@@ -34,7 +34,7 @@ public class GateAddBCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("BUTTON")) {
+        if (!player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("BUTTON")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Stone Button.");
             return;
         }

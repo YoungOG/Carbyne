@@ -27,7 +27,7 @@ public class HinderingShot implements Special {
 
     @Override
     public String getSpecialName() {
-        return "HinderingShot";
+        return "Hindering_Shot";
     }
 
 
@@ -67,6 +67,8 @@ public class HinderingShot implements Special {
                 loc.subtract(x, y, z);
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 1);
+
+        broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
     public void damageEntity(LivingEntity entity, Player caster, double damage) {

@@ -23,7 +23,7 @@ public class LightningStorm implements Special{
 
     @Override
     public String getSpecialName() {
-        return "LightningStorm";
+        return "Lightning_Storm";
     }
 
     @Override
@@ -60,6 +60,8 @@ public class LightningStorm implements Special{
                 entity.getWorld().playEffect(entity.getEyeLocation(), Effect.VOID_FOG, 3);
             }
         }
+
+        broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {

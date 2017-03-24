@@ -27,7 +27,7 @@ public class FireStorm implements Special{
 
     @Override
     public String getSpecialName() {
-        return "FireStorm";
+        return "Fire_Storm";
     }
 
     @Override
@@ -91,6 +91,8 @@ public class FireStorm implements Special{
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 1);
+
+        broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {

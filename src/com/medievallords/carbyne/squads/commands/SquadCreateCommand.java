@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 /**
  * Created by Williams on 2017-03-12.
+ *
  */
 public class SquadCreateCommand extends BaseCommand {
 

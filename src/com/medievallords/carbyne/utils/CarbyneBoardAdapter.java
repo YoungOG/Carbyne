@@ -6,9 +6,10 @@ import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
-import net.minelink.ctplus.CombatTagPlus;
+import com.medievallords.carbyne.squads.SquadType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -39,7 +40,9 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
-        lines.add("&aBalance: &b" + main.getEconomy().getBalance(Bukkit.getOfflinePlayer(player.getUniqueId())));
+        lines.add("&7&m---------------------");
+
+        lines.add("&aBalance: &b" + formatBalance(main.getEconomy().getBalance(Bukkit.getOfflinePlayer(player.getUniqueId()))));
 
         if ((player.getItemInHand() != null && gearManager.getDurability(player.getItemInHand()) > -1.0) || (player.getInventory().getHelmet() != null && gearManager.getDurability(player.getInventory().getHelmet()) > -1.0) || (player.getInventory().getChestplate() != null && gearManager.getDurability(player.getInventory().getChestplate()) > -1.0) || (player.getInventory().getLeggings() != null && gearManager.getDurability(player.getInventory().getLeggings()) > -1.0) || (player.getInventory().getBoots() != null && gearManager.getDurability(player.getInventory().getBoots()) > -1.0)) {
             lines.add(" ");
@@ -71,7 +74,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
             if (squad.getMembers().size() > 0) {
                 lines.add(" ");
-                lines.add("&dSquad:");
+                lines.add("&dSquad [&b" + (squad.getType() == SquadType.PUBLIC ? "&b" : "&c") + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1) + "&d]:");
 
                 for (UUID member : squad.getAllPlayers()) {
                     if (!member.equals(player.getUniqueId())) {
@@ -89,13 +92,9 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             BoardCooldown cooldown = (BoardCooldown) itr.next();
 
             if (cooldown.getId().equals("combattag")) {
-                if (Carbyne.getInstance().isCombatTagPlusEnabled()) {
-                    CombatTagPlus combatTagPlus = main.getCombatTagPlus();
-
-                    if (combatTagPlus.getTagManager().isTagged(player.getUniqueId())) {
-                        lines.add("  ");
-                        lines.add("&cCombat Timer: &b" + cooldown.getFormattedString(BoardFormat.SECONDS));
-                    }
+                if (CombatTagListeners.isInCombat(player.getUniqueId())) {
+                    lines.add("  ");
+                    lines.add("&cCombat Timer: &b" + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
             }
 
@@ -115,6 +114,8 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             }
         }
 
+        lines.add("&7&m---------------------");
+
         return lines;
     }
 
@@ -131,5 +132,15 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         } else {
             return String.format(" &c%s \u2764", format.format(hearts));
         }
+    }
+
+    String formatBalance(double amount) {
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String formatted = formatter.format(amount);
+        if (formatted.endsWith(".")) {
+            formatted = formatted.substring(0, formatted.length() - 1);
+        }
+
+        return formatted;
     }
 }

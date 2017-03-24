@@ -6,9 +6,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.medievallords.carbyne.controlpoints.ControlManager;
-import com.medievallords.carbyne.controlpoints.commands.*;
-import com.medievallords.carbyne.controlpoints.listeners.TimerListener;
+import com.medievallords.carbyne.commands.BlackholeCommand;
 import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.economy.commands.*;
 import com.medievallords.carbyne.gates.GateManager;
@@ -17,10 +15,14 @@ import com.medievallords.carbyne.gates.listeners.GateListeners;
 import com.medievallords.carbyne.gates.listeners.GateMobListeners;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.commands.GearCommands;
+import com.medievallords.carbyne.gear.commands.GearGiveCommand;
 import com.medievallords.carbyne.gear.listeners.GearListeners;
 import com.medievallords.carbyne.heartbeat.HeartbeatRunnable;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
 import com.medievallords.carbyne.listeners.*;
+import com.medievallords.carbyne.profiles.ProfileListeners;
+import com.medievallords.carbyne.regeneration.RegenerationHandler;
+import com.medievallords.carbyne.regeneration.RegenerationListeners;
 import com.medievallords.carbyne.spawners.commands.SpawnerCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCreateCommand;
 import com.medievallords.carbyne.spawners.listeners.SpawnerListeners;
@@ -35,7 +37,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.palmergames.bukkit.towny.Towny;
 import de.slikey.effectlib.EffectManager;
-import io.lumine.xikage.mythicmobs.MythicMobs;
 import lombok.Getter;
 import lombok.Setter;
 import net.milkbowl.vault.economy.Economy;
@@ -45,7 +46,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,6 +63,9 @@ public class Carbyne extends JavaPlugin {
 
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
+
+    private File dummyFile;
+    private FileConfiguration dummyFileConfiguration;
 
     private File controlPointFile;
     private FileConfiguration controlPointConfiguration;
@@ -90,14 +93,12 @@ public class Carbyne extends JavaPlugin {
 
     private Aether aether;
 
-    private TimerListener timerListener;
-
+    private RegenerationHandler regenerationHandler;
     private MarketManager marketManager;
     private GearManager gearManager;
     private EffectManager effectManager;
     private GateManager gateManager;
     private LeaderboardManager leaderboardManager;
-    private ControlManager controlManager;
     private SquadManager squadManager;
     private ItemDb itemDb;
 
@@ -137,32 +138,29 @@ public class Carbyne extends JavaPlugin {
 
         itemDb = new ItemDb();
 
-        aether = new Aether(this, new CarbyneBoardAdapter(this));
+        for (Player all : PlayerUtility.getOnlinePlayers()) {
+            all.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        }
 
-        timerListener = new TimerListener();
-
+        regenerationHandler = new RegenerationHandler();
         marketManager = new MarketManager();
         gearManager = new GearManager();
         effectManager = new EffectManager(this);
         gateManager = new GateManager();
         leaderboardManager = new LeaderboardManager();
         squadManager = new SquadManager();
-        controlManager = new ControlManager();
+
+        aether = new Aether(this, new CarbyneBoardAdapter(this));
 
         registerCommands();
         registerEvents(pm);
         registerPackets();
-        controlManager.loadControlPoints();
     }
 
     public void onDisable() {
-        MythicMobs.inst().getMobManager().removeAllAllMobs();
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "mm mobs killall");
-
         marketManager.saveSales(false);
         gateManager.saveGates();
         effectManager.dispose();
-        HandlerList.unregisterAll(this);
         mongoClient.close();
     }
 
@@ -176,12 +174,13 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new GearListeners(), this);
         pm.registerEvents(new CooldownListeners(), this);
         pm.registerEvents(new OptimizationListeners(), this);
-        pm.registerEvents(new TimingsFixListener(this), this);
+//        pm.registerEvents(new TimingsFixListener(this), this);
         pm.registerEvents(new ChatListener(), this);
         pm.registerEvents(new GateListeners(), this);
         pm.registerEvents(new LootListener(), this);
-        pm.registerEvents(timerListener, this);
         pm.registerEvents(new SpawnerListeners(), this);
+        pm.registerEvents(new ProfileListeners(), this);
+        pm.registerEvents(new RegenerationListeners(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -191,8 +190,12 @@ public class Carbyne extends JavaPlugin {
     }
 
     private void registerCommands() {
+        //General Commands
+        commandFramework.registerCommands(new BlackholeCommand());
+
         //Gate Commands
         commandFramework.registerCommands(new GearCommands());
+        commandFramework.registerCommands(new GearGiveCommand());
         commandFramework.registerCommands(new GateCommand());
         commandFramework.registerCommands(new GateAddBCommand());
         commandFramework.registerCommands(new GateAddPPCommand());
@@ -228,15 +231,16 @@ public class Carbyne extends JavaPlugin {
         commandFramework.registerCommands(new SquadSetCommand());
         commandFramework.registerCommands(new SquadKickCommand());
         commandFramework.registerCommands(new SquadChatCommand());
+        commandFramework.registerCommands(new SquadListCommand());
 
         //ControlPoint Commands
-        commandFramework.registerCommands(new ControlListCommand());
-        commandFramework.registerCommands(new ControlCommand());
-        commandFramework.registerCommands(new ControlReloadCommand());
-        commandFramework.registerCommands(new ControlCreateCommand());
-        commandFramework.registerCommands(new ControlRemoveCommand());
-        commandFramework.registerCommands(new ControlTimerCommand());
-        commandFramework.registerCommands(new ControlTeleportCommand());
+//        commandFramework.registerCommands(new ControlListCommand());
+//        commandFramework.registerCommands(new ControlCommand());
+//        commandFramework.registerCommands(new ControlReloadCommand());
+//        commandFramework.registerCommands(new ControlCreateCommand());
+//        commandFramework.registerCommands(new ControlRemoveCommand());
+//        commandFramework.registerCommands(new ControlTimerCommand());
+//        commandFramework.registerCommands(new ControlTeleportCommand());
 
         //Spawner Commands
         commandFramework.registerCommands(new SpawnerCreateCommand());
@@ -274,6 +278,7 @@ public class Carbyne extends JavaPlugin {
         saveResource("gates.yml", false);
         saveResource("item.csv", false);
         saveResource("controlpoints.yml", false);
+        saveResource("dummies.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -286,6 +291,9 @@ public class Carbyne extends JavaPlugin {
 
         controlPointFile = new File(getDataFolder(), "controlpoints.yml");
         controlPointConfiguration = YamlConfiguration.loadConfiguration(controlPointFile);
+
+        dummyFile = new File(getDataFolder(), "dummies.yml");
+        dummyFileConfiguration = YamlConfiguration.loadConfiguration(dummyFile);
     }
 
     public static Carbyne getInstance() {

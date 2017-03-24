@@ -29,16 +29,17 @@ public class SpawnerCreateCommand extends BaseCommand {
             return;
         }
 
-            if(CreateSpawners.getPos1().get(player) == null || CreateSpawners.getPos2().get(player) == null){
-                player.sendMessage("You need to set regions");
-                return;
-            }
-            try {
-                int amount = Integer.parseInt(args[2]);
-                Material material = Material.getMaterial(args[3].toUpperCase());
-                CreateSpawners.createSpawners(player, args[0], CreateSpawners.getPos1().get(player), CreateSpawners.getPos2().get(player), args[1], amount, material, args[4]);
-            }catch (Exception exception){
-                player.sendMessage("Something went wrong");
-            }
+        if (CreateSpawners.getPos1().get(player) == null || CreateSpawners.getPos2().get(player) == null) {
+            player.sendMessage("You need to set regions");
+            return;
+        }
+
+        try {
+            int amount = Integer.parseInt(args[2]);
+            Material material = Material.getMaterial(args[3].toUpperCase());
+            CreateSpawners.createSpawners(player, args[0], CreateSpawners.getPos1().get(player), CreateSpawners.getPos2().get(player), args[1], amount, material, args[4]);
+        } catch (Exception exception) {
+            player.sendMessage("Something went wrong");
+        }
     }
 }

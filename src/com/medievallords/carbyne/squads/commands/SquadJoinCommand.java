@@ -40,6 +40,11 @@ public class SquadJoinCommand extends BaseCommand {
                 return;
             }
 
+            if (squad.getAllPlayers().size() >= 5) {
+                MessageManager.sendMessage(player, "&cThat squad is currently full.");
+                return;
+            }
+
             squad.getInvitedPlayers().remove(player.getUniqueId());
 
             squad.sendAllMembersMessage("&b" + player.getName() + " &ahas joined the squad.");
@@ -59,6 +64,11 @@ public class SquadJoinCommand extends BaseCommand {
 
             if (squad == null) {
                 MessageManager.sendMessage(player, "&cThat player is not in a squad.");
+                return;
+            }
+
+            if (squad.getAllPlayers().size() >= 5) {
+                MessageManager.sendMessage(player, "&cThat squad is currently full.");
                 return;
             }
 

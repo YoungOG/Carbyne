@@ -1,3 +1,11 @@
+combat-tag:
+  tag-length: 45
+  blocked-cmds:
+    - '/town spawn'
+regeneration:
+  - 'stone,stone,30'
+  - 'granite,granite,30'
+  - 'diorite,diorite,30'
 economy:
   sales-tax: 0.015;
 database:

@@ -28,10 +28,10 @@ public class SquadSetCommand extends BaseCommand{
         if (args.length == 0) {
             if (squad.getType() == SquadType.PRIVATE) {
                 squad.setType(SquadType.PUBLIC);
-                MessageManager.sendMessage(player, "&aThe squad has been set to &b" + SquadType.PUBLIC.toString().toLowerCase().substring(0, 1).toUpperCase() + args[0].toLowerCase().substring(1) + "&a.");
+                MessageManager.sendMessage(player, "&aThe squad has been set to &bPublic&a.");
             } else {
                 squad.setType(SquadType.PRIVATE);
-                MessageManager.sendMessage(player, "&aThe squad has been set to &b" + SquadType.PRIVATE.toString().toLowerCase().substring(0, 1).toUpperCase() + args[0].toLowerCase().substring(1) + "&a.");
+                MessageManager.sendMessage(player, "&aThe squad has been set to &bPrivate&a.");
             }
         }
 
