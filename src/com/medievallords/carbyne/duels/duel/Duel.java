@@ -2,14 +2,9 @@ package com.medievallords.carbyne.duels.duel;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
-import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,36 +16,36 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public class Duel {
+public abstract class Duel {
 
     private static Carbyne main = Carbyne.getInstance();
 
     private static final int COUNTDOWN_DURATION = 5;
 
     private Arena arena;
-    private UUID[] participants;
-    private DuelType duelType;
+    //private UUID[] participants;
+    //private DuelType duelType;
     private DuelStage duelStage;
     private List<Item> drops;
     private long startTimeMillis;
 
-    public Duel(Arena arena, UUID[] participants, DuelType duelType) {
+    public Duel(Arena arena) {
         this.arena = arena;
-        this.participants = participants;
-        this.duelType = duelType;
+        //this.participants = participants;
+        //this.duelType = duelType;
         this.duelStage = DuelStage.COUNTING_DOWN;
         this.drops = new ArrayList<>();
 
-        int locationIndex = 0;
+        //int locationIndex = 0;
 
-        for (UUID participant : participants) {
+        /*for (UUID participant : participants) {
             Player player = Bukkit.getPlayer(participant);
 
             if (player == null) {
                 return;
             }
 
-            player.teleport(arena.getSpawnPointLocation()[locationIndex].clone().add(0.0, 0.5, 0.0));
+            player.teleport(arena.getSpawnPointLocations()[locationIndex].clone().add(0.0, 0.5, 0.0));
 
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
@@ -60,9 +55,9 @@ public class Duel {
             }
 
             locationIndex++;
-        }
+        }*/
 
-        for (int i = 0; i <= COUNTDOWN_DURATION; i++) {
+        /*for (int i = 0; i <= COUNTDOWN_DURATION; i++) {
             int countdown = i;
 
             new BukkitRunnable() {
@@ -82,31 +77,16 @@ public class Duel {
                     }
                 }
             }.runTaskLaterAsynchronously(main, 20 * i);
-        }
+        }*/
     }
 
-    public void end(UUID winnerId) {
-        duelStage = DuelStage.ENDED;
+    public abstract void start();
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Player winner = Bukkit.getPlayer(winnerId);
+    public abstract void countdown();
 
-                if (winner != null) {
-                    winner.teleport(arena.getLobbyLocation());
-                }
+    public abstract void end(UUID winnerId);
 
-                for (Item drop : drops) {
-                    drop.remove();
-                }
-
-                drops.clear();
-            }
-        }.runTaskLater(main, 30 * 20L);
-    }
-
-    public UUID getOpponent(Player player) {
+    /*public UUID getOpponent(Player player) {
         return getOpponent(player.getUniqueId());
     }
 
@@ -118,9 +98,9 @@ public class Duel {
         } else {
             return null;
         }
-    }
+    }*/
 
-    public UUID getFirstParticipant() { return participants[0]; }
+    //public UUID getFirstParticipant() { return participants[0]; }
 
-    public UUID getSecondParticipant() { return participants[1]; }
+    //public UUID getSecondParticipant() { return participants[1]; }
 }

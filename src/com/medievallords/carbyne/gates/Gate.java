@@ -128,7 +128,8 @@ public class Gate implements HeartbeatTask {
     public synchronized void closeGate() {
         open = false;
         keepOpen = false;
-        this.currentLength = 0;
+        currentLength = 0;
+
         try {
             for (Location location : redstoneBlockLocations) {
                 Block block = location.getBlock();

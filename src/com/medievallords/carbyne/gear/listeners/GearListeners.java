@@ -118,6 +118,13 @@ public class GearListeners implements Listener {
 
                 double damage = (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (event.getDamage() - (event.getDamage() * (armorReduction + getProtectionReduction(player)))) : flatDamage);
 
+
+                if (damage >= player.getHealth()) {
+                    player.setHealth(0);
+                    player.damage(damage);
+                    return;
+                }
+
                 event.setDamage(0);
                 player.damage(damage);
             }

@@ -88,7 +88,7 @@ public class MarketManager {
                 }
             }
 
-            main.getLogger().log(Level.INFO, "&7Successfully loaded &c" + playerSales.keySet().size() + " &7ID's and (&c" + salesCount + "&7) sales. Took (&c" + (System.currentTimeMillis() - startTime) + "ms&7).");
+            main.getLogger().log(Level.INFO, "Successfully loaded " + playerSales.keySet().size() + " ID's and (" + salesCount + ") sales. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }
     }
 

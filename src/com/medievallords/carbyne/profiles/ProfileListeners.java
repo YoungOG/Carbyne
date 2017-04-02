@@ -17,13 +17,25 @@ public class ProfileListeners implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        event.setJoinMessage(null);
         Player player = event.getPlayer();
 
+        if (Profile.getProfile(player.getUniqueId()) == null) {
+            Profile profile = new Profile(player.getUniqueId());
+
+            try {
+                profile.load();
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        event.setQuitMessage(null);
         Player player = event.getPlayer();
+
 
     }
 }

@@ -84,7 +84,7 @@ public class GearGuiListeners implements Listener {
                     if (canBuy(p, carbyneWeapon.getCost())) {
                         int total = 0;
 
-                        for (ItemStack item : p.getInventory().all(gearManager.getMoneyItem()).values()) {
+                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values()) {
                             if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
                                 total += item.getAmount();
                             }
@@ -96,10 +96,10 @@ public class GearGuiListeners implements Listener {
                             return;
                         }
 
-                        removeItems(p.getInventory(), gearManager.getMoneyItem(), carbyneWeapon.getCost());
+                        removeItems(p.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), carbyneWeapon.getCost());
 
                         p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
-                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneWeapon.getDisplayName() + " &afor &c" + carbyneWeapon.getCost() + " &aof &b" + gearManager.getMoneyItem() + "&a.");
+                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneWeapon.getDisplayName() + " &afor &c" + carbyneWeapon.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
                     } else {
                         MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
                         p.closeInventory();
@@ -156,7 +156,7 @@ public class GearGuiListeners implements Listener {
                     if (canBuy(p, carbyneArmor.getCost())) {
                         int total = 0;
 
-                        for (ItemStack item : p.getInventory().all(gearManager.getMoneyItem()).values()) {
+                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values()) {
                             if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
                                 total += item.getAmount();
                             }
@@ -168,10 +168,10 @@ public class GearGuiListeners implements Listener {
                             return;
                         }
 
-                        removeItems(p.getInventory(), gearManager.getMoneyItem(), carbyneArmor.getCost());
+                        removeItems(p.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), carbyneArmor.getCost());
 
                         p.getInventory().addItem(carbyneArmor.getItem(false).clone());
-                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + " &afor &c" + carbyneArmor.getCost() + " &aof &b" + gearManager.getMoneyItem() + "&a.");
+                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + " &afor &c" + carbyneArmor.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
                     } else {
                         MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
                         p.closeInventory();
@@ -182,10 +182,10 @@ public class GearGuiListeners implements Listener {
     }
 
     public boolean canBuy(Player player, int cost) {
-        return player.getInventory().containsAtLeast(gearManager.getMoney(), cost);
+        return player.getInventory().containsAtLeast(gearManager.getTokenItem(), cost);
     }
 
-    public void removeItems(Inventory inventory, Material type, int amount) {
+    public void removeItems(Inventory inventory, Material type, int data, int amount) {
         if (amount <= 0) {
             return;
         }
@@ -199,7 +199,7 @@ public class GearGuiListeners implements Listener {
                 continue;
             }
 
-            if (type == is.getType()) {
+            if (type == is.getType() && is.getDurability() == data) {
                 int newAmount = is.getAmount() - amount;
 
                 if (newAmount > 0) {
@@ -208,7 +208,9 @@ public class GearGuiListeners implements Listener {
                 } else {
                     inventory.clear(slot);
                     amount = -newAmount;
-                    if (amount == 0) break;
+
+                    if (amount == 0)
+                        break;
                 }
             }
         }

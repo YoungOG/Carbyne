@@ -1,0 +1,124 @@
+Keys:
+  TestKey1:
+    ItemID: 1
+    ItemData: 0
+    DisplayName: '&5Key Example'
+    Lore:
+      - 'This is a key'
+    Enchantments: []
+    Crate: 'Test1'
+  TestKey2:
+      ItemID: 351
+      ItemData: 1
+      DisplayName: '&5Key Example'
+      Lore:
+        - 'This is a key'
+      Enchantments: []
+      Crate: 'Test2'
+Crates:
+  Test1:
+    Location: {}
+    RewardsAmount: 3
+    Rewards:
+      1:
+        ItemID: 1
+        ItemData: 0
+        Amount: 3
+        DisplayName: '&5Test Name'
+        Lore:
+          - '&5This is a'
+          - '&5Lore'
+        Enchantments:
+          - DAMAGE_ALL,1
+        Commands:
+          - 'tell %player% You''ve opened a crate!'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 50
+      2:
+        ItemID: 386
+        ItemData: 0
+        Amount: 1
+        DisplayName: '&5Free Rank'
+        Lore:
+          - '&5You''ve got a rank!'
+          - '&5Enjoy!'
+        Commands:
+          - 'pex user %player% add rank'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 25
+      3:
+        ItemID: 264
+        ItemData: 0
+        Amount: 3
+        DisplayName: '&5Test Name'
+        Lore:
+          - '&5This is a'
+          - '&5Lore'
+        Enchantments: []
+        Commands:
+          - 'tell %player% You''ve opened a crate!'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 5
+      4:
+        ItemID: 265
+        ItemData: 0
+        Amount: 3
+        DisplayName: '&5Test Name'
+        Lore:
+          - '&5This is a'
+          - '&5Lore'
+        Enchantments: []
+        Commands:
+          - 'tell %player% You''ve opened a crate!'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 25
+      5:
+        ItemID: 266
+        ItemData: 0
+        Amount: 3
+        DisplayName: '&5Test Name'
+        Lore:
+          - '&5This is a'
+          - '&5Lore'
+        Enchantments: []
+        Commands:
+          - 'tell %player% You''ve opened a crate!'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 50
+  Test2:
+    Location: {}
+    RewardsAmount: 1
+    Rewards:
+      1:
+        ItemID: 1
+        ItemData: 0
+        Amount: 3
+        DisplayName: '&5Test Name'
+        Lore:
+          - '&5This is a'
+          - '&5Lore'
+        Enchantments:
+          - DAMAGE_ALL,1
+        Commands:
+          - 'tell %player% You''ve opened a crate!'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 50
+      2:
+        ItemID: 386
+        ItemData: 0
+        Amount: 1
+        DisplayName: '&5Free Rank'
+        Lore:
+          - '&5You''ve got a rank!'
+          - '&5Enjoy!'
+        Commands:
+          - 'pex user %player% add rank'
+          - 'tell %player% Congratulations'
+        DisplayItem: false
+        Chance: 25

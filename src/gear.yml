@@ -27,12 +27,13 @@
 # Armour Rating: Percent of damage blocked by this piece.
 # With armour rating keep in mind diamond blocks 0.80 or 80% damage in a full set.
 Store:
-  MoneyItem:
-      Material: NETHER_STAR
-      Name: '&4Carbyne Token'
+  TokenItem:
+      ItemId: 399
+      ItemData: 0
+      DisplayName: '&4Carbyne Token'
       Lore:
       - '&eThe default money item for the store'
-      MoneyCode: token
+      Code: token
 Carbyne-Armor:
   1:
     Helmet:

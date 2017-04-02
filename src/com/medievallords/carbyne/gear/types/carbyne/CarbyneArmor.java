@@ -63,9 +63,9 @@ public class CarbyneArmor extends CarbyneGear {
                     String[] split = potion.split(",");
 
                     if (split.length == 3) {
-                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, true), Double.parseDouble(split[2]));
+                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
                     } else if (split.length == 4) {
-                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, true), Double.parseDouble(split[3]));
+                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
                     }
                 }
             }
@@ -74,9 +74,9 @@ public class CarbyneArmor extends CarbyneGear {
                     String[] split = potion.split(",");
 
                     if (split.length == 3) {
-                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, true), Double.parseDouble(split[2]));
+                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
                     } else if (split.length == 4) {
-                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, true), Double.parseDouble(split[3]));
+                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
                     }
                 }
             }

@@ -1,14 +1,15 @@
 package com.medievallords.carbyne.gear.commands;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 
@@ -43,8 +44,10 @@ public class GearCommands extends BaseCommand {
                 try {
                     int amount = Integer.parseInt(args[1]);
 
-                    ((Player) sender).getInventory().addItem(new ItemBuilder(Carbyne.getInstance().getGearManager().getMoney()).amount(amount).build());
-                    MessageManager.sendMessage(sender, "&aSuccessfully received &c" + amount + " &aof &b" + Carbyne.getInstance().getGearManager().getMoneyItem() + "&a.");
+                    ItemStack tokenItem = getGearManager().getTokenItem();
+                    tokenItem.setAmount(amount);
+                    ((Player) sender).getInventory().addItem(tokenItem);
+                    MessageManager.sendMessage(sender, "&aSuccessfully received &c" + amount + " &aof &b" + ChatColor.stripColor(Carbyne.getInstance().getGearManager().getTokenItem().getItemMeta().getDisplayName()) + "&a.");
                 } catch (NumberFormatException e) {
                     MessageManager.sendMessage(sender, "&cPlease enter a valid amount.");
                 }

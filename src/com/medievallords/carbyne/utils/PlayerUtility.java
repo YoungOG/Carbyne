@@ -80,8 +80,10 @@ public class PlayerUtility {
     public static ArrayList<Player> getPlayersInRadius(Location radiusCenter, int radius) {
         ArrayList<Player> playerList = new ArrayList<>();
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (onlinePlayer.getLocation().distance(radiusCenter) < radius) {
-                playerList.add(onlinePlayer);
+            if (onlinePlayer.getWorld().equals(radiusCenter.getWorld())) {
+                if (onlinePlayer.getLocation().distance(radiusCenter) < radius) {
+                    playerList.add(onlinePlayer);
+                }
             }
         }
         return playerList;

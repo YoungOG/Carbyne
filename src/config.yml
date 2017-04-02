@@ -1,3 +1,21 @@
+crates:
+  #How fast crates should scroll through the rewards.
+  crate-opening-speed: 10
+  crate-opening-time: 5
+  #Sounds played while scrolling through rewards.
+  opening-sounds:
+    - 'CLICK,1.0,1.0'
+  filler-itemid: 160
+  filler-period: 5
+  effect:
+    type: 'PORTAL'
+    offsetX: 0.0
+    offsetY: 0.0
+    offsetZ: 0.0
+    speed: 1
+    amount: 10
+    range: 300
+    repeat: 20
 combat-tag:
   tag-length: 45
   blocked-cmds:

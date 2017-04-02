@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.gear;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.effects.PotionEffects;
 import com.medievallords.carbyne.gear.listeners.GearGuiListeners;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.gear.specials.types.*;
@@ -11,22 +10,21 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
+import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.Namer;
-import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class GearManager {
@@ -39,19 +37,13 @@ public class GearManager {
     private List<CarbyneGear> defaultWeapons = new ArrayList<>();
     private List<Special> specials = new ArrayList<>();
 
+    private int tokenId;
+    private int tokenData;
+    private String tokenDisplayName;
+    private List<String> tokenLore;
+    private String tokenCode;
+
     public GearManager() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (Player all : PlayerUtility.getOnlinePlayers()) {
-                    PotionEffects.runEffect(all);
-                    if (all.getInventory().getArmorContents() != null) {
-
-                    }
-                }
-            }
-        }.runTaskTimerAsynchronously(carbyne, 0L, 5L);
-
         load(carbyne.getGearFileConfiguration());
         loadStoreOptions(carbyne.getGearFileConfiguration());
 
@@ -156,6 +148,15 @@ public class GearManager {
         carbyneGear.sort(Comparator.comparing(CarbyneGear::getGearCode));
 
         Carbyne.getInstance().getLogger().info(carbyneGear.size() + " carbyne gear loaded");
+    }
+
+    public void loadStoreOptions(FileConfiguration cs) {
+        tokenId = cs.getInt("Store.TokenItem.ItemId");
+        tokenData = cs.getInt("Store.TokenItem.ItemData");
+        tokenDisplayName = cs.getString("Store.TokenItem.DisplayName");
+        tokenCode = cs.getString("Store.TokenItem.Code");
+        tokenLore = cs.getStringList("Store.TokenItem.Lore");
+        tokenLore.add(0, HiddenStringUtils.encodeString(tokenCode));
     }
 
     public CarbyneGear getCarbyneGear(String gearCode) {
@@ -531,6 +532,19 @@ public class GearManager {
         return replacement;
     }
 
+    public CarbyneGear getRandomCarbyneGear(boolean includeHidden) {
+        ArrayList<CarbyneGear> gears = new ArrayList<>();
+        for (CarbyneGear gear : getCarbyneGear()) {
+            if (gear.isHidden() && includeHidden) {
+                gears.add(gear);
+            } else {
+                gears.add(gear);
+            }
+        }
+
+        return gears.get(ThreadLocalRandom.current().nextInt(0, gears.size()));
+    }
+
     public Special getSpecialByName(String name) {
         for (Special special : specials) {
             if (special.getSpecialName().equalsIgnoreCase(name)) {
@@ -541,56 +555,27 @@ public class GearManager {
         return null;
     }
 
-
-    // STORE RELATED STUFF BELOW
-
-    private String name = "";
-    private List<String> lore;
-    private String moneyCode = "";
-    private Material moneyItem;
-
-    public boolean loadStoreOptions(FileConfiguration cs) {
-        if (cs.getString("Store.MoneyItem.Material") == null && Material.getMaterial(cs.getString("Store.MoneyItem.Material")) == null)
-            return false;
-        if (cs.getString("Store.MoneyItem.Name") == null)
-            return false;
-        if (cs.getStringList("Store.MoneyItem.Lore") == null)
-            return false;
-        if (cs.getString("Store.MoneyItem.MoneyCode") == null)
-            return false;
-
-        moneyCode = cs.getString("Store.MoneyItem.MoneyCode");
-        moneyItem = Material.getMaterial(cs.getString("Store.MoneyItem.Material"));
-        name = cs.getString("Store.MoneyItem.Name");
-        lore = cs.getStringList("Store.MoneyItem.Lore");
-        lore.add(0, HiddenStringUtils.encodeString(moneyCode));
-
-        Carbyne.getInstance().getLogger().info("Store loaded");
-        return true;
-    }
-
-    public ItemStack getMoney() {
-        ItemStack is = new ItemStack(moneyItem);
-
-        Namer.setName(is, name);
-        Namer.setLore(is, lore);
-
-        return is;
+    public ItemStack getTokenItem() {
+        return new ItemBuilder(Material.getMaterial(tokenId)).durability(tokenData).name(tokenDisplayName).setLore(tokenLore).build();
     }
 
     public void convertToMoneyItem(ItemStack itemStack) {
-        if (itemStack != null && itemStack.getType() == moneyItem) {
-            Namer.setName(itemStack, name);
-            Namer.setLore(itemStack, lore);
+        if (itemStack != null && (itemStack.getType() == getTokenMaterial() && itemStack.getDurability() == tokenData)) {
+            Namer.setName(itemStack, tokenDisplayName);
+            Namer.setLore(itemStack, tokenLore);
         }
     }
 
-    public Material getMoneyItem() {
-        return moneyItem;
+    public Material getTokenMaterial() {
+        return Material.getMaterial(tokenId);
     }
 
-    public String getMoneyCode() {
-        return moneyCode;
+    public int getTokenData() {
+        return tokenData;
+    }
+
+    public String getTokenCode() {
+        return tokenCode;
     }
 
     public List<CarbyneGear> getCarbyneGear() {

@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public class MessageManager {
 
+    private final static int CENTER_PX = 154;
+
     public static void sendMessage(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
@@ -30,6 +32,26 @@ public class MessageManager {
         }
     }
 
+    public static void sendMessage(CommandSender sender, String[] messages) {
+        for (String s : messages) {
+            sendMessage(sender, s);
+        }
+    }
+
+    public static void sendMessage(Player player, String[] messages) {
+        for (String s : messages) {
+            sendMessage(player, s);
+        }
+    }
+
+    public static void sendMessage(UUID uniqueId, String[] messages) {
+        for (String s : messages) {
+            if (Bukkit.getPlayer(uniqueId) != null) {
+                sendMessage(uniqueId, s);
+            }
+        }
+    }
+
     public static void broadcastMessage(String message) {
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', message));
     }
@@ -37,8 +59,6 @@ public class MessageManager {
     public static void broadcastMessage(String message, String permission) {
         Bukkit.broadcast(ChatColor.translateAlternateColorCodes('&', message), permission);
     }
-
-    private final static int CENTER_PX = 154;
 
     public static String centerMessage(String message) {
         message = ChatColor.translateAlternateColorCodes('&', message);

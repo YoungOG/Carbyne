@@ -6,7 +6,13 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.medievallords.carbyne.commands.BlackholeCommand;
+import com.medievallords.carbyne.commands.ChatCommand;
+import com.medievallords.carbyne.crates.CrateManager;
+import com.medievallords.carbyne.crates.commands.*;
+import com.medievallords.carbyne.crates.listeners.CrateListeners;
+import com.medievallords.carbyne.duels.arena.commands.*;
+import com.medievallords.carbyne.duels.arena.listeners.ArenaListeners;
+import com.medievallords.carbyne.duels.duel.DuelManager;
 import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.economy.commands.*;
 import com.medievallords.carbyne.gates.GateManager;
@@ -16,6 +22,7 @@ import com.medievallords.carbyne.gates.listeners.GateMobListeners;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.commands.GearCommands;
 import com.medievallords.carbyne.gear.commands.GearGiveCommand;
+import com.medievallords.carbyne.gear.commands.GearSetChargeCommand;
 import com.medievallords.carbyne.gear.listeners.GearListeners;
 import com.medievallords.carbyne.heartbeat.HeartbeatRunnable;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
@@ -23,6 +30,7 @@ import com.medievallords.carbyne.listeners.*;
 import com.medievallords.carbyne.profiles.ProfileListeners;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
 import com.medievallords.carbyne.regeneration.RegenerationListeners;
+import com.medievallords.carbyne.regeneration.commands.RegenerationBypassCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCreateCommand;
 import com.medievallords.carbyne.spawners.listeners.SpawnerListeners;
@@ -30,6 +38,7 @@ import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.squads.commands.*;
 import com.medievallords.carbyne.utils.CarbyneBoardAdapter;
 import com.medievallords.carbyne.utils.ItemDb;
+import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.CommandFramework;
 import com.mongodb.MongoClient;
@@ -51,6 +60,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 
 @Getter
 @Setter
@@ -63,18 +74,14 @@ public class Carbyne extends JavaPlugin {
 
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
-
-    private File dummyFile;
-    private FileConfiguration dummyFileConfiguration;
-
-    private File controlPointFile;
-    private FileConfiguration controlPointConfiguration;
-
     private File duelFile;
     private FileConfiguration duelFileConfiguration;
-
     private File gateFile;
     private FileConfiguration gateFileConfiguration;
+    private File crateFile;
+    private FileConfiguration crateFileConfiguration;
+    private File arenaFile;
+    private FileConfiguration arenaFileConfiguration;
 
     private CommandFramework commandFramework;
 
@@ -100,6 +107,8 @@ public class Carbyne extends JavaPlugin {
     private GateManager gateManager;
     private LeaderboardManager leaderboardManager;
     private SquadManager squadManager;
+    private CrateManager crateManager;
+    private DuelManager duelManager;
     private ItemDb itemDb;
 
     public void onEnable() {
@@ -149,6 +158,8 @@ public class Carbyne extends JavaPlugin {
         gateManager = new GateManager();
         leaderboardManager = new LeaderboardManager();
         squadManager = new SquadManager();
+        crateManager = new CrateManager();
+        duelManager = new DuelManager();
 
         aether = new Aether(this, new CarbyneBoardAdapter(this));
 
@@ -161,6 +172,8 @@ public class Carbyne extends JavaPlugin {
         marketManager.saveSales(false);
         gateManager.saveGates();
         effectManager.dispose();
+        regenerationHandler.saveTasks();
+        crateManager.save(crateFileConfiguration);
         mongoClient.close();
     }
 
@@ -174,13 +187,14 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new GearListeners(), this);
         pm.registerEvents(new CooldownListeners(), this);
         pm.registerEvents(new OptimizationListeners(), this);
-//        pm.registerEvents(new TimingsFixListener(this), this);
         pm.registerEvents(new ChatListener(), this);
         pm.registerEvents(new GateListeners(), this);
         pm.registerEvents(new LootListener(), this);
         pm.registerEvents(new SpawnerListeners(), this);
         pm.registerEvents(new ProfileListeners(), this);
         pm.registerEvents(new RegenerationListeners(), this);
+        pm.registerEvents(new CrateListeners(), this);
+        pm.registerEvents(new ArenaListeners(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -191,60 +205,81 @@ public class Carbyne extends JavaPlugin {
 
     private void registerCommands() {
         //General Commands
-        commandFramework.registerCommands(new BlackholeCommand());
+//         new BlackholeCommand();
+        new ChatCommand();
+
+        new RegenerationBypassCommand();
 
         //Gate Commands
-        commandFramework.registerCommands(new GearCommands());
-        commandFramework.registerCommands(new GearGiveCommand());
-        commandFramework.registerCommands(new GateCommand());
-        commandFramework.registerCommands(new GateAddBCommand());
-        commandFramework.registerCommands(new GateAddPPCommand());
-        commandFramework.registerCommands(new GateAddRSBCommand());
-        commandFramework.registerCommands(new GateAddSpawnerCommand());
-        commandFramework.registerCommands(new GateDelBCommand());
-        commandFramework.registerCommands(new GateDelPPCommand());
-        commandFramework.registerCommands(new GateDelRSBCommand());
-        commandFramework.registerCommands(new GateDelSpawnerCommand());
-        commandFramework.registerCommands(new GateCreateCommand());
-        commandFramework.registerCommands(new GateActiveCommand());
-        commandFramework.registerCommands(new GateRemoveCommand());
-        commandFramework.registerCommands(new GateRenameCommand());
-        commandFramework.registerCommands(new GateStatusCommand());
-        commandFramework.registerCommands(new GateListCommand());
+        new GearCommands();
+        new GearGiveCommand();
+        new GearSetChargeCommand();
+        new GateCommand();
+        new GateAddBCommand();
+        new GateAddPPCommand();
+        new GateAddRSBCommand();
+        new GateAddSpawnerCommand();
+        new GateDelBCommand();
+        new GateDelPPCommand();
+        new GateDelRSBCommand();
+        new GateDelSpawnerCommand();
+        new GateCreateCommand();
+        new GateActiveCommand();
+        new GateRemoveCommand();
+        new GateRenameCommand();
+        new GateStatusCommand();
+        new GateListCommand();
 
         //Market Commands
-        commandFramework.registerCommands(new MarketBuyCommand());
-        commandFramework.registerCommands(new MarketSellCommand());
-        commandFramework.registerCommands(new MarketPriceCommand());
-        commandFramework.registerCommands(new MarketSalesCommand());
-        commandFramework.registerCommands(new MarketSetTaxCommand());
-        commandFramework.registerCommands(new MarketTaxCommand());
+        new MarketBuyCommand();
+        new MarketSellCommand();
+        new MarketPriceCommand();
+        new MarketSalesCommand();
+        new MarketSetTaxCommand();
+        new MarketTaxCommand();
 
         //Squad Commands
-        commandFramework.registerCommands(new SquadCommand());
-        commandFramework.registerCommands(new SquadJoinCommand());
-        commandFramework.registerCommands(new SquadCreateCommand());
-        commandFramework.registerCommands(new SquadInviteCommand());
-        commandFramework.registerCommands(new SquadLeaveCommand());
-        commandFramework.registerCommands(new SquadDisbandCommand());
-        commandFramework.registerCommands(new SquadFriendlyFireCommand());
-        commandFramework.registerCommands(new SquadSetCommand());
-        commandFramework.registerCommands(new SquadKickCommand());
-        commandFramework.registerCommands(new SquadChatCommand());
-        commandFramework.registerCommands(new SquadListCommand());
-
-        //ControlPoint Commands
-//        commandFramework.registerCommands(new ControlListCommand());
-//        commandFramework.registerCommands(new ControlCommand());
-//        commandFramework.registerCommands(new ControlReloadCommand());
-//        commandFramework.registerCommands(new ControlCreateCommand());
-//        commandFramework.registerCommands(new ControlRemoveCommand());
-//        commandFramework.registerCommands(new ControlTimerCommand());
-//        commandFramework.registerCommands(new ControlTeleportCommand());
+        new SquadCommand();
+        new SquadJoinCommand();
+        new SquadCreateCommand();
+        new SquadInviteCommand();
+        new SquadLeaveCommand();
+        new SquadDisbandCommand();
+        new SquadFriendlyFireCommand();
+        new SquadSetCommand();
+        new SquadKickCommand();
+        new SquadChatCommand();
+        new SquadListCommand();
 
         //Spawner Commands
-        commandFramework.registerCommands(new SpawnerCreateCommand());
-        commandFramework.registerCommands(new SpawnerCommand());
+        new SpawnerCreateCommand();
+        new SpawnerCommand();
+
+        //Crate Commands
+        new CrateCommand();
+        new CrateCreateCommand();
+        new CrateEditCommand();
+        new CrateKeyCommand();
+        new CrateListCommand();
+        new CrateReloadCommand();
+        new CrateRemoveCommand();
+        new CrateRenameCommand();
+        new CrateSetLocationCommand();
+
+        //Arena Commands
+        new ArenaCommand();
+        new ArenaCreateCommand();
+        new ArenaRemoveCommand();
+        new ArenaListCommand();
+        new ArenaSetLobbyCommand();
+        new ArenaAddSpawnCommand();
+        new ArenaAddPedastoolCommand();
+        new ArenaRemoveSpawnCommand();
+        new ArenaRemovePedastoolCommand();
+    }
+
+    public void unregisterCommands() {
+
     }
 
     private void registerPackets() {
@@ -277,8 +312,9 @@ public class Carbyne extends JavaPlugin {
         saveResource("duel.yml", false);
         saveResource("gates.yml", false);
         saveResource("item.csv", false);
-        saveResource("controlpoints.yml", false);
-        saveResource("dummies.yml", false);
+        saveResource("crates.yml", false);
+        saveResource("arenas.yml", false);
+        saveResource("lang.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -289,11 +325,34 @@ public class Carbyne extends JavaPlugin {
         gateFile = new File(getDataFolder(), "gates.yml");
         gateFileConfiguration = YamlConfiguration.loadConfiguration(gateFile);
 
-        controlPointFile = new File(getDataFolder(), "controlpoints.yml");
-        controlPointConfiguration = YamlConfiguration.loadConfiguration(controlPointFile);
+        crateFile = new File(getDataFolder(), "crates.yml");
+        crateFileConfiguration = YamlConfiguration.loadConfiguration(crateFile);
 
-        dummyFile = new File(getDataFolder(), "dummies.yml");
-        dummyFileConfiguration = YamlConfiguration.loadConfiguration(dummyFile);
+        arenaFile = new File(getDataFolder(), "arenas.yml");
+        arenaFileConfiguration = YamlConfiguration.loadConfiguration(arenaFile);
+
+        File langFile = new File(getDataFolder(), "lang.yml");
+        FileConfiguration langFileConfiguration = YamlConfiguration.loadConfiguration(langFile);
+
+        for (Lang item : Lang.values()) {
+            if (langFileConfiguration.getString(item.getPath()) == null) {
+                if (item.getAllMessages().length > 1) {
+                    langFileConfiguration.set(item.getPath(), item.getAllMessages());
+                } else {
+                    langFileConfiguration.set(item.getPath(), item.getFirstMessage());
+                }
+            }
+        }
+
+        Lang.setFile(langFileConfiguration);
+
+        try {
+            langFileConfiguration.save(langFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            getLogger().log(Level.WARNING, "Failed to save lang.yml!");
+            getLogger().log(Level.WARNING, "Please report this stacktrace to Young.");
+        }
     }
 
     public static Carbyne getInstance() {

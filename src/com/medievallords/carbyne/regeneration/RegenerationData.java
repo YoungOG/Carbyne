@@ -11,16 +11,16 @@ import org.bukkit.Material;
 
 @Getter
 @Setter
-public class BlockRegenerationData implements Cloneable {
+public class RegenerationData implements Cloneable {
 
     private Material previousMaterial, newMaterial;
 //    private short previousData, newData;
-    private int regenerationTime;
+    private String regenerationTimeString;
 
-    public BlockRegenerationData(Material previousMaterial, Material newMaterial, int regenerationTime) {
+    public RegenerationData(Material previousMaterial, Material newMaterial, String regenerationTimeString) {
         this.previousMaterial = previousMaterial;
         this.newMaterial = newMaterial;
-        this.regenerationTime = regenerationTime;
+        this.regenerationTimeString = regenerationTimeString;
     }
 
     @Override

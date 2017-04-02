@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.UUID;
 
 @Getter
-public class Sale implements Comparable<Sale> {
+public class Sale {
 
     private UUID transactionID, seller;
     private ItemStack itemStack;
@@ -46,10 +46,5 @@ public class Sale implements Comparable<Sale> {
                 ", price=" + price +
                 ", date=" + dateCreated +
                 '}';
-    }
-
-    @Override
-    public int compareTo(Sale o) {
-        return new Double(price).compareTo(o.price);
     }
 }

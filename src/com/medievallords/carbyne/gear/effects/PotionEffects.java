@@ -26,10 +26,10 @@ public class PotionEffects {
                 case "speed":
                     switch (effects.getAmplifier()) {
                         case 0:
-                            ParticleEffect.SMOKE_NORMAL.display(0.2F, 0.0F, 0.2F, 0.1F, 10, player.getLocation().add(0.0, 0.3, 0.0), 20);
+                            ParticleEffect.SMOKE_NORMAL.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20);
                             break;
                         case 1:
-                            ParticleEffect.SMOKE_LARGE.display(0.2F, 0.0F, 0.2F, 0.1F, 7, player.getLocation().add(0.0, 0.3, 0.0), 20);
+                            ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20);
                             break;
                     }
                     break;
