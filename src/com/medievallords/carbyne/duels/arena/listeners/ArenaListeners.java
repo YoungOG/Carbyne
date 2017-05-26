@@ -11,6 +11,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class ArenaListeners implements Listener {
 
     private Carbyne carbyne = Carbyne.getInstance();
     private DuelManager duelManager = carbyne.getDuelManager();
+
+    private List<Location> locations = new ArrayList<>();
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -36,9 +39,12 @@ public class ArenaListeners implements Listener {
             List<Location> pedastoolLocations = Arrays.asList(arena.getPedastoolLocations());
 
             if (pedastoolLocations.contains(block.getLocation())) {
-                if (!arena.getActivePedastoolLocations().containsKey(block.getLocation())) {
-                    arena.activatePedastool(block.getLocation(), true);
+                if (!arena.getDuelists().contains(event.getPlayer().getUniqueId())) {
+                    arena.getDuelists().add(event.getPlayer().getUniqueId());
                 }
+
+                arena.activatePedastool(block.getLocation(), true);
+                locations.add(block.getLocation());
             }
         }
     }
@@ -56,7 +62,13 @@ public class ArenaListeners implements Listener {
 
         if (pedastoolLocations.contains(block.getLocation())) {
             if (arena.getActivePedastoolLocations().containsKey(block.getLocation())) {
+                if (locations.contains(block.getLocation())) {
+                    locations.remove(block.getLocation());
+                    return;
+                }
+
                 arena.activatePedastool(block.getLocation(), false);
+                arena.getDuelists().clear();
             }
         }
     }

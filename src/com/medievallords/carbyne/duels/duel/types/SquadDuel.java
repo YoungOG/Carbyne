@@ -4,13 +4,17 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.duels.duel.DuelStage;
+import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.squads.Squad;
+import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.github.paperspigot.Title;
 
 import java.util.UUID;
 
@@ -28,16 +32,20 @@ public class SquadDuel extends Duel {
         super(arena);
         this.squadOne = squadOne;
         this.squadTwo = squadTwo;
+
+        getPlayersAlive().addAll(squadOne.getAllPlayers());
+        getPlayersAlive().addAll(squadTwo.getAllPlayers());
     }
 
     @Override
     public void start() {
         Arena arena = getArena();
+
         for (UUID uuid : squadOne.getAllPlayers()) {
             Player player = Bukkit.getPlayer(uuid);
 
             if (player == null) {
-                return;
+                continue;
             }
 
             player.teleport(arena.getSpawnPointLocations()[0].clone().add(0.0, 0.5, 0.0));
@@ -45,17 +53,14 @@ public class SquadDuel extends Duel {
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
 
-            for (PotionEffectType effectType : PotionEffectType.values()) {
-                player.removePotionEffect(effectType);
-            }
-
+            player.getActivePotionEffects().clear();
         }
 
         for (UUID uuid : squadTwo.getAllPlayers()) {
             Player player = Bukkit.getPlayer(uuid);
 
             if (player == null) {
-                return;
+                continue;
             }
 
             player.teleport(arena.getSpawnPointLocations()[1].clone().add(0.0, 0.5, 0.0));
@@ -63,31 +68,33 @@ public class SquadDuel extends Duel {
             player.setHealth(player.getMaxHealth());
             player.setFoodLevel(20);
 
-            for (PotionEffectType effectType : PotionEffectType.values()) {
-                player.removePotionEffect(effectType);
-            }
+            player.getActivePotionEffects().clear();
         }
+
+        task();
+        MessageManager.broadcastMessage("&6A squad fight duel has started between &b" + Bukkit.getServer().getPlayer(squadOne.getLeader()).getName() + "'s squad &6and &b" + Bukkit.getServer().getPlayer(squadTwo.getLeader()).getName() + "'s squad");
     }
 
     @Override
     public void countdown() {
         setDuelStage(DuelStage.COUNTING_DOWN);
         new BukkitRunnable() {
-            int countdown = 10;
+            int countdown = 5;
 
             @Override
             public void run() {
                 for (UUID uuid : squadOne.getAllPlayers()) {
                     Player player = Bukkit.getServer().getPlayer(uuid);
-                    if (player == null) {
-                        return;
-                    }
+
+                    if (player != null) {
+                        player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());                    }
                 }
 
                 for (UUID uuid : squadTwo.getAllPlayers()) {
                     Player player = Bukkit.getServer().getPlayer(uuid);
-                    if (player == null) {
-                        return;
+
+                    if (player != null) {
+                        player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
                     }
                 }
                 countdown--;
@@ -103,8 +110,128 @@ public class SquadDuel extends Duel {
 
     @Override
     public void end(UUID winnerId) {
+        stopTask();
+
+        if (winnerId != null) {
+            Player player = Bukkit.getServer().getPlayer(winnerId);
+
+            if (player != null) {
+                player.teleport(getArena().getLobbyLocation().clone().add(0,0.2,0));
+                player.setHealth(player.getMaxHealth());
+                player.setFireTicks(0);
+
+                Account.getAccount(winnerId).setBalance(Account.getAccount(winnerId).getBalance() + getBets());
+
+                if (squadTwo.getAllPlayers().contains(winnerId)) {
+                    MessageManager.broadcastMessage("&b" + player.getName() + "'s squad &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(squadOne.getLeader()).getName() + "'s squad");
+                } else {
+                    MessageManager.broadcastMessage("&b" + player.getName() + "'s squad &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(squadTwo.getLeader()).getName() + "'s squad");
+                }
+            }
+        }
+
+        if (winnerId == null){
+            for (UUID uuid : getSquadOne().getAllPlayers()) {
+                if (getPlayerBets().containsKey(uuid)) {
+                    Account.getAccount(uuid).setBalance(Account.getAccount(uuid).getBalance() + getPlayerBets().get(uuid));
+                }
+            }
+
+            for (UUID uuid : getSquadTwo().getAllPlayers()) {
+                if (getPlayerBets().containsKey(uuid)) {
+                    Account.getAccount(uuid).setBalance(Account.getAccount(uuid).getBalance() + getPlayerBets().get(uuid));
+                }
+            }
+        }
+
+        for (UUID uuid : getPlayersAlive()) {
+            if (winnerId != null && uuid.equals(winnerId)) {
+                continue;
+            }
+
+            Player player = Bukkit.getServer().getPlayer(uuid);
+
+            if (player == null) {
+                continue;
+            }
+
+            player.teleport(getArena().getLobbyLocation().clone().add(0,0.2,0));
+            player.setHealth(player.getMaxHealth());
+            player.setFireTicks(0);
+        }
+
+        for (Item item : getDrops()) {
+            if (item == null)
+                continue;
+
+            item.remove();
+        }
+        getDrops().clear();
+
         Carbyne.getInstance().getDuelManager().getDuels().remove(this);
         this.getArena().setDuel(null);
         setDuelStage(DuelStage.ENDED);
+    }
+
+    @Override
+    public void check() {
+        int o = squadOne.getAllPlayers().size();
+
+        for (UUID uuid : squadOne.getAllPlayers()) {
+            if (!getPlayersAlive().contains(uuid)) {
+                o--;
+            }
+        }
+
+        int t = squadTwo.getAllPlayers().size();
+
+        for (UUID uuid : squadTwo.getAllPlayers()) {
+            if (!getPlayersAlive().contains(uuid)) {
+                t--;
+            }
+        }
+
+        if (t <= 0) {
+            for (UUID uuid : squadOne.getAllPlayers()) {
+                if (getPlayersAlive().contains(uuid)) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            end(uuid);
+                        }
+                    }.runTaskLater(Carbyne.getInstance(), 200);
+                    break;
+                }
+            }
+        }
+
+        if (o <= 0) {
+            for (UUID uuid : squadTwo.getAllPlayers()) {
+                if (getPlayersAlive().contains(uuid)) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            end(uuid);
+                        }
+                    }.runTaskLater(Carbyne.getInstance(), 200);
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void task() {
+        this.taskId = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Carbyne.getInstance(), new Runnable() {
+            @Override
+            public void run() {
+                end(null);
+            }
+        }, 1450 * 20);
+    }
+
+    @Override
+    public void stopTask() {
+        Bukkit.getServer().getScheduler().cancelTask(this.taskId);
     }
 }

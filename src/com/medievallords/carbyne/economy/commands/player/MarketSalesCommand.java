@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.economy.commands;
+package com.medievallords.carbyne.economy.commands.player;
 
 import com.medievallords.carbyne.economy.sale.Sale;
 import com.medievallords.carbyne.utils.JSONMessage;

@@ -107,22 +107,26 @@ public class Gate implements HeartbeatTask {
 
         open = true;
 
-        try {
-            this.currentLength = this.activeLength;
+        this.currentLength = this.activeLength;
 
+        if (redstoneBlockLocations.size() > 0) {
             for (Location location : redstoneBlockLocations) {
-                Block block = location.getBlock();
+                if (location != null) {
+                    Block block = location.getBlock();
 
-                if (block.getType() != Material.REDSTONE_BLOCK) {
-                    HeartbeatBlockQueue.types.add(new BlockType(Material.REDSTONE_BLOCK, block.getLocation()));
+                    if (block != null) {
+                        if (block.getType() != Material.REDSTONE_BLOCK) {
+                            HeartbeatBlockQueue.types.add(new BlockType(Material.REDSTONE_BLOCK, block.getLocation()));
+                        }
+                    }
                 }
             }
+        }
 
-            if (this.heartbeat == null) {
-                this.heartbeat = new Heartbeat(this, 1000L);
-                heartbeat.start();
-            }
-        } catch (Exception ignored) {}
+        if (this.heartbeat == null) {
+            this.heartbeat = new Heartbeat(this, 1000L);
+            heartbeat.start();
+        }
     }
 
     public synchronized void closeGate() {
@@ -138,7 +142,8 @@ public class Gate implements HeartbeatTask {
                     HeartbeatBlockQueue.types.add(new BlockType(Material.AIR, block.getLocation()));
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     public void saveGate() {
@@ -247,11 +252,11 @@ public class Gate implements HeartbeatTask {
             return false;
         }
     }
-    
+
     public void killMob() {
         int totalMobs = 0;
 
-        for (MythicSpawner spawner : mythicSpawners.values()){
+        for (MythicSpawner spawner : mythicSpawners.values()) {
             totalMobs += spawner.getNumberOfMobs();
         }
 
@@ -274,7 +279,7 @@ public class Gate implements HeartbeatTask {
         closeGate();
     }
 
-    public Location getLocaton(){
+    public Location getLocaton() {
         return redstoneBlockLocations.get(0).getBlock().getLocation();
     }
 }

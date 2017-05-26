@@ -59,11 +59,9 @@ public class BastionOfHealth implements Special{
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 1);
         new BukkitRunnable() {
 
-            double t = 0;
             double times = 0;
 
             public void run() {
-                Location loc = caster.getLocation();
                 healPlayer(caster);
 
                 times += 0.5;
@@ -80,7 +78,7 @@ public class BastionOfHealth implements Special{
         for (Entity entity : player.getWorld().getNearbyEntities(player.getLocation(), 4, 4, 4)) {
             if (entity instanceof Player) {
                 Player to = (Player) entity;
-                if (isOnSameTeam(player, to)) {
+                if (isOnSameTeam(player, to) || player.getUniqueId().equals(to.getUniqueId())) {
                     to.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 1));
                 }
             }

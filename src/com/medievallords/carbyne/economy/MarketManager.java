@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.economy;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.economy.sale.CompletedSale;
 import com.medievallords.carbyne.economy.sale.Sale;
 import com.medievallords.carbyne.utils.DateUtil;
@@ -24,8 +25,9 @@ public class MarketManager {
 
     private Carbyne main = Carbyne.getInstance();
 
-    private HashMap<UUID, HashSet<Sale>> playerSales = new HashMap<>();
     private MongoCollection<Document> salesCollection = main.getMongoDatabase().getCollection("sales");
+
+    private HashMap<UUID, HashSet<Sale>> playerSales = new HashMap<>();
 
     private boolean economyHalted = false;
     private double salesTax = 0.0;
@@ -36,11 +38,13 @@ public class MarketManager {
 
         salesTax = main.getConfig().getDouble("economy.sales-tax");
 
+        Account.loadAccounts();
         loadSales();
 
         new BukkitRunnable() {
             @Override
             public void run() {
+                Account.saveAccounts(true);
                 saveSales(true);
             }
         }.runTaskTimer(main, 0L, 300 * 20L);
@@ -94,7 +98,7 @@ public class MarketManager {
 
     public void saveSales(boolean async) {
         if (playerSales.keySet().size() > 0) {
-            main.getLogger().log(Level.INFO, "&7Preparing to save &c" + playerSales.keySet().size() + " &7ID's with (&c" + playerSales.values().size() + "&7) sales.");
+            main.getLogger().log(Level.INFO, "Preparing to save " + playerSales.keySet().size() + " ID's with (" + playerSales.values().size() + ") sales.");
 
             long startTime = System.currentTimeMillis();
             final int[] salesCount = {0};
@@ -112,7 +116,7 @@ public class MarketManager {
                             salesCount[0] += playerSales.get(id).size();
                         }
 
-                        main.getLogger().log(Level.INFO, "&7Successfully saved &c" + playerSales.keySet().size() + " &7ID's and (&c" + salesCount[0] + "&7) sales. Took (&c" + (System.currentTimeMillis() - startTime) + "ms&7).");
+                        main.getLogger().log(Level.INFO, "Successfully saved " + playerSales.keySet().size() + " ID's and (" + salesCount[0] + ") sales. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
                     }
                 }.runTaskAsynchronously(main);
             } else {
@@ -125,7 +129,7 @@ public class MarketManager {
                     salesCount[0] += playerSales.get(id).size();
                 }
 
-                main.getLogger().log(Level.INFO, "&7Successfully saved &c" + playerSales.keySet().size() + " &7ID's and (&c" + salesCount[0] + "&7) sales. Took (&c" + (System.currentTimeMillis() - startTime) + "ms&7).");
+                main.getLogger().log(Level.INFO, "Successfully saved " + playerSales.keySet().size() + " ID's and (" + salesCount[0] + ") sales. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
             }
         }
     }
@@ -278,14 +282,14 @@ public class MarketManager {
     }
 
     public void deposit(UUID uuid, double amount) {
-        main.getEconomy().depositPlayer(Bukkit.getOfflinePlayer(uuid), amount);
+        Account.getAccount(uuid).setBalance(Account.getAccount(uuid).getBalance() + amount);
     }
 
     public boolean withdraw(UUID uuid, double amount) {
-        if (amount > main.getEconomy().getBalance(Bukkit.getOfflinePlayer(uuid)))
+        if (amount > Account.getAccount(uuid).getBalance())
             return false;
         else {
-            main.getEconomy().withdrawPlayer(Bukkit.getOfflinePlayer(uuid), amount);
+            Account.getAccount(uuid).setBalance(Account.getAccount(uuid).getBalance() - amount);
             return true;
         }
     }
@@ -363,10 +367,6 @@ public class MarketManager {
         return sales;
     }
 
-    public ArrayList<Sale> cloneSales() {
-        return getSales().stream().collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public boolean isEconomyHalted() {
         return economyHalted;
     }
@@ -375,11 +375,11 @@ public class MarketManager {
         this.economyHalted = economyHalted;
     }
 
-    public void setSalesTax(double salesTax) {
-        this.salesTax = salesTax;
-    }
-
     public double getSalesTax() {
         return salesTax;
+    }
+
+    public void setSalesTax(double salesTax) {
+        this.salesTax = salesTax;
     }
 }

@@ -25,7 +25,7 @@ public class GearCommands extends BaseCommand {
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("store")) {
                 ((Player) sender).openInventory(getGearManager().getGearGuiManager().getStoreGui());
-            } else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("carbyne.admin")) {
+            } else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("carbyne.administrator")) {
                 getGearManager().getCarbyneGear().clear();
                 getGearManager().getDefaultArmors().clear();
                 getGearManager().getDefaultWeapons().clear();
@@ -40,7 +40,7 @@ public class GearCommands extends BaseCommand {
                 MessageManager.sendMessage(sender, "&cUsage: /carbyne store");
             }
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("money") && sender.hasPermission("carbyne.admin")) {
+            if (args[0].equalsIgnoreCase("money") && sender.hasPermission("carbyne.administrator")) {
                 try {
                     int amount = Integer.parseInt(args[1]);
 

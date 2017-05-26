@@ -6,11 +6,10 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.text.DecimalFormat;
 import java.util.UUID;
 
 public class MessageManager {
-
-    private final static int CENTER_PX = 154;
 
     public static void sendMessage(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
@@ -60,37 +59,13 @@ public class MessageManager {
         Bukkit.broadcast(ChatColor.translateAlternateColorCodes('&', message), permission);
     }
 
-    public static String centerMessage(String message) {
-        message = ChatColor.translateAlternateColorCodes('&', message);
-
-        int messagePxSize = 0;
-        boolean previousCode = false;
-        boolean isBold = false;
-
-        for (char c : message.toCharArray()) {
-            if (c == '§') {
-                previousCode = true;
-            } else if (previousCode) {
-                previousCode = false;
-                isBold = c == 'l' || c == 'L';
-            } else {
-                DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
-                messagePxSize += isBold ? dFI.getBoldLength() : dFI.getLength();
-                messagePxSize++;
-            }
+    public static String format(double amount) {
+        DecimalFormat formatter = new DecimalFormat("#,##0.00");
+        String formatted = formatter.format(amount);
+        if(formatted.endsWith(".")) {
+            formatted = formatted.substring(0, formatted.length() - 1);
         }
 
-        int halvedMessageSize = messagePxSize / 2;
-        int toCompensate = CENTER_PX - halvedMessageSize;
-        int spaceLength = DefaultFontInfo.SPACE.getLength() + 1;
-        int compensated = 0;
-
-        StringBuilder sb = new StringBuilder();
-        while (compensated < toCompensate) {
-            sb.append(" ");
-            compensated += spaceLength;
-        }
-
-        return sb.toString() + message;
+        return formatted;
     }
 }

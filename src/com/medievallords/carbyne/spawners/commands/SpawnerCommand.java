@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
  */
 public class SpawnerCommand extends BaseCommand {
 
-    @Command(name = "qspawner", aliases = "qs", inGameOnly = true, permission = "carbyne.spawners.admin")
+    @Command(name = "qspawner", aliases = "qs", inGameOnly = true, permission = "carbyne.spawners.administrator")
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

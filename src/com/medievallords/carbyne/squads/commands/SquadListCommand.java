@@ -75,14 +75,16 @@ public class SquadListCommand extends BaseCommand {
         JSONMessage message2 = JSONMessage.create("");
 
         message2.then(ChatColor.translateAlternateColorCodes('&', "&aType&7: &b" + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1)) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', "&aMembers &7(&b" + squad.getAllPlayers().size() + "&7):\n"));
+        message2.then(ChatColor.translateAlternateColorCodes('&', "&aMembers &7(&b" + (squad.getType() == SquadType.PUBLIC ? squad.getAllPlayers().size() : "Hidden") + "&7):\n"));
 
-        List<String> memberNames = new ArrayList<>();
-        for (UUID uuid : squad.getAllPlayers()) {
-            memberNames.add(Bukkit.getPlayer(uuid).getName());
+        if (squad.getType() == SquadType.PUBLIC) {
+            List<String> memberNames = new ArrayList<>();
+            for (UUID uuid : squad.getAllPlayers()) {
+                memberNames.add(Bukkit.getPlayer(uuid).getName());
+            }
+
+            message2.then(ChatColor.translateAlternateColorCodes('&', "&b" + memberNames.toString().replace("[", "").replace("]", "").replace(",", "&7,&b")));
         }
-
-        message2.then(ChatColor.translateAlternateColorCodes('&', "&b" + memberNames.toString().replace("[", "").replace("]", "").replace(",", "&7,&b")));
 
         return message2;
     }

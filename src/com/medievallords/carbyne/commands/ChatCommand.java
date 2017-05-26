@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
  */
 public class ChatCommand extends BaseCommand {
 
-    @Command(name = "chat", permission = "carbyne.admin")
+    @Command(name = "chat", permission = "carbyne.administrator")
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();
@@ -25,7 +25,7 @@ public class ChatCommand extends BaseCommand {
         }
 
         String msg = "";
-        for (int i = 1; i <= args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             msg = msg + args[i] + " ";
         }
 

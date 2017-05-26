@@ -73,7 +73,7 @@ public class ChatListener implements Listener {
 
         String message = event.getMessage();
 
-        newMessage.then(" ").then(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
+        newMessage.then("").then(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
 
         try {
             Resident resident = TownyUniverse.getDataSource().getResident(player.getName());
@@ -91,6 +91,8 @@ public class ChatListener implements Listener {
         for (Player players : PlayerUtility.getOnlinePlayers()) {
             newMessage.send(players);
         }
+
+        System.out.println("[Chat Message] " + player.getName() + ": " + event.getMessage());
 
         event.setCancelled(true);
     }
@@ -147,9 +149,7 @@ public class ChatListener implements Listener {
                 residentsWithRanks.clear();
             }
 
-            for (String string : rankList) {
-                lines.add(string);
-            }
+            lines.addAll(rankList);
 
             if (town.hasNation()) {
                 lines.add("&2Nation: &a" + TownyFormatter.getFormattedName(town.getNation()));
@@ -163,9 +163,7 @@ public class ChatListener implements Listener {
                 residents[35] = "and more...";
             }
 
-            for (String string : ChatTools.listArr(residents, "&2Residents &a[" + town.getNumResidents() + "]" + "&2" + ":" + "&f" + " ")) {
-                lines.add(string);
-            }
+            lines.addAll(ChatTools.listArr(residents, "&2Residents &a[" + town.getNumResidents() + "]" + "&2" + ":" + "&f" + " "));
 
             for (int i = 0; i < lines.size(); i++) {
                 String string = lines.get(i);

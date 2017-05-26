@@ -90,8 +90,7 @@ public class Frostbite implements Special{
                             }
                         }
                         LivingEntity livingEntity = (LivingEntity) entity;
-                        livingEntity.damage(2);
-                        livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 1));
+                        damageEntity(livingEntity);
                     }
                 }
                 loc.getWorld().playSound(loc, Sound.GLASS, 3f, (float) Math.random());
@@ -122,5 +121,12 @@ public class Frostbite implements Special{
             }
         }
         return blocks;
+    }
+
+    public void damageEntity(LivingEntity entity) {
+        if (!isInSafeZone(entity)) {
+            entity.damage(1);
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 1));
+        }
     }
 }

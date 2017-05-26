@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.economy.commands;
+package com.medievallords.carbyne.economy.commands.player;
 
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
@@ -7,15 +7,15 @@ import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class MarketBuyCommand extends BaseCommand {
+public class MarketSellCommand extends BaseCommand {
 
-    @Command(name = "buy", inGameOnly = true)
+    @Command(name = "sell", inGameOnly = true)
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
         if (args.length != 3) {
-            MessageManager.sendMessage(player, "&c/buy <amount> <item> <priceLimit>");
+            MessageManager.sendMessage(player, "&c/sell <amount> <item> <price>");
             return;
         }
 
@@ -45,27 +45,23 @@ public class MarketBuyCommand extends BaseCommand {
             return;
         }
 
-        double priceLimit;
+        double price;
 
         try {
-            priceLimit = Double.parseDouble(args[2]);
+            price = Double.parseDouble(args[2]);
 
-            if (priceLimit < 0) {
-                MessageManager.sendMessage(player, "&7You must enter a positive price limit.");
+            if (price < 0) {
+                MessageManager.sendMessage(player, "&7You must enter a positive price.");
                 return;
-            } else if (priceLimit == 0) {
-                MessageManager.sendMessage(player, "&7You must enter a price limit greater than zero.");
+            } else if (price == 0) {
+                MessageManager.sendMessage(player, "&7You must enter a price greater than zero.");
                 return;
             }
-//            } else if (priceLimit > em.getBalance(player.getUniqueId())) {
-//                MessageManager.sendMessage(player, "&7You do not have that much gold in your account.");
-//                return;
-//            }
         } catch (Exception e) {
-            MessageManager.sendMessage(player ,"&7You must enter a valid price limit.");
+            MessageManager.sendMessage(player, "&7You must enter a valid price.");
             return;
         }
 
-        getMarketManager().buy(player, itemStack, priceLimit);
+        getMarketManager().sell(player, itemStack, price);
     }
 }

@@ -7,6 +7,7 @@ import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
+import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
 import com.medievallords.carbyne.squads.SquadManager;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class BaseCommand {
     @Getter private RegenerationHandler regenerationHandler = carbyne.getRegenerationHandler();
     @Getter private CrateManager crateManager = carbyne.getCrateManager();
     @Getter private DuelManager duelManager = carbyne.getDuelManager();
+    @Getter private ProfileManager profileManager = carbyne.getProfileManager();
 
     public BaseCommand() {
         carbyne.getCommandFramework().registerCommands(this);

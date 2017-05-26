@@ -20,6 +20,19 @@ combat-tag:
   tag-length: 45
   blocked-cmds:
     - '/town spawn'
+blocked-cmds:
+  warzone:
+    - '/esethome'
+    - '/e:sethome'
+    - '/ess:sethome'
+    - '/sethome'
+    - '/essentials:sethome'
+  safezone:
+    - '/esethome'
+    - '/e:sethome'
+    - '/ess:sethome'
+    - '/sethome'
+    - '/essentials:sethome'
 regeneration:
   - 'stone,stone,30'
   - 'granite,granite,30'
@@ -30,3 +43,6 @@ database:
   host: ''
   port: 27017
   database-name: carbyne
+duel-disabled-commands:
+  - '/squad'
+  - '/tpa'

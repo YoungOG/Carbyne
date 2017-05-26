@@ -25,6 +25,7 @@ public class Heartbeat extends Thread {
     public void run() {
         while (task.heartbeat()) {
             heartBeat++;
+
             try {
                 Thread.sleep(beat);
             } catch (InterruptedException e) {

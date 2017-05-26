@@ -3,49 +3,71 @@ package com.medievallords.carbyne.profiles;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
 import java.util.UUID;
 
-/**
- * Created by Calvin on 3/22/2017
- * for the Carbyne project.
- */
 @Getter
 @Setter
 public class Profile {
 
-    private static HashSet<Profile> profiles = new HashSet<>();
-
     private UUID uniqueId;
+    private String username;
     private int kills;
     private int carbyneKills;
     private int deaths;
     private int carbyneDeaths;
-    private double kdRatio;
     private int killStreak;
-    private int balance;
+    private boolean showEffects;
+    private boolean safelyLogged;
 
     public Profile(UUID uniqueId) {
         this.uniqueId = uniqueId;
-
-        profiles.add(this);
     }
 
-    public boolean load() {
-        return false;
+    public boolean hasEffectsToggled() {
+        return showEffects;
     }
 
-    public boolean save() {
-        return false;
-    }
+    public double getKDR() {
+        double kills = getKills();
+        double deaths = getDeaths();
+        double ratio;
 
-    public static Profile getProfile(UUID uniqueId) {
-        for (Profile profile : profiles) {
-            if (profile.getUniqueId().equals(uniqueId)) {
-                return profile;
+        if (kills == 0.0D && deaths == 0.0D) {
+            ratio = 0.0D;
+        } else {
+            if (kills > 0.0D && deaths == 0.0D) {
+                ratio = kills;
+            } else {
+                if (deaths > 0.0D && kills == 0.0D) {
+                    ratio = -deaths;
+                } else {
+                    ratio = kills / deaths;
+                }
             }
         }
 
-        return null;
+        return Math.round(ratio * 100.0D) / 100.0D;
+    }
+
+    public double getCarbyneKDR() {
+        double kills = getCarbyneKills();
+        double deaths = getCarbyneDeaths();
+        double ratio;
+
+        if (kills == 0.0D && deaths == 0.0D) {
+            ratio = 0.0D;
+        } else {
+            if (kills > 0.0D && deaths == 0.0D) {
+                ratio = kills;
+            } else {
+                if (deaths > 0.0D && kills == 0.0D) {
+                    ratio = -deaths;
+                } else {
+                    ratio = kills / deaths;
+                }
+            }
+        }
+
+        return Math.round(ratio * 100.0D) / 100.0D;
     }
 }

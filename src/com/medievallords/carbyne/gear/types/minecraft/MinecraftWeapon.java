@@ -28,7 +28,7 @@ public class MinecraftWeapon extends CarbyneGear {
             return false;
 
 		this.lore = new ArrayList<>();
-		this.lore.add(0, "&aDurability&7: &c0/" + cs.getInt(type + ".Durability"));
+		this.lore.add(0, "&aDurability&7: &c" + cs.getInt(type + ".Durability") + "/" + getMaxDurability());
 		this.lore.add(0, HiddenStringUtils.encodeString(gearCode));
 
 		return true;

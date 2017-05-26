@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.economy.commands;
+package com.medievallords.carbyne.economy.commands.administrator;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.MarketManager;

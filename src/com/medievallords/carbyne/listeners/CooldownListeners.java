@@ -18,7 +18,7 @@ public class CooldownListeners implements Listener {
 //        new BukkitRunnable() {
 //            public void run() {
 //                for (Player p : PlayerUtility.getOnlinePlayers()) {
-//                    Board board = Board.getByPlayer(p);
+//                    Leaderboard board = Leaderboard.getByPlayer(p);
 //
 //                    if (board != null) {
 //                        BoardCooldown enderpearlCooldown = board.getCooldown("enderpearl");

@@ -1,5 +1,7 @@
 package com.medievallords.carbyne.utils;
 
+import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.profiles.Profile;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -1487,6 +1489,14 @@ public enum ParticleEffect {
 		public void sendTo(Location center, Player player) throws PacketInstantiationException, PacketSendingException {
 			initializePacket(center);
 			try {
+				Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+
+				if (profile != null) {
+					if (!profile.hasEffectsToggled()) {
+						return;
+					}
+				}
+				
 				sendPacket.invoke(playerConnection.get(getHandle.invoke(player)), packet);
 			} catch (Exception exception) {
 				throw new PacketSendingException("Failed to send the packet to player '" + player.getName() + "'", exception);

@@ -5,6 +5,7 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -42,7 +43,11 @@ public class ArenaAddPedastoolCommand extends BaseCommand {
 
         try {
             int i = Integer.parseInt(args[0]);
-            
+
+            for (Location loc : arena.getPedastoolLocations()) {
+                Bukkit.broadcastMessage("Location: " + loc.toString());
+            }
+
             if (i == 1) {
                 arena.getPedastoolLocations()[0] = location;
                 MessageManager.sendMessage(player, "&aYou have set pedastool point 1 for the arena \'&b" + arena.getArenaId() + "&a\'.");

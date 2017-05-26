@@ -37,7 +37,7 @@ public class MinecraftArmor extends CarbyneGear {
         this.armorRating = cs.getDouble(type + ".ArmorRating");
 		this.lore = new ArrayList<>();
 		this.lore.add(0, "&aDamage Reduction&7: &b" + (int) (armorRating * 100) + "%");
-		this.lore.add(0, "&aDurability&7: &c" + cs.getInt(type + ".Durability"));
+		this.lore.add(0, "&aDurability&7: &c" + cs.getInt(type + ".Durability") + "/" + getMaxDurability());
 		this.lore.add(0, HiddenStringUtils.encodeString(gearCode));
 
 		return true;

@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.gear;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.gear.effects.GearEffects;
 import com.medievallords.carbyne.gear.listeners.GearGuiListeners;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.gear.specials.types.*;
@@ -18,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -31,6 +33,7 @@ public class GearManager {
 
     private Carbyne carbyne = Carbyne.getInstance();
     private GearGuiManager gearGuiManager;
+    private GearEffects gearEffects;
 
     private List<CarbyneGear> carbyneGear = new ArrayList<>();
     private List<CarbyneGear> defaultArmors = new ArrayList<>();
@@ -44,6 +47,8 @@ public class GearManager {
     private String tokenCode;
 
     public GearManager() {
+        gearEffects = new GearEffects();
+
         load(carbyne.getGearFileConfiguration());
         loadStoreOptions(carbyne.getGearFileConfiguration());
 
@@ -241,7 +246,7 @@ public class GearManager {
             if (carbyneGear instanceof CarbyneArmor) {
                 CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
-                if (carbyneArmor.getItem(false).getType() == Material.LEATHER_CHESTPLATE && !carbyneArmor.isHidden()) {
+                if (carbyneArmor.getItem(false).getType() == Material.LEATHER_CHESTPLATE) {
                     carbyneArmorList.add(carbyneArmor);
                 }
             }
@@ -302,11 +307,11 @@ public class GearManager {
         for (CarbyneGear cg : carbyneGear) {
             if (cg instanceof CarbyneWeapon) {
 
-                if (!cg.isHidden()) {
-                    carbyneWeapons.add((CarbyneWeapon) cg);
-                }
+                carbyneWeapons.add((CarbyneWeapon) cg);
             }
         }
+
+        carbyneWeapons.sort((o1, o2) -> Boolean.compare(o1.isHidden(), o2.isHidden()));
 
         return carbyneWeapons;
     }
@@ -342,11 +347,19 @@ public class GearManager {
     }
 
     public boolean isCarbyneArmor(ItemStack is) {
+        if (is == null) {
+            return false;
+        }
+
         if (is.getItemMeta() == null) {
             return false;
         }
 
         if (is.getItemMeta().getDisplayName() == null) {
+            return false;
+        }
+
+        if (!is.getItemMeta().hasDisplayName()) {
             return false;
         }
 
@@ -359,6 +372,10 @@ public class GearManager {
         for (CarbyneGear cg : carbyneGear) {
             if (!(cg instanceof CarbyneArmor)) {
                 continue;
+            }
+
+            if (cg.getDisplayName() == null) {
+                return false;
             }
 
             if (cg.getDisplayName().equalsIgnoreCase(is.getItemMeta().getDisplayName().replace('§', '&'))) {
@@ -566,6 +583,29 @@ public class GearManager {
         }
     }
 
+    public boolean isInFullCarbyne(Player player) {
+        ItemStack[] armorContents = player.getInventory().getArmorContents();
+        boolean chestplate = false, leggings = false;
+
+        if (armorContents != null && armorContents.length > 0) {
+            for (ItemStack item : armorContents) {
+                if (item != null && (item.getType().toString().contains("CHESTPLATE") || item.getType().toString().contains("LEGGINGS"))) {
+                    if (getCarbyneGear(item) != null) {
+                        if (item.getType().toString().contains("CHESTPLATE")) {
+                            chestplate = true;
+                        }
+
+                        if (item.getType().toString().contains("LEGGINGS")) {
+                            leggings = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return (chestplate && leggings);
+    }
+
     public Material getTokenMaterial() {
         return Material.getMaterial(tokenId);
     }
@@ -593,4 +633,6 @@ public class GearManager {
     public GearGuiManager getGearGuiManager() {
         return gearGuiManager;
     }
+
+    public GearEffects getGearEffects() {return gearEffects; }
 }

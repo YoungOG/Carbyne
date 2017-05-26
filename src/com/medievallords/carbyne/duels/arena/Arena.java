@@ -2,6 +2,9 @@ package com.medievallords.carbyne.duels.arena;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.duel.Duel;
+import com.medievallords.carbyne.duels.duel.request.DuelRequest;
+import com.medievallords.carbyne.duels.duel.types.RegularDuel;
+import com.medievallords.carbyne.duels.duel.types.SquadDuel;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
@@ -15,6 +18,7 @@ import org.bukkit.entity.Player;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -29,14 +33,17 @@ public class Arena {
     private Carbyne main = Carbyne.getInstance();
 
     private String arenaId;
-    private Location[] pedastoolLocations = new Location[2], spawnPointLocations = new Location[2];
+    private Location[] pedastoolLocations;
+    private Location[] spawnPointLocations;
     private HashMap<Location, Boolean> activePedastoolLocations = new HashMap<>();
     private Location lobbyLocation;
     private Duel duel;
-    private UUID[] duelists = new UUID[2];
+    private List<UUID> duelists = new ArrayList<>();
 
     public Arena(String arenaId) {
         this.arenaId = arenaId;
+        this.pedastoolLocations = new Location[2];
+        this.spawnPointLocations = new Location[2];
     }
 
     public void save() {
@@ -114,27 +121,30 @@ public class Arena {
         if (activePressurePlates >= activePedastoolLocations.keySet().size()) {
 
         }
+        if (activePressurePlates >= pedastoolLocations.length) {
 
-        Bukkit.broadcastMessage("Activated PressurePlates: " + activePedastoolLocations.size());
+            HashMap<UUID, Boolean> players = new HashMap<>();
+            for (UUID uuid : duelists) {
+                players.put(uuid, false);
+            }
 
-        for (Location loc : activePedastoolLocations.keySet()) {
-            Bukkit.broadcastMessage("Location: (World: " + loc.getWorld().getName() + ", X: " + loc.getX() + ", Y: " + loc.getY() + ", Z: " + loc.getZ() + ")");
+            DuelRequest request = new DuelRequest(players, false, this);
         }
     }
 
-    public void requestDuel(boolean squadFight, UUID[] players, Squad squadOne, Squad squadTwo, Duel duel) {
+    public void requestDuel(boolean squadFight, UUID[] players, Squad squadOne, Squad squadTwo, int bet, HashMap<UUID, Integer> playerBets) {
         if (squadFight) {
             if (squadOne != null && squadTwo != null) {
-                startSquadFight(squadOne, squadTwo, duel);
+                startSquadFight(squadOne, squadTwo, bet, playerBets);
             }
         } else {
             if (players != null) {
-                startRegular(players, duel);
+                startRegular(players, bet, playerBets);
             }
         }
     }
 
-    public void startRegular(UUID[] players, Duel duel) {
+    public void startRegular(UUID[] players, int bet, HashMap<UUID, Integer> playerBets) {
         if (duel != null) {
 
             for (UUID uuid : players) {
@@ -147,12 +157,14 @@ public class Arena {
 
             return;
         }
-
+        this.duel = new RegularDuel(this, players);
+        duel.setBets(bet);
+        duel.setPlayerBets(playerBets);
         Carbyne.getInstance().getDuelManager().getDuels().add(duel);
         duel.countdown();
     }
 
-    public void startSquadFight(Squad teamOne, Squad teamTwo, Duel duel) {
+    public void startSquadFight(Squad teamOne, Squad teamTwo, int bets, HashMap<UUID, Integer> playerBets) {
         if (duel != null) {
 
             for (UUID uuid : teamOne.getAllPlayers()) {
@@ -172,7 +184,9 @@ public class Arena {
             }
             return;
         }
-
+        this.duel = new SquadDuel(this, teamOne, teamTwo);
+        duel.setBets(bets);
+        duel.setPlayerBets(playerBets);
         Carbyne.getInstance().getDuelManager().getDuels().add(duel);
         duel.countdown();
     }

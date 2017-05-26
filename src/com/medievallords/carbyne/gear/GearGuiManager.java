@@ -71,7 +71,7 @@ public class GearGuiManager {
 
     public void setupWeaponsGui() {
         for (CarbyneWeapon carbyneWeapon : gearManager.getCarbyneWeapon()) {
-            weaponsGui.addItem(new ItemBuilder(carbyneWeapon.getItem(true)).addLore(" ").addLore("&eCost: " + carbyneWeapon.getCost()).build());
+            weaponsGui.addItem(new ItemBuilder(carbyneWeapon.getItem(true)).addLore(" ").addLore((!carbyneWeapon.isHidden() ? "&eCost: " + carbyneWeapon.getCost() : "&cThis is not a purchasable weapon.")).build());
         }
 
         weaponsGui.setItem(26, new ItemBuilder(Material.BARRIER).name("&c&lGo Back").build());
@@ -118,7 +118,7 @@ public class GearGuiManager {
                         slot = 3;
                     }
 
-                    inventory.setItem(slot, new ItemBuilder(set.getItem(true)).addLore(" ").addLore("&eCost: " + set.getCost()).build());
+                    inventory.setItem(slot, new ItemBuilder(set.getItem(true)).addLore(" ").addLore((!set.isHidden() ? "&eCost: " + set.getCost() : "&cThis is not a purchasable armor set.")).build());
                 }
 
                 armorGuiList.put(carbyneArmor.getDisplayName(), inventory);

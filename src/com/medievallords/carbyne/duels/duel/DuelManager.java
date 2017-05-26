@@ -2,6 +2,9 @@ package com.medievallords.carbyne.duels.duel;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
+import com.medievallords.carbyne.duels.duel.request.DuelRequest;
+import com.medievallords.carbyne.duels.duel.types.RegularDuel;
+import com.medievallords.carbyne.duels.duel.types.SquadDuel;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -9,10 +12,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
  * Created by xwiena22 on 2017-03-14.
+ *
  */
 public class DuelManager {
 
@@ -76,14 +81,25 @@ public class DuelManager {
         return null;
     }
 
-    /*public Duel getDuelFromUUID(UUID uuid) {
+    public Duel getDuelFromUUID(UUID uuid) {
         for (Duel duel : duels) {
-            if (Arrays.asList(duel.getParticipants()).contains(uuid)) {
-                return duel;
+            if (duel instanceof RegularDuel) {
+
+                RegularDuel regularDuel = (RegularDuel) duel;
+
+                if (Arrays.asList(regularDuel.getParticipants()).contains(uuid)) {
+                    return duel;
+                }
+            } else if (duel instanceof SquadDuel) {
+
+                SquadDuel squadDuel = (SquadDuel) duel;
+                if (squadDuel.getSquadOne().getAllPlayers().contains(uuid) || squadDuel.getSquadTwo().getAllPlayers().contains(uuid)) {
+                    return duel;
+                }
             }
         }
         return null;
-    }*/
+    }
 
     public Arena getArena(String arenaId) {
         for (Arena arena : arenas) {
@@ -111,5 +127,24 @@ public class DuelManager {
 
     public List<Duel> getDuels() {
         return duels;
+    }
+
+    public void cancelAll() {
+        cancelDuels();
+        cancelRequests();
+    }
+
+    public void cancelDuels() {
+        for (Duel duel : duels) {
+            if (duel == null) continue;
+            duel.end(null);
+        }
+    }
+
+    public void cancelRequests() {
+        for (DuelRequest request : DuelRequest.requests) {
+            if (request == null) continue;
+            request.cancel();
+        }
     }
 }

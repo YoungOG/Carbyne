@@ -4,4 +4,5 @@ version: 0.3
 description: Carbyne weapons and armors.
 author: Young
 depend: [MythicMobs]
-softdepend: [Towny, CombatTagPlus]
+softdepend: [Towny]
+loadBefore: [Vault]

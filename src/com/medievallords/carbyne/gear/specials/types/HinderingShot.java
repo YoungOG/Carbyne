@@ -74,9 +74,11 @@ public class HinderingShot implements Special {
     public void damageEntity(LivingEntity entity, Player caster, double damage) {
         //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, DamageCause.ENTITY_ATTACK, damagePerRound);
         //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
-        entity.damage(damage);
-        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
-        entity.setFireTicks(20 * 5);
+        if (!isInSafeZone(entity)) {
+            entity.damage(damage);
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
+            entity.setFireTicks(20 * 5);
+        }
     }
 
 }

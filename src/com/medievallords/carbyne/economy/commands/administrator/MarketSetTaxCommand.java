@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.economy.commands;
+package com.medievallords.carbyne.economy.commands.administrator;
 
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;

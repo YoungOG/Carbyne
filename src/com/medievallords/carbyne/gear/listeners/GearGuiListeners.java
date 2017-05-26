@@ -69,13 +69,19 @@ public class GearGuiListeners implements Listener {
                         return;
                     }
 
+                    if (carbyneWeapon.isHidden() && (!p.hasPermission("carbyne.administrator") || !p.isOp())) {
+                        MessageManager.sendMessage(p, "&cThis weapon is not purchasable.");
+                        p.closeInventory();
+                        return;
+                    }
+
                     if (p.getInventory().firstEmpty() == -1) {
                         MessageManager.sendMessage(p, "&cYour inventory is full.");
                         p.closeInventory();
                         return;
                     }
 
-                    if (p.hasPermission("carbyne.admin") || p.isOp()) {
+                    if (p.hasPermission("carbyne.administrator") || p.isOp()) {
                         p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &4" + carbyneWeapon.getDisplayName() + "&a.");
                         return;
@@ -141,13 +147,19 @@ public class GearGuiListeners implements Listener {
                         return;
                     }
 
+                    if (carbyneArmor.isHidden() && (!p.hasPermission("carbyne.administrator") || !p.isOp())) {
+                        MessageManager.sendMessage(p, "&cThis armor set is not purchasable.");
+                        p.closeInventory();
+                        return;
+                    }
+
                     if (p.getInventory().firstEmpty() == -1) {
                         MessageManager.sendMessage(p, "&cYour inventory is full.");
                         p.closeInventory();
                         return;
                     }
 
-                    if (p.hasPermission("carbyne.admin") || p.isOp()) {
+                    if (p.hasPermission("carbyne.administrator") || p.isOp()) {
                         p.getInventory().addItem(carbyneArmor.getItem(false).clone());
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + "&a.");
                         return;

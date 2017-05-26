@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
  */
 public class GearGiveCommand extends BaseCommand {
 
-    @Command(name = "carbyne.give", aliases = {"cg.g", "carbyne.g"},inGameOnly = true, permission = "carbyne.gear.admin")
+    @Command(name = "carbyne.give", aliases = {"cg.g", "carbyne.g"},inGameOnly = true, permission = "carbyne.gear.administrator")
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

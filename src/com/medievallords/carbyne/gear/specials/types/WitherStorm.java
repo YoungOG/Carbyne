@@ -72,7 +72,9 @@ public class WitherStorm implements Special{
     public void damageEntity(LivingEntity entity, Player caster) {
         //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, DamageCause.ENTITY_ATTACK, damagePerRound);
         //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
-        entity.damage(damagePerRound);
+        if (!isInSafeZone(entity)) {
+            entity.damage(damagePerRound);
+        }
         //entity.setFireTicks(20 * 5);
     }
 

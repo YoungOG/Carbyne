@@ -4,8 +4,8 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.regeneration.tasks.DormantRegenerationTask;
 import com.medievallords.carbyne.regeneration.tasks.RegenerationTask;
 import com.palmergames.bukkit.towny.object.WorldCoord;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -58,7 +58,7 @@ public class RegenerationListeners implements Listener {
 
         if (event.getWorld().getName().equals("player_world")) {
             if (regenerationHandler.getRegenerationTaskFromChunk(chunk).size() > 0) {
-                Bukkit.broadcastMessage("Chunk(X: " + chunk.getX() + ", Z: " + chunk.getZ() + ", RegenerationTasks: " + regenerationHandler.getRegenerationTaskFromChunk(chunk).size() + ") unloaded. ActiveTasks: " + regenerationHandler.getNumActiveRegenerationTasks() + ", ActiveWorldCoords: " + regenerationHandler.getActiveRegenerationTasks().keySet().size() + ", DormantTasks: " + regenerationHandler.getNumDormantRegenerationTasks() + ", DormantWorldCoords: " + regenerationHandler.getDormantRegenerationTasks().keySet().size());
+//                Bukkit.broadcastMessage("Chunk(X: " + chunk.getX() + ", Z: " + chunk.getZ() + ", RegenerationTasks: " + regenerationHandler.getRegenerationTaskFromChunk(chunk).size() + ") unloaded. ActiveTasks: " + regenerationHandler.getNumActiveRegenerationTasks() + ", ActiveWorldCoords: " + regenerationHandler.getActiveRegenerationTasks().keySet().size() + ", DormantTasks: " + regenerationHandler.getNumDormantRegenerationTasks() + ", DormantWorldCoords: " + regenerationHandler.getDormantRegenerationTasks().keySet().size());
 
                 for (RegenerationTask regenerationTask : regenerationHandler.getRegenerationTaskFromChunk(chunk)) {
                     if (regenerationHandler.activeRegenerationTasksContainsTask(regenerationTask)) {
@@ -103,7 +103,7 @@ public class RegenerationListeners implements Listener {
 
         if (event.getWorld().getName().equals("player_world")) {
             if (regenerationHandler.getDormantRegenerationTaskFromChunk(chunk).size() > 0) {
-                Bukkit.broadcastMessage("Chunk(X: " + chunk.getX() + ", Z: " + chunk.getZ() + ", RegenerationTasks: " + regenerationHandler.getDormantRegenerationTaskFromChunk(chunk).size() + ") loaded. ActiveTasks: " + regenerationHandler.getNumActiveRegenerationTasks() + ", ActiveWorldCoords: " + regenerationHandler.getActiveRegenerationTasks().keySet().size() + ", DormantTasks: " + regenerationHandler.getNumDormantRegenerationTasks() + ", DormantWorldCoords: " + regenerationHandler.getDormantRegenerationTasks().keySet().size());
+//                Bukkit.broadcastMessage("Chunk(X: " + chunk.getX() + ", Z: " + chunk.getZ() + ", RegenerationTasks: " + regenerationHandler.getDormantRegenerationTaskFromChunk(chunk).size() + ") loaded. ActiveTasks: " + regenerationHandler.getNumActiveRegenerationTasks() + ", ActiveWorldCoords: " + regenerationHandler.getActiveRegenerationTasks().keySet().size() + ", DormantTasks: " + regenerationHandler.getNumDormantRegenerationTasks() + ", DormantWorldCoords: " + regenerationHandler.getDormantRegenerationTasks().keySet().size());
 
                 for (DormantRegenerationTask dormantRegenerationTask : regenerationHandler.getDormantRegenerationTaskFromChunk(chunk)) {
                     if (regenerationHandler.dormantRegenerationTasksContainsTask(dormantRegenerationTask)) {
@@ -146,21 +146,24 @@ public class RegenerationListeners implements Listener {
             MaterialData data = state.getData();
             BlockFace direction = null;
 
-            Bukkit.broadcastMessage("Piston Extended(X: " + piston.getX() + ", Y: " + piston.getY() + ", Z: " + piston.getZ() + "):");
+//            Bukkit.broadcastMessage("Piston Extended(X: " + piston.getX() + ", Y: " + piston.getY() + ", Z: " + piston.getZ() + "):");
 
             if (data instanceof PistonBaseMaterial) {
                 direction = ((PistonBaseMaterial) data).getFacing();
                 Block block = piston.getRelative(direction);
 
                 if (event.getBlocks().size() <= 1) {
-                    Bukkit.broadcastMessage("From Block (X:" + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")");
-                    Bukkit.broadcastMessage("To Block (X:" + block.getRelative(direction).getLocation().getX() + ", Y: " + block.getRelative(direction).getLocation().getY() + ", Z: " + block.getRelative(direction).getLocation().getZ() + ")");
+//                    Bukkit.broadcastMessage("From Block (X:" + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + ")");
+//                    Bukkit.broadcastMessage("To Block (X:" + block.getRelative(direction).getLocation().getX() + ", Y: " + block.getRelative(direction).getLocation().getY() + ", Z: " + block.getRelative(direction).getLocation().getZ() + ")");
 
                     HashSet<RegenerationTask> regenerationTasks = regenerationHandler.getRegenerationTaskFromChunk(block.getChunk());
 
                     if (regenerationTasks.size() > 0) {
+//                        Bukkit.broadcastMessage("Test");
                         for (RegenerationTask regenerationTask : regenerationTasks) {
+//                            Bukkit.broadcastMessage("Test 1");
                             if (regenerationTask.getBlockLocation().equals(block.getLocation())) {
+//                                Bukkit.broadcastMessage("Test 2");
                                 regenerationTask.setBlockLocation(block.getRelative(direction).getLocation());
 
                                 WorldCoord worldCoord = WorldCoord.parseWorldCoord(block.getLocation());
@@ -188,6 +191,8 @@ public class RegenerationListeners implements Listener {
                                     }
                                 }
 
+//                                Bukkit.broadcastMessage("Test 3");
+
                                 break;
                             }
                         }
@@ -199,124 +204,19 @@ public class RegenerationListeners implements Listener {
                 return;
             }
 
-            Bukkit.broadcastMessage(" Length: " + event.getBlocks().size());
-            Bukkit.broadcastMessage(" RegenTasks: " + regenerationHandler.getRegenerationTaskFromChunk(piston.getChunk()).size());
+//            Bukkit.broadcastMessage(" Length: " + event.getBlocks().size());
+//            Bukkit.broadcastMessage(" RegenTasks: " + regenerationHandler.getRegenerationTaskFromChunk(piston.getChunk()).size());
 
-            if (event.getBlocks().size() > 1) {
-                for (int i = event.getBlocks().size(); i >= 1; i--) {
-                    Block block = event.getBlocks().get(i);
-                    Block toBlock = piston.getRelative(direction).getRelative(direction, i);
-                    Block fromBlock = piston.getRelative(direction).getRelative(direction, i - 1);
-
-                    Bukkit.broadcastMessage(i + ":" + (i - 1) + ". Block(X: " + toBlock.getX() + ", Y: " + toBlock.getY() + ", Z: " + toBlock.getZ() + ") from Block(X: " + fromBlock.getX() + ", Y: " + fromBlock.getY() + ", Z: " + fromBlock.getZ() + "):");
-                    Bukkit.broadcastMessage("New Block: " + i + ":" + (i - 1) + ". Block(X: " + block.getX() + ", Y: " + block.getY() + ", Z: " + block.getZ() + "");
-
-                    HashSet<RegenerationTask> regenerationTasks = regenerationHandler.getRegenerationTaskFromChunk(fromBlock.getChunk());
-                    if (regenerationTasks.size() > 0) {
-                        for (RegenerationTask regenerationTask : regenerationTasks) {
-                            if (regenerationTask.getBlockLocation().equals(fromBlock.getLocation())) {
-                                Bukkit.broadcastMessage("Found Task for Block(X: " + fromBlock.getX() + ", Y: " + fromBlock.getY() + ", Z: " + fromBlock.getZ() + ")");
-                                regenerationTask.setBlockLocation(toBlock.getLocation());
-
-                                WorldCoord worldCoord = WorldCoord.parseWorldCoord(toBlock.getLocation());
-
-                                if (!(regenerationTask.getWorldCoord().getX() == worldCoord.getX() && regenerationTask.getWorldCoord().getZ() == worldCoord.getX())) {
-                                    if (regenerationHandler.activeRegenerationTasksContainsTask(regenerationTask)) {
-                                        if (regenerationHandler.getActiveRegenerationTasks().get(worldCoord).size() >= 1) {
-                                            regenerationHandler.getActiveRegenerationTasks().get(regenerationTask.getWorldCoord()).remove(regenerationTask);
-                                        } else {
-                                            regenerationHandler.getActiveRegenerationTasks().remove(regenerationTask.getWorldCoord());
-                                        }
-                                    }
-
-                                    regenerationTask.setWorldCoord(worldCoord);
-
-                                    if (!regenerationHandler.activeRegenerationTasksContainsTask(regenerationTask)) {
-                                        if (!regenerationHandler.getActiveRegenerationTasks().containsKey(worldCoord)) {
-                                            HashSet<RegenerationTask> tasks = new HashSet<>();
-                                            tasks.add(regenerationTask);
-
-                                            regenerationHandler.getActiveRegenerationTasks().put(worldCoord, tasks);
-                                        } else {
-                                            regenerationHandler.getActiveRegenerationTasks().get(worldCoord).add(regenerationTask);
-                                        }
-                                    }
-                                }
-
-                                Bukkit.broadcastMessage("Changed Location to Block(X: " + toBlock.getX() + ", Y: " + toBlock.getY() + ", Z: " + toBlock.getZ() + ")\n");
-                            }
-                        }
-                    }
-                }
+            if (event.getBlocks().size() >= 2) {
+                event.setCancelled(true);
             }
         }
     }
 
     @EventHandler
-    public void onPistonRetract(BlockPistonRetractEvent event) {
-        if (event.getBlock().getWorld().getName().equalsIgnoreCase("player_world")) {
-            if (event.isCancelled()) {
-                return;
-            }
-
-            Block piston = event.getBlock();
-            BlockState state = piston.getState();
-            MaterialData data = state.getData();
-            BlockFace direction = null;
-
-            Bukkit.broadcastMessage("Piston Retract(X: " + piston.getX() + ", Y: " + piston.getY() + ", Z: " + piston.getZ() + "):");
-
-            if (data instanceof PistonBaseMaterial) {
-                direction = ((PistonBaseMaterial) data).getFacing();
-            }
-
-            if (direction == null) {
-                return;
-            }
-
-
-            Block fromBlock = piston.getRelative(direction, 2);
-            Block toBlock = piston.getRelative(direction);
-
-            Bukkit.broadcastMessage("From Block (X:" + fromBlock.getX() + ", Y: " + fromBlock.getY() + ", Z: " + fromBlock.getZ() + ")");
-            Bukkit.broadcastMessage("To Block   (X:" + toBlock.getX() + ", Y: " + toBlock.getY() + ", Z: " + toBlock.getZ() + ")");
-
-            HashSet<RegenerationTask> regenerationTasks = regenerationHandler.getRegenerationTaskFromChunk(fromBlock.getChunk());
-
-            if (regenerationTasks.size() > 0) {
-                for (RegenerationTask regenerationTask : regenerationTasks) {
-                    if (regenerationTask.getBlockLocation().equals(fromBlock.getLocation())) {
-                        regenerationTask.setBlockLocation(toBlock.getLocation());
-
-                        WorldCoord worldCoord = WorldCoord.parseWorldCoord(toBlock);
-
-                        if (!(regenerationTask.getWorldCoord().getX() == worldCoord.getX() && regenerationTask.getWorldCoord().getZ() == worldCoord.getX())) {
-                            if (regenerationHandler.activeRegenerationTasksContainsTask(regenerationTask)) {
-                                if (regenerationHandler.getActiveRegenerationTasks().get(worldCoord).size() >= 1) {
-                                    regenerationHandler.getActiveRegenerationTasks().get(regenerationTask.getWorldCoord()).remove(regenerationTask);
-                                } else {
-                                    regenerationHandler.getActiveRegenerationTasks().remove(regenerationTask.getWorldCoord());
-                                }
-                            }
-
-                            regenerationTask.setWorldCoord(worldCoord);
-
-                            if (!regenerationHandler.activeRegenerationTasksContainsTask(regenerationTask)) {
-                                if (!regenerationHandler.getActiveRegenerationTasks().containsKey(worldCoord)) {
-                                    HashSet<RegenerationTask> tasks = new HashSet<>();
-                                    tasks.add(regenerationTask);
-
-                                    regenerationHandler.getActiveRegenerationTasks().put(worldCoord, tasks);
-                                } else {
-                                    regenerationHandler.getActiveRegenerationTasks().get(worldCoord).add(regenerationTask);
-                                }
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
+    public void onBlockPhysics(BlockPhysicsEvent event) {
+        if (event.getBlock().getType() == Material.SAND || event.getBlock().getType() == Material.GRAVEL) {
+            event.setCancelled(true);
         }
     }
 }

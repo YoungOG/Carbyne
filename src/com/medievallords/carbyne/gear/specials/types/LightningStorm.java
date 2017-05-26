@@ -67,7 +67,9 @@ public class LightningStorm implements Special{
     public void damageEntity(LivingEntity entity, Player caster) {
         //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, damagePerLightning);
         //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
-        entity.damage(damagePerLightning);
+        if (!isInSafeZone(entity)) {
+            entity.damage(damagePerLightning);
+        }
         //entity.setFireTicks(20 * 5);
     }
 }

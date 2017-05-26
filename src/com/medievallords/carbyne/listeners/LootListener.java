@@ -18,9 +18,11 @@ public class LootListener implements Listener {
         for (ItemStack itemStack : lootEvent.getItemList()) {
             if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName() && itemStack.getType() != null && itemStack.getType() == Material.QUARTZ) {
                 ItemStack replacement = Carbyne.getInstance().getGearManager().getCarbyneGear(itemStack.getItemMeta().getDisplayName()).getItem(false);
+
                 if (replacement == null) {
                     return;
                 }
+
                 lootEvent.getItemList().remove(itemStack);
                 lootEvent.getItemList().add(replacement);
             }
