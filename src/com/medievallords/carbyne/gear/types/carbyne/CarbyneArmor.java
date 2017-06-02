@@ -45,6 +45,7 @@ public class CarbyneArmor extends CarbyneGear {
         lore = cs.getStringList(type + ".Lore");
         enchantments = cs.getStringList(type + ".Enchantments");
         cost = cs.getInt(type + ".Cost");
+        hidden = cs.getBoolean(type + ".Hidden");
         armorRating = cs.getDouble(type + ".ArmorRating");
 
         if (cs.getString(type + ".Color") != null) {

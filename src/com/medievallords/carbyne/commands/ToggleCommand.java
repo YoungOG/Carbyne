@@ -25,7 +25,7 @@ public class ToggleCommand extends BaseCommand {
         }
 
         if (profile == null) {
-            MessageManager.sendMessage(player, "&cCould not load your profile. Please contact an administrator.");
+            MessageManager.sendMessage(player, "&cCould not load your profiles. Please contact an administrator.");
             return;
         }
 

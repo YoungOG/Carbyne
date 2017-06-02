@@ -3,11 +3,12 @@ package com.medievallords.carbyne.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
 import com.medievallords.carbyne.utils.signgui.SignGUIUpdateEvent;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.World;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyUniverse;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Arrow;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -31,10 +33,13 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class OptimizationListeners implements Listener {
 
+    private List<Integer> allowedBlockIds = new ArrayList<>();
     private ArrayList<Material> allowedMaterials = new ArrayList<>();
 
     public OptimizationListeners() {
@@ -52,6 +57,8 @@ public class OptimizationListeners implements Listener {
         allowedMaterials.add(Material.MONSTER_EGG);
         allowedMaterials.add(Material.COMMAND);
         allowedMaterials.add(Material.MOB_SPAWNER);
+
+        allowedBlockIds.addAll(Arrays.asList(0, 6, 8, 9, 10, 11, 30, 31, 32, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 66, 68, 69, 70, 72, 75, 76, 77, 83, 90, 93, 94, 104, 105, 106, 115));
     }
 
     @EventHandler
@@ -135,30 +142,30 @@ public class OptimizationListeners implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void onInteract(PlayerInteractEvent event) {
-//        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-//            if (event.hasBlock() && (event.getClickedBlock().getType() == Material.TRAP_DOOR
-//                    || event.getClickedBlock().getType() == Material.BEACON
-//                    || event.getClickedBlock().getType() == Material.NOTE_BLOCK
-//                    || event.getClickedBlock().getType() == Material.FENCE_GATE)) {
-//
-//                TownBlock townBlock = TownyUniverse.getTownBlock(event.getClickedBlock().getLocation());
-//
-//                if (townBlock != null) {
-//                    try {
-//                        if (townBlock.getTown() != null) {
-//                            if (townBlock.getTown().getName().equalsIgnoreCase("Safezone")) {
-//                                event.setCancelled(true);
-//                            }
-//                        }
-//                    } catch (NotRegisteredException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        }
-//    }
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (event.hasBlock() && (event.getClickedBlock().getType() == Material.TRAP_DOOR
+                    || event.getClickedBlock().getType() == Material.BEACON
+                    || event.getClickedBlock().getType() == Material.NOTE_BLOCK
+                    || event.getClickedBlock().getType() == Material.FENCE_GATE)) {
+
+                TownBlock townBlock = TownyUniverse.getTownBlock(event.getClickedBlock().getLocation());
+
+                if (townBlock != null) {
+                    try {
+                        if (townBlock.getTown() != null) {
+                            if (townBlock.getTown().getName().equalsIgnoreCase("Safezone") && !(event.getPlayer().isOp() || event.getPlayer().hasPermission("carbyne.bypass"))) {
+                                event.setCancelled(true);
+                            }
+                        }
+                    } catch (NotRegisteredException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
@@ -328,7 +335,17 @@ public class OptimizationListeners implements Listener {
         }
     }
 
-
-
-
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerTeleportEvent(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
+            Location location = event.getTo();
+            location.setX(location.getBlockX() + 0.5);
+            location.setY(location.getBlockY());
+            location.setZ(location.getBlockZ() + 0.5);
+            
+            if (!allowedBlockIds.contains(location.getBlock().getTypeId()) && !allowedBlockIds.contains(location.getBlock().getRelative(BlockFace.UP).getTypeId())) {
+                event.setTo(event.getFrom());
+            }
+        }
+    }
 }

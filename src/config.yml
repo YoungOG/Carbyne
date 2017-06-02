@@ -43,6 +43,6 @@ database:
   host: ''
   port: 27017
   database-name: carbyne
-duel-disabled-commands:
+duel-disabled-co/mmands:
   - '/squad'
   - '/tpa'

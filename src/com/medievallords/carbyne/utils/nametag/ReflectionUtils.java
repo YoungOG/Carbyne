@@ -57,13 +57,13 @@ public class ReflectionUtils {
             while ((entry = zis.getNextEntry()) != null) {
                 final String name = entry.getName().replace("\\", "/");
                 if (name.startsWith("org/bukkit/craftbukkit/v")) {
-                    String ver = "";
+                    StringBuilder ver = new StringBuilder();
                     for (int t = "org/bukkit/craftbukkit/v".length(); t < name.length(); ++t) {
                         final char c = name.charAt(t);
                         if (c == '/') {
                             break;
                         }
-                        ver += c;
+                        ver.append(c);
                     }
                     ReflectionUtils.version = "v" + ver;
                     break;

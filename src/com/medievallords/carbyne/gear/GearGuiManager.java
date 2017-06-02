@@ -89,6 +89,11 @@ public class GearGuiManager {
                 loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
             }
 
+            if (carbyneArmor.isHidden()) {
+                loreCopy.add(0, "&cThis is not a purchasable set.");
+                loreCopy.add(0, " ");
+            }
+
             loreCopy.add(0, "&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
             loreCopy.add(0, HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
 

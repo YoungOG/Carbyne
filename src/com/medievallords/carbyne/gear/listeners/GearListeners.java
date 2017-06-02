@@ -273,24 +273,25 @@ public class GearListeners implements Listener {
         }
 
         if (carbyneWeapon.getSpecial() != null) {
-            if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge() || event.getPlayer().hasPermission("carbyne.specials.bypass")) {
+            if (event.getPlayer().hasPermission("carbyne.specials.bypass") || event.getPlayer().isOp()) {
+                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
+                return;
+            }
+
+            if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge()) {
                 carbyneWeapon.setSpecialCharge(itemStack, 0);
+                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
 
-                if (!event.getPlayer().hasPermission("carbyne.specials.bypass")) {
-                    Board board = Board.getByPlayer(event.getPlayer());
+                Board board = Board.getByPlayer(event.getPlayer());
+                if (board != null) {
+                    BoardCooldown boardCooldown = board.getCooldown("special");
 
-                    if (board != null) {
-                        BoardCooldown specialCooldown = board.getCooldown("special");
-
-                        if (specialCooldown != null) {
-                            MessageManager.sendMessage(event.getPlayer(), "&eYou cannot use another special for &6" + specialCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds.");
-                        } else {
-                            new BoardCooldown(board, "special", 60.0D);
-                        }
+                    if (boardCooldown == null) {
+                        new BoardCooldown(board, "special", 60.0D);
+                    } else {
+                        MessageManager.sendMessage(event.getPlayer(), "&eYou cannot use another weapon special for another &6" + boardCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds.");
                     }
                 }
-
-                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
             } else {
                 MessageManager.sendMessage(event.getPlayer(), "&cYour weapon must be fully charged.");
             }
@@ -502,8 +503,10 @@ public class GearListeners implements Listener {
 
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        gearManager.getGearEffects().effectTeleport(event.getPlayer(), event.getFrom());
-        gearManager.getGearEffects().effectTeleport(event.getPlayer(), event.getTo());
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || event.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL) {
+            gearManager.getGearEffects().effectTeleport(event.getPlayer(), event.getFrom());
+            gearManager.getGearEffects().effectTeleport(event.getPlayer(), event.getTo());
+        }
     }
 
     public double getProtectionReduction(Player player) {

@@ -25,7 +25,7 @@ public class StatsCommand extends BaseCommand {
             Profile profile = getProfileManager().getProfile(player.getUniqueId());
 
             if (profile == null) {
-                MessageManager.sendMessage(player, "&cCould not find a profile for " + player.getName() + ".");
+                MessageManager.sendMessage(player, "&cCould not find a profiles for " + player.getName() + ".");
                 return;
             }
 
@@ -37,15 +37,14 @@ public class StatsCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&aCarbyne Deaths: &b" + profile.getCarbyneDeaths());
             MessageManager.sendMessage(player, "&aKD Ratio: &b" + profile.getKDR());
             MessageManager.sendMessage(player, "&aCarbyne KD Ratio: &b" + profile.getCarbyneKDR());
-            MessageManager.sendMessage(player, "&aKillstreak: &b" + profile.getKills());
-            MessageManager.sendMessage(player, "&aKills: &b" + profile.getKills());
+            MessageManager.sendMessage(player, "&aKillstreak: &b" + profile.getKillStreak());
         }
 
         if (args.length == 1) {
             Profile profile = getProfileManager().getProfile(args[0]);
 
             if (profile == null) {
-                MessageManager.sendMessage(player, "&cCould not find a profile for " + args[0] + ".");
+                MessageManager.sendMessage(player, "&cCould not find a profiles for " + args[0] + ".");
                 return;
             }
 
@@ -57,8 +56,7 @@ public class StatsCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&aCarbyne Deaths: &b" + profile.getCarbyneDeaths());
             MessageManager.sendMessage(player, "&aKD Ratio: &b" + profile.getKDR());
             MessageManager.sendMessage(player, "&aCarbyne KD Ratio: &b" + profile.getCarbyneKDR());
-            MessageManager.sendMessage(player, "&aKillstreak: &b" + profile.getKills());
-            MessageManager.sendMessage(player, "&aKills: &b" + profile.getKills());
+            MessageManager.sendMessage(player, "&aKillstreak: &b" + profile.getKillStreak());
         }
     }
 }

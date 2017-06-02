@@ -47,27 +47,6 @@ public class NametagManager {
         NametagPlayer toRefreshTag = NametagManager.getPlayer(toRefresh);
         NametagPlayer refreshForTag = NametagManager.getPlayer(refreshFor);
 
-//        Bukkit.broadcastMessage(" ");
-//        Bukkit.broadcastMessage(ChatColor.BOLD + "refreshFor(" + refreshFor.getName() + "):");
-//        Bukkit.broadcastMessage("  Registered Nametags(" + refreshForTag.getRegisteredNametags().size() + "):");
-//        for (Nametag nametag : refreshForTag.getRegisteredNametags()) {
-//            Bukkit.broadcastMessage(ChatColor.stripColor("    - Name: " + nametag.getName() + ", Prefix: " + nametag.getPrefix() + ", Suffix: " + nametag.getSuffix()));
-//        }
-//        Bukkit.broadcastMessage("  Player Nametags(" + refreshForTag.getPlayerNametags().keySet().size() + " | " + refreshForTag.getPlayerNametags().values().size() + "):");
-//        for (NametagPlayer nametagPlayer : refreshForTag.getPlayerNametags().keySet()) {
-//            Bukkit.broadcastMessage(ChatColor.stripColor("    - Name: " + nametagPlayer.getName() + ", Nametag(Name: " + refreshForTag.getPlayerNametags().get(nametagPlayer).getName() + ", Prefix: " + refreshForTag.getPlayerNametags().get(nametagPlayer).getPrefix() + ", Suffix: " + refreshForTag.getPlayerNametags().get(nametagPlayer).getSuffix() + ")"));
-//        }
-//
-//        Bukkit.broadcastMessage(ChatColor.BOLD + "toRefresh(" + toRefresh.getName() + "):");
-//        Bukkit.broadcastMessage("  Registered Nametags(" + toRefreshTag.getRegisteredNametags().size() + "):");
-//        for (Nametag nametag : toRefreshTag.getRegisteredNametags()) {
-//            Bukkit.broadcastMessage(ChatColor.stripColor("    - Name: " + nametag.getName() + ", Prefix: " + nametag.getPrefix() + ", Suffix: " + nametag.getSuffix()));
-//        }
-//        Bukkit.broadcastMessage("  Player Nametags(" + toRefreshTag.getPlayerNametags().keySet().size() + " | " + toRefreshTag.getPlayerNametags().values().size() + "):");
-//        for (NametagPlayer nametagPlayer : toRefreshTag.getPlayerNametags().keySet()) {
-//            Bukkit.broadcastMessage(ChatColor.stripColor("    - Name: " + nametagPlayer.getName() + ", Nametag(Name: " + toRefreshTag.getPlayerNametags().get(nametagPlayer).getName() + ", Prefix: " + toRefreshTag.getPlayerNametags().get(nametagPlayer).getPrefix() + ", Suffix: " + toRefreshTag.getPlayerNametags().get(nametagPlayer).getSuffix() + ")"));
-//        }
-
         Nametag nametag;
 
         if (refreshForTag.getPlayerNametag(toRefreshTag) == null) {
@@ -94,15 +73,15 @@ public class NametagManager {
 
                 if (squad1.getUniqueId().equals(squad2.getUniqueId())) {
                     if (squad1.getLeader().equals(toRefresh.getUniqueId())) {
-                        nametag.setPrefix(ChatColor.AQUA + "" + ChatColor.BOLD + "");
+                        nametag.setPrefix(ChatColor.AQUA + "SQUAD" + ChatColor.AQUA + "" + ChatColor.BOLD + " ");
                     } else {
-                        nametag.setPrefix(ChatColor.AQUA + "");
+                        nametag.setPrefix(ChatColor.AQUA + "SQUAD ");
                     }
                 } else {
                     if (squad1.getLeader().equals(toRefresh.getUniqueId())) {
-                        nametag.setPrefix(ChatColor.RED + "" + ChatColor.BOLD + "");
+                        nametag.setPrefix(ChatColor.AQUA + "SQUAD" + ChatColor.AQUA + "" + ChatColor.BOLD + " ");
                     } else {
-                        nametag.setPrefix(ChatColor.RED + "");
+                        nametag.setPrefix(ChatColor.AQUA + "SQUAD ");
                     }
                 }
 
@@ -118,9 +97,9 @@ public class NametagManager {
         if (toRefreshSquad != null && refreshForSquad != null) {
             if (toRefreshSquad.getUniqueId().equals(refreshForSquad.getUniqueId())) {
                 if (toRefreshSquad.getLeader().equals(toRefresh.getUniqueId())) {
-                    nametag.setPrefix(ChatColor.AQUA + "" + ChatColor.BOLD + "");
+                    nametag.setPrefix(ChatColor.AQUA + "SQUAD" + ChatColor.AQUA + "" + ChatColor.BOLD + " ");
                 } else {
-                    nametag.setPrefix(ChatColor.AQUA + "");
+                    nametag.setPrefix(ChatColor.AQUA + "SQUAD ");
                 }
 
                 refreshForTag.update(toRefreshTag, nametag);

@@ -5,9 +5,9 @@ import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.Namer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -78,7 +78,7 @@ public class Leaderboard {
 
             sign.setLine(0, ChatColor.translateAlternateColorCodes('&', "&7&m-----------"));
             sign.setLine(1, ChatColor.translateAlternateColorCodes('&', "&aCategory&7:"));
-            sign.setLine(2, ChatColor.translateAlternateColorCodes('&', "&b" + Namer.capitalizeFirstLetter(leaderboardType.toString().toLowerCase())));
+            sign.setLine(2, ChatColor.translateAlternateColorCodes('&', "&b" + WordUtils.capitalizeFully(leaderboardType.toString().toLowerCase().replace("_", " "))));
             sign.setLine(3, ChatColor.translateAlternateColorCodes('&', "&7&m-----------"));
             sign.update(true);
         }

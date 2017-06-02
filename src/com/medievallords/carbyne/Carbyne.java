@@ -35,7 +35,6 @@ import com.medievallords.carbyne.listeners.*;
 import com.medievallords.carbyne.profiles.ProfileListeners;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
-import com.medievallords.carbyne.regeneration.RegenerationListeners;
 import com.medievallords.carbyne.regeneration.commands.RegenerationBypassCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCreateCommand;
@@ -166,7 +165,7 @@ public class Carbyne extends JavaPlugin {
         }
 
         profileManager = new ProfileManager();
-        regenerationHandler = new RegenerationHandler();
+//        regenerationHandler = new RegenerationHandler();
         marketManager = new MarketManager();
         gearManager = new GearManager();
         effectManager = new EffectManager(this);
@@ -203,7 +202,7 @@ public class Carbyne extends JavaPlugin {
         marketManager.saveSales(false);
         gateManager.saveGates();
         effectManager.dispose();
-        regenerationHandler.saveTasks();
+//        regenerationHandler.saveTasks();
         crateManager.save(crateFileConfiguration);
         leaderboardManager.stopAllLeaderboardTasks();
         duelManager.cancelAll();
@@ -228,7 +227,7 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new GateListeners(), this);
         pm.registerEvents(new LootListener(), this);
         pm.registerEvents(new SpawnerListeners(), this);
-        pm.registerEvents(new RegenerationListeners(), this);
+//        pm.registerEvents(new RegenerationListeners(), this);
         pm.registerEvents(new CrateListeners(), this);
         pm.registerEvents(new ArenaListeners(), this);
         pm.registerEvents(new DuelListeners(), this);
