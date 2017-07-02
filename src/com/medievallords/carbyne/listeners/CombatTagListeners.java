@@ -8,11 +8,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.customevents.CombatTaggedEvent;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.ReflectionUtils;
+import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Coord;
 import com.palmergames.bukkit.towny.object.TownBlock;
@@ -35,8 +38,9 @@ import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -58,11 +62,7 @@ public class CombatTagListeners implements Listener {
     private final Map<UUID, Set<Location>> previousUpdates = new HashMap<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ForceField Thread").build());
 
-    public static HashMap<UUID, Villager> loggers = new HashMap<>();
-    private Multimap<UUID, ItemStack[]> inventories = ArrayListMultimap.create();
-    private HashMap<Villager, BukkitRunnable> villagerLog = new HashMap<>();
-
-    //=================[ Tag Listeners ]=================
+    //=================[ Tag listeners ]=================
 
     @EventHandler
     public void onEnderchestOpen(PlayerInteractEvent event) {
@@ -76,9 +76,69 @@ public class CombatTagListeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
+
+        if (event.getEntity() instanceof Villager && !(event.getDamager() instanceof Player)) {
+            Villager villager = (Villager) event.getEntity();
+
+            if (villager.hasMetadata("logger")) {
+                UUID id = UUID.fromString(villager.getMetadata("logger").get(0).value().toString());
+
+                if (loggers.containsKey(id) && loggers.get(id) == villager) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
+        if (damager instanceof Player && event.getEntity() instanceof Player) {
+            Player playerDamager = (Player) damager;
+            Player damaged = (Player) event.getEntity();
+
+            Profile damagerProfile = main.getProfileManager().getProfile(playerDamager.getUniqueId());
+            Profile damagedProfile = main.getProfileManager().getProfile(damaged.getUniqueId());
+
+            if (damagedProfile != null && damagerProfile != null) {
+                if (damagerProfile.getRemainingPvPTime() > 1) {
+                    event.setCancelled(true);
+                    MessageManager.sendMessage(playerDamager, "&cYou cannot pvp whilst you have a pvp-protection timer");
+                    return;
+                } else if (damagedProfile.getRemainingPvPTime() > 1) {
+                    event.setCancelled(true);
+                    MessageManager.sendMessage(playerDamager, "&cYou cannot hit someone whilst they have a pvp-protection timer");
+                    return;
+                }
+            }
+        }
+
+        if (damager instanceof Projectile && event.getEntity() instanceof Player) {
+            if (((Projectile) damager).getShooter() != null) {
+                damager = (Entity) ((Projectile) damager).getShooter();
+                Player damaged = (Player) event.getEntity();
+                if (damager instanceof Player) {
+
+                    Profile damagerProfile = main.getProfileManager().getProfile(((Player) damager).getUniqueId());
+                    Profile damagedProfile = main.getProfileManager().getProfile(damaged.getUniqueId());
+
+                    if (damagedProfile != null && damagerProfile != null) {
+                        if (damagedProfile.getRemainingPvPTime() > 1) {
+                            event.setCancelled(true);
+                            MessageManager.sendMessage((Player) damager, "&cYou cannot hit someone whilst they have a pvp-protection timer");
+                            return;
+                        }
+
+                        if (damagerProfile.getRemainingPvPTime() > 1) {
+                            event.setCancelled(true);
+                            MessageManager.sendMessage((Player) damager, "&cYou cannot hit someone whilst you have a pvp-protection timer");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
 
         if (damager instanceof Projectile) {
             if (((Projectile) damager).getShooter() != null) {
@@ -96,10 +156,13 @@ public class CombatTagListeners implements Listener {
                     if (isPvpEnabledAt(tagged.getLocation()) && isPvpEnabledAt(tagger.getLocation())) {
                         setCombatTag(tagger);
                         setCombatTag(tagged);
+
+                        Bukkit.getServer().getPluginManager().callEvent(new CombatTaggedEvent(tagged));
                     }
                 }
             }
         }
+
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -222,103 +285,142 @@ public class CombatTagListeners implements Listener {
             event.getPlayer().getInventory().addItem(new ItemBuilder(Material.ENDER_PEARL).amount(1).build());
         }
     }
-//
-    //=================[ Villager Listeners ]=================
+
+    //=================[ Villager listeners ]=================
+
+    public static HashMap<UUID, Villager> loggers = new HashMap<>();
+    private Multimap<UUID, ItemStack[]> inventories = ArrayListMultimap.create();
+    private HashMap<Villager, BukkitRunnable> tasks = new HashMap<>();
+
+    private static HashMap<UUID, BukkitRunnable> disabled = new HashMap<>();
+    private static HashMap<UUID, BukkitRunnable> counters = new HashMap<>();
+    private static HashMap<UUID, Integer> count = new HashMap<>();
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        Profile profile = profileManager.getProfile(player.getUniqueId());
 
         if (player.isDead() || player.getHealth() <= 0) {
             removeCombatTag(player.getUniqueId());
             return;
         }
 
-        if (isInCombat(player.getUniqueId())) {
-            player.setHealth(0.0);
+        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+
+        if (profile == null) {
             removeCombatTag(player.getUniqueId());
+            return;
         }
 
         if (player.getGameMode() == GameMode.SURVIVAL) {
-            if (!profile.isSafelyLogged() && !player.hasMetadata("logout") && isInCombat(player.getUniqueId())) {
-                final Location loggedLocation = player.getLocation();
-                final Villager villager = (Villager) loggedLocation.getWorld().spawnCreature(loggedLocation, EntityType.VILLAGER);
-                villager.setAdult();
-                villager.setMaxHealth(player.getMaxHealth());
-                villager.setHealth(player.getHealth());
-                villager.setCustomName(ChatColor.AQUA + player.getName());
-                villager.setCustomNameVisible(true);
-                villager.setFireTicks(player.getFireTicks());
-                player.getActivePotionEffects().forEach(villager::addPotionEffect);
-                villager.setCanPickupItems(false);
-                villager.setMetadata("logger", new FixedMetadataValue(main, player.getUniqueId().toString()));
+            if (!profile.isSafelyLogged()) {
+                if (isInCombat(player.getUniqueId()) || (TownyUniverse.getTownBlock(player.getLocation()) != null && TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp)) {
+                    Location loggedLocation = player.getLocation();
+                    Villager villager = (Villager) loggedLocation.getWorld().spawnCreature(loggedLocation, EntityType.VILLAGER);
+                    villager.setAdult();
+                    villager.setMaxHealth(player.getMaxHealth());
+                    villager.setHealth(player.getHealth());
+                    villager.setCustomName(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
+                    villager.setCustomNameVisible(true);
+                    villager.setFireTicks(player.getFireTicks());
+                    player.getActivePotionEffects().forEach(villager::addPotionEffect);
+                    villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 7, false, false));
+                    villager.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
+                    villager.setCanPickupItems(false);
+                    villager.setMetadata("logger", new FixedMetadataValue(main, player.getUniqueId().toString()));
 
-                BukkitTask task = new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (villager == null || villager.isDead() || villager.getHealth() <= 0) {
-                            this.cancel();
-                            return;
+                    ReflectionUtils.setCollidable(villager, false);
+
+                    loggers.put(player.getUniqueId(), villager);
+                    inventories.get(player.getUniqueId()).add(player.getInventory().getContents());
+                    inventories.get(player.getUniqueId()).add(player.getInventory().getArmorContents());
+
+                    if (tasks.containsKey(villager)) {
+                        tasks.get(villager).cancel();
+                    }
+
+                    tasks.put(villager, new BukkitRunnable() {
+                        public void run() {
+                            loggers.remove(UUID.fromString(villager.getMetadata("logger").get(0).value().toString()));
+                            villager.removeMetadata("logger", main);
+                            tasks.remove(villager);
+                            villager.remove();
                         }
+                    });
 
-                        villager.teleport(loggedLocation);
-                    }
-                }.runTaskTimerAsynchronously(main, 5L, 7);
-
-                loggers.put(player.getUniqueId(), villager);
-                inventories.get(player.getUniqueId()).add(player.getInventory().getContents());
-                inventories.get(player.getUniqueId()).add(player.getInventory().getArmorContents());
-
-                if (villagerLog.containsKey(villager)) {
-                    villagerLog.get(villager).cancel();
+                    tasks.get(villager).runTaskLater(main, 10 * 20L);
                 }
-
-                villagerLog.put(villager, new BukkitRunnable() {
-                    public void run() {
-                        task.cancel();
-                        loggers.remove(villager.getMetadata("logger").get(0).value().toString());
-                        villager.removeMetadata("logger", main);
-                        villagerLog.remove(villager);
-                        villager.remove();
-                    }
-                });
-
-                villagerLog.get(villager).runTaskLater(main, 10 * 20L);
+            } else {
+                if (player.getWorld().getName().equalsIgnoreCase("world")) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
+                }
             }
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Profile profile = profileManager.getProfile(player.getUniqueId());
+        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                profile.setSafelyLogged(false);
+        if (profile == null) {
+            if (loggers.get(player.getUniqueId()) != null && loggers.get(player.getUniqueId()).getHealth() > 0.0) {
+                player.teleport(loggers.get(player.getUniqueId()).getLocation());
+                player.setHealth(loggers.get(player.getUniqueId()).getHealth());
+                player.setFireTicks(loggers.get(player.getUniqueId()).getFireTicks());
+                tasks.remove(loggers.get(player.getUniqueId()));
+                loggers.get(player.getUniqueId()).remove();
+                loggers.remove(player.getUniqueId());
+                inventories.removeAll(player.getUniqueId());
+            }
 
-                if (loggers.containsKey(player.getUniqueId())) {
-                    if (loggers.get(player.getUniqueId()) != null && loggers.get(player.getUniqueId()).getHealth() != 0.0) {
-                        player.teleport(loggers.get(player.getUniqueId()).getLocation());
-                        player.setHealth(loggers.get(player.getUniqueId()).getHealth());
-                        player.setFireTicks(loggers.get(player.getUniqueId()).getFireTicks());
-                        villagerLog.remove(loggers.get(player.getUniqueId()));
-                        loggers.get(player.getUniqueId()).remove();
-                        loggers.remove(player.getUniqueId());
-                        inventories.removeAll(player.getUniqueId());
-                    } else {
-                        player.getInventory().clear();
-                        player.getInventory().setHelmet(null);
-                        player.getInventory().setChestplate(null);
-                        player.getInventory().setLeggings(null);
-                        player.getInventory().setBoots(null);
-                        player.setHealth(0.0);
-                    }
+            return;
+        }
+
+        if (profile.isSafelyLogged()) {
+            if (loggers.containsKey(player.getUniqueId()) && loggers.get(player.getUniqueId()) != null && loggers.get(player.getUniqueId()).getHealth() > 0.0) {
+                tasks.remove(loggers.get(player.getUniqueId()));
+                loggers.get(player.getUniqueId()).remove();
+                loggers.remove(player.getUniqueId());
+                inventories.removeAll(player.getUniqueId());
+            } else {
+                if (player.getWorld().getName().equalsIgnoreCase("world")) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
                 }
             }
-        }.runTaskLater(main, 5L);
+
+            profile.setSafelyLogged(false);
+        } else {
+            if (loggers.containsKey(player.getUniqueId())) {
+                if (loggers.get(player.getUniqueId()) != null && loggers.get(player.getUniqueId()).getHealth() > 0.0) {
+                    player.teleport(loggers.get(player.getUniqueId()).getLocation());
+                    player.setHealth(loggers.get(player.getUniqueId()).getHealth());
+                    player.setFireTicks(loggers.get(player.getUniqueId()).getFireTicks());
+
+                    tasks.remove(loggers.get(player.getUniqueId()));
+                    loggers.get(player.getUniqueId()).remove();
+                    loggers.remove(player.getUniqueId());
+                    inventories.removeAll(player.getUniqueId());
+                } else {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            player.getInventory().clear();
+                            player.getInventory().setHelmet(null);
+                            player.getInventory().setChestplate(null);
+                            player.getInventory().setLeggings(null);
+                            player.getInventory().setBoots(null);
+                            player.setHealth(0.0);
+                        }
+                    }.runTaskLater(main, 5L);
+                }
+            } else {
+                if (player.getWorld().getName().equalsIgnoreCase("world")) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
+                }
+            }
+        }
+        //Idk if this is right or if im missing something but i think this is right lol
     }
 
     @EventHandler
@@ -339,27 +441,47 @@ public class CombatTagListeners implements Listener {
                     }
                 }
 
-                villagerLog.remove(loggers.get(id));
+                tasks.remove(loggers.get(id));
             }
         }
     }
 
     @EventHandler
-    public void onClick(PlayerInteractEntityEvent e) {
-        if (e.getRightClicked() instanceof Villager) {
-            Villager villager = (Villager) e.getRightClicked();
+    public void onMove(PlayerMoveEvent event) {
+        if (disabled.containsKey(event.getPlayer().getUniqueId())) {
+            if (event.getFrom().getBlockX() != event.getTo().getBlockX() || event.getFrom().getBlockY() != event.getTo().getBlockY() || event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
+                disabled.get(event.getPlayer().getUniqueId()).cancel();
+                disabled.remove(event.getPlayer().getUniqueId());
+                counters.get(event.getPlayer().getUniqueId()).cancel();
+                counters.remove(event.getPlayer().getUniqueId());
+                count.remove(event.getPlayer().getUniqueId());
+                MessageManager.sendMessage(event.getPlayer(), "&cYou moved! Logout has been cancelled!");
+
+                Board board = Board.getByPlayer(event.getPlayer());
+
+                if (board.getCooldown("logout") != null) {
+                    board.getCooldown("logout").cancel();
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onClick(PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() instanceof Villager) {
+            Villager villager = (Villager) event.getRightClicked();
 
             if (villager.hasMetadata("logger")) {
-                e.setCancelled(true);
+                event.setCancelled(true);
             }
         }
     }
 
     @EventHandler
-    public void onUnload(ChunkUnloadEvent e) {
-        for (Entity ent : e.getChunk().getEntities()) {
-            if (ent instanceof Villager) {
-                Villager villager = (Villager) ent;
+    public void onUnload(ChunkUnloadEvent event) {
+        for (Entity entity : event.getChunk().getEntities()) {
+            if (entity instanceof Villager) {
+                Villager villager = (Villager) entity;
 
                 if (villager.hasMetadata("logger")) {
                     villager.remove();
@@ -544,6 +666,36 @@ public class CombatTagListeners implements Listener {
 
         public static void run(Carbyne plugin) {
             new ForceFieldTask(plugin).runTaskTimer(plugin, 1, 1);
+        }
+    }
+
+    public static HashMap<UUID, BukkitRunnable> getDisabled() {
+        return disabled;
+    }
+
+    public static HashMap<UUID, BukkitRunnable> getCounters() {
+        return counters;
+    }
+
+    public static HashMap<UUID, Integer> getCount() {
+        return count;
+    }
+
+    @EventHandler
+    public void onSpell(SpellTargetEvent event) {
+        if (event.getTarget() instanceof Player) {
+            Profile target = main.getProfileManager().getProfile(((Player) event.getTarget()).getUniqueId());
+            Profile caster = main.getProfileManager().getProfile(event.getCaster().getUniqueId());
+
+            if (target != null && caster != null) {
+                if (caster.getRemainingPvPTime() > 1) {
+                    event.setCancelled(true);
+                    MessageManager.sendMessage(event.getCaster(), "&cYou cannot cast spells on someone whilst you have a pvp-protection timer");
+                } else if (target.getRemainingPvPTime() > 1) {
+                    event.setCancelled(true);
+                    MessageManager.sendMessage(event.getCaster(), "&cYou cannot cast spells on someone whilst they have a pvp-protection timer");
+                }
+            }
         }
     }
 }

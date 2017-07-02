@@ -1,5 +1,7 @@
 package com.medievallords.carbyne.squads.commands;
 
+import com.bizarrealex.aether.scoreboard.Board;
+import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
@@ -14,7 +16,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadKickCommand extends BaseCommand {
 
-    @Command(name = "squad.kick", inGameOnly = true, aliases = {"k"})
+    @Command(name = "squad.kick", inGameOnly = true, aliases = {"squad.k"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
@@ -62,5 +64,15 @@ public class SquadKickCommand extends BaseCommand {
         MessageManager.sendMessage(target, "&cYou have been kicked from the squad.");
 
         squad.sendAllMembersMessage("&b" + target.getName() + " &chas been kicked from the squad.");
+
+        Board board = Board.getByPlayer(Bukkit.getPlayer(target.getUniqueId()));
+
+        if (board != null) {
+            BoardCooldown targetCooldown = board.getCooldown("target");
+
+            if (targetCooldown != null) {
+                targetCooldown.cancel();
+            }
+        }
     }
 }

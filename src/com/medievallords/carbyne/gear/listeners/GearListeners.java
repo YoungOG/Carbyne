@@ -11,6 +11,7 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
+import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
@@ -87,7 +88,7 @@ public class GearListeners implements Listener {
                         flatDamage = 0.5;
                         break;
                     case LAVA:
-                        flatDamage = 4.0;
+                        flatDamage = 2.0;
                         break;
                     case LIGHTNING:
                         flatDamage = 5.0;
@@ -273,20 +274,15 @@ public class GearListeners implements Listener {
         }
 
         if (carbyneWeapon.getSpecial() != null) {
-            if (event.getPlayer().hasPermission("carbyne.specials.bypass") || event.getPlayer().isOp()) {
-                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
-                return;
-            }
-
             if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge()) {
-                carbyneWeapon.setSpecialCharge(itemStack, 0);
-                carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
 
                 Board board = Board.getByPlayer(event.getPlayer());
                 if (board != null) {
                     BoardCooldown boardCooldown = board.getCooldown("special");
 
                     if (boardCooldown == null) {
+                        carbyneWeapon.setSpecialCharge(itemStack, 0);
+                        carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
                         new BoardCooldown(board, "special", 60.0D);
                     } else {
                         MessageManager.sendMessage(event.getPlayer(), "&eYou cannot use another weapon special for another &6" + boardCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds.");
@@ -325,7 +321,8 @@ public class GearListeners implements Listener {
                 }
 
                 if (livingEntity instanceof Player) {
-                    specialCharge += 5;
+                    if (Cooldowns.tryCooldown(livingEntity.getKiller().getUniqueId(), livingEntity.getUniqueId().toString() + ":charge", 300000))
+                        specialCharge += 5;
                 } else if (livingEntity instanceof Monster) {
                     specialCharge += 1;
                 }

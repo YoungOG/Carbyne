@@ -22,7 +22,8 @@ public class SquadFriendlyFireCommand extends BaseCommand implements Listener {
         Bukkit.getPluginManager().registerEvents(this, getCarbyne());
     }
 
-    @Command(name = "squad.friendlyfire", inGameOnly = true, aliases = {"ff"})
+    @Command(name = "squad.friendlyfire", inGameOnly = true, aliases = {"s" +
+            "quad.ff"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

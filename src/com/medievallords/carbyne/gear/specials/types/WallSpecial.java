@@ -49,7 +49,7 @@ public class WallSpecial implements Special {
                         player.sendBlockChange(loc, Material.COBBLESTONE, (byte) 0);
                     }
                 }
-                ParticleEffect.SPELL_MOB.display(0f, 0f, 0f, 0f, 1, loc, 20);
+                ParticleEffect.SPELL_MOB.display(0f, 0f, 0f, 0f, 1, loc, 20, false);
                 loc.subtract(x, y, z);
             }
         }

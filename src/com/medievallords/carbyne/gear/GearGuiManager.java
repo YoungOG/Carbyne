@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -25,9 +26,9 @@ public class GearGuiManager {
     private Carbyne carbyne = Carbyne.getInstance();
     private GearManager gearManager;
 
-    private final Inventory storeGui = Bukkit.createInventory(null, 9, ChatColor.translateAlternateColorCodes('&', "&a&lCarbyne Store"));
-    private final Inventory weaponsGui = Bukkit.createInventory(null, 27, ChatColor.translateAlternateColorCodes('&', "&4&lWeapons Store"));
-    private final Inventory armorGui = Bukkit.createInventory(null, 9, ChatColor.translateAlternateColorCodes('&', "&5&lArmor Store"));
+    private final Inventory storeGui = Bukkit.createInventory(null, InventoryType.HOPPER, ChatColor.translateAlternateColorCodes('&', "&a&lCarbyne Forge"));
+    private final Inventory weaponsGui = Bukkit.createInventory(null, 27, ChatColor.translateAlternateColorCodes('&', "&4&lWeapons Section"));
+    private final Inventory armorGui = Bukkit.createInventory(null, 9, ChatColor.translateAlternateColorCodes('&', "&5&lArmor Section"));
     private final HashMap<String, Inventory> armorGuiList = new HashMap<>();
 
     public GearGuiManager(GearManager gearManager) {
@@ -51,9 +52,8 @@ public class GearGuiManager {
             }
         }
 
-        storeGui.setItem(0, new ItemBuilder(Material.DIAMOND_SWORD).amount(1).name("&4&lWeapons").addLore("&ePurchase Carbyne weapons.").build());
-        storeGui.setItem(4, new ItemBuilder(Material.LEATHER_CHESTPLATE).amount(1).color(Color.fromRGB(51, 0, 0)).name("&5&lArmor").clearLore().addLore("&ePurchase Carbyne armor.").build());
-        storeGui.setItem(8, new ItemBuilder(Material.NAME_TAG).amount(1).name("&3&lTickets").addLore("&ePurchase tickets.").build());
+        storeGui.setItem(1, new ItemBuilder(Material.DIAMOND_SWORD).amount(1).name("&4&lWeapons").addLore("&ePurchase Carbyne weapons.").build());
+        storeGui.setItem(3, new ItemBuilder(Material.LEATHER_CHESTPLATE).amount(1).color(Color.fromRGB(51, 0, 0)).name("&5&lArmor").clearLore().addLore("&ePurchase Carbyne armor.").build());
 
         new BukkitRunnable() {
             int i = 0;

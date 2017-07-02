@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -20,6 +21,7 @@ public class ProfileManager {
 
     public ProfileManager() {
         loadProfiles();
+        startResetting();
 
         new BukkitRunnable() {
             @Override
@@ -55,12 +57,24 @@ public class ProfileManager {
                 profile.setKillStreak(killstreak);
                 profile.setShowEffects(showEffects);
                 profile.setSafelyLogged(safelyLogged);
+                profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
+                profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
+
+                if (document.containsKey("pvptime"))
+                    profile.setPvpTime(document.getLong("pvptime"));
+
+                if (document.containsKey("pvptimepaused"))
+                    profile.setPvpTimePaused(document.getBoolean("pvptimepaused"));
+
+                if (document.containsKey("timeleft"))
+                    profile.setTimeLeft(document.getLong("timeleft"));
 
                 loadedProfiles.add(profile);
             }
 
             main.getLogger().log(Level.INFO, "Successfully loaded " + profileCollection.count() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }
+        System.gc();
     }
 
     public void saveProfiles(boolean async) {
@@ -81,8 +95,14 @@ public class ProfileManager {
                             document.append("deaths", profile.getDeaths());
                             document.append("carbynedeaths", profile.getCarbyneDeaths());
                             document.append("killstreak", profile.getKillStreak());
+                            document.append("pvptime", profile.getPvpTime());
+                            document.append("pvptimepaused", profile.isPvpTimePaused());
                             document.append("showeffects", profile.hasEffectsToggled());
                             document.append("safelyLogged", profile.isSafelyLogged());
+                            document.append("pin", profile.getPin());
+                            document.append("previous-inventory", profile.getPreviousInventoryContentString());
+                            if (profile.getTimeLeft() > 1)
+                            document.append("timeleft", profile.getTimeLeft());
 
                             profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
                         }
@@ -99,8 +119,14 @@ public class ProfileManager {
                     document.append("deaths", profile.getDeaths());
                     document.append("carbynedeaths", profile.getCarbyneDeaths());
                     document.append("killstreak", profile.getKillStreak());
+                    document.append("pvptime", profile.getPvpTime());
+                    document.append("pvptimepaused", profile.isPvpTimePaused());
                     document.append("showeffects", profile.hasEffectsToggled());
                     document.append("safelyLogged", profile.isSafelyLogged());
+                    document.append("pin", profile.getPin());
+                    document.append("previous-inventory", profile.getPreviousInventoryContentString());
+                    if (profile.getTimeLeft() > 1)
+                    document.append("timeleft", profile.getTimeLeft());
 
                     profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
                 }
@@ -121,6 +147,10 @@ public class ProfileManager {
             profile.setKillStreak(0);
             profile.setShowEffects(true);
             profile.setSafelyLogged(false);
+            //Set remaining time at creation to 30 minutes.
+            profile.setPvpTime(System.currentTimeMillis() + ((60 * 30) * 1000));
+            profile.setPin("");
+            profile.setPreviousInventoryContentString("");
 
             Document document = new Document("uniqueId", profile.getUniqueId().toString());
             document.append("username", profile.getUsername());
@@ -129,8 +159,12 @@ public class ProfileManager {
             document.append("deaths", profile.getDeaths());
             document.append("carbynedeaths", profile.getCarbyneDeaths());
             document.append("killstreak", profile.getKillStreak());
+            document.append("pvptime", profile.getPvpTime());
+            document.append("pvptimepaused", profile.isPvpTimePaused());
             document.append("showeffects", profile.hasEffectsToggled());
             document.append("safelyLogged", profile.isSafelyLogged());
+            document.append("pin", profile.getPin());
+            document.append("previous-inventory", profile.getPreviousInventoryContentString());
 
             new BukkitRunnable() {
                 @Override
@@ -140,6 +174,7 @@ public class ProfileManager {
             }.runTaskAsynchronously(main);
 
             getLoadedProfiles().add(profile);
+            Bukkit.getServer().getLogger().log(Level.INFO, "A new profile was created for " + player.getName() + " at " + System.currentTimeMillis() + "time millis");
         }
     }
 
@@ -172,5 +207,21 @@ public class ProfileManager {
 
     public HashSet<Profile> getLoadedProfiles() {
         return loadedProfiles;
+    }
+
+    public void startResetting() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Profile profile : loadedProfiles) {
+                    if (profile.isPvpTimePaused() && (profile.getPvpTime() > 0 && profile.getRemainingPvPTime() > 0)) {
+                        long timeLeft = profile.getTimeLeft();
+                        if (timeLeft > 1) {
+                            profile.setPvpTime(System.currentTimeMillis() + timeLeft);
+                        }
+                    }
+                }
+            }
+        }.runTaskTimerAsynchronously(main, 0, 15);
     }
 }

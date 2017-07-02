@@ -54,7 +54,7 @@ public class Leaderboard {
             public void run() {
                 updateSigns(leaderboardType);
             }
-        }.runTaskTimerAsynchronously(main, 5*20L, 5*20L);
+        }.runTaskTimer(main, 5*20L, 5*20L);
     }
 
     public void stop() {
@@ -65,6 +65,14 @@ public class Leaderboard {
 
     @SuppressWarnings("unchecked")
     public void updateSigns(LeaderboardType leaderboardType) {
+        if (primarySignLocation == null) {
+            return;
+        }
+
+        if (!primarySignLocation.getChunk().isLoaded()) {
+            return;
+        }
+
         Block primarySignBlock = primarySignLocation.getBlock();
 
         if (primarySignBlock == null) {
@@ -522,16 +530,27 @@ public class Leaderboard {
                         Skull skull = (Skull) blockState;
 
                         if (names.get(i) != null) {
-                            if (names.get(i).startsWith("town-")) {
-                                skull.setOwner((names.get(i) != null ? (!names.get(i).isEmpty() ? names.get(i) : "AcE_whatever") : "AcE_whatever"));
-                            } else if (names.get(i).startsWith("nation-")) {
-                                skull.setOwner((names.get(i) != null ? (!names.get(i).isEmpty() ? names.get(i) : "pologobbyboy") : "pologobbyboy"));
-                            } else {
-                                skull.setOwner((names.get(i) != null ? (!names.get(i).isEmpty() ? names.get(i) : "MHF_Question") : "MHF_Question"));
-                            }
+                            int finalI = i;
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (names.get(finalI).startsWith("town-")) {
+                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "AcE_whatever") : "AcE_whatever"));
+                                    } else if (names.get(finalI).startsWith("nation-")) {
+                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "pologobbyboy") : "pologobbyboy"));
+                                    } else {
+                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "MHF_Question") : "MHF_Question"));
+                                    }
 
-                            skull.update();
-                            skull.update(true);
+                                    new BukkitRunnable() {
+                                        @Override
+                                        public void run() {
+                                            skull.update();
+                                            skull.update(true);
+                                        }
+                                    }.runTask(main);
+                                }
+                            }.runTaskAsynchronously(main);
                         }
                     }
                 }
@@ -545,10 +564,15 @@ public class Leaderboard {
                 BlockState blockState = location.getBlock().getState();
 
                 if (blockState instanceof Skull) {
-                    Skull skull = (Skull) blockState;
-                    skull.setOwner("MHF_Question");
-                    skull.update();
-                    skull.update(true);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Skull skull = (Skull) blockState;
+                            skull.setOwner("MHF_Question");
+                            skull.update();
+                            skull.update(true);
+                        }
+                    }.runTaskAsynchronously(main);
                 }
             }
         }
@@ -639,5 +663,9 @@ public class Leaderboard {
         public LeaderboardType prev() {
             return Arrays.asList(LeaderboardType.values()).get((Arrays.asList(LeaderboardType.values()).size() + index - 1) % Arrays.asList(LeaderboardType.values()).size());
         }
+    }
+
+    public interface HeadThreadCallback {
+        void finished(String name, Block block);
     }
 }

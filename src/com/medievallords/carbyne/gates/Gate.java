@@ -75,27 +75,27 @@ public class Gate implements HeartbeatTask {
         }
 
         if (activePressurePlates < pressurePlateMap.keySet().size()) {
-            MessageManager.sendMessage(location, 10, "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aPressure Plates needed to open &b" + gateId + "&a.");
+            MessageManager.sendMessage(location, 10, "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aPressure Plates needed to open the gate");
 
-            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aplayers needed to open &b" + gateId + "&a."))
-                    .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aplayers needed to open the gate"))
+                    .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
         }
 
         if (activePressurePlates >= pressurePlateMap.keySet().size()) {
-            MessageManager.sendMessage(location, 10, "&aThe gate &b" + gateId + " &ahas been opened.");
+            MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
 
-            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate &b" + gateId + " &ahas been opened."))
-                    .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
+                    .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
 
             openGate();
         }
     }
 
     public void buttonActivated(Location location) {
-        MessageManager.sendMessage(location, 10, "&aThe gate &b" + gateId + " &ahas been opened.");
+        MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
 
-        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate &b" + gateId + " &ahas been opened."))
-                .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
+                .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
 
         openGate();
     }
@@ -111,7 +111,7 @@ public class Gate implements HeartbeatTask {
 
         if (redstoneBlockLocations.size() > 0) {
             for (Location location : redstoneBlockLocations) {
-                if (location != null) {
+                if (location != null && location.getChunk().isLoaded()) {
                     Block block = location.getBlock();
 
                     if (block != null) {
@@ -136,14 +136,15 @@ public class Gate implements HeartbeatTask {
 
         try {
             for (Location location : redstoneBlockLocations) {
-                Block block = location.getBlock();
+                if (location != null && location.getChunk().isLoaded()) {
+                    Block block = location.getBlock();
 
-                if (block.getType() == Material.REDSTONE_BLOCK) {
-                    HeartbeatBlockQueue.types.add(new BlockType(Material.AIR, block.getLocation()));
+                    if (block.getType() == Material.REDSTONE_BLOCK) {
+                        HeartbeatBlockQueue.types.add(new BlockType(Material.AIR, block.getLocation()));
+                    }
                 }
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     public void saveGate() {
@@ -181,9 +182,7 @@ public class Gate implements HeartbeatTask {
         if (mythicSpawners.keySet().size() > 0) {
             ArrayList<String> spawnerNames = new ArrayList<>();
 
-            for (String s : mythicSpawners.keySet()) {
-                spawnerNames.add(s);
-            }
+            spawnerNames.addAll(mythicSpawners.keySet());
 
             section.set(gateId + ".MythicSpawnerNames", spawnerNames);
         }
@@ -265,9 +264,9 @@ public class Gate implements HeartbeatTask {
                 keepOpen = true;
                 openGate();
 
-                MessageManager.sendMessage(getLocaton(), 20, "&aThe gate &b" + gateId + " &ahas been opened.");
+                MessageManager.sendMessage(getLocaton(), 20, "&aThe gate has been opened.");
 
-                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate &b" + gateId + " &ahas been opened."))
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
                         .actionbar(PlayerUtility.getPlayersInRadius(getLocaton(), 20).toArray(new Player[PlayerUtility.getPlayersInRadius(getLocaton(), 20).size()]));
 
                 openGate();

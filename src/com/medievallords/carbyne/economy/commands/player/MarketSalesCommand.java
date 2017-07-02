@@ -33,14 +33,14 @@ public class MarketSalesCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&7Sales:");
 
             for (SaleStack saleStack : getSaleStacks(player)) {
-                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&bx" + saleStack.getAmount() + " " + saleStack.getType().name() + ":" + saleStack.getData() + " &7- $" + (saleStack.getPerUnitPrice() * saleStack.getAmount())))
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&bx" + saleStack.getAmount() + " " + saleStack.getType().name() + ":" + saleStack.getData() + " &7- \u00A9" + (saleStack.getPerUnitPrice() * saleStack.getAmount())))
                         .tooltip(ChatColor.translateAlternateColorCodes('&', "&aTransactionId: &b" + saleStack.getTransactionId() + "\n"
                                 + "&aSeller: &b" + Bukkit.getOfflinePlayer(saleStack.getSeller()).getName() + "\n"
                                 + "&aDate Listed: &b" + saleStack.getDateCreated() + "\n"
                                 + "&aMaterial: &b" + saleStack.getType().name() + ":" + saleStack.getData() + "\n"
                                 + "&aAmount: &b" + saleStack.getAmount() + "\n"
-                                + "&aTotal Price: &b$" + (saleStack.getPerUnitPrice() * saleStack.getAmount()) + " &7(Tax: &b$" + ((saleStack.getPerUnitPrice() * saleStack.getAmount()) * getMarketManager().getSalesTax()) + "&7)" + "\n"
-                                + "&aPrice Per-Unit: &b$" + saleStack.getPerUnitPrice()))
+                                + "&aTotal Price: &b\u00A9" + (saleStack.getPerUnitPrice() * saleStack.getAmount()) + " &7(Tax: &b\u00A9" + ((saleStack.getPerUnitPrice() * saleStack.getAmount()) * getMarketManager().getSalesTax()) + "&7)" + "\n"
+                                + "&aPrice Per-Unit: &b\u00A9" + saleStack.getPerUnitPrice()))
                         .send(player);
             }
         } else if (args.length == 1) {
@@ -59,14 +59,14 @@ public class MarketSalesCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&7" + target.getName() + "'s Sales:");
 
             for (SaleStack saleStack : getSaleStacks(target)) {
-                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&bx" + saleStack.getAmount() + " " + saleStack.getType().name() + ":" + saleStack.getData() + " &7- $" + (saleStack.getPerUnitPrice() * saleStack.getAmount())))
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&bx" + saleStack.getAmount() + " " + saleStack.getType().name() + ":" + saleStack.getData() + " &7- \u00A9" + (saleStack.getPerUnitPrice() * saleStack.getAmount())))
                         .tooltip(ChatColor.translateAlternateColorCodes('&', "&aTransactionId: &b" + saleStack.getTransactionId() + "\n"
                                 + "&aSeller: &b" + Bukkit.getOfflinePlayer(saleStack.getSeller()).getName() + "\n"
                                 + "&aDate Listed: &b" + saleStack.getDateCreated() + "\n"
                                 + "&aMaterial: &b" + saleStack.getType().name() + ":" + saleStack.getData() + "\n"
                                 + "&aAmount: &b" + saleStack.getAmount() + "\n"
-                                + "&aTotal Price: &b$" + (saleStack.getPerUnitPrice() * saleStack.getAmount()) + " &7(Tax: &b$" + ((saleStack.getPerUnitPrice() * saleStack.getAmount()) * getMarketManager().getSalesTax()) + "&7)" + "\n"
-                                + "&aPrice Per-Unit: &b$" + saleStack.getPerUnitPrice()))
+                                + "&aTotal Price: &b\u00A9" + (saleStack.getPerUnitPrice() * saleStack.getAmount()) + " &7(Tax: &b\u00A9" + ((saleStack.getPerUnitPrice() * saleStack.getAmount()) * getMarketManager().getSalesTax()) + "&7)" + "\n"
+                                + "&aPrice Per-Unit: &b\u00A9" + saleStack.getPerUnitPrice()))
                         .send(player);
             }
         }

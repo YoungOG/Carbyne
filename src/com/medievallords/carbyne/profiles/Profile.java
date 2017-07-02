@@ -10,14 +10,10 @@ import java.util.UUID;
 public class Profile {
 
     private UUID uniqueId;
-    private String username;
-    private int kills;
-    private int carbyneKills;
-    private int deaths;
-    private int carbyneDeaths;
-    private int killStreak;
-    private boolean showEffects;
-    private boolean safelyLogged;
+    private String username, pin, previousInventoryContentString;
+    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak;
+    private long pvpTime, timeLeft;
+    private boolean pvpTimePaused, showEffects, safelyLogged, moving;
 
     public Profile(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -69,5 +65,22 @@ public class Profile {
         }
 
         return Math.round(ratio * 100.0D) / 100.0D;
+    }
+
+    public long getRemainingPvPTime() {
+        return pvpTime - System.currentTimeMillis();
+    }
+
+    public boolean hasPin() {
+        return pin != null && !pin.isEmpty();
+    }
+
+    public void setPvpTimePaused(boolean paused) {
+        if (this.pvpTimePaused != paused) {
+            if (paused)
+                timeLeft = System.currentTimeMillis() - (System.currentTimeMillis() - getRemainingPvPTime());
+
+            this.pvpTimePaused = paused;
+        }
     }
 }

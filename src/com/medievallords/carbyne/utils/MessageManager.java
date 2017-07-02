@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.utils;
 
+import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -7,9 +8,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.text.DecimalFormat;
+import java.util.Map;
 import java.util.UUID;
 
 public class MessageManager {
+
+    private static Map<String, String> placeholders;
+
+    static {
+        (placeholders = Maps.newHashMap()).put("<3", "\u2764");
+    }
 
     public static void sendMessage(CommandSender sender, String message) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
@@ -67,5 +75,17 @@ public class MessageManager {
         }
 
         return formatted;
+    }
+
+    public static String replaceSymbols(String input) {
+        if (input == null || input.length() == 0) {
+            return input;
+        }
+
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            input = input.replace(entry.getKey(), entry.getValue());
+        }
+
+        return ChatColor.translateAlternateColorCodes('&', input);
     }
 }

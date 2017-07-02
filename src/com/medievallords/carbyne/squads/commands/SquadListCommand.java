@@ -23,7 +23,7 @@ import java.util.UUID;
  */
 public class SquadListCommand extends BaseCommand {
 
-    @Command(name = "squad.list", aliases = {"i"})
+    @Command(name = "squad.list", aliases = {"squad.i"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();

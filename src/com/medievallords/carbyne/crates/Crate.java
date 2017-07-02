@@ -42,12 +42,45 @@ public class Crate {
     public Crate(String name) {
         this.name = name;
 
+        if (name.contains("obsidian")) {
+
+
+            double theta = 0;
+            double radius = 0.5;
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+
+                    double x = Math.sin(theta) * radius;
+                    double y = Math.cos(theta);
+                    double z = Math.cos(theta) * radius;
+
+                    double x2 = Math.cos(theta) * radius;
+                    double y2 = Math.cos(theta);
+                    double z2 = Math.sin(theta) * radius;
+
+                    Location location = getLocation().clone();
+                    location.add(x,y,z);
+                    ParticleEffect.SPELL_WITCH.display(0,0,0,0,1,location, 40, false);
+                    location.subtract(x,0,z);
+                    location.add(x,0,z);
+                    ParticleEffect.SPELL_WITCH.display(0,0,0,0,1,location, 40, false);
+
+                }
+            }.runTaskTimerAsynchronously(main, 0, 1);
+
+            return;
+        }
+
+
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (location != null) {
+
                     if (main.getConfig().getString("crates.effect.type") != null && !main.getConfig().getString("crates.effect.type").isEmpty()) {
-                        ParticleEffect.valueOf(main.getConfig().getString("crates.effect.type")).display(Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetX")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetY")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetZ")), main.getConfig().getInt("crates.effect.speed"), main.getConfig().getInt("crates.effect.amount"), location, main.getConfig().getInt("crates.effect.range"));
+                        ParticleEffect.valueOf(main.getConfig().getString("crates.effect.type")).display(Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetX")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetY")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetZ")), main.getConfig().getInt("crates.effect.speed"), main.getConfig().getInt("crates.effect.amount"), location, main.getConfig().getInt("crates.effect.range"), false);
                     }
                 }
             }
@@ -261,7 +294,7 @@ public class Crate {
     }
 
     public Reward getReward() {
-        int totalPercentage = 0;
+        double totalPercentage = 0;
 
         for (Reward reward : getRewards()) {
             totalPercentage += reward.getChance();
@@ -286,7 +319,7 @@ public class Crate {
         ArrayList<Reward> rewards = new ArrayList<>();
 
         for (int a = 0; a < amount; a++) {
-            int totalPercentage = 0;
+            double totalPercentage = 0;
 
             for (Reward reward : getRewards()) {
                 totalPercentage += reward.getChance();

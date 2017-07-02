@@ -93,7 +93,9 @@ public class CarbyneArmor extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
-        loreDupe.addAll(lore);
+        if (lore != null) {
+            loreDupe.addAll(lore);
+        }
 
         loreDupe.add(0, "");
         loreDupe.add(0, "&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
@@ -128,11 +130,20 @@ public class CarbyneArmor extends CarbyneGear {
             }
         }
 
-        return new ItemBuilder(Material.getMaterial(("leather_" + type).toUpperCase()))
+        ItemBuilder builder = new ItemBuilder(Material.getMaterial(("leather_" + type).toUpperCase()))
                 .name(displayName)
-                .setLore((loreDupe.size() > 0 ? loreDupe : lore))
                 .addEnchantments(enchantmentHashMap)
-                .color(color).build();
+                .color(color);
+
+        if (lore != null) {
+            builder.setLore((loreDupe.size() > 0 ? loreDupe : lore));
+        } else {
+            if (loreDupe.size() > 0) {
+                builder.setLore(loreDupe);
+            }
+        }
+
+        return builder.build();
     }
 
     public void applyDefensiveEffect(Player target) {
@@ -144,6 +155,10 @@ public class CarbyneArmor extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= defensivePotionEffects.get(effect)) {
+                for (PotionEffect potionEffect : target.getActivePotionEffects())
+                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
+                        return;
+
                 target.addPotionEffect(effect);
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
@@ -160,6 +175,10 @@ public class CarbyneArmor extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= offensivePotionEffects.get(effect)) {
+                for (PotionEffect potionEffect : target.getActivePotionEffects())
+                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
+                        return;
+
                 target.addPotionEffect(effect);
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &c" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);

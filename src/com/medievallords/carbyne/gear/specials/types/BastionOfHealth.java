@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
  * Created by xwiena22 on 2017-03-13.
  *
  */
-public class BastionOfHealth implements Special{
+public class BastionOfHealth implements Special {
 
 
     @Override
@@ -45,10 +45,10 @@ public class BastionOfHealth implements Special{
                 double y2 = 0.2;
                 double z2 = Math.sin(t) * radius;
                 loc.add(x, y, z);
-                ParticleEffect.HEART.display(0f, 0f, 0f, 0f, 1, loc, 20);
+                ParticleEffect.HEART.display(0f, 0f, 0f, 0f, 1, loc, 20, false);
                 loc.subtract(x, y, z);
                 loc.add(x2, y2, z2);
-                ParticleEffect.HEART.display(0f, 0f, 0f, 0f, 1, loc, 20);
+                ParticleEffect.HEART.display(0f, 0f, 0f, 0f, 1, loc, 20, false);
                 loc.subtract(x2, y2, z2);
                 times++;
                 t += Math.PI / 32;

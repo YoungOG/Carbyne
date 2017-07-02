@@ -486,9 +486,11 @@ public class GearManager {
         } else if (isCarbyneWeapon(itemStack)) {
             return getCarbyneWeapon(itemStack).getDurability(itemStack);
         } else if (isDefaultArmor(itemStack)) {
-            return getDefaultArmor(itemStack).getDurability(itemStack);
+            return (getDefaultArmor(itemStack) != null ? getDefaultArmor(itemStack).getDurability(itemStack) : -1);
         } else if (isDefaultWeapon(itemStack)) {
-            return getDefaultWeapon(itemStack).getDurability(itemStack);
+            return (getDefaultWeapon(itemStack) != null ? getDefaultWeapon(itemStack).getDurability(itemStack) : -1);
+        } else if (itemStack.getType().getMaxDurability() > 0) {
+            return itemStack.getDurability();
         } else {
             return -1;
         }

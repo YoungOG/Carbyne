@@ -5,7 +5,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,30 +36,31 @@ public class ArenaAddPedastoolCommand extends BaseCommand {
 
         Location location = player.getTargetBlock((Set<Material>) null, 10).getLocation();
 
-        if (location.getBlock().getType().toString().contains("PLATE")) {
+        if (!location.getBlock().getType().toString().contains("PLATE")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a pressure plate.");
+            return;
         }
+
+        int i = 0;
 
         try {
-            int i = Integer.parseInt(args[0]);
+            i = Integer.parseInt(args[0]);
 
-            for (Location loc : arena.getPedastoolLocations()) {
-                Bukkit.broadcastMessage("Location: " + loc.toString());
-            }
-
-            if (i == 1) {
-                arena.getPedastoolLocations()[0] = location;
-                MessageManager.sendMessage(player, "&aYou have set pedastool point 1 for the arena \'&b" + arena.getArenaId() + "&a\'.");
-            } else if (i == 2) {
-                arena.getPedastoolLocations()[1] = location;
-                MessageManager.sendMessage(player, "&aYou have set pedastool point 2 for the arena \'&b" + arena.getArenaId() + "&a\'.");
-            } else {
-                MessageManager.sendMessage(player, "&cYou must input either 1 or 2 for the pedastool point.");
-            }
-
-            arena.save();
         } catch (NumberFormatException ignored) {
             MessageManager.sendMessage(player, "&cYou must input either 1 or 2 for the pedastool point.");
+            return;
         }
+
+        if (i == 1) {
+            arena.getPedastoolLocations()[0] = location; // And this one
+            MessageManager.sendMessage(player, "&aYou have set pedastool point 1 for the arena \'&b" + arena.getArenaId() + "&a\'.");
+        } else if (i == 2) {
+            arena.getPedastoolLocations()[1] = location; // And this one
+            MessageManager.sendMessage(player, "&aYou have set pedastool point 2 for the arena \'&b" + arena.getArenaId() + "&a\'.");
+        } else {
+            MessageManager.sendMessage(player, "&cYou must input either 1 or 2 for the pedastool point.");
+        }
+
+        arena.save();
     }
 }

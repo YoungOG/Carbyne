@@ -53,7 +53,7 @@ public class Account {
                 String accountHolder = document.getString("accountHolder");
                 double balance = document.getDouble("balance");
 
-                Account account = new Account((accountHolderId != null ? accountHolderId : null), accountHolder, balance);
+                Account account = new Account(accountHolderId, accountHolder, balance);
 
                 if (!accounts.contains(account)) {
                     accounts.add(account);

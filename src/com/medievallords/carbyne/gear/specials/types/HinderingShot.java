@@ -49,7 +49,7 @@ public class HinderingShot implements Special {
                 if (t > 175 || loc.getBlock().getType() != Material.AIR) {
                     this.cancel();
                     loc.getWorld().playEffect(loc, Effect.EXPLOSION_HUGE, 1);
-                    ParticleEffect.LAVA.display(0f, 0f, 0f, 1f, 5, loc, 30);
+                    ParticleEffect.LAVA.display(0f, 0f, 0f, 1f, 5, loc, 30, false);
                     for (Entity entity : loc.getWorld().getNearbyEntities(loc, 5, 5, 5)) {
                         if (entity instanceof LivingEntity && !entity.equals(caster)) {
                             damageEntity((LivingEntity) entity, caster, 7);
@@ -63,7 +63,7 @@ public class HinderingShot implements Special {
                     }
                 }
 
-                ParticleEffect.FLAME.display(0f, 0f, 0f, 0f, 2, loc, 40);
+                ParticleEffect.FLAME.display(0f, 0f, 0f, 0f, 2, loc, 40, false);
                 loc.subtract(x, y, z);
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 1);
@@ -72,9 +72,16 @@ public class HinderingShot implements Special {
     }
 
     public void damageEntity(LivingEntity entity, Player caster, double damage) {
-        //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, DamageCause.ENTITY_ATTACK, damagePerRound);
-        //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
         if (!isInSafeZone(entity)) {
+            if (entity instanceof Player) {
+                double health = entity.getHealth();
+                double damageToDeal = health - (health * 0.31);
+                entity.damage(damageToDeal);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
+                entity.setFireTicks(20 * 5);
+                return;
+            }
+
             entity.damage(damage);
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
             entity.setFireTicks(20 * 5);

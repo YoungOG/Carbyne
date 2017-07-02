@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadDisbandCommand extends BaseCommand {
 
-    @Command(name = "squad.disband", inGameOnly = true, aliases = {"d"})
+    @Command(name = "squad.disband", inGameOnly = true, aliases = {"squad.d"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

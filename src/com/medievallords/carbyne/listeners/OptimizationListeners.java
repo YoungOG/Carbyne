@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -32,15 +33,15 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class OptimizationListeners implements Listener {
 
     private List<Integer> allowedBlockIds = new ArrayList<>();
     private ArrayList<Material> allowedMaterials = new ArrayList<>();
+
+    private HashMap<Player, HashMap<String, ArrayList<Double>>> portalLocations = new HashMap<>();
+    private HashMap<Player, Location> startLocations = new HashMap<>();
 
     public OptimizationListeners() {
         allowedMaterials.add(Material.TRAPPED_CHEST);
@@ -313,19 +314,23 @@ public class OptimizationListeners implements Listener {
 
                         try {
                             event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, event.getDamage(EntityDamageEvent.DamageModifier.ARMOR) * damagePercent);
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
 
                         try {
                             event.setDamage(EntityDamageEvent.DamageModifier.MAGIC, event.getDamage(EntityDamageEvent.DamageModifier.MAGIC) * damagePercent);
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
 
                         try {
                             event.setDamage(EntityDamageEvent.DamageModifier.RESISTANCE, event.getDamage(EntityDamageEvent.DamageModifier.RESISTANCE) * damagePercent);
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
 
                         try {
                             event.setDamage(EntityDamageEvent.DamageModifier.BLOCKING, event.getDamage(EntityDamageEvent.DamageModifier.BLOCKING) * damagePercent);
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
 
                         event.setDamage(EntityDamageEvent.DamageModifier.BASE, newDamage);
                         break;
@@ -342,10 +347,196 @@ public class OptimizationListeners implements Listener {
             location.setX(location.getBlockX() + 0.5);
             location.setY(location.getBlockY());
             location.setZ(location.getBlockZ() + 0.5);
-            
+
             if (!allowedBlockIds.contains(location.getBlock().getTypeId()) && !allowedBlockIds.contains(location.getBlock().getRelative(BlockFace.UP).getTypeId())) {
                 event.setTo(event.getFrom());
             }
+        }
+    }
+
+    @EventHandler
+    public void onPortalEvent(PlayerPortalEvent event) {
+        Player player = event.getPlayer();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Location l = player.getLocation();
+                Location nblock = player.getLocation();
+                nblock.setZ(player.getLocation().getZ() - 1.0);
+                Location midnblock = player.getLocation();
+                midnblock.setZ(player.getLocation().getZ() - 1.0);
+                midnblock.setY(player.getLocation().getY() + 1.0);
+                Location topnblock = player.getLocation();
+                topnblock.setZ(player.getLocation().getZ() - 1.0);
+                topnblock.setY(player.getLocation().getY() + 2.0);
+                Location sblock = player.getLocation();
+                sblock.setZ(player.getLocation().getZ() + 1.0);
+                Location midsblock = player.getLocation();
+                midsblock.setZ(player.getLocation().getZ() + 1.0);
+                midsblock.setY(player.getLocation().getY() + 1.0);
+                Location topsblock = player.getLocation();
+                topsblock.setZ(player.getLocation().getZ() + 1.0);
+                topsblock.setY(player.getLocation().getY() + 2.0);
+                Location eblock = player.getLocation();
+                eblock.setX(player.getLocation().getX() + 1.0);
+                Location mideblock = player.getLocation();
+                mideblock.setX(player.getLocation().getX() + 1.0);
+                mideblock.setY(player.getLocation().getY() + 1.0);
+                Location topeblock = player.getLocation();
+                topeblock.setX(player.getLocation().getX() + 1.0);
+                topeblock.setY(player.getLocation().getY() + 2.0);
+                Location wblock = player.getLocation();
+                wblock.setX(player.getLocation().getX() - 1.0);
+                Location midwblock = player.getLocation();
+                midwblock.setX(player.getLocation().getX() - 1.0);
+                midwblock.setY(player.getLocation().getY() + 1.0);
+                Location topwblock = player.getLocation();
+                topwblock.setX(player.getLocation().getX() - 1.0);
+                topwblock.setY(player.getLocation().getY() + 2.0);
+
+                while (nblock.getBlock().getType() == Material.PORTAL) {
+                    nblock.setZ(nblock.getZ() - 1.0);
+                    midnblock.setZ(nblock.getZ());
+                    topnblock.setZ(nblock.getZ());
+                }
+
+                while (sblock.getBlock().getType() == Material.PORTAL) {
+                    sblock.setZ(sblock.getZ() + 1.0);
+                    midsblock.setZ(sblock.getZ());
+                    topsblock.setZ(sblock.getZ());
+                }
+
+                while (eblock.getBlock().getType() == Material.PORTAL) {
+                    eblock.setX(eblock.getX() + 1.0);
+                    mideblock.setX(eblock.getX());
+                    topeblock.setX(eblock.getX());
+                }
+
+                while (wblock.getBlock().getType() == Material.PORTAL) {
+                    wblock.setX(wblock.getX() - 1.0);
+                    midwblock.setX(wblock.getX());
+                    topwblock.setX(wblock.getX());
+                }
+
+                if ((!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(nblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(midnblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(sblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(midsblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(eblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(mideblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(wblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(midwblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(midnblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(topnblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(midsblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(topsblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(mideblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(topeblock.getBlock().getTypeId()))
+                        && (!Carbyne.getInstance().getConfig().getIntegerList("allowed-blocks.bottom").contains(midwblock.getBlock().getTypeId())
+                        || !Carbyne.getInstance().getConfig().getIntegerList("allowed-block.top").contains(topwblock.getBlock().getTypeId()))) {
+
+                    HashMap<String, ArrayList<Double>> coordloc = new HashMap<>();
+                    ArrayList<Double> xloc = new ArrayList<>();
+                    ArrayList<Double> zloc = new ArrayList<>();
+                    startLocations.put(player, l);
+                    xloc.add(l.getX() - 2.0);
+                    xloc.add(l.getX() - 1.0);
+                    xloc.add(l.getX());
+                    xloc.add(l.getX() + 1.0);
+                    xloc.add(l.getX() + 2.0);
+                    coordloc.put("x: ", xloc);
+                    zloc.add(l.getZ() - 2.0);
+                    zloc.add(l.getZ() - 1.0);
+                    zloc.add(l.getZ());
+                    zloc.add(l.getZ() + 1.0);
+                    zloc.add(l.getZ() + 2.0);
+                    coordloc.put("z: ", zloc);
+                    portalLocations.put(player, coordloc);
+                    Block block = player.getLocation().getWorld().getBlockAt(player.getLocation());
+                    block.setType(Material.AIR);
+                }
+            }
+        }.runTaskLater(Carbyne.getInstance(), 1L);
+    }
+
+    @EventHandler
+    public void onPortalTpLeave(PlayerTeleportEvent event) {
+        Player p = event.getPlayer();
+
+        if (event.getCause() != PlayerTeleportEvent.TeleportCause.END_PORTAL || event.getCause() != PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
+            return;
+        }
+
+        if (!portalLocations.containsKey(p)) {
+            return;
+        }
+
+        HashMap<String, ArrayList<Double>> coordloc = portalLocations.get(p);
+        ArrayList<Double> xloc = coordloc.get("x: ");
+        ArrayList<Double> zloc = coordloc.get("z: ");
+
+        if (!xloc.contains(event.getTo().getX()) && !zloc.contains(event.getTo().getZ())) {
+            Location l = startLocations.get(p);
+            Block block = l.getWorld().getBlockAt(l);
+            block.setType(Material.FIRE);
+            coordloc.clear();
+            portalLocations.remove(p);
+            startLocations.remove(p);
+        }
+    }
+
+    @EventHandler
+    public void onPortalLeave(PlayerMoveEvent event) {
+        Player p = event.getPlayer();
+
+        if (!portalLocations.containsKey(p)) {
+            return;
+        }
+
+        HashMap<String, ArrayList<Double>> coordloc = portalLocations.get(p);
+        ArrayList<Double> xloc = coordloc.get("x: ");
+        ArrayList<Double> zloc = coordloc.get("z: ");
+
+        if (xloc.get(0) > event.getTo().getX() || xloc.get(4) < event.getTo().getX() || zloc.get(0) > event.getTo().getZ() || zloc.get(4) < event.getTo().getZ()) {
+            Location l = startLocations.get(p);
+            Block block = l.getWorld().getBlockAt(l);
+            block.setType(Material.FIRE);
+            coordloc.clear();
+            portalLocations.remove(p);
+            startLocations.remove(p);
+        }
+    }
+
+    @EventHandler
+    public void onConsume(PlayerItemConsumeEvent event) {
+        if (event.getItem().getType() == Material.GOLDEN_APPLE || event.getItem().getType() == Material.POTION) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    event.getPlayer().removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+                }
+            }.runTaskLater(Carbyne.getInstance(), 3L);
+        }
+    }
+
+    @EventHandler
+    public void onDespawn(LeavesDecayEvent event) {
+        if (!(event.getBlock().getWorld().getName().equalsIgnoreCase("player_world") || event.getBlock().getWorld().getName().equalsIgnoreCase("player_world_nether"))) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onCommand(PlayerCommandPreprocessEvent event) {
+        Player player = event.getPlayer();
+
+        if (event.getMessage().startsWith("//") && !player.hasPermission("carbyne.command.bypass")) {
+            event.setCancelled(true);
+        }
+
+        if (event.getMessage().startsWith("/wor") && !player.hasPermission("carbyne.command.bypass")) {
+            event.setCancelled(true);
         }
     }
 }

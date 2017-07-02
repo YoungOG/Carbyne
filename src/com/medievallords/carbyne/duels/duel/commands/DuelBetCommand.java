@@ -42,8 +42,8 @@ public class DuelBetCommand extends BaseCommand {
 
         try {
             int bet = Integer.parseInt(args[0]);
-            if (bet < 2500) {
-                MessageManager.sendMessage(player, "&cYou need to enter &b2500 &cor higher");
+            if (bet < 65) {
+                MessageManager.sendMessage(player, "&cYou need to enter &b65 &cor more");
                 return;
             }
 
@@ -54,7 +54,7 @@ public class DuelBetCommand extends BaseCommand {
             }
 
             //noinspection ConstantConditions
-            if (Account.getAccount(player.getUniqueId()) != null && Account.getAccount(player.getUniqueId()).getBalance() < 2500) {
+            if (Account.getAccount(player.getUniqueId()) != null && Account.getAccount(player.getUniqueId()).getBalance() < 65) {
                 MessageManager.sendMessage(player, "&cYou don't have enough money");
                 return;
             }
@@ -64,13 +64,13 @@ public class DuelBetCommand extends BaseCommand {
                     continue;
                 }
 
-                if (request.getBets().get(uuid) - 500 > bet) {
-                    MessageManager.sendMessage(player, "&cYour opponent has bet &b " + request.getBets().get(uuid) + ". &cYou need to bet atleast 500 less");
+                if (request.getBets().get(uuid) - 3 > bet) {
+                    MessageManager.sendMessage(player, "&cYour opponent has bet &b " + request.getBets().get(uuid) + ". &cYou need to bet atleast 3 less");
                     return;
                 }
 
                 //noinspection ConstantConditions
-                if (Account.getAccount(player.getUniqueId()) != null && (Account.getAccount(player.getUniqueId()).getBalance() - 500) < request.getBets().get(uuid)) {
+                if (Account.getAccount(player.getUniqueId()) != null && (Account.getAccount(player.getUniqueId()).getBalance() - 3) < request.getBets().get(uuid)) {
                     MessageManager.sendMessage(player, "&cYou don't have enough money");
                     return;
                 }

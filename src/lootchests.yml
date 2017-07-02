@@ -1,0 +1,23 @@
+Items:
+  ItemName:
+    Material: 'DIRT'
+    DisplayName: '&2Big &6Dirt'
+    Amount: 1
+    Lore:
+      - '&3Hi'
+      - '&6I am dirt'
+    Enchantments: {}
+    ChanceToSpawn: 1.0
+  TestItem:
+    Material: 'STONE'
+    DisplayName: '&8FUCK'
+    Amount: 1
+    Lore:
+      - 'FUCK'
+    Enchantments: {}
+    ChanceToSpawn: 0.5
+LootTables:
+  DefaultLootTable:
+    Items:
+      - 'ItemName'
+LootChests: {}

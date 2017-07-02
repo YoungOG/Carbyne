@@ -24,9 +24,9 @@ public class ChatCommand extends BaseCommand {
             MessageManager.sendMessage(sender, "&cUsage: /chat <player> <msg>");
         }
 
-        String msg = "";
+        StringBuilder msg = new StringBuilder();
         for (int i = 1; i < args.length; i++) {
-            msg = msg + args[i] + " ";
+            msg.append(args[i]).append(" ");
         }
 
         Player player = Bukkit.getServer().getPlayer(args[0]);
@@ -35,6 +35,6 @@ public class ChatCommand extends BaseCommand {
             return;
         }
 
-        player.chat(ChatColor.translateAlternateColorCodes('&', msg));
+        player.chat(ChatColor.translateAlternateColorCodes('&', msg.toString()));
     }
 }

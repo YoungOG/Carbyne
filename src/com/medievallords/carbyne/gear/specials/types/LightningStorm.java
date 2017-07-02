@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Created by xwiena22 on 2017-03-13.
  */
-public class LightningStorm implements Special{
+public class LightningStorm implements Special {
 
     private double radius = 5;
     private int maxTimes = 3;
@@ -65,11 +65,17 @@ public class LightningStorm implements Special{
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {
-        //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, damagePerLightning);
-        //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
         if (!isInSafeZone(entity)) {
+            if (entity instanceof Player) {
+                double health = entity.getHealth();
+                double damage = health - (health * 0.31);
+                entity.damage(damage);
+                entity.setFireTicks(20 * 5);
+                return;
+            }
+
             entity.damage(damagePerLightning);
+            entity.setFireTicks(20 * 5);
         }
-        //entity.setFireTicks(20 * 5);
     }
 }

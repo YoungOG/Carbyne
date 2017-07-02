@@ -1,7 +1,10 @@
 package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.JSONMessage;
+import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.palmergames.bukkit.towny.TownyEconomyHandler;
 import com.palmergames.bukkit.towny.TownyFormatter;
@@ -16,12 +19,18 @@ import com.palmergames.bukkit.towny.permissions.TownyPerms;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Created by Calvin on 1/9/2017
@@ -30,10 +39,86 @@ import java.util.ArrayList;
 public class ChatListener implements Listener {
 
     private Carbyne carbyne = Carbyne.getInstance();
+    private ArrayList<UUID> notMoved = new ArrayList<>();
+    private HashMap<UUID, String> lastMessage = new HashMap<>();
+    private final Pattern URL_PATTERN;
+
+    public ChatListener() {
+        URL_PATTERN = Pattern.compile("((?:http(?:s)?://)?(?:[wW]{3}\\.)?[a-zA-Z-]+\\.[a-zA-Z]{2,7}[a-zA-Z0-9._/~%\\-+&#?!=()@]*)");
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        if (!event.getPlayer().hasPermission("carbyne.staff")) {
+            notMoved.add(event.getPlayer().getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) && notMoved.contains(event.getPlayer().getUniqueId())) {
+            notMoved.remove(event.getPlayer().getUniqueId());
+        }
+    }
 
     @EventHandler(ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
+
+        if (carbyne.getStaffManager().isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff"))  {
+            event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cThe chat is currently muted.");
+            return;
+        }
+
+        if (carbyne.getStaffManager().getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff")) {
+            if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD",carbyne.getStaffManager().getSlowChatTime() * 1000)) {
+                MessageManager.sendMessage(event.getPlayer(), "&cYou may speak again in " + (Cooldowns.getCooldown(event.getPlayer().getUniqueId(), "slowChatCD") / 1000) + " seconds");
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        if (player.hasPermission("carbyne.staff.pin")) {
+            Profile profile = carbyne.getProfileManager().getProfile(player.getUniqueId());
+
+            if (!profile.hasPin()) {
+                event.setCancelled(true);
+                MessageManager.sendMessage(player, "&7You cannot chat until you entered your PIN.");
+            }
+
+            if (carbyne.getStaffManager().getFrozenStaff().contains(player.getUniqueId())) {
+                event.setCancelled(true);
+                if (!isFourDigitCode(event.getMessage())) {
+                    MessageManager.sendMessage(player, "&4That PIN is incorrect. Please try again.");
+                    return;
+                }
+
+                if (!event.getMessage().equalsIgnoreCase(profile.getPin())) {
+                    MessageManager.sendMessage(player, "&4That PIN is incorrect. Please try again.");
+                    return;
+                }
+
+                carbyne.getStaffManager().getFrozenStaff().remove(player.getUniqueId());
+                MessageManager.sendMessage(player, "&7You have been successfully authenticated.");
+                return;
+            }
+        }
+
+        if (lastMessage.containsKey(player.getUniqueId()) && event.getMessage().equalsIgnoreCase(lastMessage.get(player.getUniqueId()))) {
+            MessageManager.sendMessage(player, "&cDo not repeat yourself.");
+            event.setCancelled(true);
+            return;
+        }
+
+        if (notMoved.contains(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            MessageManager.sendMessage(player, "&cYou must move before chatting.");
+            return;
+        }
 
         JSONMessage newMessage = JSONMessage.create("");
 
@@ -71,8 +156,6 @@ public class ChatListener implements Listener {
             e1.printStackTrace();
         }
 
-        String message = event.getMessage();
-
         newMessage.then("").then(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
 
         try {
@@ -86,10 +169,47 @@ public class ChatListener implements Listener {
         }
 
         newMessage.suggestCommand("/msg " + player.getName() + " ");
-        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: ") + message);
+
+        String message = event.getMessage();
+
+//        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: ") + message);
+
+//        Matcher matcher = URL_PATTERN.matcher(message);
+//
+//        while (matcher.find()) {
+//            String modified;
+//            String url = modified = matcher.group(1);
+//
+//            modified = "&9[Link]";
+//
+//            newMessage.then(ChatColor.translateAlternateColorCodes('&', modified)).openURL(url);
+//        }
+//
+        //[Link]
+//        if (message.matches(".+" + urlPattern.pattern() + ".+")) {
+//            Matcher matcher = urlPattern.matcher(message);
+//            StringBuffer stringBuffer = new StringBuffer();
+//
+//            while (matcher.find()) {
+//                String modified;
+//                String tempUrl = modified = matcher.group(1);
+//
+//                modified = "[Link]";
+//
+//                matcher.appendReplacement(stringBuffer, "");
+//                stringBuffer.append(modified);
+//            }
+//        }
+
+
+        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: ") + (player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', message) : message));
 
         for (Player players : PlayerUtility.getOnlinePlayers()) {
             newMessage.send(players);
+        }
+
+        if (!player.hasPermission("carbyne.bypassrepeat")) {
+            lastMessage.put(player.getUniqueId(), event.getMessage());
         }
 
         System.out.println("[Chat Message] " + player.getName() + ": " + event.getMessage());
@@ -253,9 +373,11 @@ public class ChatListener implements Listener {
                 + " &2Firespread: " + (resident.getPermissions().fire ? "&4ON" : "&aOFF")
                 + " &2Mob Spawns: " + (resident.getPermissions().mobs ? "&4ON" : "&aOFF"));
 
-        if (TownyEconomyHandler.isActive()) {
-            lines.add("&2Bank: &a" + resident.getHoldingFormattedBalance());
-        }
+        try {
+            if (TownyEconomyHandler.isActive()) {
+                lines.add("&2Bank: &a" + resident.getHoldingFormattedBalance());
+            }
+        } catch(NullPointerException playerHasNullAccount) {}
 
         String line = "&2Town: &a";
         if (!resident.hasNation()) {
@@ -291,5 +413,11 @@ public class ChatListener implements Listener {
         }
 
         return message;
+    }
+
+    public boolean isFourDigitCode(String string) {
+        String regex = "[0-9]+";
+
+        return string.length() == 4 && string.matches(regex);
     }
 }

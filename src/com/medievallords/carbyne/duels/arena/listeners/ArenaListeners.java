@@ -3,6 +3,8 @@ package com.medievallords.carbyne.duels.arena.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
 import com.medievallords.carbyne.duels.duel.DuelManager;
+import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.utils.MessageManager;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -34,6 +36,13 @@ public class ArenaListeners implements Listener {
 
             if (arena == null) {
                 return;
+            }
+
+            Profile profile = carbyne.getProfileManager().getProfile(event.getPlayer().getUniqueId());
+            if (profile != null && (profile.getRemainingPvPTime() > 1)) {
+                event.setCancelled(true);
+                MessageManager.sendMessage(event.getPlayer(), "&cYou cannot enter a duel with a pvp timer");
+                event.getPlayer().teleport(arena.getLobbyLocation());
             }
 
             List<Location> pedastoolLocations = Arrays.asList(arena.getPedastoolLocations());

@@ -196,4 +196,66 @@ public class PlayerUtility {
 
         return damageReduction;
     }
+
+    private static final int PROTOCOL_VERSION = 47;
+    /**
+     * @param header The header of the tab list.
+     */
+    public static void broadcastHeader(String header)
+    {
+        broadcastHeaderAndFooter(header, null);
+    }
+    /**
+     * @param footer The footer of the tab list.
+     */
+    public static void broadcastFooter(String footer)
+    {
+        broadcastHeaderAndFooter(null, footer);
+    }
+    /**
+     * @param header The header of the tab list.
+     * @param footer The footer of the tab list.
+     */
+    public static void broadcastHeaderAndFooter(String header, String footer)
+    {
+        for (Player player : Bukkit.getOnlinePlayers()) setHeaderAndFooter(player, header, footer);
+    }
+    /**
+     * @param p      The Player.
+     * @param header The header.
+     */
+    public static void setHeader(Player p, String header)
+    {
+        setHeaderAndFooter(p, header, null);
+    }
+    /**
+     * @param p The Player
+     * @param footer The footer.
+     */
+    public static void setFooter(Player p, String footer)
+    {
+        setHeaderAndFooter(p, null, footer);
+    }
+
+    /**
+     * @param player The Player.
+     * @param rawHeader The header in raw text.
+     * @param rawFooter The footer in raw text.
+     */
+    public static void setHeaderAndFooter(Player player, String rawHeader, String rawFooter) {
+
+
+//PacketContainer pc = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+//        pc.getChatComponents().write(0, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawHeader))).write(1, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawFooter)));
+//
+//        try {
+//            ProtocolLibrary.getProtocolManager().sendServerPacket(player, pc);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+    }
+
+    public static boolean isInventoryEmpty(Player player) {
+        return player.getInventory().firstEmpty() == 0;
+    }
 }

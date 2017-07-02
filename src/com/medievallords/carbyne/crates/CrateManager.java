@@ -111,7 +111,7 @@ public class CrateManager {
                             List<String> enchantments = rewardsSection.getStringList(rewardId + ".Enchantments");
                             List<String> commands = rewardsSection.getStringList(rewardId + ".Commands");
                             boolean displayItemOnly = rewardsSection.getBoolean(rewardId + ".DisplayItem");
-                            int chance = rewardsSection.getInt(rewardId + ".Chance");
+                            double chance = rewardsSection.getDouble(rewardId + ".Chance");
 
                             if (displayName != null) {
                                 if (displayName.contains("randomgear")) {

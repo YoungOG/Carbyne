@@ -5,10 +5,10 @@ import com.bizarrealex.aether.scoreboard.BoardAdapter;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.economy.MarketManager;
 import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
+import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.squads.SquadType;
@@ -21,6 +21,7 @@ import java.util.logging.Level;
 
 /**
  * Created by Calvin on 3/13/2017
+ *
  * for the Carbyne project.
  */
 public class CarbyneBoardAdapter implements BoardAdapter {
@@ -38,9 +39,9 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
     @Override
     public List<String> getScoreboard(Player player, Board board, Set<BoardCooldown> set) {
+        ProfileManager profileManager = main.getProfileManager();
         GearManager gearManager = main.getGearManager();
         SquadManager squadManager = main.getSquadManager();
-        MarketManager marketManager = main.getMarketManager();
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
@@ -92,9 +93,58 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             }
         }
 
+//        if (board.getCooldown("pvptimer") == null) {
+//            if (profileManager.getProfile(player.getUniqueId()) != null) {
+//                Profile profile = profileManager.getProfile(player.getUniqueId());
+//
+//                if (profile.getRemainingPvPTime() > 1) {
+//                    new BoardCooldown(board, "pvptimer", (profile.getRemainingPvPTime() / 1000));
+//                }
+//            }
+//        } else {
+//            if (profileManager.getProfile(player.getUniqueId()) != null) {
+//                Profile profile = profileManager.getProfile(player.getUniqueId());
+//
+//                if (profile.getRemainingPvPTime() > 1) {
+//                } else {
+//
+//                }
+//            }
+//        }
+
+        if (board.getCooldown("target") == null) {
+            if (squadManager.getSquad(player.getUniqueId()) != null) {
+                Squad squad = squadManager.getSquad(player.getUniqueId());
+
+                if (squad.getTargetUUID() != null) {
+                    squad.setTargetUUID(null);
+                }
+
+                if (squad.getTargetSquad() != null) {
+                    squad.setTargetSquad(null);
+                }
+            }
+        }
+
         try {
             while (itr.hasNext()) {
                 BoardCooldown cooldown = (BoardCooldown) itr.next();
+
+                if (cooldown.getId().equals("logout")) {
+                    lines.add("       ");
+                    lines.add("&cLogout: &b" + cooldown.getFormattedString(BoardFormat.SECONDS));
+                }
+
+                if (cooldown.getId().equals("target")) {
+                    if (squadManager.getSquad(player.getUniqueId()) != null) {
+                        Squad squad = squadManager.getSquad(player.getUniqueId());
+
+                        if (squad.getTargetUUID() != null || squad.getTargetSquad() != null) {
+                            lines.add("     ");
+                            lines.add("&cTarget: &b" + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
+                        }
+                    }
+                }
 
                 if (cooldown.getId().equals("combattag")) {
                     if (CombatTagListeners.isInCombat(player.getUniqueId())) {
@@ -122,7 +172,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             main.getLogger().log(Level.WARNING, e.getMessage());
         }
 
-        if (lines.size() > 1) {
+        if (lines.size() >= 1) {
             lines.add(0, "&7&m---------------------");
             lines.add("&7&m---------------------");
         }

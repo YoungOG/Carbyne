@@ -16,25 +16,25 @@ public class PotionEffects {
                 case "increase_damage":
                     switch (effects.getAmplifier()) {
                         case 0:
-                            ParticleEffect.FLAME.display(0.2F, 0.0F, 0.2F, 0.05F, 10, player.getLocation().add(0.0, 0.5, 0.0), 20);
+                            ParticleEffect.FLAME.display(0.2F, 0.0F, 0.2F, 0.05F, 10, player.getLocation().add(0.0, 0.5, 0.0), 20, false);
                             break;
                         case 1:
-                            ParticleEffect.LAVA.display(0.2F, 0.0F, 0.2F, 0.05F, 1, player.getLocation().add(0.0, -0.5, 0.0), 20);
+                            ParticleEffect.LAVA.display(0.2F, 0.0F, 0.2F, 0.05F, 1, player.getLocation().add(0.0, -0.5, 0.0), 20, false);
                             break;
                     }
                     break;
                 case "speed":
                     switch (effects.getAmplifier()) {
                         case 0:
-                            ParticleEffect.SMOKE_NORMAL.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20);
+                            ParticleEffect.SMOKE_NORMAL.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20, false);
                             break;
                         case 1:
-                            ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20);
+                            ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, -0.3F, 0.02F, 10, player.getLocation(), 20, false);
                             break;
                     }
                     break;
                 case "regeneration":
-                    ParticleEffect.HEART.display(0.2F, 0.0F, 0.2F, 0.1F, 1, player.getLocation().add(0.0, 0.3, 0.0), 20);
+                    ParticleEffect.HEART.display(0.2F, 0.0F, 0.2F, 0.1F, 1, player.getLocation().add(0.0, 0.3, 0.0), 20, false);
 
             }
         }

@@ -1,541 +1,193 @@
 package com.medievallords.carbyne.regeneration;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.regeneration.tasks.DormantRegenerationTask;
-import com.medievallords.carbyne.regeneration.tasks.RegenerationTask;
+import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.WorldCoord;
+import lombok.Getter;
 import org.bson.Document;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
 /**
  * Created by Calvin on 3/23/2017
  * for the Carbyne project.
+ * Dalton was here on 5/30/2017.
  */
 public class RegenerationHandler {
 
     private Carbyne main = Carbyne.getInstance();
-    private MongoCollection<Document> activeTaskCollection = main.getMongoDatabase().getCollection("active-task");
-    private MongoCollection<Document> pausedTaskCollection = main.getMongoDatabase().getCollection("paused-tasks");
-    private MongoCollection<Document> dormantTaskCollection = main.getMongoDatabase().getCollection("dormant-tasks");
-    private HashMap<WorldCoord, HashSet<RegenerationTask>> activeRegenerationTasks = new HashMap<>();
-    private HashMap<WorldCoord, HashSet<RegenerationTask>> pausedRegenerationTasks = new HashMap<>();
-    private HashMap<WorldCoord, HashSet<DormantRegenerationTask>> dormantRegenerationTasks = new HashMap<>();
-    private HashSet<RegenerationData> replacements = new HashSet<>();
-    private ArrayList<UUID> bypassers = new ArrayList<>();
+    private MongoCollection<Document> taskCollection = main.getMongoDatabase().getCollection("regen-tasks");
+    @Getter
+    private List<UUID> bypassers = new ArrayList<>();
+    private HashMap<Material, Material> regenIntoData = new HashMap<>();
+    private HashMap<Material, String> timeData = new HashMap<>();
 
+    /**
+     * Init variables. Load information from regeneration config. Log if any errors occur.
+     */
     public RegenerationHandler() {
-        for (Material type : Material.values()) {
-            main.getLogger().log(Level.INFO, type.toString());
-        }
+        load();
+    }
 
+    public void reload()
+    {
+        bypassers = new ArrayList<>();
+        regenIntoData = new HashMap<>();
+        timeData = new HashMap<>();
+        load();
+    }
+
+    public void load()
+    {
         FileConfiguration configuration = main.getConfig();
 
-        if (configuration.getStringList("regeneration").size() > 0) {
+        if (configuration.getStringList("regeneration").size() > 0)
             for (String line : configuration.getStringList("regeneration")) {
                 String[] args = line.split(",");
-
-                if (args.length != 3) {
-                    continue;
-                }
+                if (args.length != 3) continue;
 
                 try {
-                    replacements.add(new RegenerationData(Material.getMaterial(args[0].toUpperCase()), Material.getMaterial(args[1].toUpperCase()), args[2]));
+                    Material oldMat = Material.getMaterial(args[0].toUpperCase()), newMat = Material.getMaterial(args[1].toUpperCase());
+                    String time = args[2];
+                    regenIntoData.put(oldMat, newMat);
+                    timeData.put(oldMat, time);
                 } catch (Exception e) {
-                    main.getLogger().log(Level.SEVERE, "RegenerationData for string \"" + line + "\" could not be found.");
+                    main.getLogger().log(Level.SEVERE, "RegenerationData for string\"" + line + "\" could not be found.");
                 }
             }
-        }
-
-        loadTasks();
     }
 
-    @SuppressWarnings("unchecked")
-    public void loadTasks() {
-        long overallStartMillis = System.currentTimeMillis();
-        int overallAmount = 0;
-
-        if (activeTaskCollection.count() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + activeTaskCollection.count() + " Active WorldCoord documents.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (Document worldCoordDoc : activeTaskCollection.find()) {
-                int x = worldCoordDoc.getInteger("x");
-                int z = worldCoordDoc.getInteger("z");
-                ArrayList<Document> taskDocs = (ArrayList<Document>) worldCoordDoc.get("tasks");
-
-                if (taskDocs.size() > 0) {
-                    for (Document taskDoc : taskDocs) {
-                        RegenerationType regenerationType = RegenerationType.valueOf(taskDoc.getString("regenerationType"));
-                        Location blockLocation = LocationSerialization.deserializeLocation(taskDoc.getString("blockLocation"));
-                        Document regenDataDoc = (Document) taskDoc.get("regenerationData");
-                        RegenerationData regenerationData = new RegenerationData(Material.getMaterial(regenDataDoc.getString("previousMaterial")), Material.getMaterial(regenDataDoc.getString("newMaterial")), regenDataDoc.getString("remainingTimeString"));
-                        WorldCoord worldCoord = WorldCoord.parseWorldCoord(blockLocation);
-                        int blockData = taskDoc.getInteger("blockData");
-                        int remainingTime = taskDoc.getInteger("remainingTime");
-                        boolean active = taskDoc.getBoolean("active");
-                        boolean paused = taskDoc.getBoolean("paused");
-
-                        RegenerationTask regenerationTask = new RegenerationTask(this, regenerationType, blockLocation, regenerationData, worldCoord, (byte) blockData);
-                        regenerationTask.setRemainingTime(remainingTime);
-                        regenerationTask.setActive(active);
-                        regenerationTask.setPaused(paused);
-
-                        if (activeRegenerationTasks.containsKey(worldCoord)) {
-                            activeRegenerationTasks.get(worldCoord).add(regenerationTask);
-                        } else {
-                            HashSet<RegenerationTask> taskHashSet = new HashSet<>();
-                            taskHashSet.add(regenerationTask);
-
-                            activeRegenerationTasks.put(worldCoord, taskHashSet);
-                        }
-
-                        regenerationTask.runTaskTimer(main, 0L, 20L);
-
-                        amount++;
-                        overallAmount++;
-                    }
-                } else {
-                    activeTaskCollection.deleteOne(worldCoordDoc);
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully loaded " + activeRegenerationTasks.keySet().size() + " Active WorldCoords and " + amount + " Active Regeneration Tasks. Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        if (pausedTaskCollection.count() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + pausedTaskCollection.count() + " Paused WorldCoord documents.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (Document worldCoordDoc : pausedTaskCollection.find()) {
-                int x = worldCoordDoc.getInteger("x");
-                int z = worldCoordDoc.getInteger("z");
-                ArrayList<Document> taskDocs = (ArrayList<Document>) worldCoordDoc.get("tasks");
-
-                if (taskDocs.size() > 0) {
-                    for (Document taskDoc : taskDocs) {
-                        RegenerationType regenerationType = RegenerationType.valueOf(taskDoc.getString("regenerationType"));
-                        Location blockLocation = LocationSerialization.deserializeLocation(taskDoc.getString("blockLocation"));
-                        Document regenDataDoc = (Document) taskDoc.get("regenerationData");
-                        RegenerationData regenerationData = new RegenerationData(Material.getMaterial(regenDataDoc.getString("previousMaterial")), Material.getMaterial(regenDataDoc.getString("newMaterial")), regenDataDoc.getString("remainingTimeString"));
-                        WorldCoord worldCoord = WorldCoord.parseWorldCoord(blockLocation);
-                        int blockData = taskDoc.getInteger("blockData");
-                        int remainingTime = taskDoc.getInteger("remainingTime");
-                        boolean active = taskDoc.getBoolean("active");
-                        boolean paused = taskDoc.getBoolean("paused");
-
-                        RegenerationTask regenerationTask = new RegenerationTask(this, regenerationType, blockLocation, regenerationData, worldCoord, (byte) blockData);
-                        regenerationTask.setRemainingTime(remainingTime);
-                        regenerationTask.setActive(active);
-                        regenerationTask.setPaused(paused);
-
-                        if (pausedRegenerationTasks.containsKey(worldCoord)) {
-                            pausedRegenerationTasks.get(worldCoord).add(regenerationTask);
-                        } else {
-                            HashSet<RegenerationTask> taskHashSet = new HashSet<>();
-                            taskHashSet.add(regenerationTask);
-
-                            pausedRegenerationTasks.put(worldCoord, taskHashSet);
-                        }
-
-                        regenerationTask.runTaskTimer(main, 0L, 20L);
-
-                        amount++;
-                        overallAmount++;
-                    }
-                } else {
-                    pausedTaskCollection.deleteOne(worldCoordDoc);
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully loaded " + pausedRegenerationTasks.keySet().size() + " Paused WorldCoords and " + amount + " Paused Regeneration Tasks. Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        if (dormantTaskCollection.count() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + dormantTaskCollection.count() + " Dormant WorldCoord documents.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (Document worldCoordDoc : dormantTaskCollection.find()) {
-                int x = worldCoordDoc.getInteger("x");
-                int z = worldCoordDoc.getInteger("z");
-                ArrayList<Document> taskDocs = (ArrayList<Document>) worldCoordDoc.get("tasks");
-
-                if (taskDocs.size() > 0) {
-                    for (Document taskDoc : taskDocs) {
-                        RegenerationType regenerationType = RegenerationType.valueOf(taskDoc.getString("regenerationType"));
-                        Location blockLocation = LocationSerialization.deserializeLocation(taskDoc.getString("blockLocation"));
-                        Document regenDataDoc = (Document) taskDoc.get("regenerationData");
-                        RegenerationData regenerationData = new RegenerationData(Material.getMaterial(regenDataDoc.getString("previousMaterial")), Material.getMaterial(regenDataDoc.getString("newMaterial")), regenDataDoc.getString("remainingTimeString"));
-                        WorldCoord worldCoord = WorldCoord.parseWorldCoord(blockLocation);
-                        int blockData = taskDoc.getInteger("blockData");
-                        int remainingTime = taskDoc.getInteger("remainingTime");
-                        boolean active = taskDoc.getBoolean("active");
-                        boolean paused = taskDoc.getBoolean("paused");
-
-                        RegenerationTask regenerationTask = new RegenerationTask(this, regenerationType, blockLocation, regenerationData, worldCoord, (byte) blockData);
-                        regenerationTask.setRemainingTime(remainingTime);
-                        regenerationTask.setActive(active);
-                        regenerationTask.setPaused(paused);
-
-                        DormantRegenerationTask dormantRegenerationTask = new DormantRegenerationTask(this, regenerationTask);
-
-                        dormantRegenerationTask.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 5 * 20L);
-
-                        if (!dormantRegenerationTasks.containsKey(regenerationTask.getWorldCoord())) {
-                            HashSet<DormantRegenerationTask> tasks = new HashSet<>();
-                            tasks.add(dormantRegenerationTask);
-
-                            dormantRegenerationTasks.put(regenerationTask.getWorldCoord(), tasks);
-                        } else {
-                            dormantRegenerationTasks.get(regenerationTask.getWorldCoord()).add(dormantRegenerationTask);
-                        }
-
-                        amount++;
-                        overallAmount++;
-                    }
-                } else {
-                    dormantTaskCollection.deleteOne(worldCoordDoc);
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully loaded " + dormantRegenerationTasks.keySet().size() + " Dormant WorldCoords and " + amount + " Dormant Regeneration Tasks.  Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        main.getLogger().log(Level.INFO, "Finished loading " + (activeRegenerationTasks.size() + pausedRegenerationTasks.size() + dormantRegenerationTasks.size()) + " WorldCoords and " + overallAmount + " Regeneration Tasks.  Took (" + (System.currentTimeMillis() - overallStartMillis) + "ms).");
+    /**
+     * Requests block to regenerate. Checks if the location has regeneration data ? returns if so : processes data.
+     *
+     * @param block Block to regenerate and parse information from. PRECONDITION: The blocks location is in the player world.
+     * @param type  NOT NULL RegenerationType enum.
+     */
+    public void request(Block block, RegenerationType type) {
+        if(!timeData.containsKey(block.getType())) return;
+        WorldCoord wc = WorldCoord.parseWorldCoord(block);
+        if (!isLocationEmpty(wc, block.getLocation())) return;
+        storeRegenerationInformation(wc, block, type);
     }
 
-    public void saveTasks() {
-        long overallStartMillis = System.currentTimeMillis();
-        int overallAmount = 0;
-
-        if (activeRegenerationTasks.size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to save " + activeRegenerationTasks.size() + " Active WorldCoords.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (WorldCoord worldCoord : activeRegenerationTasks.keySet()) {
-                if (activeRegenerationTasks.get(worldCoord).size() > 0) {
-                    Document worldCoordDoc = new Document();
-                    worldCoordDoc.put("x", worldCoord.getX());
-                    worldCoordDoc.put("z", worldCoord.getZ());
-                    ArrayList<Document> regenDocs = new ArrayList<>();
-
-                    for (RegenerationTask regenerationTask : activeRegenerationTasks.get(worldCoord)) {
-                        Document document = new Document();
-                        document.put("regenerationType", regenerationTask.getRegenerationType().toString());
-                        document.put("blockLocation", LocationSerialization.serializeLocation(regenerationTask.getBlockLocation()));
-                        Document regenDataDoc = new Document();
-                        regenDataDoc.put("previousMaterial", regenerationTask.getRegenerationData().getPreviousMaterial().toString());
-                        regenDataDoc.put("newMaterial", regenerationTask.getRegenerationData().getNewMaterial().toString());
-                        regenDataDoc.put("remainingTimeString", regenerationTask.getRegenerationData().getRegenerationTimeString());
-                        document.put("regenerationData", regenDataDoc);
-                        document.put("blockData", (int) regenerationTask.getBlockData());
-                        document.put("remainingTime", regenerationTask.getRemainingTime());
-                        document.put("active", regenerationTask.isActive());
-                        document.put("paused", regenerationTask.isPaused());
-
-                        regenDocs.add(document);
-
-                        amount++;
-                        overallAmount++;
-                    }
-
-                    worldCoordDoc.put("tasks", regenDocs);
-
-                    activeTaskCollection.replaceOne(Filters.and(new Document("x", worldCoord.getX()), new Document("z", worldCoord.getZ())), worldCoordDoc, new UpdateOptions().upsert(true));
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully saved " + activeTaskCollection.count() + " Active WorldCoords and " + amount + " Active Regeneration Tasks. Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        if (pausedRegenerationTasks.size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to save " + pausedRegenerationTasks.size() + " Paused WorldCoords.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (WorldCoord worldCoord : pausedRegenerationTasks.keySet()) {
-                if (pausedRegenerationTasks.get(worldCoord).size() > 0) {
-                    Document worldCoordDoc = new Document();
-                    worldCoordDoc.put("x", worldCoord.getX());
-                    worldCoordDoc.put("z", worldCoord.getZ());
-                    ArrayList<Document> regenDocs = new ArrayList<>();
-
-                    for (RegenerationTask regenerationTask : pausedRegenerationTasks.get(worldCoord)) {
-                        Document document = new Document();
-                        document.put("regenerationType", regenerationTask.getRegenerationType().toString());
-                        document.put("blockLocation", LocationSerialization.serializeLocation(regenerationTask.getBlockLocation()));
-                        Document regenDataDoc = new Document();
-                        regenDataDoc.put("previousMaterial", regenerationTask.getRegenerationData().getPreviousMaterial().toString());
-                        regenDataDoc.put("newMaterial", regenerationTask.getRegenerationData().getNewMaterial().toString());
-                        regenDataDoc.put("remainingTimeString", regenerationTask.getRegenerationData().getRegenerationTimeString());
-                        document.put("regenerationData", regenDataDoc);
-                        document.put("blockData", (int) regenerationTask.getBlockData());
-                        document.put("remainingTime", regenerationTask.getRemainingTime());
-                        document.put("active", regenerationTask.isActive());
-                        document.put("paused", regenerationTask.isPaused());
-
-                        regenDocs.add(document);
-
-                        amount++;
-                        overallAmount++;
-                    }
-
-                    worldCoordDoc.put("tasks", regenDocs);
-
-                    pausedTaskCollection.replaceOne(Filters.and(new Document("x", worldCoord.getX()), new Document("z", worldCoord.getZ())), worldCoordDoc, new UpdateOptions().upsert(true));
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully saved " + pausedTaskCollection.count() + " Paused WorldCoords and " + amount + " Paused Regeneration Tasks. Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        if (dormantRegenerationTasks.size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to save " + dormantRegenerationTasks.size() + " Dormant WorldCoords.");
-
-            long startMillis = System.currentTimeMillis();
-            int amount = 0;
-
-            for (WorldCoord worldCoord : dormantRegenerationTasks.keySet()) {
-                if (dormantRegenerationTasks.get(worldCoord).size() > 0) {
-                    Document worldCoordDoc = new Document();
-                    worldCoordDoc.put("x", worldCoord.getX());
-                    worldCoordDoc.put("z", worldCoord.getZ());
-                    ArrayList<Document> regenDocs = new ArrayList<>();
-
-                    for (DormantRegenerationTask regenerationTask : dormantRegenerationTasks.get(worldCoord)) {
-                        Document document = new Document();
-                        document.put("regenerationType", regenerationTask.getRegenerationType().toString());
-                        document.put("blockLocation", LocationSerialization.serializeLocation(regenerationTask.getBlockLocation()));
-                        Document regenDataDoc = new Document();
-                        regenDataDoc.put("previousMaterial", regenerationTask.getRegenerationData().getPreviousMaterial().toString());
-                        regenDataDoc.put("newMaterial", regenerationTask.getRegenerationData().getNewMaterial().toString());
-                        regenDataDoc.put("remainingTimeString", regenerationTask.getRegenerationData().getRegenerationTimeString());
-                        document.put("regenerationData", regenDataDoc);
-                        document.put("blockData", (int) regenerationTask.getBlockData());
-                        document.put("remainingTime", regenerationTask.getRemainingTime());
-                        document.put("active", regenerationTask.isActive());
-                        document.put("paused", regenerationTask.isPaused());
-
-                        regenDocs.add(document);
-
-                        amount++;
-                        overallAmount++;
-                    }
-
-                    worldCoordDoc.put("tasks", regenDocs);
-
-                    dormantTaskCollection.replaceOne(Filters.and(new Document("x", worldCoord.getX()), new Document("z", worldCoord.getZ())), worldCoordDoc, new UpdateOptions().upsert(true));
-                }
-            }
-
-            main.getLogger().log(Level.INFO, "Successfully saved " + dormantTaskCollection.count() + " Dormant WorldCoords and " + amount + " Dormant Regeneration Tasks. Took (" + (System.currentTimeMillis() - startMillis) + "ms).");
-        }
-
-        main.getLogger().log(Level.INFO, "Finished loading " + (activeTaskCollection.count() + pausedTaskCollection.count() + dormantTaskCollection.count()) + " WorldCoords and " + overallAmount + " Regeneration Tasks.  Took (" + (System.currentTimeMillis() - overallStartMillis) + "ms).");
-    }
-
-    public boolean request(Block block, RegenerationType regenerationType) {
-        return request(block, regenerationType, "now");
-    }
-
-    public boolean request(Block block, RegenerationType regenerationType, String time) {
-        if (alreadyScheduled(block.getLocation())) {
-            return false;
-        }
-
-        RegenerationData regenerationData = null;
-
+    /**
+     * This method checks all of the data in a WorldCoord to see if it is time to regenerate. If it is time to regenerate,
+     * the regeneration will be executed and the document will be removed from the list of documents. The list of documents
+     * is only updated in the database when a change is made.
+     *
+     * @param wc WorldCoord to check and execute data from. PRECONDITION: The world of the WorldCoord is the player world.
+     */
+    public void checkAndAct(WorldCoord wc) {
         try {
-            if (getRegenerationData(block) != null)
-                regenerationData = (RegenerationData) getRegenerationData(block).clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            if (wc.getTownBlock().hasTown()) return;
+        } catch (NotRegisteredException ignore) {
         }
 
-        if (regenerationData == null || regenerationData.getPreviousMaterial() == null || regenerationData.getNewMaterial() == null) {
-            return false;
+        Document wcDoc = taskCollection.find(Filters.and(new Document("x", wc.getX()), new Document("z", wc.getZ()))).first();
+        if (wcDoc == null) return;
+
+        final ArrayList<Document> data = (ArrayList<Document>) wcDoc.get("data");
+        for (int i = 0; i < data.size(); i++) {
+            Document aData = data.get(i);
+            new BukkitRunnable() {
+                public void run() {
+                    Material mat = Material.getMaterial(aData.getString("material").toUpperCase());
+                    long last = aData.getLong("time");
+                    if (last < System.currentTimeMillis()) {
+                        main.getServer().getScheduler().runTask(main, () -> {
+                            execute(aData, mat);
+                            data.remove(aData);
+
+                            wcDoc.put("data", data);
+
+                            taskCollection.replaceOne(Filters.and(new Document("x", wc.getX()), new Document("z", wc.getZ())), wcDoc, new UpdateOptions().upsert(true));
+                        });
+                    }
+                }
+            }.runTaskAsynchronously(main);
         }
+    }
 
-        if (regenerationType == RegenerationType.PLACED) {
-            regenerationData.setNewMaterial(Material.AIR);
-        }
+    /**
+     * Method that regenerates a block. Does not remove data from the database. That is done in checkAndAct.
+     *
+     * @param information Block regeneration information from the database.
+     * @param regenMat    Material that was originally broken or placed. Method can be rewritten to exclude this as it
+     *                    is part of the information document but it is already loaded in checkAndExecute.
+     */
+    private void execute(Document information, Material regenMat) {
+        RegenerationType regenType = RegenerationType.valueOf(information.get("regenerationType", String.class));
+        if (regenType.equals(RegenerationType.BROKEN))
+            regenMat = regenIntoData.get(regenMat);
+        else if (regenType.equals(RegenerationType.PLACED))
+            regenMat = Material.AIR;
+        Location blockLocation = LocationSerialization.deserializeLocation(information.get("location", String.class));
+        blockLocation.getBlock().setType(regenMat);
+    }
 
-        if (!time.equalsIgnoreCase("now")) {
-            regenerationData.setRegenerationTimeString(time);
-        } else {
-            regenerationData.setRegenerationTimeString(getRegenerationData(block).getRegenerationTimeString());
-        }
+    /**
+     * Store the information for block regeneration so it can be pulled from the database later.
+     *
+     * @param wc    WorldCoord that contains the block location. Used as a key for the regeneration data in the WorldCoord.
+     * @param block The block broken or placed to store for regeneration.
+     * @param type  Type of Regeneration from the RegenerationType enum.
+     */
+    @SuppressWarnings("unchecked")
+    private void storeRegenerationInformation(WorldCoord wc, Block block, RegenerationType type) {
+        Document wcDoc = taskCollection.find(Filters.and(new Document("x", wc.getX()), new Document("z", wc.getZ()))).first();
+        ArrayList<Document> data;
 
-        WorldCoord worldCoord = WorldCoord.parseWorldCoord(block);
-//        Bukkit.broadcastMessage("RegenerationTask created at WorldCoord(X: " + worldCoord.getX() + ", Z: " + worldCoord.getZ() + ")");
+        if (wcDoc == null) {
+            wcDoc = new Document();
+            wcDoc.put("x", wc.getX());
+            wcDoc.put("z", wc.getZ());
+            data = new ArrayList<>();
+        } else data = (ArrayList<Document>) wcDoc.get("data");
 
-        RegenerationTask regenerationTask = new RegenerationTask(this, regenerationType, block.getLocation(), regenerationData, worldCoord, block.getState().getData().getData());
+        Document regenInfo = new Document();
+        regenInfo.put("location", LocationSerialization.serializeLocation(block.getLocation()));
+        regenInfo.put("material", block.getType().toString().toUpperCase());
+        regenInfo.put("regenerationType", type.name());
+        try {
+            regenInfo.put("time", DateUtil.parseDateDiff(timeData.get(block.getType()), true));
+        } catch (Exception ex) {}
 
-        if (activeRegenerationTasks.containsKey(worldCoord)) {
-            activeRegenerationTasks.get(worldCoord).add(regenerationTask);
-        } else {
-            HashSet<RegenerationTask> taskHashSet = new HashSet<>();
-            taskHashSet.add(regenerationTask);
+        data.add(regenInfo);
+        wcDoc.put("data", data);
+        taskCollection.replaceOne(Filters.and(new Document("x", wc.getX()), new Document("z", wc.getZ())), wcDoc, new UpdateOptions().upsert(true));
+    }
 
-            activeRegenerationTasks.put(worldCoord, taskHashSet);
-        }
+    /**
+     * Checks if a location has regeneration data present.
+     *
+     * @param wc       WorldCoord of location, used to search database for location.
+     * @param location The location to check in the WorldCoord key Arraylist of documents which contains locations.
+     * @return true if a location matches the location provided, false otherwise.
+     */
+    public boolean isLocationEmpty(WorldCoord wc, Location location) {
+        Document wcDoc = taskCollection.find(Filters.and(new Document("x", wc.getX()), new Document("z", wc.getZ()))).first();
+        if (wcDoc == null) return true;
 
-        regenerationTask.runTaskTimer(main, 0L, 20L);
+        ArrayList<Document> regenData = (ArrayList<Document>) wcDoc.get("data");
+        String data = LocationSerialization.serializeLocation(location);
+
+        for (Document aRegenData : regenData) if (data.equals(aRegenData.get("location", String.class))) return false;
 
         return true;
     }
 
-    public boolean alreadyScheduled(Location location) {
-        for (WorldCoord worldCoord : activeRegenerationTasks.keySet()) {
-            for (RegenerationTask regenerationTask : activeRegenerationTasks.get(worldCoord)) {
-                if (regenerationTask.getBlockLocation().getX() == location.getX() && regenerationTask.getBlockLocation().getY() == location.getY() && regenerationTask.getBlockLocation().getZ() == location.getZ()) {
-                    return true;
-                }
-            }
-        }
-
-        for (WorldCoord worldCoord : pausedRegenerationTasks.keySet()) {
-            for (RegenerationTask regenerationTask : pausedRegenerationTasks.get(worldCoord)) {
-                if (regenerationTask.getBlockLocation().getX() == location.getX() && regenerationTask.getBlockLocation().getY() == location.getY() && regenerationTask.getBlockLocation().getZ() == location.getZ()) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public RegenerationData getRegenerationData(Block block) {
-        for (RegenerationData regenerationData : replacements) {
-            if (regenerationData.getPreviousMaterial() != null && regenerationData.getNewMaterial() != null) {
-                if (regenerationData.getPreviousMaterial().equals(block.getType())) {
-                    return regenerationData;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public boolean activeRegenerationTasksContainsTask(RegenerationTask regenerationTask) {
-        for (WorldCoord worldCoord : activeRegenerationTasks.keySet()) {
-            if (activeRegenerationTasks.get(worldCoord).contains(regenerationTask)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean pausedRegenerationTasksContainsTask(RegenerationTask regenerationTask) {
-        for (WorldCoord worldCoord : pausedRegenerationTasks.keySet()) {
-            if (pausedRegenerationTasks.get(worldCoord).contains(regenerationTask)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean dormantRegenerationTasksContainsTask(DormantRegenerationTask dormantRegenerationTask) {
-        for (WorldCoord worldCoord : dormantRegenerationTasks.keySet()) {
-            if (dormantRegenerationTasks.get(worldCoord).contains(dormantRegenerationTask)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public HashSet<RegenerationTask> getRegenerationTaskFromChunk(Chunk chunk) {
-        WorldCoord worldCoord = WorldCoord.parseWorldCoord(chunk.getBlock(0, 0, 0).getLocation());
-        HashSet<RegenerationTask> regenerationTasks = new HashSet<>();
-
-        if (activeRegenerationTasks.containsKey(worldCoord)) {
-            for (RegenerationTask regenerationTask : activeRegenerationTasks.get(worldCoord)) {
-                regenerationTasks.add(regenerationTask);
-            }
-        } else if (pausedRegenerationTasks.containsKey(worldCoord)) {
-            for (RegenerationTask regenerationTask : pausedRegenerationTasks.get(worldCoord)) {
-                regenerationTasks.add(regenerationTask);
-            }
-        }
-
-        return regenerationTasks;
-    }
-
-    public HashSet<DormantRegenerationTask> getDormantRegenerationTaskFromChunk(Chunk chunk) {
-        WorldCoord worldCoord = WorldCoord.parseWorldCoord(chunk.getBlock(0, 0, 0).getLocation());
-        HashSet<DormantRegenerationTask> regenerationTasks = new HashSet<>();
-
-        if (dormantRegenerationTasks.containsKey(worldCoord)) {
-            for (DormantRegenerationTask dormantRegenerationTask : dormantRegenerationTasks.get(worldCoord)) {
-                regenerationTasks.add(dormantRegenerationTask);
-            }
-        }
-
-        return regenerationTasks;
-    }
-
-    public int getNumActiveRegenerationTasks() {
-        int amount = 0;
-
-        for (WorldCoord worldCoord : activeRegenerationTasks.keySet()) {
-            amount+=activeRegenerationTasks.get(worldCoord).size();
-        }
-
-        return amount;
-    }
-
-    public int getNumDormantRegenerationTasks() {
-        int amount = 0;
-
-        for (WorldCoord worldCoord : dormantRegenerationTasks.keySet()) {
-            amount+=dormantRegenerationTasks.get(worldCoord).size();
-        }
-
-        return amount;
-    }
-
-    public HashMap<WorldCoord, HashSet<RegenerationTask>> getActiveRegenerationTasks() {
-        return activeRegenerationTasks;
-    }
-
-    public HashMap<WorldCoord, HashSet<RegenerationTask>> getPausedRegenerationTasks() {
-        return pausedRegenerationTasks;
-    }
-
-    public HashMap<WorldCoord, HashSet<DormantRegenerationTask>> getDormantRegenerationTasks() {
-        return dormantRegenerationTasks;
-    }
-
-    public HashSet<RegenerationData> getReplacements() {
-        return replacements;
-    }
-
-    public ArrayList<UUID> getBypassers() {
-        return bypassers;
-    }
 }

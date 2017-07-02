@@ -15,7 +15,7 @@ import java.io.File;
 
 public class GearCommands extends BaseCommand {
 
-	@Command(name = "carbyne", aliases = {"cg"})
+	@Command(name = "carbyne", aliases = {"cg"}, inGameOnly = true)
 	public void onCommand(CommandArgs commandArgs) {
         CommandSender sender = commandArgs.getSender();
         String[] args = commandArgs.getArgs();

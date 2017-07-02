@@ -35,7 +35,7 @@ public class Key {
     }
 
     public ItemStack getItem() {
-        return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).name(displayName).setLore(lore).build();
+        return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).name(displayName).setLore(lore).addEnchantments(enchantments).build();
     }
 
     public ItemStack getItem(int amount) {

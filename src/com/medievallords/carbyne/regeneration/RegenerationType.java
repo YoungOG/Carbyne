@@ -1,10 +1,9 @@
 package com.medievallords.carbyne.regeneration;
 
 /**
- * Created by Calvin on 3/24/2017
- * for the Carbyne project.
+ * Created by Dalton on 5/29/2017.
  */
 public enum RegenerationType {
 
-    PLACED, BROKEN, CUSTOM
+    BROKEN, PLACED
 }

@@ -28,7 +28,7 @@ public class SquadChatCommand extends BaseCommand implements Listener {
         Bukkit.getPluginManager().registerEvents(this, getCarbyne());
     }
 
-    @Command(name = "squad.chat", inGameOnly = true, aliases = {"ch"})
+    @Command(name = "squad.chat", inGameOnly = true, aliases = {"squad.ch"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

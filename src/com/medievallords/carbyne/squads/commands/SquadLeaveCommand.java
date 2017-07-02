@@ -1,10 +1,13 @@
 package com.medievallords.carbyne.squads.commands;
 
+import com.bizarrealex.aether.scoreboard.Board;
+import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -13,7 +16,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadLeaveCommand extends BaseCommand {
 
-    @Command(name = "squad.leave", inGameOnly = true, aliases = {"l"})
+    @Command(name = "squad.leave", inGameOnly = true, aliases = {"squad.l"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
@@ -50,5 +53,15 @@ public class SquadLeaveCommand extends BaseCommand {
         MessageManager.sendMessage(player, "&cYou have left the squad.");
 
         squad.sendAllMembersMessage("&b" + player.getName() + " &chas left the squad.");
+
+        Board board = Board.getByPlayer(Bukkit.getPlayer(player.getUniqueId()));
+
+        if (board != null) {
+            BoardCooldown targetCooldown = board.getCooldown("target");
+
+            if (targetCooldown != null) {
+                targetCooldown.cancel();
+            }
+        }
     }
 }

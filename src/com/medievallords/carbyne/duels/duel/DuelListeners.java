@@ -6,11 +6,13 @@ import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import org.bukkit.Location;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,13 @@ public class DuelListeners implements Listener {
         if (duel == null) {
             return;
         }
+
+        for (ItemStack itemStack : event.getDrops()) {
+            Item item = event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), itemStack);
+            duel.getDrops().add(item);
+        }
+
+        event.getDrops().clear();
 
         toSpawn.put(player.getUniqueId(), duel.getArena().getLobbyLocation());
         duel.getPlayersAlive().remove(player.getUniqueId());
@@ -93,6 +102,11 @@ public class DuelListeners implements Listener {
     public void onCommand(PlayerCommandPreprocessEvent event) {
         String[] args = event.getMessage().split(" ");
         Player player = event.getPlayer();
+
+        if (event.getMessage().toLowerCase().startsWith("/aac") && !event.getPlayer().hasPermission("carbyne.aac")) {
+            event.setCancelled(true);
+            return;
+        }
 
         DuelRequest request = DuelRequest.getRequest(player.getUniqueId());
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());

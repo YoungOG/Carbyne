@@ -31,12 +31,14 @@ public class MarketManager {
 
     private boolean economyHalted = false;
     private double salesTax = 0.0;
+    private int goldWorth = 0;
 
     public MarketManager() {
         salesCollection.createIndex(new Document("transactionId", 1));
         salesCollection.createIndex(new Document("uniqueId", 1));
 
         salesTax = main.getConfig().getDouble("economy.sales-tax");
+        goldWorth = main.getConfig().getInt("economy.gold-worth");
 
         Account.loadAccounts();
         loadSales();
@@ -141,7 +143,7 @@ public class MarketManager {
         }
 
         if (totalPrice < 0.01) {
-            MessageManager.sendMessage(seller, "&7You can only sell at a minimum of 0.01 gold.");
+            MessageManager.sendMessage(seller, "&7You can only sell at a minimum of 0.01 credits.");
             return;
         }
 
@@ -174,7 +176,7 @@ public class MarketManager {
 
             seller.getInventory().removeItem(itemStack);
 
-            MessageManager.sendMessage(seller, "&7You have put &c" + itemStack.getAmount() + " &7of &c" + getItemName(itemStack) + " &7on the market for &c$" + totalPrice + " &7(Tax: &c$" + totalPrice * salesTax + "&7).");
+            MessageManager.sendMessage(seller, "&7You have put &c" + itemStack.getAmount() + " &7of &c" + getItemName(itemStack) + " &7on the market for &c\u00A9" + totalPrice + " &7(Tax: &c\u00A9" + totalPrice * salesTax + "&7).");
         } else {
             MessageManager.sendMessage(seller, "&cTransaction failed. Your items have been returned.");
         }
@@ -187,7 +189,7 @@ public class MarketManager {
         }
 
         if (priceLimit < 0.01) {
-            MessageManager.sendMessage(buyer, "&7The minimum price limit is 0.01 gold.");
+            MessageManager.sendMessage(buyer, "&7The minimum price limit is 0.01 credits.");
         }
 
         ArrayList<Sale> sales = getSpecificSales(itemStack, priceLimit);
@@ -200,7 +202,7 @@ public class MarketManager {
         double totalPrice = sales.stream().mapToDouble(Sale::getPrice).sum();
 
         if (totalPrice > priceLimit) {
-            MessageManager.sendMessage(buyer, "&c" + itemStack.getAmount() + " " + getItemName(itemStack) + " costs " + totalPrice + " gold which is more than your limit.");
+            MessageManager.sendMessage(buyer, "&c" + itemStack.getAmount() + " " + getItemName(itemStack) + " costs \u00A9" + totalPrice + " which is more than your limit.");
             return;
         }
 
@@ -251,12 +253,12 @@ public class MarketManager {
             Player seller = Bukkit.getPlayer(uuid);
 
             if (seller != null) {
-                MessageManager.sendMessage(seller, "&6A player has bought " + completedSale.getAmount() + " of " + getItemName(itemStack) + " for " + completedSale.getPrice() + " (Tax: $" + completedSale.getPrice() * salesTax + "). This has been deposited into your account.");
+                MessageManager.sendMessage(seller, "&6A player has bought " + completedSale.getAmount() + " of " + getItemName(itemStack) + " for \u00A9" + completedSale.getPrice() + " (Tax: \u00A9" + completedSale.getPrice() * salesTax + "). This has been deposited into your account.");
             }
         }
 
         withdraw(buyer.getUniqueId(), actualPrice);
-        MessageManager.sendMessage(buyer, "&7You bought " + actualAmountBought + " " + getItemName(itemStack) + " for " + actualPrice + " gold.");
+        MessageManager.sendMessage(buyer, "&7You bought " + actualAmountBought + " " + getItemName(itemStack) + " for \u00A9" + actualPrice + " credits.");
     }
 
     public void showPrice(Player player, ItemStack itemStack) {
@@ -278,7 +280,7 @@ public class MarketManager {
             totalPrice += sale.getPrice();
         }
 
-        MessageManager.sendMessage(player, "&c" + itemStack.getAmount() + " &7of &c" + getItemName(itemStack) + " &7costs &c" + totalPrice + " &7gold.");
+        MessageManager.sendMessage(player, "&c" + itemStack.getAmount() + " &7of &c" + getItemName(itemStack) + " &7costs &c\u00A9" + totalPrice + " &7credits.");
     }
 
     public void deposit(UUID uuid, double amount) {
@@ -381,5 +383,13 @@ public class MarketManager {
 
     public void setSalesTax(double salesTax) {
         this.salesTax = salesTax;
+    }
+
+    public int getGoldWorth() {
+        return goldWorth;
+    }
+
+    public void setGoldWorth(int goldWorth) {
+        this.goldWorth = goldWorth;
     }
 }

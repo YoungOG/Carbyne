@@ -14,7 +14,7 @@ public class MarketHaltCommand extends BaseCommand {
     private Carbyne main = Carbyne.getInstance();
     private MarketManager marketManager = main.getMarketManager();
 
-    @Command(name = "market.halt", permission = "carbyne.market.halt", aliases = {"toggle"})
+    @Command(name = "market.halt", permission = "carbyne.market.halt")
     public void execute(CommandSender sender, String[] args) {
         if (marketManager.isEconomyHalted()) {
             marketManager.setEconomyHalted(false);

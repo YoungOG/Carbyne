@@ -89,7 +89,7 @@ public class BlackholeCommand extends BaseCommand {
                                     FallingBlock fb = nearby3.getLocation().getWorld().spawnFallingBlock(nearby3.getLocation(), nearby3.getType(), nearby3.getData());
 
                                     if (regenerate) {
-                                        getCarbyne().getRegenerationHandler().request(nearby3, RegenerationType.CUSTOM, "60s");
+                                        getRegenerationHandler().request(nearby3, RegenerationType.BROKEN);
                                     }
 
                                     nearby3.setType(Material.AIR);
@@ -99,7 +99,7 @@ public class BlackholeCommand extends BaseCommand {
                                 FallingBlock fb = nearby3.getLocation().getWorld().spawnFallingBlock(nearby3.getLocation(), nearby3.getType(), nearby3.getData());
 
                                 if (regenerate) {
-                                    getCarbyne().getRegenerationHandler().request(nearby3, RegenerationType.CUSTOM, "60s");
+                                    getRegenerationHandler().request(nearby3, RegenerationType.BROKEN);
                                 }
 
                                 nearby3.setType(Material.AIR);

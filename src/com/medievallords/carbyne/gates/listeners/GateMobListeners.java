@@ -31,9 +31,11 @@ public class GateMobListeners implements Listener {
                     if (mob.getSpawner() != null) {
                         for (Gate gate : gateManager.getGates()) {
                             for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
-                                if (spawner.getInternalName().equalsIgnoreCase(mob.getSpawner().getInternalName())) {
-                                    gate.addMob();
-                                    return;
+                                if (spawner != null) {
+                                    if (spawner.getInternalName().equalsIgnoreCase(mob.getSpawner().getInternalName())) {
+                                        gate.addMob();
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -51,9 +53,11 @@ public class GateMobListeners implements Listener {
             if (mob.getSpawner() != null) {
                 for (Gate gate : gateManager.getGates()) {
                     for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
-                        if (spawner == mob.getSpawner()) {
-                            gate.killMob();
-                            return;
+                        if (spawner != null) {
+                            if (spawner == mob.getSpawner()) {
+                                gate.killMob();
+                                return;
+                            }
                         }
                     }
                 }

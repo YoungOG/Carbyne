@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.economy.commands.player;
 
+import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
@@ -56,11 +57,10 @@ public class MarketBuyCommand extends BaseCommand {
             } else if (priceLimit == 0) {
                 MessageManager.sendMessage(player, "&7You must enter a price limit greater than zero.");
                 return;
+            } else if (priceLimit > Account.getAccount(player.getUniqueId()).getBalance()) {
+                MessageManager.sendMessage(player, "&7You do not have that much gold in your account.");
+                return;
             }
-//            } else if (priceLimit > em.getBalance(player.getUniqueId())) {
-//                MessageManager.sendMessage(player, "&7You do not have that much gold in your account.");
-//                return;
-//            }
         } catch (Exception e) {
             MessageManager.sendMessage(player ,"&7You must enter a valid price limit.");
             return;

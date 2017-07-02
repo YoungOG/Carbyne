@@ -20,7 +20,7 @@ import java.util.List;
  * Created by Williams on 2017-03-18.
  * for the Carbyne project.
  */
-public class Frostbite implements Special{
+public class Frostbite implements Special {
 
     private int radius = 7;
     @Override
@@ -72,7 +72,7 @@ public class Frostbite implements Special{
                     if (times > 10) {
                         this.cancel();
                     }
-                    ParticleEffect.SNOWBALL.display(0f,0.9f,0f,0.5f,1,loc, 20);
+                    ParticleEffect.SNOWBALL.display(0f,0.9f,0f,0.5f,1,loc, 20, false);
                     times += 0.25;
                 }
             }.runTaskTimer(Carbyne.getInstance(), 0, 5);
@@ -126,7 +126,7 @@ public class Frostbite implements Special{
     public void damageEntity(LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             entity.damage(1);
-            entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 1));
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 0));
         }
     }
 }

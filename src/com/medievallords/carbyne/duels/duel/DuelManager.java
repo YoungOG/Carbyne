@@ -31,6 +31,10 @@ public class DuelManager {
     }
 
     public void loadArenas() {
+        if (!arenas.isEmpty()) {
+            arenas.clear();
+        }
+
         ConfigurationSection section = main.getArenaFileConfiguration().getConfigurationSection("Arenas");
 
         if (section.getKeys(false).size() > 0) {
@@ -55,9 +59,8 @@ public class DuelManager {
 
                 Arena arena = new Arena(id);
                 arena.setLobbyLocation(lobbyLocation);
-                arena.setSpawnPointLocations(spawnPointLocations.toArray(new Location[spawnPointLocations.size()]));
-                arena.setPedastoolLocations(pedastoolLocations.toArray(new Location[pedastoolLocations.size()]));
-
+                arena.setSpawnPointLocations(spawnPointLocations.toArray(new Location[2]));
+                arena.setPedastoolLocations(pedastoolLocations.toArray(new Location[2]));
                 arenas.add(arena);
             }
 

@@ -1,9 +1,12 @@
 package com.medievallords.carbyne.squads;
 
+import com.bizarrealex.aether.scoreboard.Board;
+import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,8 @@ public class Squad {
     private SquadType type = SquadType.PRIVATE;
     private boolean friendlyFireToggled = false;
     private List<UUID> members = new ArrayList<>(), invitedPlayers = new ArrayList<>();
+    private UUID targetUUID;
+    private Squad targetSquad;
 
     public Squad(UUID leader) {
         this.uniqueId = UUID.randomUUID();
@@ -39,6 +44,18 @@ public class Squad {
         sendAllMembersMessage("&cYour squad has been disbanded.");
 
         squadManager.getSquads().remove(this);
+
+        for (UUID id : getAllPlayers()) {
+            Board board = Board.getByPlayer(Bukkit.getPlayer(Bukkit.getPlayer(id).getUniqueId()));
+
+            if (board != null) {
+                BoardCooldown targetCooldown = board.getCooldown("target");
+
+                if (targetCooldown != null) {
+                    targetCooldown.cancel();
+                }
+            }
+        }
     }
 
     public ArrayList<UUID> getAllPlayers() {

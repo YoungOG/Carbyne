@@ -5,6 +5,7 @@ import com.medievallords.carbyne.duels.arena.Arena;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.duels.duel.DuelStage;
 import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,6 +61,42 @@ public class RegularDuel extends Duel {
 
         Player one = Bukkit.getPlayer(getFirstParticipant());
         Player two = Bukkit.getPlayer(getSecondParticipant());
+
+        Squad squadOne = Carbyne.getInstance().getSquadManager().getSquad(getFirstParticipant());
+        Squad squadTwo = Carbyne.getInstance().getSquadManager().getSquad(getSecondParticipant());
+
+        if (squadOne != null && squadTwo != null) {
+            if (squadOne.equals(squadTwo)) {
+
+                if (squadOne.getLeader().equals(one.getUniqueId())) {
+                    if (squadOne.getMembers().size() > 0) {
+                        squadOne.setLeader(squadOne.getMembers().get(0));
+                        squadOne.getMembers().remove(squadOne.getMembers().get(0));
+
+                        MessageManager.sendMessage(one, "&cYou have left the squad.");
+                        squadOne.sendAllMembersMessage("&b" + one.getName() + " &chas left the squad.");
+                        MessageManager.sendMessage(squadOne.getLeader(), "&aThe previous squad leader has left. You are the now the new squad leader.");
+                    } else {
+                        squadOne.disbandParty(one.getUniqueId());
+                    }
+
+                }
+            }
+
+            if (squadOne != null && squadOne.getLeader().equals(two.getUniqueId())) {
+                if (squadOne.getMembers().size() > 0) {
+                    squadOne.setLeader(squadOne.getMembers().get(0));
+                    squadOne.getMembers().remove(squadOne.getMembers().get(0));
+
+                    MessageManager.sendMessage(two, "&cYou have left the squad.");
+                    squadOne.sendAllMembersMessage("&b" + two.getName() + " &chas left the squad.");
+                    MessageManager.sendMessage(squadOne.getLeader(), "&aThe previous squad leader has left. You are the now the new squad leader.");
+                } else {
+                    squadOne.disbandParty(two.getUniqueId());
+                }
+
+            }
+        }
 
         MessageManager.broadcastMessage("&6A duel has started between &b" + one.getName() + "&6 and&b " + two.getName() + "&6.");
         task();

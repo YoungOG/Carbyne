@@ -1,3 +1,9 @@
+JoinMessage: '&5&lMedieval Lords'
+JoinMessageSubtitles:
+    - '&cClosed Beta'
+    - '&eHail to the King, BABY!'
+TablistHeader: '&5&lMedieval Lords'
+TablistFooter: '&eHail to the King, BABY!'
 crates:
   #How fast crates should scroll through the rewards.
   crate-opening-speed: 10
@@ -38,7 +44,8 @@ regeneration:
   - 'granite,granite,30'
   - 'diorite,diorite,30'
 economy:
-  sales-tax: 0.015;
+  gold-worth: 100.00
+  sales-tax: 0.015
 database:
   host: ''
   port: 27017
@@ -46,3 +53,52 @@ database:
 duel-disabled-co/mmands:
   - '/squad'
   - '/tpa'
+Damage-Indicators:
+  Format: '&7{damage} &c<3'
+  Decimal-Places: true
+  Animate: false
+  Calculate-Armor: true
+  Hide-After-Ticks: 10
+allowed-blocks: # This determines what blocks will not disable the portal when blocking the exi
+   bottom: # Indicates certain blocks that may be used for the bottom exit block
+     - 0
+     - 6
+     - 8
+     - 10
+     - 30
+     - 31
+     - 32
+     - 37
+     - 38
+     - 39
+     - 40
+     - 50
+     - 51
+     - 55
+     - 59
+     - 63
+     - 65
+     - 66
+     - 68
+     - 69
+     - 70
+     - 72
+     - 75
+     - 76
+     - 77
+     - 83
+     - 90
+     - 104
+     - 105
+     - 106
+     - 115
+     - 131
+     - 132
+     - 141
+     - 142
+     - 143
+     - 147
+     - 148
+     - 157
+     - 171
+     - 175

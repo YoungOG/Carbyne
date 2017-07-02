@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
  */
 public class GearSetChargeCommand extends BaseCommand {
 
-    @Command(name = "charge", aliases = {"cgc"})
+    @Command(name = "charge", aliases = {"cgc"}, permission = "carbyne.gear.administrator")
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();

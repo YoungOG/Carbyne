@@ -15,7 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
  * Created by Williams on 2017-03-12
  * for the Carbyne project.
  */
-public class FireStorm implements Special{
+public class FireStorm implements Special {
 
     private double damagePerRound = 5;
     private Firework fireworkTo;
@@ -56,7 +56,7 @@ public class FireStorm implements Special{
                         double y = 1;
                         double z = Math.sin(i) * radius;
                         copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30);
+                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
                         copy.subtract(x, y, z);
                     }
                 }
@@ -67,7 +67,7 @@ public class FireStorm implements Special{
                         double y = 1;
                         double z = Math.sin(i) * radius;
                         copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30);
+                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
                         copy.subtract(x, y, z);
                     }
                 }
@@ -78,7 +78,7 @@ public class FireStorm implements Special{
                         double y = 1;
                         double z = Math.sin(i) * radius;
                         copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30);
+                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
                         copy.subtract(x, y, z);
                     }
                 }
@@ -96,12 +96,19 @@ public class FireStorm implements Special{
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {
-        //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, DamageCause.ENTITY_ATTACK, damagePerRound);
-        //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
         if (!isInSafeZone(entity)) {
+            if (entity instanceof Player) {
+                double health = entity.getHealth();
+                double max = entity.getMaxHealth();
+                double damage = health - (health * 0.66);
+                entity.damage(damage);
+                entity.setFireTicks(20 * 5);
+                return;
+            }
+
             entity.damage(damagePerRound);
+            entity.setFireTicks(20 * 5);
         }
-        //entity.setFireTicks(20 * 5);
     }
 
 }

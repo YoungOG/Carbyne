@@ -35,7 +35,7 @@ public class Reward {
     private HashMap<Enchantment, Integer> enchantments = new HashMap<>();
     private List<String> commands = new ArrayList<>();
     private boolean displayItemOnly;
-    private int chance;
+    private double chance;
 
     public Reward(int id, int itemId, int itemData, int amount, String gearCode) {
         this.id = id;

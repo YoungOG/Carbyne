@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadJoinCommand extends BaseCommand {
 
-    @Command(name = "squad.join", inGameOnly = true, aliases = {"j", "accept", "a"})
+    @Command(name = "squad.join", inGameOnly = true, aliases = {"squad.j", "squad.accept", "squad.a"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

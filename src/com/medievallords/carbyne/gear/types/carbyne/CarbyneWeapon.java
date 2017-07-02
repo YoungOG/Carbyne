@@ -43,7 +43,6 @@ public class CarbyneWeapon extends CarbyneGear {
         if (!type.equalsIgnoreCase("Bow"))
             if ((this.material = cs.getString(index + ".Material")) == null) return false;
         if ((maxDurability = cs.getInt(index + ".Durability")) == -1) return false;
-        if ((lore = cs.getStringList(index + ".Lore")) == null || lore.size() <= 0) return false;
         if ((enchantments = cs.getStringList(index + ".Enchantments")) == null || enchantments.size() <= 0)
             return false;
         if ((cost = cs.getInt(index + ".Cost")) == -1) return false;
@@ -97,7 +96,9 @@ public class CarbyneWeapon extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
-        loreDupe.addAll(lore);
+        if (lore != null) {
+            loreDupe.addAll(lore);
+        }
 
         if (special != null) {
             loreDupe.add(0, "&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
@@ -112,7 +113,12 @@ public class CarbyneWeapon extends CarbyneGear {
                 loreDupe.add(4, "");
             }
         } else {
-            loreDupe.add(3, "");
+            if (loreDupe.size() < 3) {
+                loreDupe.add("");
+
+            } else {
+                loreDupe.add(3, "");
+            }
         }
 
         Material mat = Material.STONE;
@@ -183,10 +189,19 @@ public class CarbyneWeapon extends CarbyneGear {
             }
         }
 
-        return new ItemBuilder(mat)
+        ItemBuilder builder = new ItemBuilder(mat)
                 .name(displayName)
-                .setLore((loreDupe.size() > 0 ? loreDupe : lore))
-                .addEnchantments(enchantmentHashMap).hideFlags().build();
+                .addEnchantments(enchantmentHashMap).hideFlags();
+
+        if (lore != null) {
+            builder.setLore((loreDupe.size() > 0 ? loreDupe : lore));
+        } else {
+            if (loreDupe.size() > 0) {
+                builder.setLore(loreDupe);
+            }
+        }
+
+        return builder.build();
     }
 
     public void applyDefensiveEffect(Player target) {
@@ -198,6 +213,10 @@ public class CarbyneWeapon extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= defensivePotionEffects.get(effect)) {
+                for (PotionEffect potionEffect : target.getActivePotionEffects())
+                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
+                        return;
+
                 target.addPotionEffect(effect, true);
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
@@ -214,6 +233,10 @@ public class CarbyneWeapon extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= offensivePotionEffects.get(effect)) {
+                for (PotionEffect potionEffect : target.getActivePotionEffects())
+                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
+                        return;
+
                 target.addPotionEffect(effect, true);
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &c" + (effect.getDuration() / 20) + " &asec(s).");
                 Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);

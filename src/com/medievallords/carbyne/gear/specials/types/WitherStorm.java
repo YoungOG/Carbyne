@@ -7,12 +7,14 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Created by Williams on 2017-03-12.
  */
-public class WitherStorm implements Special{
+public class WitherStorm implements Special {
 
     private double damagePerRound = 5;
     private Firework fireworkTo;
@@ -70,12 +72,21 @@ public class WitherStorm implements Special{
     }
 
     public void damageEntity(LivingEntity entity, Player caster) {
-        //EntityDamageByEntityEvent damageEvent = new EntityDamageByEntityEvent(caster, entity, DamageCause.ENTITY_ATTACK, damagePerRound);
-        //Bukkit.getServer().getPluginManager().callEvent(damageEvent);
         if (!isInSafeZone(entity)) {
+            if (entity instanceof Player) {
+                double health = entity.getHealth();
+                double max = entity.getMaxHealth();
+                double damage = health - (health * 0.67);
+                entity.damage(damage);
+                entity.setFireTicks(20 * 5);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
+                return;
+            }
+
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
             entity.damage(damagePerRound);
+            entity.setFireTicks(20 * 5);
         }
-        //entity.setFireTicks(20 * 5);
     }
 
     public FireworkMeta getFireworkMeta(Firework firework){
