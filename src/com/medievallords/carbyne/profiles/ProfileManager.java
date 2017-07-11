@@ -60,6 +60,13 @@ public class ProfileManager {
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
                 profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
 
+                if (document.containsKey("closedtickets") && document.containsKey("claimedtickets")) {
+                    int closedTickets = document.getInteger("closedtickets");
+                    int claimedTickets = document.getInteger("claimedtickets");
+                    profile.setClaimedTickets(claimedTickets);
+                    profile.setClosedTickets(closedTickets);
+                }
+
                 if (document.containsKey("pvptime"))
                     profile.setPvpTime(document.getLong("pvptime"));
 
@@ -96,13 +103,16 @@ public class ProfileManager {
                             document.append("carbynedeaths", profile.getCarbyneDeaths());
                             document.append("killstreak", profile.getKillStreak());
                             document.append("pvptime", profile.getPvpTime());
+                            document.append("closedtickets", profile.getClosedTickets());
+                            document.append("claimedtickets", profile.getClaimedTickets());
                             document.append("pvptimepaused", profile.isPvpTimePaused());
                             document.append("showeffects", profile.hasEffectsToggled());
                             document.append("safelyLogged", profile.isSafelyLogged());
                             document.append("pin", profile.getPin());
                             document.append("previous-inventory", profile.getPreviousInventoryContentString());
+
                             if (profile.getTimeLeft() > 1)
-                            document.append("timeleft", profile.getTimeLeft());
+                                document.append("timeleft", profile.getTimeLeft());
 
                             profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
                         }
@@ -120,13 +130,15 @@ public class ProfileManager {
                     document.append("carbynedeaths", profile.getCarbyneDeaths());
                     document.append("killstreak", profile.getKillStreak());
                     document.append("pvptime", profile.getPvpTime());
+                    document.append("closedTickets", profile.getClosedTickets());
+                    document.append("claimedTickets", profile.getClaimedTickets());
                     document.append("pvptimepaused", profile.isPvpTimePaused());
                     document.append("showeffects", profile.hasEffectsToggled());
                     document.append("safelyLogged", profile.isSafelyLogged());
                     document.append("pin", profile.getPin());
                     document.append("previous-inventory", profile.getPreviousInventoryContentString());
                     if (profile.getTimeLeft() > 1)
-                    document.append("timeleft", profile.getTimeLeft());
+                        document.append("timeleft", profile.getTimeLeft());
 
                     profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
                 }
@@ -149,6 +161,7 @@ public class ProfileManager {
             profile.setSafelyLogged(false);
             //Set remaining time at creation to 30 minutes.
             profile.setPvpTime(System.currentTimeMillis() + ((60 * 30) * 1000));
+            profile.setPvpTimePaused(true);
             profile.setPin("");
             profile.setPreviousInventoryContentString("");
 

@@ -80,7 +80,11 @@ public class CombatTagListeners implements Listener {
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
 
-        if (event.getEntity() instanceof Villager && !(event.getDamager() instanceof Player)) {
+        if (event.getEntity() instanceof Villager && (!(event.getDamager() instanceof Player) || event.getDamager() instanceof Projectile)) {
+            if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager()).getShooter() != null &&  ((Projectile) event.getDamager()).getShooter() instanceof Player) {
+                return;
+            }
+
             Villager villager = (Villager) event.getEntity();
 
             if (villager.hasMetadata("logger")) {
@@ -103,11 +107,11 @@ public class CombatTagListeners implements Listener {
             if (damagedProfile != null && damagerProfile != null) {
                 if (damagerProfile.getRemainingPvPTime() > 1) {
                     event.setCancelled(true);
-                    MessageManager.sendMessage(playerDamager, "&cYou cannot pvp whilst you have a pvp-protection timer");
+                    MessageManager.sendMessage(playerDamager, "&cYou cannot attack while your PvPTimer is active. Use &a/pvptimer");
                     return;
                 } else if (damagedProfile.getRemainingPvPTime() > 1) {
                     event.setCancelled(true);
-                    MessageManager.sendMessage(playerDamager, "&cYou cannot hit someone whilst they have a pvp-protection timer");
+                    MessageManager.sendMessage(playerDamager, "&cYou cannot attack someone while their PvPTimer is active.");
                     return;
                 }
             }
@@ -117,21 +121,21 @@ public class CombatTagListeners implements Listener {
             if (((Projectile) damager).getShooter() != null) {
                 damager = (Entity) ((Projectile) damager).getShooter();
                 Player damaged = (Player) event.getEntity();
-                if (damager instanceof Player) {
 
-                    Profile damagerProfile = main.getProfileManager().getProfile(((Player) damager).getUniqueId());
+                if (damager instanceof Player) {
+                    Profile damagerProfile = main.getProfileManager().getProfile(damager.getUniqueId());
                     Profile damagedProfile = main.getProfileManager().getProfile(damaged.getUniqueId());
 
                     if (damagedProfile != null && damagerProfile != null) {
                         if (damagedProfile.getRemainingPvPTime() > 1) {
                             event.setCancelled(true);
-                            MessageManager.sendMessage((Player) damager, "&cYou cannot hit someone whilst they have a pvp-protection timer");
+                            MessageManager.sendMessage((Player) damager, "&cYou cannot attack someone while their PvPTimer is active.");
                             return;
                         }
 
                         if (damagerProfile.getRemainingPvPTime() > 1) {
                             event.setCancelled(true);
-                            MessageManager.sendMessage((Player) damager, "&cYou cannot hit someone whilst you have a pvp-protection timer");
+                            MessageManager.sendMessage((Player) damager, "&cYou cannot attack someone while your PvPTimer is active. Use &a/pvptimer");
                             return;
                         }
                     }
@@ -315,7 +319,7 @@ public class CombatTagListeners implements Listener {
         if (player.getGameMode() == GameMode.SURVIVAL) {
             if (!profile.isSafelyLogged()) {
                 if (isInCombat(player.getUniqueId()) || (TownyUniverse.getTownBlock(player.getLocation()) != null && TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp)) {
-                    Location loggedLocation = player.getLocation();
+                    Location loggedLocation = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation();
                     Villager villager = (Villager) loggedLocation.getWorld().spawnCreature(loggedLocation, EntityType.VILLAGER);
                     villager.setAdult();
                     villager.setMaxHealth(player.getMaxHealth());

@@ -8,10 +8,12 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.squads.SquadType;
+import com.medievallords.carbyne.staff.StaffManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -44,6 +46,10 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         SquadManager squadManager = main.getSquadManager();
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
+
+        if (main.getStaffManager().getStaffModePlayers().contains(player.getUniqueId())) {
+            return staffScoreboard(player);
+        }
 
         if (Account.getAccount(player.getName()) != null) {
             lines.add("&aBalance: &b" + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
@@ -93,24 +99,17 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             }
         }
 
-//        if (board.getCooldown("pvptimer") == null) {
-//            if (profileManager.getProfile(player.getUniqueId()) != null) {
-//                Profile profile = profileManager.getProfile(player.getUniqueId());
-//
-//                if (profile.getRemainingPvPTime() > 1) {
-//                    new BoardCooldown(board, "pvptimer", (profile.getRemainingPvPTime() / 1000));
-//                }
-//            }
-//        } else {
-//            if (profileManager.getProfile(player.getUniqueId()) != null) {
-//                Profile profile = profileManager.getProfile(player.getUniqueId());
-//
-//                if (profile.getRemainingPvPTime() > 1) {
-//                } else {
-//
-//                }
-//            }
-//        }
+        if (profileManager.getProfile(player.getUniqueId()) != null) {
+            Profile profile = profileManager.getProfile(player.getUniqueId());
+
+            if (profile.isPvpTimePaused() && profile.getRemainingPvPTime() > 1) {
+                lines.add("         ");
+                lines.add("&cPvPTimer: &b" + DateUtil.formatDateDiff(profile.getRemainingTimeLeft()));
+            } else if (profile.getRemainingPvPTime() > 1) {
+                lines.add("         ");
+                lines.add("&cPvPTimer: &b" + DateUtil.formatDateDiff(profile.getPvpTime()));
+            }
+        }
 
         if (board.getCooldown("target") == null) {
             if (squadManager.getSquad(player.getUniqueId()) != null) {
@@ -171,6 +170,29 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         } catch (Exception e) {
             main.getLogger().log(Level.WARNING, e.getMessage());
         }
+
+        if (lines.size() >= 1) {
+            lines.add(0, "&7&m---------------------");
+            lines.add("&7&m---------------------");
+        }
+
+        return lines;
+    }
+
+    private List<String> staffScoreboard(Player player) {
+        StaffManager staffManager = main.getStaffManager();
+        ArrayList<String> lines = new ArrayList<>();
+
+        lines.add("&9              Staff Mode");
+
+        lines.add("&cVanished: &7" + staffManager.isVanished(player));
+        lines.add("    ");
+
+        lines.add("&aChat Muted: &7" + staffManager.isChatMuted());
+        lines.add("&aChat Speed: &7" + staffManager.getSlowChatTime() + "s");
+        lines.add("    ");
+
+        lines.add("&dFlying: &7" + (player.isFlying() ? "true" : "false"));
 
         if (lines.size() >= 1) {
             lines.add(0, "&7&m---------------------");

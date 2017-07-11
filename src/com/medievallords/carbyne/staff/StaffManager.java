@@ -38,7 +38,7 @@ public class StaffManager {
 
     private Map<String, Boolean> falsePerms = new HashMap<>(), truePerms = new HashMap<>();
     @Getter
-    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air;
+    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, ticketTool, wand;
 
     public StaffManager() {
         falsePerms.put(new String("mv.bypass.gamemode.*"), false);
@@ -52,6 +52,8 @@ public class StaffManager {
         inspectInventoryTool = new ItemBuilder(Material.BOOK).name("&2Inspect Inventory").addLore("&fView the contents of a player\'s inventory").build();
         thruTool = new ItemBuilder(Material.COMPASS).name("&4Thru Tool").addLore("&fWarp through walls and doors").build();
         air = new ItemBuilder(Material.AIR).build();
+        ticketTool = new ItemBuilder(Material.PAPER).name("&6Tickets").build();
+        wand = new ItemBuilder(Material.WOOD_AXE).build();
 
         new BukkitRunnable() {
             @Override
@@ -91,11 +93,19 @@ public class StaffManager {
             if (PlayerUtility.isInventoryEmpty(player)) {
                 toggleGamemode(player, true);
                 staffModePlayers.add(pUUID);
-                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, air, air, air, toggleVanishTool, randomTeleportTool});
+                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, ticketTool, wand, air, toggleVanishTool, randomTeleportTool});
                 vanishPlayer(player);
                 //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + player.getName() + " add mv.bypass.gamemode.*");
                 PermissionUtils.setPermissions(player.addAttachment(main), truePerms, true);
                 MessageManager.sendMessage(player, "&cYou have enabled staff mode and have vanished!");
+                if (main.getTrailManager().getAdvancedEffects().containsKey(player.getUniqueId())) {
+                    main.getTrailManager().getAdvancedEffects().remove(player.getUniqueId());
+                }
+
+                if (main.getTrailManager().getActivePlayerEffects().containsKey(player.getUniqueId())) {
+                    main.getTrailManager().getActivePlayerEffects().remove(player.getUniqueId());
+                }
+
             } else MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
         }
     }

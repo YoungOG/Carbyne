@@ -6,8 +6,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import com.palmergames.bukkit.towny.object.TownBlock;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -61,11 +59,11 @@ public class PvpTimerCommand extends BaseCommand {
                 }
 
                 if (profile.isPvpTimePaused()) {
-                    MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff((System.currentTimeMillis() + profile.getTimeLeft() - System.currentTimeMillis())) + " remaining.");
+                    MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getRemainingTimeLeft()) + " remaining.");
                     return;
                 }
 
-                MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getRemainingPvPTime()) + " remaining.");
+                MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getPvpTime()) + " remaining.");
             }
 
         } else if (args.length == 2) {
@@ -94,26 +92,9 @@ public class PvpTimerCommand extends BaseCommand {
                     if (rProfile != null) {
                         try {
                             long time = Integer.parseInt(args[2]);
-                            rProfile.setPvpTime(System.currentTimeMillis() + ((time) * 1000));
-
-                            TownBlock townBlock = TownyUniverse.getTownBlock(player.getLocation());
-                            if (townBlock == null) {
-                                if (rProfile != null) {
-                                    rProfile.setPvpTimePaused(false);
-                                }
-
-                                return;
-                            }
-
-                            if (!townBlock.getPermissions().pvp) {
-                                if (rProfile != null) {
-                                    rProfile.setPvpTimePaused(true);
-                                }
-                            } else {
-                                if (rProfile != null) {
-                                    rProfile.setPvpTimePaused(false);
-                                }
-                            }
+                            rProfile.setPvpTime(System.currentTimeMillis() + (time * 1000));
+                            rProfile.setTimeLeft(rProfile.getRemainingPvPTime());
+                            rProfile.setPvpTimePaused(true);
 
                             MessageManager.sendMessage(sender, "&aPvP Timer for player has been set to:&b " + time + " seconds");
                         } catch (NumberFormatException e) {

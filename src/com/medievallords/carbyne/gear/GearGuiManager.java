@@ -85,17 +85,22 @@ public class GearGuiManager {
             }
 
             List<String> loreCopy = new ArrayList<>();
-            for (String s : carbyneArmor.getLore()) {
-                loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
+
+            loreCopy.add( HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
+            loreCopy.add("&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
+
+            if (carbyneArmor.getLore().size() > 0) {
+                loreCopy.add(" ");
+
+                for (String s : carbyneArmor.getLore()) {
+                    loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
+                }
             }
 
             if (carbyneArmor.isHidden()) {
-                loreCopy.add(0, "&cThis is not a purchasable set.");
-                loreCopy.add(0, " ");
+                loreCopy.add(" ");
+                loreCopy.add("&cThis is not a purchasable set.");
             }
-
-            loreCopy.add(0, "&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
-            loreCopy.add(0, HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
 
             armorGui.addItem(new ItemBuilder(carbyneArmor.getItem(true)).setLore(loreCopy).build());
         }

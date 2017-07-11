@@ -38,16 +38,30 @@ public class ItemBuilder {
         return this;
     }
 
-    public ItemBuilder addLore(String lore) {
+    public ItemBuilder addLore(String line) {
         ItemMeta meta = item.getItemMeta();
-        List<String> lores = meta.getLore();
+        List<String> lore = meta.getLore();
 
-        if (lores == null) {
-            lores = new ArrayList<>();
+        if (lore == null) {
+            lore = new ArrayList<>();
         }
 
-        lores.add(ChatColor.translateAlternateColorCodes('&', lore));
-        meta.setLore(lores);
+        lore.add(ChatColor.translateAlternateColorCodes('&', line));
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return this;
+    }
+
+    public ItemBuilder addLore(int index, String line) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = meta.getLore();
+
+        if (lore == null) {
+            lore = new ArrayList<>();
+        }
+
+        lore.add(index, ChatColor.translateAlternateColorCodes('&', line));
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return this;
     }

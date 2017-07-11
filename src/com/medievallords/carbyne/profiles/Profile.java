@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.profiles;
 
+import com.medievallords.carbyne.events.Event;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,9 +12,10 @@ public class Profile {
 
     private UUID uniqueId;
     private String username, pin, previousInventoryContentString;
-    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak;
+    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak, claimedTickets, closedTickets;
     private long pvpTime, timeLeft;
     private boolean pvpTimePaused, showEffects, safelyLogged, moving;
+    private Event activeEvent;
 
     public Profile(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -71,6 +73,10 @@ public class Profile {
         return pvpTime - System.currentTimeMillis();
     }
 
+    public long getRemainingTimeLeft() {
+        return System.currentTimeMillis() + timeLeft;
+    }
+
     public boolean hasPin() {
         return pin != null && !pin.isEmpty();
     }
@@ -78,7 +84,8 @@ public class Profile {
     public void setPvpTimePaused(boolean paused) {
         if (this.pvpTimePaused != paused) {
             if (paused)
-                timeLeft = System.currentTimeMillis() - (System.currentTimeMillis() - getRemainingPvPTime());
+                //System.currentTimeMillis() - (System.currentTimeMillis() -
+                timeLeft = getRemainingPvPTime();
 
             this.pvpTimePaused = paused;
         }

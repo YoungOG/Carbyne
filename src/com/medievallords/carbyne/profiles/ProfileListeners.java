@@ -44,6 +44,10 @@ public class ProfileListeners implements Listener {
             } else {
                 Account.createAccount(player.getUniqueId(), player.getName());
             }
+        } else {
+            if (Account.hasAccount(player.getUniqueId())) {
+                Account.getAccount(player.getUniqueId()).setAccountHolder(player.getName());
+            }
         }
 
         if (!main.getProfileManager().hasProfile(player.getUniqueId())) {
@@ -60,6 +64,7 @@ public class ProfileListeners implements Listener {
             try {
                 Resident r = TownyUniverse.getDataSource().getResident(profile.getUsername());
                 TownyUniverse.getDataSource().renamePlayer(r, player.getName());
+            } catch (NotRegisteredException ignored) {
             } catch (Exception shouldNeverHappen) {
                 main.getLogger().log(Level.SEVERE, "EXCEPTION OCCURRED IN TOWNY NAME UPDATER: ");
                 shouldNeverHappen.printStackTrace();
@@ -69,13 +74,13 @@ public class ProfileListeners implements Listener {
         TownBlock townBlock = TownyUniverse.getTownBlock(player.getLocation());
         if (townBlock == null) {
             profile.setPvpTimePaused(false);
-            return;
-        }
-
-        if (!townBlock.getPermissions().pvp) {
-                profile.setPvpTimePaused(true);
         } else {
+
+            if (!townBlock.getPermissions().pvp) {
+                profile.setPvpTimePaused(true);
+            } else {
                 profile.setPvpTimePaused(false);
+            }
         }
     }
 

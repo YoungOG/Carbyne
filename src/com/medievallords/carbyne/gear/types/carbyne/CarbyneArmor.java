@@ -93,14 +93,34 @@ public class CarbyneArmor extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
-        if (lore != null) {
-            loreDupe.addAll(lore);
+        loreDupe.add(HiddenStringUtils.encodeString(gearCode));
+        loreDupe.add("&aDamage Reduction&7: &b" + (int) (armorRating * 100) + "%");
+        loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+
+        if (offensivePotionEffects.keySet().size() > 0 || defensivePotionEffects.keySet().size() > 0) {
+            if (defensivePotionEffects.keySet().size() > 0) {
+                loreDupe.add("");
+                loreDupe.add("&aDefensive Effects&7:");
+
+                for (PotionEffect effect : defensivePotionEffects.keySet()) {
+                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + defensivePotionEffects.get(effect)+ "% &f(On Hit)");
+                }
+            }
+
+            if (offensivePotionEffects.keySet().size() > 0) {
+                loreDupe.add("");
+                loreDupe.add("&aOffensive Effects&7:");
+
+                for (PotionEffect effect : offensivePotionEffects.keySet()) {
+                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + offensivePotionEffects.get(effect)+ "% &f(On Hit)");
+                }
+            }
         }
 
-        loreDupe.add(0, "");
-        loreDupe.add(0, "&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
-        loreDupe.add(0, "&aDamage Reduction&7: &b" + (int) (armorRating * 100) + "%");
-        loreDupe.add(0, HiddenStringUtils.encodeString(gearCode));
+        if (lore != null) {
+            loreDupe.add("");
+            loreDupe.addAll(lore);
+        }
 
         HashMap<Enchantment, Integer> enchantmentHashMap = new HashMap<>();
         for (String s : enchantments) {
@@ -188,7 +208,7 @@ public class CarbyneArmor extends CarbyneGear {
 
     @Override
     public void damageItem(Player wielder, ItemStack itemStack) {
-        int durability = getDurability(itemStack);
+        double durability = getDurability(itemStack);
 
         if (durability == -1) {
             return;
@@ -197,6 +217,13 @@ public class CarbyneArmor extends CarbyneGear {
         if (durability >= 1) {
             durability--;
             Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
+            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - durabilityScale(itemStack)));
+
+            if (itemStack.getDurability() <= 0) {
+                itemStack.setDurability((short) 0);
+            } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
+                itemStack.setDurability((short) itemStack.getType().getMaxDurability());
+            }
         } else {
             wielder.getInventory().remove(itemStack);
             wielder.playSound(wielder.getLocation(), Sound.ITEM_BREAK, 1, 1);
@@ -214,5 +241,32 @@ public class CarbyneArmor extends CarbyneGear {
         } catch (Exception ez) {
             return -1;
         }
+    }
+
+    @Override
+    public int getRepairCost(ItemStack itemStack) {
+        int maxAmount = (int) Math.round(cost * 0.7);
+
+        double per = maxDurability / maxAmount;
+        double dura = getDurability(itemStack);
+
+        for (int i = 1; i <= maxAmount; i++) {
+            if (dura < per * i) {
+                return (maxAmount + 1) - i;
+            }
+        }
+
+        return 0;
+    }
+
+    @Override
+    public void setDurability(ItemStack itemStack, int durability) {
+        Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
+    }
+
+    public int durabilityScale(ItemStack itemStack) {
+        double scale = getDurability(itemStack) / getMaxDurability();
+        double durability = itemStack.getType().getMaxDurability() * scale;
+        return (int) Math.round(durability);
     }
 }

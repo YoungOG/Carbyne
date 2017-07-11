@@ -29,4 +29,8 @@ public abstract class CarbyneGear {
 	public abstract int getDurability(ItemStack itemStack);
 
 	public abstract void damageItem(Player wielder, ItemStack itemStack);
+
+	public abstract int getRepairCost(ItemStack itemStack);
+
+	public abstract void setDurability(ItemStack itemStack, int durability);
 }

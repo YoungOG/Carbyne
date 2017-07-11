@@ -110,5 +110,4 @@ public class FireStorm implements Special {
             entity.setFireTicks(20 * 5);
         }
     }
-
 }

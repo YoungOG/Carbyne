@@ -44,9 +44,9 @@ public class DuelRequest {
             Player player = Bukkit.getServer().getPlayer(uuid);
 
             if (player != null) {
-                JSONMessage.create("Place a bet using: ").color(ChatColor.GREEN).suggestCommand("/duel bet <a>").tooltip("Click to use command")
+                JSONMessage.create("Place a bet using: ").color(ChatColor.GREEN).suggestCommand("/duel bet <a>").tooltip(ChatColor.LIGHT_PURPLE + "Click to use command")
                         .then("/duel bet <amount>").color(ChatColor.RED)
-                        .suggestCommand("/duel bet <a>").tooltip("Click to use command").send(player);
+                        .suggestCommand("/duel bet <a>").tooltip(ChatColor.LIGHT_PURPLE + "Click to use command").send(player);
             }
         }
         runTask();

@@ -74,7 +74,7 @@ public class SpellModsListener implements Listener
 
             Player player = (Player)e.getWhoClicked();
             ItemStack is = e.getCurrentItem();
-            Inventory inv = e.getClickedInventory();
+            Inventory inv = e.getInventory();
 
             String spellName;
             try {

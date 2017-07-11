@@ -39,6 +39,7 @@ public class Arena {
     private Location lobbyLocation;
     private Duel duel;
     private List<UUID> duelists = new ArrayList<>();
+    private int cancelId;
 
     public Arena(String arenaId) {
         this.arenaId = arenaId;
@@ -114,14 +115,8 @@ public class Arena {
             }
         }
 
-        if (activePressurePlates < activePedastoolLocations.keySet().size()) {
-
-        }
-
-        if (activePressurePlates >= activePedastoolLocations.keySet().size()) {
-
-        }
         if (activePressurePlates >= pedastoolLocations.length) {
+            stopCancel();
 
             HashMap<UUID, Boolean> players = new HashMap<>();
             for (UUID uuid : duelists) {
@@ -189,5 +184,20 @@ public class Arena {
         duel.setPlayerBets(playerBets);
         Carbyne.getInstance().getDuelManager().getDuels().add(duel);
         duel.countdown();
+    }
+
+    public void startCancel(Player player) {
+        stopCancel();
+
+        cancelId = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
+            @Override
+            public void run() {
+                player.teleport(getLobbyLocation());
+            }
+        }, 200);
+    }
+
+    public void stopCancel() {
+        Bukkit.getServer().getScheduler().cancelTask(cancelId);
     }
 }

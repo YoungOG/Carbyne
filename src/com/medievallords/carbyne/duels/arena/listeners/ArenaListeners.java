@@ -50,6 +50,7 @@ public class ArenaListeners implements Listener {
             if (pedastoolLocations.contains(block.getLocation())) {
                 if (!arena.getDuelists().contains(event.getPlayer().getUniqueId())) {
                     arena.getDuelists().add(event.getPlayer().getUniqueId());
+                    arena.startCancel(event.getPlayer());
                 }
 
                 arena.activatePedastool(block.getLocation(), true);

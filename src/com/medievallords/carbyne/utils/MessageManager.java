@@ -5,7 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -87,5 +89,136 @@ public class MessageManager {
         }
 
         return ChatColor.translateAlternateColorCodes('&', input);
+    }
+
+    public static String getPotionAmplifierInRomanNumerals(int amplifier) {
+        switch (amplifier) {
+            case 1:
+                return "I";
+            case 2:
+                return "II";
+            case 3:
+                return "III";
+            case 4:
+                return "IV";
+            case 5:
+                return "V";
+            case 6:
+                return "VI";
+            case 7:
+                return "VIII";
+            default:
+                return amplifier + "";
+        }
+    }
+
+    public static String getPotionTypeFriendlyName(PotionEffectType potionEffectType) {
+        switch (potionEffectType.getName()) {
+            case "ABSORPTION":
+                return "Absorption";
+            case "BLINDNESS":
+                return "Blindness";
+            case "CONFUSION":
+                return "Nausea";
+            case "DAMAGE_RESISTANCE":
+                return "Damage Resistance";
+            case "FAST_DIGGING":
+                return "Haste";
+            case "HARM":
+                return "Instant Harm";
+            case "FIRE_RESISTANT":
+                return "Fire Resistance";
+            case "HEAL":
+                return "Instant Heal";
+            case "HEALTH_BOOST":
+                return "Health Boost";
+            case "HUNGER":
+                return "Hunger";
+            case "INCREASE_DAMAGE":
+                return "Strength";
+            case "INVISIBILITY":
+                return "Invisibility";
+            case "JUMP":
+                return "Jump";
+            case "NIGHT_VISION":
+                return "Night Vision";
+            case "POISON":
+                return "Poison";
+            case "REGENERATION":
+                return "Regeneration";
+            case "SATURATION":
+                return "Saturation";
+            case "SLOW":
+                return "Slowness";
+            case "SLOW_DIGGING":
+                return "Fatigue";
+            case "SPEED":
+                return "Speed";
+            case "WATER_BREATHING":
+                return "Water Breathing";
+            case "WEAKNESS":
+                return "Weakness";
+            case "WITHER":
+                return "Wither";
+        }
+
+        return null;
+    }
+
+    public static String getEnchantmentFriendlyName(Enchantment enchantment) {
+        switch (enchantment.getName()) {
+            case "ARROW_DAMAGE":
+                return "Power";
+            case "ARROW_FIRE":
+                return "Flame";
+            case "ARROW_KNOCKBACK":
+                return "Punch";
+            case "ARROW_INFINITE":
+                return "Infinity";
+            case "DAMAGE_ALL":
+                return "Sharpness";
+            case "DAMAGE_ARTHROPODS":
+                return "Bane of Arthropods";
+            case "DAMAGE_UNDEAD":
+                return "Smite";
+            case "DIG_SPEED":
+                return "Efficiency";
+            case "DURABILITY":
+                return "Unbreaking";
+            case "FIRE_ASPECT":
+                return "Fire Aspect";
+            case "LOOT_BONUS_BLOCKS":
+                return "Fortune";
+            case "LOOT_BONUS_MOBS":
+                return "Looting";
+            case "OXYGEN":
+                return "Respiration";
+            case "PROTECTION_ENVIRONMENTAL":
+                return "Protection";
+            case "PROTECTION_FALL":
+                return "Feather Falling";
+            case "PROTECTION_FIRE":
+                return "Fire Protection";
+            case "PROTECTION_PROJECTILE":
+                return "Projectile Protection";
+            case "PROTECTION_EXPLOSIONS":
+                return "Blast Protection";
+            case "SILK_TOUCH":
+                return "Silk Touch";
+            case "THORNS":
+                return "Thorns";
+            case "DEPTH_STRIDER":
+                return "Depth Strider";
+        }
+        return "";
+
+    }
+
+    public static String convertSecondsToMinutes(int time) {
+        int minutes = time / 60;
+        int seconds = time % 60;
+        String disMinu = "" + minutes;
+        String disSec = (seconds < 10 ? "0" : "") + seconds;
+        return disMinu + ":" + disSec;
     }
 }

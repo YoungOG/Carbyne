@@ -2,6 +2,7 @@ package com.medievallords.carbyne.squads;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.nisovin.magicspells.events.SpellTargetEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,6 +70,18 @@ public class SquadManager implements Listener {
             squad.getMembers().remove(player.getUniqueId());
 
             squad.sendAllMembersMessage("&b" + player.getName() + " &chas left the squad.");
+        }
+    }
+
+    @EventHandler
+    public void onSpellTarget(SpellTargetEvent e)
+    {
+        if(e.getTarget() instanceof Player) {
+            Player target = (Player) e.getTarget();
+            Squad squad1 = Carbyne.getInstance().getSquadManager().getSquad(target.getUniqueId());
+
+            if(squad1 != null && squad1.getMembers().contains(e.getCaster().getUniqueId()))
+                e.setCancelled(true);
         }
     }
 

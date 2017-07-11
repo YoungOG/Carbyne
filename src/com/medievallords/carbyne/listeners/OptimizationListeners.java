@@ -1,6 +1,9 @@
 package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.utils.JSONMessage;
+import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
 import com.medievallords.carbyne.utils.signgui.SignGUIUpdateEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
@@ -11,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -211,7 +215,26 @@ public class OptimizationListeners implements Listener {
                         Player killer = player.getKiller();
 
                         if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
-                            event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using &c" + killer.getItemInHand().getItemMeta().getDisplayName()));
+                            JSONMessage message = JSONMessage.create();
+                            message.then(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using "));
+                            String toolTip = "";
+
+                            toolTip = killer.getItemInHand().getItemMeta().getDisplayName() + "\n";
+                            for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet()) {
+                                toolTip = toolTip + "&7" + MessageManager.getEnchantmentFriendlyName(enchantment) + " &7" + MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment)) + "\n";
+                            }
+
+                            for (String s : killer.getItemInHand().getItemMeta().getLore()) {
+                                toolTip = toolTip + s + "\n";
+                            }
+                            String type = killer.getItemInHand().getType().name().substring(0,1).toUpperCase();
+                            toolTip = toolTip + "\n" + "&7" + type + killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " ");
+
+                            message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip));
+
+                            PlayerUtility.getOnlinePlayers().forEach(p -> message.send(p));
+                            event.setDeathMessage("");
+                            //event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using &c" + killer.getItemInHand().getItemMeta().getDisplayName()));
                         } else {
                             event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName()));
                         }
@@ -539,4 +562,14 @@ public class OptimizationListeners implements Listener {
             event.setCancelled(true);
         }
     }
+
+    /*@EventHandler
+    public void onConsoleCommand(ServerCommandEvent e)
+    {
+        if(e.getCommand().startsWith("/pex"))
+        {
+
+        }
+    }*/
+
 }

@@ -6,7 +6,6 @@ import com.medievallords.carbyne.utils.Maths;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -79,9 +78,7 @@ public class PlayerListeners implements Listener {
                 Resident r = TownyUniverse.getDataSource().getResident(oldName);
                 TownyUniverse.getDataSource().renamePlayer(r, currName);
             }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            catch (Exception ignored) {}
 
             Carbyne.getInstance().getProfileManager().getProfile(id).setUsername(currName);
         }
@@ -107,43 +104,42 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (event.getBlock().getType() == Material.CHEST || event.getBlock().getType() == Material.TRAPPED_CHEST  || event.getBlock().getType() == Material.HOPPER || event.getBlock().getType() == Material.DISPENSER || event.getBlock().getType() == Material.DROPPER || event.getBlock().getType() == Material.BREWING_STAND || event.getBlock().getType() == Material.CHEST || event.getBlock().getType() == Material.FURNACE) {
-
-        }
         Block block = event.getBlock();
         BlockState blockState = block.getState();
 
-        switch (event.getBlock().getType()) {
-            case TRAPPED_CHEST:
-            case CHEST: {
-                Chest chest = (Chest) blockState;
-                chest.getInventory().clear();
-                break;
-            }
+        if (event.getBlock() != null) {
+            switch (event.getBlock().getType()) {
+                case TRAPPED_CHEST:
+                case CHEST: {
+                    Chest chest = (Chest) blockState;
+                    chest.getInventory().clear();
+                    break;
+                }
 
-            case HOPPER: {
-                Hopper hopper = (Hopper) blockState;
-                hopper.getInventory().clear();
-                break;
-            }
-            case DISPENSER: {
-                Dispenser dispenser = (Dispenser) blockState;
-                dispenser.getInventory().clear();
-                break;
-            }
-            case DROPPER: {
-                Dropper dropper = (Dropper) blockState;
-                dropper.getInventory().clear();
-                break;
-            }
-            case FURNACE: {
-                Furnace furnace = (Furnace) blockState;
-                furnace.getInventory().clear();
-                break;
-            }
-            case BREWING_STAND: {
-                BrewingStand brewingStand = (BrewingStand) blockState;
-                brewingStand.getInventory().clear();
+                case HOPPER: {
+                    Hopper hopper = (Hopper) blockState;
+                    hopper.getInventory().clear();
+                    break;
+                }
+                case DISPENSER: {
+                    Dispenser dispenser = (Dispenser) blockState;
+                    dispenser.getInventory().clear();
+                    break;
+                }
+                case DROPPER: {
+                    Dropper dropper = (Dropper) blockState;
+                    dropper.getInventory().clear();
+                    break;
+                }
+                case FURNACE: {
+                    Furnace furnace = (Furnace) blockState;
+                    furnace.getInventory().clear();
+                    break;
+                }
+                case BREWING_STAND: {
+                    BrewingStand brewingStand = (BrewingStand) blockState;
+                    brewingStand.getInventory().clear();
+                }
             }
         }
     }

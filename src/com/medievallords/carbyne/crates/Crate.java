@@ -42,37 +42,30 @@ public class Crate {
     public Crate(String name) {
         this.name = name;
 
-        if (name.contains("obsidian")) {
-
-
-            double theta = 0;
-            double radius = 0.5;
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-
-                    double x = Math.sin(theta) * radius;
-                    double y = Math.cos(theta);
-                    double z = Math.cos(theta) * radius;
-
-                    double x2 = Math.cos(theta) * radius;
-                    double y2 = Math.cos(theta);
-                    double z2 = Math.sin(theta) * radius;
-
-                    Location location = getLocation().clone();
-                    location.add(x,y,z);
-                    ParticleEffect.SPELL_WITCH.display(0,0,0,0,1,location, 40, false);
-                    location.subtract(x,0,z);
-                    location.add(x,0,z);
-                    ParticleEffect.SPELL_WITCH.display(0,0,0,0,1,location, 40, false);
-
-                }
-            }.runTaskTimerAsynchronously(main, 0, 1);
-
+        if (name.contains("Obsidian")) {
+            runObsidianEffect();
             return;
         }
 
+        if (name.contains("Emerald")) {
+            runEmeraldEffect();
+            return;
+        }
+
+        if (name.contains("Diamond")) {
+            runDiamondEffect();
+            return;
+        }
+
+        if (name.contains("Gold")) {
+            runGoldEffect();
+            return;
+        }
+
+        if (name.contains("Iron")) {
+            runIronEffect();
+            return;
+        }
 
         new BukkitRunnable() {
             @Override
@@ -352,4 +345,121 @@ public class Crate {
 
         return null;
     }
+
+    private void runObsidianEffect() {
+
+        new BukkitRunnable() {
+            double theta = 0;
+            double radius = 0.55;
+
+            ParticleEffect.OrdinaryColor purple = new ParticleEffect.OrdinaryColor(244, 66, 244);
+
+            @Override
+            public void run() {
+                theta += 0.2;
+
+                double x = Math.cos(theta) * radius;
+                double y = Math.cos(theta) * radius;
+                double z = Math.sin(theta) * radius;
+
+                Location location = getLocation().clone();
+                location.add(0.5,0.5,0.5);
+                location.add(x, y, z);
+                ParticleEffect.REDSTONE.display(purple,location, 40,false);
+                location.subtract(x,0,z);
+                location.subtract(x, 0, z);
+                ParticleEffect.REDSTONE.display(purple,location, 40,false);
+             }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
+    private void runEmeraldEffect() {
+
+        new BukkitRunnable() {
+            double theta = 0;
+            double radius = 0.6;
+            @Override
+            public void run() {
+                theta += 0.2;
+                double x = Math.cos(theta) * radius;
+                double y = Math.cos(theta) * radius;
+                double z = Math.sin(theta) * radius;
+
+                Location location = getLocation().clone();
+                location.add(0.5,0.5,0.5);
+                location.add(x,y,z);
+                ParticleEffect.VILLAGER_HAPPY.display(0,0,0,0,1,location, 40, false);
+            }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
+    private void runDiamondEffect() {
+        new BukkitRunnable() {
+            double theta = 0;
+            double radius = 0.6;
+
+            ParticleEffect.OrdinaryColor blue = new ParticleEffect.OrdinaryColor(66, 212, 244);
+
+            @Override
+            public void run() {
+                theta += 0.13;
+
+                double x = Math.sin(theta) * radius;
+                double z = Math.cos(theta) * radius;
+
+                Location location = getLocation().clone();
+                location.add(0.5,0,0.5);
+                location.add(x,0,z);
+                location.add(0,0.25,0);
+
+                ParticleEffect.REDSTONE.display(blue, location, 50, true);
+                location.add(0,0.25,0);
+                ParticleEffect.REDSTONE.display(blue, location, 50, true);
+            }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
+    private void runGoldEffect() {
+        new BukkitRunnable() {
+            double theta = 0;
+            double radius = 0.6;
+
+            ParticleEffect.OrdinaryColor gold = new ParticleEffect.OrdinaryColor(244, 217, 66);
+
+            @Override
+            public void run() {
+                theta += 0.13;
+
+                double x = Math.sin(theta) * radius;
+                double z = Math.cos(theta) * radius;
+
+                Location location = getLocation().clone();
+                location.add(0.5,0.5,0.5);
+                location.add(x,0,z);
+                ParticleEffect.REDSTONE.display(gold, location, 50, true);
+            }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
+    private void runIronEffect() {
+        new BukkitRunnable() {
+            double theta = 0;
+            double radius = 0.6;
+
+            ParticleEffect.OrdinaryColor silver = new ParticleEffect.OrdinaryColor(201, 197, 175);
+
+            @Override
+            public void run() {
+                theta += 0.14;
+                double y = Math.cos(theta) * radius;
+                double z = Math.sin(theta) * radius;
+
+                Location location = getLocation().clone();
+                location.add(0.5,0.5,0.5);
+                location.add(0,y,z);
+                ParticleEffect.REDSTONE.display(silver, location, 50, true);
+            }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
 }

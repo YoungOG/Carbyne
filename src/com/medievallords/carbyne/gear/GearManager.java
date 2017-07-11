@@ -18,10 +18,8 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -198,10 +196,6 @@ public class GearManager {
             return null;
         }
 
-        if (is.getItemMeta().getDisplayName() == null) {
-            return null;
-        }
-
         List<String> lore = is.getItemMeta().getLore();
 
         if (lore == null || lore.isEmpty()) {
@@ -214,10 +208,8 @@ public class GearManager {
             }
 
             if (cg.getItem(false).getType() == is.getType()) {
-                if (cg.getDisplayName().equalsIgnoreCase(is.getItemMeta().getDisplayName().replace('§', '&'))) {
-                    if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
-                        return (CarbyneArmor) cg;
-                    }
+                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+                    return (CarbyneArmor) cg;
                 }
             }
         }
@@ -262,10 +254,6 @@ public class GearManager {
             return null;
         }
 
-        if (is.getItemMeta().getDisplayName() == null) {
-            return null;
-        }
-
         List<String> lore = is.getItemMeta().getLore();
 
         if (lore == null || lore.isEmpty()) {
@@ -277,10 +265,8 @@ public class GearManager {
                 continue;
             }
 
-            if (cg.getDisplayName().equalsIgnoreCase(is.getItemMeta().getDisplayName().replace('§', '&'))) {
-                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
                     return (CarbyneWeapon) cg;
-                }
             }
         }
 
@@ -321,10 +307,6 @@ public class GearManager {
             return false;
         }
 
-        if (is.getItemMeta().getDisplayName() == null) {
-            return false;
-        }
-
         List<String> lore = is.getItemMeta().getLore();
 
         if (lore == null || lore.isEmpty()) {
@@ -336,10 +318,8 @@ public class GearManager {
                 continue;
             }
 
-            if (cg.getDisplayName().equalsIgnoreCase(is.getItemMeta().getDisplayName().replace('§', '&'))) {
-                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
-                    return true;
-                }
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+                return true;
             }
         }
 
@@ -355,14 +335,6 @@ public class GearManager {
             return false;
         }
 
-        if (is.getItemMeta().getDisplayName() == null) {
-            return false;
-        }
-
-        if (!is.getItemMeta().hasDisplayName()) {
-            return false;
-        }
-
         List<String> lore = is.getItemMeta().getLore();
 
         if (lore == null || lore.isEmpty()) {
@@ -374,14 +346,8 @@ public class GearManager {
                 continue;
             }
 
-            if (cg.getDisplayName() == null) {
-                return false;
-            }
-
-            if (cg.getDisplayName().equalsIgnoreCase(is.getItemMeta().getDisplayName().replace('§', '&'))) {
-                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
-                    return true;
-                }
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+                return true;
             }
         }
 
@@ -476,7 +442,7 @@ public class GearManager {
         return null;
     }
 
-    public int getDurability(ItemStack itemStack) {
+    public double getDurability(ItemStack itemStack) {
         if (itemStack == null) {
             return -1;
         }
@@ -486,11 +452,11 @@ public class GearManager {
         } else if (isCarbyneWeapon(itemStack)) {
             return getCarbyneWeapon(itemStack).getDurability(itemStack);
         } else if (isDefaultArmor(itemStack)) {
-            return (getDefaultArmor(itemStack) != null ? getDefaultArmor(itemStack).getDurability(itemStack) : -1);
+            return (getDefaultArmor(itemStack) != null ? itemStack.getType().getMaxDurability() - itemStack.getDurability() : -1);
         } else if (isDefaultWeapon(itemStack)) {
-            return (getDefaultWeapon(itemStack) != null ? getDefaultWeapon(itemStack).getDurability(itemStack) : -1);
+            return (getDefaultWeapon(itemStack) != null ? itemStack.getType().getMaxDurability() - itemStack.getDurability() : -1);
         } else if (itemStack.getType().getMaxDurability() > 0) {
-            return itemStack.getDurability();
+            return itemStack.getType().getMaxDurability() - itemStack.getDurability();
         } else {
             return -1;
         }
@@ -515,12 +481,18 @@ public class GearManager {
         ItemStack replacement = null;
 
         if (isDefaultWeapon(item)) {
-            replacement = getDefaultWeapon(item).getItem(false);
+            replacement = item;//getDefaultWeapon(item).getItem(false);
         } else if (isDefaultArmor(item)) {
-            replacement = getDefaultArmor(item).getItem(false);
+            replacement = item;//getDefaultArmor(item).getItem(false);
+            MinecraftArmor armor = getDefaultArmor(item);
+
+            if (armor.getDurability(item) < 0) {
+                armor.setDurability(item, armor.getMaxDurability());
+            }
+
         }
 
-        if (replacement != null) {
+        /*if (replacement != null) {
             for (Enchantment enchantment : item.getEnchantments().keySet()) {
                 replacement.addUnsafeEnchantment(enchantment, item.getEnchantments().get(enchantment));
             }
@@ -536,7 +508,7 @@ public class GearManager {
                     List<String> lore = im.getLore();
 
                     for (String line : item.getItemMeta().getLore()) {
-                        if (!lore.contains(line)) {
+                        if (!lore.contains(line) && !line.contains("Durability")) {
                             lore.add(line);
                         }
                     }
@@ -546,7 +518,7 @@ public class GearManager {
 
                 replacement.setItemMeta(im);
             }
-        }
+        }*/
 
         return replacement;
     }
@@ -637,4 +609,21 @@ public class GearManager {
     }
 
     public GearEffects getGearEffects() {return gearEffects; }
+
+    public Material getRelativeRepairMaterial(ItemStack itemStack) {
+        String name = itemStack.getType().name().toLowerCase();
+        if (name.contains("diamond")) {
+            return Material.DIAMOND;
+        } else if (name.contains("gold")) {
+            return Material.GOLD_INGOT;
+        } else if (name.contains("iron")) {
+            return Material.IRON_INGOT;
+        } else if (name.contains("leather")) {
+            return Material.LEATHER;
+        } else if (name.contains("chain")) {
+            return Material.IRON_INGOT;
+        } else {
+            return null;
+        }
+    }
 }

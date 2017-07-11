@@ -21,41 +21,29 @@
     </build>
 
     <repositories>
-		<!-- SpigotAPI Repo -->
+        <!-- CombatTagPlus Repo -->
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-		
-		<!-- CombatTagPlus Repo -->
-		<repository>
             <id>minelink-repo</id>
             <url>http://repo.minelink.net/content/repositories/public</url>
         </repository>
-		
-		<!-- ProtocolLib Repo -->
-		<repository>
+
+        <!-- ProtocolLib Repo -->
+        <repository>
             <id>dmulloy2-repo</id>
             <url>http://repo.dmulloy2.net/content/groups/public/</url>
         </repository>
-		
-		<!-- Vault Repo -->
-		<repository>
+
+        <!-- Vault Repo -->
+        <repository>
             <id>vault-repo</id>
             <url>http://nexus.hc.to/content/repositories/pub_releases</url>
         </repository>
-		
-		<!-- MythicMobs Repo -->
-		<repository>
-			<id>betonquest-repo</id>
-			<url>http://betonquest.betoncraft.pl/mvn</url>
-		</repository>
-		
-		<!-- Towny Repo -->
-		<repository>
-			<id>towny-repo</id>
-			<url>http://maven.elmakers.com/repository/</url>
-		</repository>
+
+        <!-- MythicMobs Repo -->
+        <repository>
+            <id>betonquest-repo</id>
+            <url>http://betonquest.betoncraft.pl/mvn</url>
+        </repository>
 
         <!-- PermissionsEx Repo -->
         <repository>
@@ -73,27 +61,25 @@
     <dependencies>
         <!--&lt;!&ndash; Spigot API &ndash;&gt;-->
         <!--<dependency>-->
-            <!--<groupId>org.spigotmc</groupId>-->
-            <!--<artifactId>spigot-api</artifactId>-->
-            <!--<version>1.8.8-R0.1-SNAPSHOT</version>-->
-            <!--<scope>provided</scope>-->
+        <!--<groupId>org.spigotmc</groupId>-->
+        <!--<artifactId>spigot-api</artifactId>-->
+        <!--<version>1.8.8-R0.1-SNAPSHOT</version>-->
+        <!--<scope>provided</scope>-->
         <!--</dependency>-->
 
-        <!--Bukkit API-->
+        <dependency>
+            <groupId>org.nibor.autolink</groupId>
+            <artifactId>autolink</artifactId>
+            <version>0.6.0</version>
+        </dependency>
+
+        <!--Bukkit API
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
             <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Towny plugin -->
-        <dependency>
-            <groupId>com.palmergames</groupId>
-            <artifactId>Towny</artifactId>
-            <version>0.89.2.0</version>
-            <scope>compile</scope>
-        </dependency>
+        </dependency> -->
 
         <!-- CombatTagPlus plugin -->
         <dependency>
@@ -187,8 +173,8 @@
             </exclusions>
         </dependency>
 
-		 <!-- ProtocolLib plugin -->
-		<dependency>
+        <!-- ProtocolLib plugin -->
+        <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib-API</artifactId>
             <version>4.2.0</version>
@@ -205,15 +191,15 @@
             </exclusions>
         </dependency>
 
-        <!-- PermissionsEx plugin -->
+        <!-- PermissionsEx plugin
         <dependency>
             <groupId>ru.tehkode</groupId>
             <artifactId>PermissionsEx</artifactId>
             <version>1.22.7</version>
-        </dependency>
-		
+        </dependency> -->
+
         <!-- Vault plugin -->
-		<dependency>
+        <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.6</version>
@@ -233,11 +219,11 @@
         <!-- MythicMobs plugin -->
 
         <!-- EffectLibs library -->
-		<dependency>
-			<groupId>de.slikey.effectlib</groupId>
-			<artifactId>EffectLib</artifactId>
-			<version>3.8</version>
-		</dependency>
+        <dependency>
+            <groupId>de.slikey.effectlib</groupId>
+            <artifactId>EffectLib</artifactId>
+            <version>3.8</version>
+        </dependency>
 
         <!-- Lombok library -->
         <dependency>
@@ -271,6 +257,13 @@
             <groupId>com.keenant</groupId>
             <artifactId>tabbed</artifactId>
             <version>1.7-SNAPSHOT</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.0</version>
         </dependency>
     </dependencies>
 </project>

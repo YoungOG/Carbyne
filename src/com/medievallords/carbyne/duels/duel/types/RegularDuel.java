@@ -117,6 +117,7 @@ public class RegularDuel extends Duel {
             player.teleport(getArena().getLobbyLocation().clone().add(0,0.2,0));
             player.setHealth(player.getMaxHealth());
             player.setFireTicks(0);
+            player.getActivePotionEffects().clear();
 
             Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + getBets());
 
@@ -136,6 +137,7 @@ public class RegularDuel extends Duel {
                 player.teleport(getArena().getLobbyLocation().clone().add(0,0.2,0));
                 player.setHealth(player.getMaxHealth());
                 player.setFireTicks(0);
+                player.getActivePotionEffects().clear();
             }
 
             for (UUID uuid : participants) {
@@ -151,6 +153,7 @@ public class RegularDuel extends Duel {
 
             item.remove();
         }
+
         getDrops().clear();
 
         Carbyne.getInstance().getDuelManager().getDuels().remove(this);
@@ -193,7 +196,7 @@ public class RegularDuel extends Duel {
                     public void run() {
                         end(getPlayersAlive().get(0));
                     }
-                }.runTaskLater(Carbyne.getInstance(), 200);
+                }.runTaskLater(Carbyne.getInstance(), 300);
         }
     }
 

@@ -199,7 +199,7 @@ public class SquadDuel extends Duel {
                         public void run() {
                             end(uuid);
                         }
-                    }.runTaskLater(Carbyne.getInstance(), 200);
+                    }.runTaskLater(Carbyne.getInstance(), 300);
                     break;
                 }
             }
@@ -213,7 +213,7 @@ public class SquadDuel extends Duel {
                         public void run() {
                             end(uuid);
                         }
-                    }.runTaskLater(Carbyne.getInstance(), 200);
+                    }.runTaskLater(Carbyne.getInstance(), 300);
                     break;
                 }
             }

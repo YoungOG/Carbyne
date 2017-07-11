@@ -18,6 +18,7 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.palmergames.bukkit.towny.permissions.TownyPerms;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -26,10 +27,22 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.nibor.autolink.LinkExtractor;
+import org.nibor.autolink.LinkSpan;
+import org.nibor.autolink.LinkType;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -67,6 +80,10 @@ public class ChatListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
+
+        if (carbyne.getTicketManager().getNewTickets().containsKey(player.getUniqueId()) || carbyne.getTicketManager().getRespondingTickets().containsKey(player.getUniqueId())) {
+            return;
+        }
 
         if (carbyne.getStaffManager().isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff"))  {
             event.setCancelled(true);
@@ -171,38 +188,29 @@ public class ChatListener implements Listener {
         newMessage.suggestCommand("/msg " + player.getName() + " ");
 
         String message = event.getMessage();
+        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: "));
 
-//        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: ") + message);
+        LinkExtractor linkExtractor = LinkExtractor.builder()
+                .linkTypes(EnumSet.of(LinkType.URL, LinkType.WWW, LinkType.EMAIL))
+                .build();
 
-//        Matcher matcher = URL_PATTERN.matcher(message);
-//
-//        while (matcher.find()) {
-//            String modified;
-//            String url = modified = matcher.group(1);
-//
-//            modified = "&9[Link]";
-//
-//            newMessage.then(ChatColor.translateAlternateColorCodes('&', modified)).openURL(url);
-//        }
-//
-        //[Link]
-//        if (message.matches(".+" + urlPattern.pattern() + ".+")) {
-//            Matcher matcher = urlPattern.matcher(message);
-//            StringBuffer stringBuffer = new StringBuffer();
-//
-//            while (matcher.find()) {
-//                String modified;
-//                String tempUrl = modified = matcher.group(1);
-//
-//                modified = "[Link]";
-//
-//                matcher.appendReplacement(stringBuffer, "");
-//                stringBuffer.append(modified);
-//            }
-//        }
+        String[] msg = message.split(" ");
+        for (String s : msg) {
+            LinkSpan link = null;
 
+            if (linkExtractor.extractLinks(s).iterator().hasNext()) {
+                link = linkExtractor.extractLinks(s).iterator().next();
+            }
 
-        newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f: ") + (player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', message) : message));
+            if (link != null) {
+                newMessage.then("[Link] ").color(ChatColor.AQUA)
+                        .openURL(s.substring(link.getBeginIndex(), link.getEndIndex()))
+                        .tooltip(getUrlInfoMessagePart(s));
+
+            } else {
+                newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', s + " ") : s + " ");
+            }
+        }
 
         for (Player players : PlayerUtility.getOnlinePlayers()) {
             newMessage.send(players);
@@ -377,7 +385,7 @@ public class ChatListener implements Listener {
             if (TownyEconomyHandler.isActive()) {
                 lines.add("&2Bank: &a" + resident.getHoldingFormattedBalance());
             }
-        } catch(NullPointerException playerHasNullAccount) {}
+        } catch(NullPointerException ignored) {}
 
         String line = "&2Town: &a";
         if (!resident.hasNation()) {
@@ -413,6 +421,78 @@ public class ChatListener implements Listener {
         }
 
         return message;
+    }
+
+    public JSONMessage getUrlInfoMessagePart(String url) {
+        JSONMessage message = JSONMessage.create("");
+
+        String title = "&7No Title Provided";
+        Long startMillis = System.currentTimeMillis();
+
+        try {
+            title = "&d" + getHeader(url);
+        } catch (SocketTimeoutException ex1) {
+            title = "&cTimed Out";
+        } catch (UnknownHostException ex2) {
+            title = "&cUnknown Host";
+        } catch (Exception ex3) {
+            title = "&cError Occurred";
+        } finally {
+            title = title + " &7(&c" + (System.currentTimeMillis() - startMillis) + "MS&7)";
+        }
+
+        message.then(ChatColor.translateAlternateColorCodes('&', StringEscapeUtils.unescapeHtml(title)));
+
+        return message;
+    }
+
+    public String getHeader(String url) throws Exception {
+        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+        con.setReadTimeout(500);
+        con.setConnectTimeout(500);
+        con.addRequestProperty("User-Agent", "Mozilla/4.76");
+        con.setDoOutput(true);
+        StringBuilder html = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream(), Charset.forName("UTF-8")));
+        char[] buffer = new char[1024];
+
+        while (reader.read(buffer, 0, buffer.length) != -1) {
+            html.append(buffer);
+        }
+
+        Matcher m = Pattern.compile("<title>(.+)</title>").matcher(html.toString());
+
+        if (m.find()) {
+            return m.group(1);
+        }
+
+        return "No Page Title";
+    }
+
+    public int getLastPossibleFullWordIndex(String string, int split) {
+        int i = 0;
+        int li = string.length();
+        boolean n = false;
+        char[] charArray;
+
+        for (int length = (charArray = string.toCharArray()).length, j = 0; j < length; ++j) {
+            char c = charArray[j];
+
+            if (c == ' ')
+                n = true;
+            else {
+                if (n) {
+                    li = i;
+                }
+
+                n = false;
+            }
+
+            if (++i > split)
+                return li;
+        }
+
+        return li;
     }
 
     public boolean isFourDigitCode(String string) {

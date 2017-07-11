@@ -87,15 +87,14 @@ public class DuelManager {
     public Duel getDuelFromUUID(UUID uuid) {
         for (Duel duel : duels) {
             if (duel instanceof RegularDuel) {
-
                 RegularDuel regularDuel = (RegularDuel) duel;
 
                 if (Arrays.asList(regularDuel.getParticipants()).contains(uuid)) {
                     return duel;
                 }
             } else if (duel instanceof SquadDuel) {
-
                 SquadDuel squadDuel = (SquadDuel) duel;
+
                 if (squadDuel.getSquadOne().getAllPlayers().contains(uuid) || squadDuel.getSquadTwo().getAllPlayers().contains(uuid)) {
                     return duel;
                 }

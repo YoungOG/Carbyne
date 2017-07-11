@@ -3,6 +3,6 @@ main: com.medievallords.carbyne.Carbyne
 version: 0.3
 description: Carbyne weapons and armors.
 author: Young
-depend: [MythicMobs]
+depend: [MythicMobs, WorldEdit]
 softdepend: [Towny]
 loadBefore: [Vault]

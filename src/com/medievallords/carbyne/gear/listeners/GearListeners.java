@@ -13,14 +13,15 @@ import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.ParticleEffect;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -39,6 +40,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import java.util.Random;
+
 public class GearListeners implements Listener {
 
     private Carbyne carbyne = Carbyne.getInstance();
@@ -48,6 +51,10 @@ public class GearListeners implements Listener {
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+
+            if (carbyne.getDuelManager().getDuelFromUUID(player.getUniqueId()) != null) {
+                return;
+            }
 
             //Player dead?
             if (player.isDead()) {
@@ -185,7 +192,7 @@ public class GearListeners implements Listener {
                     }
                 }
 
-                if (gearManager.isDefaultArmor(itemStack) || gearManager.isDefaultWeapon(itemStack)) {
+                /*if (gearManager.isDefaultArmor(itemStack) || gearManager.isDefaultWeapon(itemStack)) {
                     if (gearManager.isDefaultArmor(itemStack)) {
                         MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
 
@@ -197,7 +204,7 @@ public class GearListeners implements Listener {
 
                         minecraftWeapon.damageItem(damaged, itemStack);
                     }
-                }
+                }*/
             }
         }
 
@@ -223,11 +230,11 @@ public class GearListeners implements Listener {
                 }
             }
 
-            if (gearManager.isDefaultWeapon(itemStack)) {
+            /*if (gearManager.isDefaultWeapon(itemStack)) {
                 MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(itemStack);
 
                 minecraftWeapon.damageItem(damager, itemStack);
-            }
+            }*/
         }
     }
 
@@ -338,19 +345,15 @@ public class GearListeners implements Listener {
             if (gearManager.isDefaultArmor(event.getCurrentItem())) {
                 MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
 
-                if (minecraftArmor == null) {
-                    return;
+                if (minecraftArmor != null) {
+                    event.setCurrentItem(minecraftArmor.getItem(false));
                 }
-
-                event.setCurrentItem(minecraftArmor.getItem(false));
             } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
                 MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
 
-                if (minecraftWeapon == null) {
-                    return;
+                if (minecraftWeapon != null) {
+                    event.setCurrentItem(minecraftWeapon.getItem(false));
                 }
-
-                event.setCurrentItem(minecraftWeapon.getItem(false));
             }
         }
     }
@@ -367,11 +370,10 @@ public class GearListeners implements Listener {
 
                 MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
 
-                if (minecraftArmor == null) {
-                    return;
+                if (minecraftArmor != null) {
+                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
 
-                event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
             } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
                 if (event.getInventory() != null) {
                     if (gearManager.getGearGuiManager().isCustomInventory(event.getInventory())) {
@@ -381,11 +383,9 @@ public class GearListeners implements Listener {
 
                 MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
 
-                if (minecraftWeapon == null) {
-                    return;
+                if (minecraftWeapon != null) {
+                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
-
-                event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
             }
         }
     }
@@ -429,10 +429,167 @@ public class GearListeners implements Listener {
             if (inv.getItem(0) != null) {
                 if (gearManager.isCarbyneArmor(inv.getItem(0)) || gearManager.isCarbyneWeapon(inv.getItem(0))) {
                     event.setCancelled(true);
-                    MessageManager.sendMessage(event.getWhoClicked(), "&cYou cannot enchant carbyne gear.");
+                    MessageManager.sendMessage(event.getWhoClicked(), "&cYou cannot enchant or rename carbyne gear.");
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onRepairCarbyne(PlayerInteractEvent event) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Block block = event.getClickedBlock();
+
+            if (block.getType() != Material.ANVIL) {
+                return;
+            }
+
+            Player player = event.getPlayer();
+
+            ItemStack itemStack = player.getItemInHand();
+
+            if (itemStack == null) {
+                return;
+            }
+
+            CarbyneGear gear = gearManager.getCarbyneGear(itemStack);
+
+            if (gear == null) {
+                return;
+            }
+
+            if (gear.getDurability(itemStack) >= gear.getMaxDurability()) {
+                player.closeInventory();
+                MessageManager.sendMessage(player, "&aThis item is already fully repaired.");
+                event.setCancelled(true);
+                return;
+            }
+            if (!player.getInventory().containsAtLeast(gearManager.getTokenItem(), 1)) {
+                MessageManager.sendMessage(player, "&cYou do not have enough carbyne ingots.");
+                event.setCancelled(true);
+                return;
+            }
+
+            int repairCost = gear.getRepairCost(itemStack);
+
+            if (!player.getInventory().containsAtLeast(gearManager.getTokenItem(), repairCost)) {
+
+                int amountOfIngots = getAmountOfIngots(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData());
+                double per = gear.getMaxDurability()/  ((int) Math.round(gear.getCost() * 0.7));
+
+                removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), amountOfIngots);
+
+                event.setCancelled(true);
+                Item item = player.getWorld().dropItem(block.getLocation().add(0.5, 1.15, 0.5), player.getItemInHand());
+                item.setVelocity(new Vector(0, 0, 0));
+                item.teleport(block.getLocation().add(0.5, 1.1, 0.5));
+                ParticleEffect.LAVA.display(0, 0, 0, 0, 2, block.getLocation().add(0.5, 0.15, 0.5), 40, false);
+                player.getWorld().playSound(block.getLocation(), Sound.FIREWORK_BLAST2, 10f, 1f);
+                item.setPickupDelay(1000000000);
+                player.setItemInHand(null);
+                player.updateInventory();
+                double durability = gear.getDurability(itemStack) + per * amountOfIngots;
+                int breakTime = 0;
+                if (Math.random() < 0.05) {
+                    Random random = new Random();
+                    breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                }
+
+                repairItem(player, item,  durability >= gear.getMaxDurability() ? gear.getMaxDurability() : durability, amountOfIngots, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
+
+            } else {
+                removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), repairCost);
+
+                event.setCancelled(true);
+                Item item = player.getWorld().dropItem(block.getLocation().add(0.5, 1.15, 0.5), player.getItemInHand());
+                item.setVelocity(new Vector(0, 0, 0));
+                item.teleport(block.getLocation().add(0.5, 1.1, 0.5));
+                ParticleEffect.LAVA.display(0, 0, 0, 0, 2, block.getLocation().add(0.5, 1.12, 0.5), 40, false);
+                player.getWorld().playSound(block.getLocation(), Sound.FIREWORK_BLAST2, 10f, 1f);
+                item.setPickupDelay(1000000000);
+                player.setItemInHand(null);
+                player.updateInventory();
+                int breakTime = 0;
+                if (Math.random() < 0.05) {
+                    Random random = new Random();
+                    breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                }
+
+                repairItem(player, item, gear.getMaxDurability(), repairCost, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
+            }
+        }
+    }
+
+    public void repairItem(Player player, Item item, double durability, int repairCost, CarbyneGear gear, Location location, int breakTime) {
+
+        new BukkitRunnable() {
+            int i = -1;
+            boolean far = false;
+
+            @Override
+            public void run() {
+                i++;
+
+                if (breakTime > 0 && i >= breakTime) {
+                    cancel();
+                    MessageManager.sendMessage(player, "&cYour item broke!");
+
+                    ParticleEffect.SMOKE_LARGE.display(0f, 0f, 0f, 0.002f, 4, location, 40, true);
+                    player.getWorld().playSound(location, Sound.ANVIL_BREAK, 10f, (float) Math.random() * 2.5f);
+
+                    if (item != null) {
+                        item.remove();
+                    }
+
+                    return;
+                }
+
+                if (player.getLocation().distance(location) >= 9 && !far) {
+                    far = true;
+                    MessageManager.sendMessage(player, "&cYou are too far from the anvil, your item will be dropped on the ground");
+                }
+
+                if (far && player.getLocation().distance(location) < 9) {
+                    far = false;
+                    MessageManager.sendMessage(player, "&aYou are no longer too far away");
+                }
+
+                if (i >= repairCost * repairCost) {
+                    cancel();
+
+                    ItemStack itemStack = gear.getItem(false).clone();
+
+                    if (!player.isOnline() || far) {
+                        location.getWorld().dropItem(location, itemStack);
+
+                        if (item != null) {
+                            item.remove();
+                        }
+
+                    } else {
+
+                        if (player.getItemInHand() != null) {
+                            if (player.getInventory().firstEmpty() == -1) {
+                                player.getWorld().dropItem(player.getLocation(), itemStack);
+                                return;
+                            }
+
+                            player.getInventory().addItem(itemStack);
+                        } else {
+                            player.setItemInHand(itemStack);
+                        }
+
+                        MessageManager.sendMessage(player, "&aYour item has been repaired.");
+                        if (item != null) {
+                            item.remove();
+                        }
+                    }
+                }
+
+                ParticleEffect.FLAME.display(0f, 0f, 0f, 0.075f, 20, location, 40, true);
+                player.getWorld().playSound(location, Sound.ANVIL_USE, 10f, (float) Math.random() * 2.5f);
+            }
+        }.runTaskTimer(Carbyne.getInstance(), 0,20);
     }
 
     @EventHandler
@@ -540,5 +697,54 @@ public class GearListeners implements Listener {
         }
 
         return damageReduction;
+    }
+
+    public void removeItems(Inventory inventory, Material type, int data, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+
+        int size = inventory.getSize();
+
+        for (int slot = 0; slot < size; slot++) {
+            ItemStack is = inventory.getItem(slot);
+
+            if (is == null) {
+                continue;
+            }
+
+            if (type == is.getType() && is.getDurability() == data) {
+                int newAmount = is.getAmount() - amount;
+
+                if (newAmount > 0) {
+                    is.setAmount(newAmount);
+                    break;
+                } else {
+                    inventory.clear(slot);
+                    amount = -newAmount;
+
+                    if (amount == 0)
+                        break;
+                }
+            }
+        }
+    }
+
+    public int getAmountOfIngots(Inventory inventory, Material type, int data) {
+        int amount = 0;
+        int size = inventory.getSize();
+
+        for (int slot = 0; slot < size; slot++) {
+            ItemStack is = inventory.getItem(slot);
+
+            if (is == null) {
+                continue;
+            }
+
+            if (type == is.getType() && is.getDurability() == data) {
+                amount += is.getAmount();
+            }
+        }
+        return amount;
     }
 }

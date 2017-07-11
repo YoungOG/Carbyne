@@ -3,10 +3,7 @@ package com.medievallords.carbyne.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.PlayerUtility;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import org.bukkit.Bukkit;
@@ -14,7 +11,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,7 +18,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.projectiles.ProjectileSource;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -53,8 +48,7 @@ public class DamageListener implements Listener {
 
         List<ItemStack> drops = e.getDrops();
 
-        for (int i = 0; i < drops.size(); i++) {
-            ItemStack item = drops.get(i);
+        for (ItemStack item : drops) {
             if (item != null && item.getType() == Material.QUARTZ) {
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                     ItemStack replacement = gearManager.getCarbyneGear(ChatColor.stripColor(item.getItemMeta().getDisplayName())).getItem(false);
@@ -81,58 +75,6 @@ public class DamageListener implements Listener {
                     }
                 }
             } catch (NotRegisteredException ignored) {
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onDamage(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player) {
-            if (e.getDamager() instanceof Player) {
-                try {
-                    Resident damager = PlayerUtility.getResident((Player) e.getDamager());
-                    Resident attacked = PlayerUtility.getResident((Player) e.getEntity());
-
-                    if (damager != null && attacked != null && damager.hasTown() && attacked.hasTown()) {
-                        Town defender = attacked.getTown();
-                        Town attacker = damager.getTown();
-
-                        if (attacker.equals(defender)) {
-
-                            e.setCancelled(true);
-                            return;
-                        }
-
-                        if (defender.getNation().equals(attacker.getNation())) {
-                            e.setCancelled(true);
-                        }
-                    }
-                } catch (NotRegisteredException ignored) {
-                }
-            } else if (e.getDamager() instanceof Projectile) {
-                ProjectileSource p = ((Projectile) e.getDamager()).getShooter();
-
-                if (p instanceof Player) {
-                    try {
-                        Resident damager = PlayerUtility.getResident((Player) p);
-                        Resident attacked = PlayerUtility.getResident((Player) e.getEntity());
-
-                        if (damager != null && attacked != null && damager.hasTown() && attacked.hasTown()) {
-                            Town defender = attacked.getTown();
-                            Town attacker = damager.getTown();
-
-                            if (attacker.equals(defender)) {
-                                e.setCancelled(true);
-                                return;
-                            }
-
-                            if (defender.getNation().equals(attacker.getNation())) {
-                                e.setCancelled(true);
-                            }
-                        }
-                    } catch (NotRegisteredException ignored) {
-                    }
-                }
             }
         }
     }
