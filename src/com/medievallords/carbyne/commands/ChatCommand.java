@@ -22,6 +22,7 @@ public class ChatCommand extends BaseCommand {
 
         if (args.length <= 1) {
             MessageManager.sendMessage(sender, "&cUsage: /chat <player> <msg>");
+            return;
         }
 
         StringBuilder msg = new StringBuilder();

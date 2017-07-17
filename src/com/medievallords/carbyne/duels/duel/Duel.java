@@ -31,6 +31,7 @@ public abstract class Duel {
     private int bets;
     private HashMap<UUID, Integer> playerBets = new HashMap<>();
     public int taskId;
+    private boolean ended = false;
 
     public Duel(Arena arena) {
         this.arena = arena;

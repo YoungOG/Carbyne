@@ -8,6 +8,7 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.Document;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Created by WE on 2017-07-08.
@@ -35,13 +37,15 @@ public class TicketManager {
     private MongoCollection<Document> ticketCollection = Carbyne.getInstance().getMongoDatabase().getCollection("tickets");
 
     private ArrayList<Ticket> tickets = new ArrayList<>();
+    private ArrayList<Ticket> closedTickets = new ArrayList<>();
 
     private HashMap<UUID, Ticket> respondingTickets = new HashMap<>();
 
     private HashMap<UUID, String> newTickets = new HashMap<>();
 
-    public static String guiName = ChatColor.translateAlternateColorCodes('&', "&d&lTickets");
-    public static String listName = ChatColor.translateAlternateColorCodes('&', "&e&lTicket list");
+    public static final String GUI_NAME = ChatColor.translateAlternateColorCodes('&', "&d&lTickets");
+    public static final String LIST_GUI_NAME = ChatColor.translateAlternateColorCodes('&', "&e&lTickets");
+    public static final String CLOSED_TICKET_LIST_GUI_NAME = ChatColor.translateAlternateColorCodes('&', "&e&lClosed tickets");
 
     private HashMap<Player, Ticket> claimedTickets = new HashMap<>();
 
@@ -59,14 +63,14 @@ public class TicketManager {
 
                     for (Player player : PlayerUtility.getOnlinePlayers()) {
                         if (player.hasPermission("carbyne.staff.tickets")) {
-                            MessageManager.sendMessage(player, "&2There are currently &6" + openTickets + "&2 open tickets");
+                            MessageManager.sendMessage(player, "&2There are currently &6" + openTickets + "&2 open ticket(s)");
                         }
                     }
                 }
 
                 for (Player player : PlayerUtility.getOnlinePlayers()) {
-                    if (getTicketAmount(player.getUniqueId(), false) > 0) {
-                        MessageManager.sendMessage(player, "&2You have gotten &6" + getPlayerResponses(player.getUniqueId()));
+                    if (getTicketAmount(player.getUniqueId(), false) > 0 && getPlayerResponses(player.getUniqueId()) > 0) {
+                        MessageManager.sendMessage(player, "&2You have gotten &6" + getPlayerResponses(player.getUniqueId()) + "&2 respond(s)");
                     }
                 }
             }
@@ -74,38 +78,98 @@ public class TicketManager {
     }
 
     public void load () {
+        int i = 0;
         for (Document document : ticketCollection.find()) {
             UUID player = UUID.fromString(document.getString("player"));
             TicketStatus status = TicketStatus.valueOf(document.getString("status"));
             String date = document.getString("date");
             String question = document.getString("question");
             String response = document.getString("response");
-            UUID staff = UUID.fromString(document.getString("staff"));
+            UUID staff = null;
+            if (document.containsKey("staff")) {
+                staff = UUID.fromString(document.getString("staff"));
+            }
 
             Ticket ticket = new Ticket(player, question, response, status, date, staff);
             tickets.add(ticket);
+            i++;
+        }
+
+        Carbyne.getInstance().getLogger().log(Level.INFO, "[Tickets] Loaded " + i + " tickets");
+
+        for (int yi = 0; yi < tickets.size(); yi++) {
+            Ticket ticket = tickets.get(yi);
+            if (ticket.getStatus() == TicketStatus.CLOSED) {
+                closedTickets.add(ticket);
+                tickets.remove(ticket);
+                yi--;
+            }
         }
     }
 
-    public void save () {
-        for (int i = 0; i < tickets.size(); i++) {
-            Ticket ticket = tickets.get(i);
-            Document doc = new Document();
-            doc.append("player", ticket.getPlayer().toString());
+    public void saveTickets() {
+        int p = 0;
+        for (Ticket ticket : tickets) {
 
-            doc.append("date", ticket.getPlayer());
+            Document doc = new Document("player", ticket.getPlayer().toString());
+
+            doc.append("date", ticket.getDate());
+            doc.append("status", ticket.getStatus().toString());
+            if (ticket.getStaff() != null) {
+                doc.append("staff", ticket.getStaff().toString());
+            }
+            doc.append("question", ticket.getQuestion());
+            doc.append("response", ticket.getResponse());
+
+            ticketCollection.replaceOne(Filters.eq("player", ticket.getPlayer().toString()), doc, new UpdateOptions().upsert(true));
+            p++;
+        }
+
+        for (Ticket ticket : closedTickets) {
+
+            Document doc = new Document("player", ticket.getPlayer().toString());
+
+            doc.append("date", ticket.getDate());
             doc.append("status", ticket.getStatus().toString());
             doc.append("staff", ticket.getStaff().toString());
             doc.append("question", ticket.getQuestion());
             doc.append("response", ticket.getResponse());
 
-            ticketCollection.replaceOne(Filters.eq("uniqueId", ticket.getPlayer().toString()), doc);
+            ticketCollection.replaceOne(Filters.eq("player", ticket.getPlayer().toString()), doc, new UpdateOptions().upsert(true));
+            p++;
         }
+
+        Carbyne.getInstance().getLogger().log(Level.INFO, "[Tickets] Saved " + p + " tickets");
     }
 
     public void openPlayerTickets(UUID uuid) {
         Player player = Bukkit.getServer().getPlayer(uuid);
         Inventory inv = Bukkit.createInventory(null, 54, player.getName() + "'s Tickets");
+
+        for (int i = closedTickets.size(); i > 0; i--) {
+            Ticket ticket = closedTickets.get(i - 1);
+            if (ticket.getPlayer().equals(player.getUniqueId())) {
+                List<String> lore = new ArrayList<>();
+                lore.add("&a");
+
+                int lenght = 0;
+                int index = 0;
+                for (String s : ticket.getQuestion().split(" ")) {
+                    lenght++;
+
+                    if (lenght >= 12) {
+                        lenght = 0;
+                        index++;
+                        lore.add("&a");
+                    }
+
+                    lore.set(index, lore.get(index) + s + " ");
+
+                }
+
+                inv.addItem(new ItemBuilder(getMaterial(ticket)).name("&aTicket #" + (i - 1)).setLore(lore).addLore("").addLore("&6" + ticket.getDate()).build());
+            }
+        }
 
         for (int i = tickets.size(); i > 0; i--) {
             Ticket ticket = tickets.get(i - 1);
@@ -139,18 +203,18 @@ public class TicketManager {
         Player player = Bukkit.getServer().getPlayer(uuid);
 
         if (staff) {
-            Inventory inv = Bukkit.createInventory(null, 9, guiName);
+            Inventory inv = Bukkit.createInventory(null, 9, GUI_NAME);
 
             inv.setContents(new ItemStack[] {
-                    null, null, null,
+                    null, null,
                     new ItemBuilder(Material.NAME_TAG).name("&6Tickets").build(), null,
-                    new ItemBuilder(Material.BREAD).build()
+                    new ItemBuilder(Material.WRITTEN_BOOK).name("&cClosed tickets").build()
             });
 
             player.openInventory(inv);
             return;
         }
-        Inventory inv = Bukkit.createInventory(null, 9, guiName);
+        Inventory inv = Bukkit.createInventory(null, 9, GUI_NAME);
 
         inv.setContents(new ItemStack[] {
                 null, null, null,
@@ -162,21 +226,51 @@ public class TicketManager {
         player.openInventory(inv);
     }
 
+    public void openClosedTickcets(UUID uuid) {
+        Player player = Bukkit.getServer().getPlayer(uuid);
+        Inventory inv = Bukkit.createInventory(null, 54, CLOSED_TICKET_LIST_GUI_NAME);
+        List<Ticket> closedTickets = getClosedTickets();
+        for (Ticket ticket : closedTickets) {
+            List<String> lore = new ArrayList<>();
+
+            if (Bukkit.getServer().getPlayer(ticket.getPlayer()) != null || !Bukkit.getServer().getPlayer(ticket.getPlayer()).isOnline()) {
+                lore.add("&e" + Bukkit.getServer().getPlayer(ticket.getPlayer()).getName());
+            } else {
+                if (Bukkit.getServer().getOfflinePlayer(ticket.getPlayer()) != null) {
+                    lore.add("&e" + Bukkit.getServer().getOfflinePlayer(ticket.getPlayer()).getName());
+                }
+            }
+
+            if (Bukkit.getServer().getPlayer(ticket.getPlayer()) != null || !Bukkit.getServer().getPlayer(ticket.getPlayer()).isOnline()) {
+                inv.addItem(new ItemBuilder(Material.REDSTONE_BLOCK).name("&cClosed by: &e" + Bukkit.getServer().getPlayer(ticket.getStaff()).getName()).setLore(lore).build());
+
+            } else {
+                if (Bukkit.getServer().getOfflinePlayer(ticket.getPlayer()) != null) {
+                    inv.addItem(new ItemBuilder(Material.REDSTONE_BLOCK).name("&cClosed by: &e" + Bukkit.getServer().getOfflinePlayer(ticket.getStaff()).getName()).setLore(lore).build());
+
+                }
+            }
+        }
+
+        player.openInventory(inv);
+    }
+
     public void openTicketList (UUID uuid) {
         Player player = Bukkit.getServer().getPlayer(uuid);
 
-        Inventory inv = Bukkit.createInventory(null, 54, listName);
+        Inventory inv = Bukkit.createInventory(null, 54, LIST_GUI_NAME);
         for (int i = 0; i < tickets.size(); i++) {
             Ticket ticket = tickets.get(i);
-            if (ticket != null) {
+            if (ticket != null && ticket.getStatus() != TicketStatus.CLOSED) {
                 List<String> lore = new ArrayList<>();
-                if (Bukkit.getServer().getPlayer(ticket.getPlayer()) != null || !Bukkit.getServer().getPlayer(ticket.getPlayer()).isOnline()) {
+                if (Bukkit.getServer().getPlayer(ticket.getPlayer()) != null && !Bukkit.getServer().getPlayer(ticket.getPlayer()).isOnline()) {
                     lore.add("&e" + Bukkit.getServer().getPlayer(ticket.getPlayer()).getName());
                 } else {
                     if (Bukkit.getServer().getOfflinePlayer(ticket.getPlayer()) != null) {
                         lore.add("&e" + Bukkit.getServer().getOfflinePlayer(ticket.getPlayer()).getName());
                     }
                 }
+
                 lore.add("&a");
 
                 int lenght = 0;
@@ -208,12 +302,15 @@ public class TicketManager {
         }
 
         if ((ticket.getStatus() ==  TicketStatus.CLAIMED || ticket.getStatus() == TicketStatus.CLOSED) && !ticket.getStaff().equals(player)) {
-            MessageManager.sendMessage(player, "&cYou cannot claim this ticket");
+            MessageManager.sendMessage(player, "&cYou cannot close this ticket");
             return;
         }
 
         ticket.setStatus(TicketStatus.CLOSED);
         ticket.setStaff(player);
+
+        closedTickets.add(ticket);
+        tickets.remove(ticket);
 
         Profile profile = profileManager.getProfile(player);
         if (profile != null) {
@@ -235,6 +332,8 @@ public class TicketManager {
         respondingTickets.put(player, ticket);
         ticket.setStatus(TicketStatus.CLAIMED);
         ticket.setStaff(player);
+
+        MessageManager.sendMessage(player, "&aPlease enter your response");
 
         Profile profile = profileManager.getProfile(player);
         if (profile != null) {
@@ -292,8 +391,8 @@ public class TicketManager {
         } else {
 
             inv.setContents(new ItemStack[]{
-                    null, null, null,
-                    new ItemBuilder(Material.BED).name("&aRespond").build(), null,
+                    null, null,
+                    new ItemBuilder(Material.BED).name("&aClaim and respond").build(), null,
                     ticket.getStatus() != TicketStatus.CLOSED ? new ItemBuilder(Material.BAKED_POTATO).name("&cClose").build() : null,
                     new ItemBuilder(getMaterial(ticket)).name(getColor(ticket) + ticket.getStatus().name()).build()
             });
@@ -329,7 +428,10 @@ public class TicketManager {
         for (int i = 0; i < tickets.size(); i++) {
             Ticket ticket = tickets.get(i);
             if (ticket != null && ticket.getPlayer().equals(uuid)) {
-                if (open && ticket.getStatus() == TicketStatus.OPEN)
+                if (open && ticket.getStatus() != TicketStatus.OPEN) {
+                    continue;
+                }
+
                 amount++;
             }
         }
@@ -366,18 +468,6 @@ public class TicketManager {
         for (int i = 0; i < tickets.size(); i++) {
             Ticket ticket = tickets.get(i);
             if (ticket != null && ticket.getStatus() == TicketStatus.OPEN) {
-                tickets.add(ticket);
-            }
-        }
-
-        return tickets;
-    }
-
-    public List<Ticket> getClosedTickets () {
-        List<Ticket> tickets = new ArrayList<>();
-        for (int i = 0; i < tickets.size(); i++) {
-            Ticket ticket = tickets.get(i);
-            if (ticket != null && ticket.getStatus() == TicketStatus.CLOSED) {
                 tickets.add(ticket);
             }
         }

@@ -47,6 +47,8 @@ public class ProfileListeners implements Listener {
         } else {
             if (Account.hasAccount(player.getUniqueId())) {
                 Account.getAccount(player.getUniqueId()).setAccountHolder(player.getName());
+            } else {
+                Account.createAccount(player.getUniqueId(), player.getName());
             }
         }
 
@@ -72,6 +74,7 @@ public class ProfileListeners implements Listener {
         }
 
         TownBlock townBlock = TownyUniverse.getTownBlock(player.getLocation());
+
         if (townBlock == null) {
             profile.setPvpTimePaused(false);
         } else {

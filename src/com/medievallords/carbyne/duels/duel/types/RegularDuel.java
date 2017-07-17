@@ -191,12 +191,23 @@ public class RegularDuel extends Duel {
     @Override
     public void check() {
         if (getPlayersAlive().size() == 1) {
+            setEnded(true);
+            Player p = Bukkit.getPlayer(getPlayersAlive().get(0));
+            p.setFireTicks(0);
+            p.setHealth(p.getMaxHealth());
             new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        end(getPlayersAlive().get(0));
-                    }
-                }.runTaskLater(Carbyne.getInstance(), 300);
+                @Override
+                public void run() {
+                    end(getPlayersAlive().get(0));
+                }
+            }.runTaskLater(Carbyne.getInstance(), 300);
+        } else if (getPlayersAlive().isEmpty()) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    end(null);
+                }
+            }.runTaskLater(Carbyne.getInstance(), 300);
         }
     }
 

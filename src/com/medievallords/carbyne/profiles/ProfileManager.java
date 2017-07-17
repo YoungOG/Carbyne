@@ -60,8 +60,8 @@ public class ProfileManager {
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
                 profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
 
-                if (document.containsKey("closedtickets") && document.containsKey("claimedtickets")) {
-                    int closedTickets = document.getInteger("closedtickets");
+                if (document.containsKey("closedTickets") && document.containsKey("claimedtickets")) {
+                    int closedTickets = document.getInteger("closedTickets");
                     int claimedTickets = document.getInteger("claimedtickets");
                     profile.setClaimedTickets(claimedTickets);
                     profile.setClosedTickets(closedTickets);
@@ -103,7 +103,7 @@ public class ProfileManager {
                             document.append("carbynedeaths", profile.getCarbyneDeaths());
                             document.append("killstreak", profile.getKillStreak());
                             document.append("pvptime", profile.getPvpTime());
-                            document.append("closedtickets", profile.getClosedTickets());
+                            document.append("closedTickets", profile.getClosedTickets());
                             document.append("claimedtickets", profile.getClaimedTickets());
                             document.append("pvptimepaused", profile.isPvpTimePaused());
                             document.append("showeffects", profile.hasEffectsToggled());

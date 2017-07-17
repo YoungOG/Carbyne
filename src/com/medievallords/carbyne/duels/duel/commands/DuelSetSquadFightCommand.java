@@ -41,8 +41,15 @@ public class DuelSetSquadFightCommand extends BaseCommand {
             }
         }
 
+        if (getSquadManager().getSquad(player.getUniqueId()) == null) {
+            MessageManager.sendMessage(player, "&cYou cannot start a squad fight since you are not in a squad");
+            return;
+        }
+
         request.getPlayersSquadFight().put(player.getUniqueId(), true);
-        request.requestSquadFight();
+        if (!request.requestSquadFight()) {
+            return;
+        }
 
         if (!request.isSquadFight()) {
             for (UUID uuid : request.getPlayers().keySet()) {

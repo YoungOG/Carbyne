@@ -2,6 +2,7 @@ package com.medievallords.carbyne.staff.listeners;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.staff.StaffManager;
+import com.medievallords.carbyne.utils.MessageManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -88,6 +89,10 @@ public class StaffModeListeners implements Listener {
                         staffManager.teleportToPlayerUnderY30(staff);
                         break;
                     }
+                    case PAPER: {
+                        Carbyne.getInstance().getTicketManager().openTicketGUI(staff.getUniqueId(), true);
+                        break;
+                    }
                     default: break;
                 }
             }
@@ -163,10 +168,14 @@ public class StaffModeListeners implements Listener {
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
         if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in vanish");
+            /*
             ItemStack item = event.getItemDrop().getItemStack().clone();
             item.setAmount(event.getPlayer().getInventory().getItemInHand().getAmount() + 1);
             event.getItemDrop().remove();
             event.getPlayer().getInventory().setItem(event.getPlayer().getInventory().getHeldItemSlot(), item);
+            */
         }
     }
 }

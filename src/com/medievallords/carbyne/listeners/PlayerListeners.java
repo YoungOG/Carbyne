@@ -3,16 +3,21 @@ package com.medievallords.carbyne.listeners;
 import com.keenant.tabbed.tablist.TitledTabList;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.Maths;
+import com.medievallords.carbyne.utils.MessageManager;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
+import com.vexsoftware.votifier.model.VotifierEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.block.*;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.github.paperspigot.Title;
@@ -77,8 +82,8 @@ public class PlayerListeners implements Listener {
             try {
                 Resident r = TownyUniverse.getDataSource().getResident(oldName);
                 TownyUniverse.getDataSource().renamePlayer(r, currName);
+            } catch (Exception ignored) {
             }
-            catch (Exception ignored) {}
 
             Carbyne.getInstance().getProfileManager().getProfile(id).setUsername(currName);
         }
@@ -102,53 +107,64 @@ public class PlayerListeners implements Listener {
         }
     }
 
+
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
-        Block block = event.getBlock();
-        BlockState blockState = block.getState();
-
-        if (event.getBlock() != null) {
-            switch (event.getBlock().getType()) {
-                case TRAPPED_CHEST:
-                case CHEST: {
-                    Chest chest = (Chest) blockState;
-                    chest.getInventory().clear();
-                    break;
-                }
-
-                case HOPPER: {
-                    Hopper hopper = (Hopper) blockState;
-                    hopper.getInventory().clear();
-                    break;
-                }
-                case DISPENSER: {
-                    Dispenser dispenser = (Dispenser) blockState;
-                    dispenser.getInventory().clear();
-                    break;
-                }
-                case DROPPER: {
-                    Dropper dropper = (Dropper) blockState;
-                    dropper.getInventory().clear();
-                    break;
-                }
-                case FURNACE: {
-                    Furnace furnace = (Furnace) blockState;
-                    furnace.getInventory().clear();
-                    break;
-                }
-                case BREWING_STAND: {
-                    BrewingStand brewingStand = (BrewingStand) blockState;
-                    brewingStand.getInventory().clear();
+    public void onClick(PlayerInteractEvent event) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (event.getPlayer().getItemInHand() != null && event.getPlayer().getItemInHand().getType() != Material.AIR) {
+                ItemStack item = event.getPlayer().getItemInHand();
+                switch (item.getType()) {
+                    case TRAPPED_CHEST:
+                    case CHEST:
+                    case HOPPER:
+                    case DISPENSER:
+                    case DROPPER:
+                    case FURNACE:
+                    case BREWING_STAND:
+                        net.minecraft.server.v1_8_R3.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
+                        if (itemStack.getTag() != null) {
+                            event.setCancelled(true);
+                            itemStack.setTag(null);
+                            event.getPlayer().setItemInHand(CraftItemStack.asCraftMirror(itemStack));
+                        }
                 }
             }
         }
     }
 
-    /*@EventHandler
-    public void onNether(PlayerPortalEvent event) {
-        if (!event.getPlayer().hasPermission("carbyne.enternether")) {
-            event.setCancelled(true);
-            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use this portal");
+    @EventHandler
+    public void onVote(VotifierEvent event) {
+        Player player = Bukkit.getPlayer(event.getVote().getUsername());
+
+        if (player != null) {
+            Double random = Math.random();
+
+            if (random <= 0.05) {
+                ItemStack reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
+                player.getInventory().addItem(reward);
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
+                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            } else if (random <= 0.1) {
+                ItemStack reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
+                player.getInventory().addItem(reward);
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
+                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            } else if (random <= 0.15) {
+                ItemStack reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
+                player.getInventory().addItem(reward);
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
+                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            } else if (random <= 0.2) {
+                ItemStack reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
+                player.getInventory().addItem(reward);
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
+                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            } else {
+                ItemStack reward = main.getCrateManager().getKey("IronKey").getItem().clone();
+                player.getInventory().addItem(reward);
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
+                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            }
         }
-    }*/
+    }
 }

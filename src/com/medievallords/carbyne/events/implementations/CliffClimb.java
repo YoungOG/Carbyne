@@ -50,10 +50,18 @@ public class CliffClimb extends Event
     public CliffClimb(EventManager eventManager, String timeString)
     {
         super(eventManager, timeString);
+
         properties.add(EventProperties.PVP_DISABLED);
         properties.add(EventProperties.SPELLS_DISABLED);
         properties.add(EventProperties.PLUGIN_TELEPORT_DISABLED);
         properties.add(EventProperties.ENDERPEARL_TELEPORT_DISABLED);
+        properties.add(EventProperties.REMOVE_PLAYER_ON_DEATH);
+        properties.add(EventProperties.REMOVE_PLAYER_ON_QUIT);
+        properties.add(EventProperties.PREVENT_POTION_DRINKING);
+
+        commandWhitelistActive = true;
+        whitelistedCommands.add("/cliffclimb");
+
         commands.add(new CliffClimbCommands(this));
         for(BaseCommand command : commands)
             Carbyne.getInstance().getCommandFramework().unregisterCommands(command);
@@ -99,16 +107,16 @@ public class CliffClimb extends Event
                 if (winner != null)
                 {
                     MessageManager.broadcastMessage("The winner of Cliff Climb is " + winner.getName() + "!");
-                    for(Player player : Bukkit.getOnlinePlayers())
+                    for (Player player : participants)
                         player.sendTitle(new Title.Builder().title(winner.getDisplayName()).subtitle(ChatColor.translateAlternateColorCodes('&', "&fis the victor of Cliff Climb!")).stay(55).build());
-                    stop();
+                    this.stop();
                 }
             }
         }
     }
 
     @Override
-    public void start()
+    public synchronized void start()
     {
         super.start();
         Carbyne.getInstance().getLogger().log(Level.INFO, "The Cliff Climb event is now active!");
@@ -122,15 +130,15 @@ public class CliffClimb extends Event
     }
 
     @Override
-    public void stop()
+    public synchronized void stop()
     {
-        super.stop();
         HandlerList.unregisterAll(cliffClimbListeners);
         afterCountdown = false;
         winner = null;
         eventGate.setKeepClosed(true);
         eventGate.setKeepOpen(false);
         eventGate.closeGate();
+        super.stop();
     }
 
 }

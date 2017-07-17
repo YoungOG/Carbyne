@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.events;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.events.implementations.CliffClimb;
+import com.medievallords.carbyne.events.hohengroth.HohengrothCoffer;
 import lombok.Getter;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -23,10 +23,13 @@ public class EventManager
     @Getter
     private List<Event> waitingEvents = Collections.synchronizedList(new CopyOnWriteArrayList<>());
 
+    @Getter
+    private HohengrothCoffer hohengrothCoffer;
+
     public EventManager()
     {
 
-        new CliffClimb(this, "2m");
+        //new CliffClimb(this, "3h"); removed for release
 
             new BukkitRunnable() {
                 public void run() {

@@ -5,6 +5,7 @@ import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +24,11 @@ public class DepositCommand extends BaseCommand {
 
         if (getMarketManager().isEconomyHalted()) {
             MessageManager.sendMessage(player, "&cThe economy is temporarily disabled. The administrators will let you know when it is re-enabled.");
+            return;
+        }
+
+        if (!player.getGameMode().equals(GameMode.SURVIVAL)) {
+            MessageManager.sendMessage(player, "&cThis command can only be used in survival mode!");
             return;
         }
 

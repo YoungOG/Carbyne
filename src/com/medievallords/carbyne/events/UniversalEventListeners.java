@@ -8,6 +8,10 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -74,7 +78,7 @@ public class UniversalEventListeners implements Listener
         if(e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN)
         {
             Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
-            if(profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().getProperties().contains(EventProperties.PLUGIN_TELEPORT_DISABLED))
+            if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().isActive() && profile.getActiveEvent().getProperties().contains(EventProperties.PLUGIN_TELEPORT_DISABLED))
                 e.setCancelled(true);
         }
         else if (e.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL)
@@ -82,6 +86,42 @@ public class UniversalEventListeners implements Listener
             Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
             if(profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().getProperties().contains(EventProperties.ENDERPEARL_TELEPORT_DISABLED))
                 e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        Profile profile = main.getProfileManager().getProfile(e.getEntity().getUniqueId());
+        if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().properties.contains(EventProperties.REMOVE_PLAYER_ON_DEATH)) {
+            profile.getActiveEvent().removePlayerFromEvent(e.getEntity());
+        }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
+        if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().getProperties().contains(EventProperties.REMOVE_PLAYER_ON_QUIT)) {
+            profile.getActiveEvent().removePlayerFromEvent(e.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onDrink(PlayerItemConsumeEvent e) {
+        Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
+        if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().properties.contains(EventProperties.PREVENT_POTION_DRINKING))
+            e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerCommand(PlayerCommandPreprocessEvent e) {
+        if (e.getPlayer().isOp()) return;
+        Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
+        if (profile.getActiveEvent() != null && profile.getActiveEvent().isCommandWhitelistActive()) {
+            Event event = profile.getActiveEvent();
+            String[] cmd = e.getMessage().split(" ");
+            if (!event.getWhitelistedCommands().contains(cmd[0])) {
+                e.setCancelled(true);
+            }
         }
     }
 

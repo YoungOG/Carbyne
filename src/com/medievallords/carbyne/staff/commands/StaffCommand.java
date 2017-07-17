@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
  */
 public class StaffCommand extends BaseCommand {
 
-    @Command(name = "staff", aliases = {"modmode"}, inGameOnly = true, permission = "carbyne.staffmode")
+    @Command(name = "staff", aliases = {"modmode"}, inGameOnly = true)
     public void onCommand(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

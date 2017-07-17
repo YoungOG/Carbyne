@@ -13,11 +13,13 @@ import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.Namer;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,6 +39,8 @@ public class GearManager {
     private List<CarbyneGear> defaultArmors = new ArrayList<>();
     private List<CarbyneGear> defaultWeapons = new ArrayList<>();
     private List<Special> specials = new ArrayList<>();
+    @Getter
+    private List<Item> repairItems = new ArrayList<>();
 
     private int tokenId;
     private int tokenData;
@@ -484,10 +488,10 @@ public class GearManager {
             replacement = item;//getDefaultWeapon(item).getItem(false);
         } else if (isDefaultArmor(item)) {
             replacement = item;//getDefaultArmor(item).getItem(false);
-            MinecraftArmor armor = getDefaultArmor(item);
+            MinecraftArmor armor = getDefaultArmor(replacement);
 
-            if (armor.getDurability(item) < 0) {
-                armor.setDurability(item, armor.getMaxDurability());
+            if (armor.getDurability(replacement) < 0) {
+                armor.setDurability(replacement, armor.getMaxDurability());
             }
 
         }

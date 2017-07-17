@@ -25,6 +25,8 @@ import com.palmergames.bukkit.towny.utils.CombatUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,12 +44,14 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * Created by Calvin on 3/22/2017
@@ -61,6 +65,24 @@ public class CombatTagListeners implements Listener {
     private static final List<BlockFace> ALL_DIRECTIONS = ImmutableList.of(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
     private final Map<UUID, Set<Location>> previousUpdates = new HashMap<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ForceField Thread").build());
+
+    private List<UUID> removeInventories = new ArrayList<>();
+
+    public CombatTagListeners() {
+        ConfigurationSection section = main.getWeteFileConfiguration().getConfigurationSection("Removes");
+        if (section == null) {
+            section = main.getWeteFileConfiguration().createSection("Removes");
+        }
+
+        if (section.getStringList("remove") == null) {
+            return;
+        }
+
+        for (String s : section.getStringList("remove")) {
+            removeInventories.add(UUID.fromString(s));
+        }
+
+    }
 
     //=================[ Tag listeners ]=================
 
@@ -381,6 +403,28 @@ public class CombatTagListeners implements Listener {
             return;
         }
 
+        if (removeInventories.contains(player.getUniqueId())) {
+            ConfigurationSection section = main.getWeteFileConfiguration().getConfigurationSection("Removes");
+            if (section == null) {
+                main.getWeteFileConfiguration().createSection("Removes");
+            }
+
+            removeInventories.remove(player.getUniqueId());
+
+            List<String> list = new ArrayList<>();
+            removeInventories.forEach(uuid -> list.add(uuid.toString()));
+            section.set("remove", list);
+
+            try {
+                main.getWeteFileConfiguration().save(main.getWeteFile());
+                main.setWeteFileConfiguration(YamlConfiguration.loadConfiguration(main.getWeteFile()));
+            } catch (IOException e) {
+                Bukkit.getLogger().log(Level.WARNING, "Could not save and load wete.yml");
+            }
+
+            player.getInventory().clear();
+        }
+
         if (profile.isSafelyLogged()) {
             if (loggers.containsKey(player.getUniqueId()) && loggers.get(player.getUniqueId()) != null && loggers.get(player.getUniqueId()).getHealth() > 0.0) {
                 tasks.remove(loggers.get(player.getUniqueId()));
@@ -442,6 +486,24 @@ public class CombatTagListeners implements Listener {
                                 villager.getLocation().getWorld().dropItemNaturally(villager.getLocation(), items);
                             }
                         }
+                    }
+
+                    ConfigurationSection section = main.getWeteFileConfiguration().getConfigurationSection("Removes");
+                    if (section == null) {
+                        main.getWeteFileConfiguration().createSection("Removes");
+                    }
+
+                    removeInventories.add(id);
+
+                    List<String> list = new ArrayList<>();
+                    removeInventories.forEach(uuid -> list.add(uuid.toString()));
+                    section.set("remove", list);
+
+                    try {
+                        main.getWeteFileConfiguration().save(main.getWeteFile());
+                        main.setWeteFileConfiguration(YamlConfiguration.loadConfiguration(main.getWeteFile()));
+                    } catch (IOException e) {
+                        Bukkit.getLogger().log(Level.WARNING, "Could not save and load wete.yml");
                     }
                 }
 
@@ -688,7 +750,7 @@ public class CombatTagListeners implements Listener {
     @EventHandler
     public void onSpell(SpellTargetEvent event) {
         if (event.getTarget() instanceof Player) {
-            Profile target = main.getProfileManager().getProfile(((Player) event.getTarget()).getUniqueId());
+            Profile target = main.getProfileManager().getProfile(event.getTarget().getUniqueId());
             Profile caster = main.getProfileManager().getProfile(event.getCaster().getUniqueId());
 
             if (target != null && caster != null) {

@@ -247,6 +247,24 @@ public class GearListeners implements Listener {
         }
     }
 
+    @EventHandler// REMOVE THIS SOON
+    public void on(PlayerInteractEvent e) {
+        ItemStack itemStack = e.getPlayer().getItemInHand();
+        if (itemStack == null) {
+            return;
+        }
+
+        CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
+
+        if (carbyneWeapon == null) {
+            return;
+        }
+
+        if (itemStack.getType() != carbyneWeapon.getItem(false).getType()) {
+            e.getPlayer().setItemInHand(carbyneWeapon.getItem(false));
+        }
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         PlayerUtility.checkForIllegalItems(event.getPlayer(), event.getPlayer().getInventory());
@@ -477,7 +495,7 @@ public class GearListeners implements Listener {
                 int amountOfIngots = getAmountOfIngots(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData());
                 double per = gear.getMaxDurability()/  ((int) Math.round(gear.getCost() * 0.7));
 
-                removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), amountOfIngots);
+                removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), repairCost);
 
                 event.setCancelled(true);
                 Item item = player.getWorld().dropItem(block.getLocation().add(0.5, 1.15, 0.5), player.getItemInHand());
@@ -522,6 +540,8 @@ public class GearListeners implements Listener {
 
     public void repairItem(Player player, Item item, double durability, int repairCost, CarbyneGear gear, Location location, int breakTime) {
 
+        gearManager.getRepairItems().add(item);
+
         new BukkitRunnable() {
             int i = -1;
             boolean far = false;
@@ -538,23 +558,24 @@ public class GearListeners implements Listener {
                     player.getWorld().playSound(location, Sound.ANVIL_BREAK, 10f, (float) Math.random() * 2.5f);
 
                     if (item != null) {
+                        gearManager.getRepairItems().remove(item);
                         item.remove();
                     }
 
                     return;
                 }
 
-                if (player.getLocation().distance(location) >= 9 && !far) {
+                if ((!player.getWorld().getName().equals(location.getWorld().getName()) && !far) || ((player.getWorld().getName().equals(location.getWorld().getName()) && (player.getLocation().distance(location) >= 9 && !far)))) {
                     far = true;
                     MessageManager.sendMessage(player, "&cYou are too far from the anvil, your item will be dropped on the ground");
                 }
 
-                if (far && player.getLocation().distance(location) < 9) {
+                if (player.getWorld().getName().equals(location.getWorld().getName()) && (far && player.getLocation().distance(location) < 9)) {
                     far = false;
                     MessageManager.sendMessage(player, "&aYou are no longer too far away");
                 }
 
-                if (i >= repairCost * repairCost) {
+                if (i >= repairCost * 6) {
                     cancel();
 
                     ItemStack itemStack = gear.getItem(false).clone();
@@ -563,7 +584,12 @@ public class GearListeners implements Listener {
                         location.getWorld().dropItem(location, itemStack);
 
                         if (item != null) {
+                            gearManager.getRepairItems().remove(item);
                             item.remove();
+                        }
+
+                        if (player.isOnline()) {
+                            MessageManager.sendMessage(player, "&aYour item has been repaired.");
                         }
 
                     } else {
@@ -581,6 +607,7 @@ public class GearListeners implements Listener {
 
                         MessageManager.sendMessage(player, "&aYour item has been repaired.");
                         if (item != null) {
+                            gearManager.getRepairItems().remove(item);
                             item.remove();
                         }
                     }

@@ -11,6 +11,7 @@ import com.palmergames.bukkit.towny.object.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -108,6 +109,50 @@ public class GameModeListener implements Listener {
     @EventHandler
     public void onTownLeave(TownRemoveResidentEvent e) {
         Player player = Bukkit.getPlayer(e.getResident().getName());
+
+        if (player == null) {
+            OfflinePlayer offline = Bukkit.getPlayer(e.getResident().getName());
+
+            if (offline == null) return;
+
+            if (gamemodeManager.getFlightTowns().containsKey(offline.getUniqueId())) {
+                gamemodeManager.getFlightTowns().remove(offline.getUniqueId());
+
+                List<String> temp = main.getGamemodeTownsConfiguration().getStringList("FlightTowns");
+                for (String entry : temp) {
+                    String[] splitEntry = entry.split(",");
+                    if (splitEntry[0].equalsIgnoreCase(offline.getUniqueId().toString())) {
+                        temp.remove(entry);
+                        break;
+                    }
+                }
+
+                main.getGamemodeTownsConfiguration().set("FlightTowns", temp);
+                try {
+                    main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                } catch (IOException ignore) {
+                }
+            }
+
+            if (gamemodeManager.getCreativeTowns().containsKey(offline.getUniqueId())) {
+                gamemodeManager.getCreativeTowns().remove(offline.getUniqueId());
+                List<String> temp = main.getGateFileConfiguration().getStringList("CreativeTowns");
+                for (String entry : temp) {
+                    String[] entrySplit = entry.split(",");
+                    if (entrySplit[0].equalsIgnoreCase(offline.getUniqueId().toString())) {
+                        temp.remove(entry);
+                        break;
+                    }
+                }
+
+                main.getGamemodeTownsConfiguration().set("CreativeTowns", temp);
+                try {
+                    main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                } catch (IOException ignore) {
+                }
+            }
+            return;
+        }
 
         if (gamemodeManager.getFlightTowns().containsKey(player.getUniqueId())) {
             gamemodeManager.getFlightTowns().remove(player.getUniqueId());

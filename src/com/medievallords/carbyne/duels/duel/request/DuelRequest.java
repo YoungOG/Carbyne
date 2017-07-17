@@ -64,6 +64,7 @@ public class DuelRequest {
             bet += bets.get(uuid);
         }
 
+        cancelTask();
         arena.requestDuel(squadFight, uuids, one, two, bet, bets);
         arena.getDuelists().clear();
         requests.remove(this);
@@ -102,22 +103,23 @@ public class DuelRequest {
         return null;
     }
 
-    public void requestSquadFight() {
+    public boolean requestSquadFight() {
         Squad one = Carbyne.getInstance().getSquadManager().getSquad(getFirstPlayer());
         Squad two = Carbyne.getInstance().getSquadManager().getSquad(getSecondPlayer());
 
         if (one == null || two == null) {
             sendMessageToAll("&cYou can not start a squad fight since you need to be in a squad");
-            return;
+            return false;
         }
 
         if (one.equals(two)) {
             sendMessageToAll("&cYou can not start a squad fight with your own squad");
+            return false;
         }
 
         if (one.getAllPlayers().size() != two.getAllPlayers().size()) {
             sendMessageToAll("&cYou can not start an unfair squad fight");
-            return;
+            return false;
         }
 
         int i = 0;
@@ -131,7 +133,10 @@ public class DuelRequest {
         if (i >= 2) {
             sendMessageToAll("&6The duel has been set to a squad fight");
             squadFight = true;
+            return true;
         }
+
+        return true;
     }
 
     public void sendMessageToAll(String message) {

@@ -53,7 +53,7 @@ public class StaffManager {
         thruTool = new ItemBuilder(Material.COMPASS).name("&4Thru Tool").addLore("&fWarp through walls and doors").build();
         air = new ItemBuilder(Material.AIR).build();
         ticketTool = new ItemBuilder(Material.PAPER).name("&6Tickets").build();
-        wand = new ItemBuilder(Material.WOOD_AXE).build();
+        wand = new ItemBuilder(Material.WOOD_AXE).name("&6World Edit").build();
 
         new BukkitRunnable() {
             @Override

@@ -237,6 +237,6 @@ public class CommandFramework implements CommandExecutor {
     }
 
     private void defaultCommand(CommandArgs args) {
-        args.getSender().sendMessage(args.getLabel() + " is not handled! Oh noes!");
+        args.getSender().sendMessage(args.getLabel() + " is not active!");
     }
 }

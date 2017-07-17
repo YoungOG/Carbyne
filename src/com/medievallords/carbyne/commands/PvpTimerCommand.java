@@ -67,7 +67,7 @@ public class PvpTimerCommand extends BaseCommand {
             }
 
         } else if (args.length == 2) {
-             if (args[0].equalsIgnoreCase("remove")) {
+            if (args[0].equalsIgnoreCase("remove") && player.hasPermission("carbyne.pvptimer.remove")) {
                 Player toRemove = Bukkit.getServer().getPlayer(args[1]);
 
                 if (toRemove != null) {
@@ -84,7 +84,7 @@ public class PvpTimerCommand extends BaseCommand {
             }
 
         } else if (args.length == 3) {
-            if (args[0].equalsIgnoreCase("set")) {
+            if (args[0].equalsIgnoreCase("set") && player.hasPermission("carbyne.pvptimer.set")) {
                 Player toSet = Bukkit.getServer().getPlayer(args[1]);
 
                 if (toSet != null) {

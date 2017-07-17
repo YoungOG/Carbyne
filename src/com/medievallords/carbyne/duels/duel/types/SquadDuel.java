@@ -177,6 +177,15 @@ public class SquadDuel extends Duel {
     public void check() {
         int o = squadOne.getAllPlayers().size();
 
+        if (getPlayersAlive().isEmpty()) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    end(null);
+                }
+            }.runTaskLater(Carbyne.getInstance(), 300);
+        }
+
         for (UUID uuid : squadOne.getAllPlayers()) {
             if (!getPlayersAlive().contains(uuid)) {
                 o--;
@@ -194,6 +203,13 @@ public class SquadDuel extends Duel {
         if (t <= 0) {
             for (UUID uuid : squadOne.getAllPlayers()) {
                 if (getPlayersAlive().contains(uuid)) {
+                    setEnded(true);
+                    for (UUID u : getPlayersAlive()) {
+                        Player p = Bukkit.getPlayer(u);
+                        p.setFireTicks(0);
+                        p.setHealth(p.getMaxHealth());
+                    }
+
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -203,11 +219,20 @@ public class SquadDuel extends Duel {
                     break;
                 }
             }
+
+            return;
         }
 
         if (o <= 0) {
             for (UUID uuid : squadTwo.getAllPlayers()) {
                 if (getPlayersAlive().contains(uuid)) {
+                    setEnded(true);
+                    for (UUID u : getPlayersAlive()) {
+                        Player p = Bukkit.getPlayer(u);
+                        p.setFireTicks(0);
+                        p.setHealth(p.getMaxHealth());
+                    }
+
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -217,6 +242,8 @@ public class SquadDuel extends Duel {
                     break;
                 }
             }
+
+            return;
         }
     }
 

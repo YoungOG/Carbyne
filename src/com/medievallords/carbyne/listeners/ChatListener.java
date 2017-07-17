@@ -195,6 +195,7 @@ public class ChatListener implements Listener {
                 .build();
 
         String[] msg = message.split(" ");
+        String chatFix = "";
         for (String s : msg) {
             LinkSpan link = null;
 
@@ -203,13 +204,23 @@ public class ChatListener implements Listener {
             }
 
             if (link != null) {
+                if (chatFix.length() > 0) {
+                    newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
+                    chatFix = "";
+                }
+
                 newMessage.then("[Link] ").color(ChatColor.AQUA)
                         .openURL(s.substring(link.getBeginIndex(), link.getEndIndex()))
                         .tooltip(getUrlInfoMessagePart(s));
 
+
             } else {
-                newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', s + " ") : s + " ");
+                chatFix = chatFix + s + " ";
             }
+        }
+
+        if (chatFix.length() > 0) {
+            newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
         }
 
         for (Player players : PlayerUtility.getOnlinePlayers()) {

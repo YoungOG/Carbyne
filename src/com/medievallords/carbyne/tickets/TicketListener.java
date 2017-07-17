@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.tickets;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
 import org.bukkit.ChatColor;
@@ -31,7 +32,7 @@ public class TicketListener implements Listener {
             ticket.setResponse(ticket.getResponse() + msg + " ");
 
             JSONMessage send = JSONMessage.create();
-            send.then(ChatColor.translateAlternateColorCodes('&', "&aSUBMIT RESPONSE")).runCommand("/respondticket").tooltip("&aClick to send ticket").send(event.getPlayer());
+            send.then(ChatColor.translateAlternateColorCodes('&', "&aCLICK ME TO SUBMIT YOUR RESPONSE")).runCommand("/respondticket").tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to send respond to ticket")).send(event.getPlayer());
             return;
         }
 
@@ -43,7 +44,7 @@ public class TicketListener implements Listener {
             question = question + msg + " ";
             ticketManager.getNewTickets().put(player, question);
             JSONMessage send = JSONMessage.create();
-            send.then(ChatColor.translateAlternateColorCodes('&', "&aSUBMIT")).runCommand("/submitticket").tooltip("&aClick to send ticket").send(event.getPlayer());
+            send.then(ChatColor.translateAlternateColorCodes('&', "&aCLICK ME TO SUBMIT YOUR TICKET")).runCommand("/submitticket").tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to send ticket")).send(event.getPlayer());
             return;
         }
     }
@@ -55,7 +56,7 @@ public class TicketListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        if (event.getInventory().getName().equalsIgnoreCase(TicketManager.guiName)) {
+        if (event.getInventory().getName().equalsIgnoreCase(TicketManager.GUI_NAME)) {
             event.setCancelled(true);
             ItemStack item = event.getCurrentItem();
             if (item != null) {
@@ -69,13 +70,15 @@ public class TicketListener implements Listener {
                     ticketManager.openTicketList(player.getUniqueId());
                 } else if (item.getType() == Material.PAPER) {
                     ticketManager.openPlayerTickets(player.getUniqueId());
+                } else if (item.getType() == Material.WRITTEN_BOOK) {
+                    ticketManager.openClosedTickcets(player.getUniqueId());
                 }
             }
 
             return;
         }
 
-        if (event.getInventory().getName().equalsIgnoreCase(TicketManager.listName)) {
+        if (event.getInventory().getName().equalsIgnoreCase(TicketManager.LIST_GUI_NAME)) {
             event.setCancelled(true);
             ItemStack item = event.getCurrentItem();
             if (item != null) {
@@ -111,6 +114,8 @@ public class TicketListener implements Listener {
                         break;
                     case BAKED_POTATO:
                         ticketManager.closeTicket(player.getUniqueId(), event.getInventory().getName());
+                        event.setCurrentItem(null);
+                        event.getClickedInventory().setItem(5, new ItemBuilder(ticketManager.getMaterial(ticket)).name(ticketManager.getColor(ticket) + ticket.getStatus().name()).build());
                         break;
                 }
             }

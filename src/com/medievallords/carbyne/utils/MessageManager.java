@@ -106,7 +106,14 @@ public class MessageManager {
             case 6:
                 return "VI";
             case 7:
-                return "VIII";
+                return "VII";
+            case 8:
+                return "VII";
+            case 9:
+                return "IX";
+            case 10:
+                return "X";
+
             default:
                 return amplifier + "";
         }

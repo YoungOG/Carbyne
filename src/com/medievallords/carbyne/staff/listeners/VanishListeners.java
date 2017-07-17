@@ -4,9 +4,17 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
-import org.bukkit.Bukkit;
+import net.minecraft.server.v1_8_R3.Container;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.IChatBaseComponent;
+import net.minecraft.server.v1_8_R3.PacketPlayOutOpenWindow;
 import org.bukkit.Material;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftContainer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,7 +25,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -34,7 +41,8 @@ public class VanishListeners implements Listener {
 
     private StaffManager staffManager = Carbyne.getInstance().getStaffManager();
 
-    private HashMap<Player, Block> silentOpens = new HashMap<>();
+    private HashMap<Player, Boolean> silentOpens = new HashMap<>();
+
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -68,8 +76,8 @@ public class VanishListeners implements Listener {
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
         if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
-            event.getItemDrop().remove();
             event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in vanish");
         }
     }
 
@@ -84,6 +92,7 @@ public class VanishListeners implements Listener {
     public void onPlace(BlockPlaceEvent event) {
         if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot place blocks in vanish");
         }
     }
 
@@ -91,6 +100,7 @@ public class VanishListeners implements Listener {
     public void onBreak(BlockBreakEvent event) {
         if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot break blocks in vanish");
         }
     }
 
@@ -110,46 +120,15 @@ public class VanishListeners implements Listener {
             Block b = e.getClickedBlock();
             Inventory inv = null;
             BlockState blockState = b.getState();
+            Inventory silentInv = null;
 
             switch (b.getType()) {
                 case TRAPPED_CHEST:
                 case CHEST:
-                    Chest chest = (Chest) blockState;
-                    inv = Bukkit.getServer().createInventory(p, chest.getInventory().getSize());
-                    inv.setContents(chest.getInventory().getContents());
-                    break;
-                case ENDER_CHEST:
-                    inv = p.getEnderChest();
-                    break;
-                case DISPENSER:
-                    inv = ((Dispenser) blockState).getInventory();
-                    break;
-                case HOPPER:
-                    inv = ((Hopper) blockState).getInventory();
-                    break;
-                case DROPPER:
-                    inv = ((Dropper) blockState).getInventory();
-                    break;
-                case FURNACE:
-                    inv = ((Furnace) blockState).getInventory();
-                    break;
-                case BREWING_STAND:
-                    inv = ((BrewingStand) blockState).getInventory();
-                    break;
-                case BEACON:
-                    inv = ((Beacon) blockState).getInventory();
-                    break;
+                    inv = ((Chest) blockState).getInventory();
+                    e.setCancelled(true);
+                    openCustomInventory(inv, ((CraftPlayer) p).getHandle(), "minecraft:chest");
             }
-
-            if (inv != null) {
-                e.setCancelled(true);
-                p.openInventory(inv);
-                MessageManager.sendMessage(p, "&7Container opened silently.");
-                silentOpens.put(p, b);
-
-                return;
-            }
-
 
         }
 
@@ -158,6 +137,19 @@ public class VanishListeners implements Listener {
                 e.setCancelled(true);
             }
         }
+    }
+
+    private void openCustomInventory(Inventory inventory, EntityPlayer player, String windowType) {
+        if (player.playerConnection == null) return;
+        Container container = new CraftContainer(inventory, player.getBukkitEntity(), player.nextContainerCounter());
+        container = CraftEventFactory.callInventoryOpenEvent(player, container);
+        if (container == null) return;
+        String title = container.getBukkitView().getTitle();
+        int size = container.getBukkitView().getTopInventory().getSize();
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, IChatBaseComponent.ChatSerializer.a("Chest"), size, 1));
+        player.getBukkitEntity().getHandle().activeContainer = container;
+        player.getBukkitEntity().getHandle().activeContainer.addSlotListener(player);
+
     }
 
     @EventHandler
@@ -169,52 +161,5 @@ public class VanishListeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryOpen(InventoryOpenEvent e)
-    {
-        if(staffManager.getVanish().contains(e.getPlayer().getUniqueId())) e.setCancelled(false);
-    }
-
-    /*@EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) {
-            return;
-        }
-        Player player = (Player) event.getPlayer();
-
-        if (silentOpens.containsKey(player)) {
-            Block block = silentOpens.get(player);
-            Inventory inv = event.getInventory();
-            BlockState blockState = block.getState();
-
-            switch (block.getType()) {
-                case TRAPPED_CHEST:
-                case CHEST:
-                    Chest chest = (Chest) blockState;
-                    chest.getInventory().setContents(inv.getContents());
-                    break;
-                case DISPENSER:
-                    ((Dispenser) blockState).getInventory().setContents(inv.getContents());
-                    break;
-                case HOPPER:
-                    ((Hopper) blockState).getInventory().setContents(inv.getContents());
-                    break;
-                case DROPPER:
-                    ((Dropper) blockState).getInventory().setContents(inv.getContents());
-                    break;
-                case FURNACE:
-                    ((Furnace) blockState).getInventory().setContents(inv.getContents());
-                    break;
-                case BREWING_STAND:
-                    ((BrewingStand) blockState).getInventory().setContents(inv.getContents());
-                    break;
-                case BEACON:
-                    ((Beacon) blockState).getInventory().setContents(inv.getContents());
-                    break;
-            }
-
-            silentOpens.remove(player);
-        }
-    }*/
 
 }

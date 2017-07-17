@@ -7,8 +7,6 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.keenant.tabbed.Tabbed;
-import com.medievallords.carbyne.bounty.BountyCommand;
-import com.medievallords.carbyne.bounty.BountyManager;
 import com.medievallords.carbyne.commands.*;
 import com.medievallords.carbyne.conquerpoints.ConquerPointListeners;
 import com.medievallords.carbyne.conquerpoints.ConquerPointManager;
@@ -82,6 +80,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.palmergames.bukkit.towny.Towny;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import de.slikey.effectlib.EffectManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -120,6 +119,9 @@ public class Carbyne extends JavaPlugin {
     private CombatTagPlus combatTagPlus;
     private boolean combatTagPlusEnabled = false;
 
+    private WorldGuardPlugin worldGuardPlugin;
+    private boolean worldGuardEnabled = false;
+
     private boolean mythicMobsEnabled = false;
 
     private ZPermissionsService service = null;
@@ -150,6 +152,8 @@ public class Carbyne extends JavaPlugin {
     private FileConfiguration immunePlayersFileConfiguration;
     private File rulesFile;
     private FileConfiguration rulesFileCongfiguration;
+    private File regionPermissionsFile;
+    private FileConfiguration regionPermissionsConfiguration;
 
     private Permission permissions = null;
 
@@ -180,7 +184,10 @@ public class Carbyne extends JavaPlugin {
     private PacketManager packetManager;
     private TrailManager trailManager;
     private EventManager eventManager;
-    private BountyManager bountyManager;
+
+    public static Carbyne getInstance() {
+        return instance;
+    }
 
     public void onEnable() {
         instance = this;
@@ -190,7 +197,8 @@ public class Carbyne extends JavaPlugin {
 
         try {
             service = Bukkit.getServicesManager().load(ZPermissionsService.class);
-        } catch (NoClassDefFoundError e) {}
+        } catch (NoClassDefFoundError e) {
+        }
 
         registerConfigurations();
 
@@ -208,6 +216,11 @@ public class Carbyne extends JavaPlugin {
         if (pm.isPluginEnabled("CombatTagPlus")) {
             combatTagPlus = (CombatTagPlus) pm.getPlugin("CombatTagPlus");
             combatTagPlusEnabled = true;
+        }
+
+        if (pm.isPluginEnabled("WorldGuard")) {
+            worldGuardPlugin = (WorldGuardPlugin) pm.getPlugin("WorldGuard");
+            worldGuardEnabled = true;
         }
 
         if (pm.isPluginEnabled("MythicMobs")) {
@@ -240,7 +253,7 @@ public class Carbyne extends JavaPlugin {
         gamemodeManager = new GamemodeManager();
         trailManager = new TrailManager();
         packetManager = new PacketManagerImpl(this);
-        bountyManager = new BountyManager();
+        //worldGuardManager = new WorldGuardManager();
 
         tabbed = new Tabbed(this);
         aether = new Aether(this, new CarbyneBoardAdapter(this));
@@ -273,7 +286,7 @@ public class Carbyne extends JavaPlugin {
         Account.saveAccounts(false);
         staffManager.shutdown();
         marketManager.saveSales(false);
-        ticketManager.save();
+        ticketManager.saveTickets();
         gateManager.saveGates();
         effectManager.dispose();
         conquerPointManager.saveControlPoints();
@@ -282,6 +295,7 @@ public class Carbyne extends JavaPlugin {
         duelManager.cancelAll();
         mongoClient.close();
         staffManager.shutdown();
+        gearManager.getRepairItems().forEach(item -> item.remove());
 
         clearVillagers();
     }
@@ -319,9 +333,11 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new PinListeners(), this);
         pm.registerEvents(new VanishListeners(), this);
         pm.registerEvents(new TrailListener(), this);
-        pm.registerEvents(new VotingKeyCommand(), this);
         pm.registerEvents(new ConquerPointListeners(), this);
         pm.registerEvents(new UniversalEventListeners(eventManager), this);
+        pm.registerEvents(new SetDamageCommand(), this);
+        pm.registerEvents(new FollowCommand(), this);
+        //pm.registerEvents(new RegionListeners(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -462,22 +478,24 @@ public class Carbyne extends JavaPlugin {
         new GamemodeCommand();
 
         new TrailCommand();
-        new BountyCommand();
         new RulesCommand();
+
+        //World Guard
+        //new PermissionRegion();
 
     }
 
     private void registerPackets() {
         ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Client.CLIENT_COMMAND) {
             @Override
-            public void onPacketReceiving(PacketEvent event){
+            public void onPacketReceiving(PacketEvent event) {
                 if (event.getPacket().getClientCommands().read(0) == EnumWrappers.ClientCommand.OPEN_INVENTORY_ACHIEVEMENT) {
                     Player player = event.getPlayer();
 
                     PlayerUtility.checkForIllegalItems(player, player.getInventory());
 
                     if (player.getGameMode() == GameMode.CREATIVE) {
-                        player.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
+                        player.getInventory().setArmorContents(new ItemStack[]{null, null, null, null});
                         player.getInventory().setHelmet(null);
                         player.getInventory().setChestplate(null);
                         player.getInventory().setLeggings(null);
@@ -510,6 +528,7 @@ public class Carbyne extends JavaPlugin {
         saveResource("gamemodetowns.yml", false);
         saveResource("events.yml", false);
         saveResource("rules.yml", false);
+        saveResource("regionpermissions.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -550,6 +569,9 @@ public class Carbyne extends JavaPlugin {
         rulesFile = new File(getDataFolder(), "rules.yml");
         rulesFileCongfiguration = YamlConfiguration.loadConfiguration(rulesFile);
 
+        regionPermissionsFile = new File(getDataFolder(), "regionpermissions.yml");
+        regionPermissionsConfiguration = YamlConfiguration.loadConfiguration(regionPermissionsFile);
+
         File langFile = new File(getDataFolder(), "lang.yml");
         FileConfiguration langFileConfiguration = YamlConfiguration.loadConfiguration(langFile);
 
@@ -584,9 +606,5 @@ public class Carbyne extends JavaPlugin {
                 }
             });
         }
-    }
-
-    public static Carbyne getInstance() {
-        return instance;
     }
 }

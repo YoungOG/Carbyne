@@ -5,6 +5,7 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,6 +18,11 @@ public class MarketBuyCommand extends BaseCommand {
 
         if (args.length != 3) {
             MessageManager.sendMessage(player, "&c/buy <amount> <item> <priceLimit>");
+            return;
+        }
+
+        if (!player.getGameMode().equals(GameMode.SURVIVAL)) {
+            MessageManager.sendMessage(player, "&cThis command can only be used in survival mode!");
             return;
         }
 

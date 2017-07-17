@@ -19,6 +19,8 @@ import java.util.List;
  * Dalton here. Get ready for a great explanation for how this class works.
  * After reading this you should look at the EventManager class.
  */
+
+//TODO: COMMAND WHITELIST
 public abstract class Event
 {
 
@@ -27,6 +29,8 @@ public abstract class Event
     protected EventManager eventManager; //EventManager runs events and is closely tied to this class.
     @Getter
     protected boolean active; //Is the event active i.e. not in the waiting list.
+    @Getter
+    protected boolean commandWhitelistActive;
 
     @Getter
     protected static Location spawn = new Location(Bukkit.getWorld("world"), -729, 110, 295);
@@ -36,6 +40,8 @@ public abstract class Event
     protected List<BaseCommand> commands = new ArrayList<>();
     @Getter
     protected List<Player> participants = new ArrayList<>();
+    @Getter
+    protected List<String> whitelistedCommands = new ArrayList<>();
 
     @Getter
     private String timeString; // String used to find the time to run the event next.

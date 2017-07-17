@@ -94,18 +94,18 @@ public class MinecraftWeapon extends CarbyneGear {
 	}
 
 	@Override
-	public void setDurability(ItemStack itemStack, double durability) {
-		//Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
+	public void setDurability(ItemStack itemStack, int durability) {
+		itemStack.setDurability((short) durability);
 	}
 
 	@Override
-	public double getDurability(ItemStack itemStack) {
+	public int getDurability(ItemStack itemStack) {
 		if (itemStack == null) {
 			return -1;
 		}
 
 		try {
-			return Double.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
+			return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
 		} catch (Exception ez) {
 			return -1;
 		}

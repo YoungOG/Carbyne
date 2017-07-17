@@ -99,13 +99,13 @@ public class CarbyneWeapon extends CarbyneGear {
         loreDupe.add(HiddenStringUtils.encodeString(gearCode));
         loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
 
+        if (special != null) {
+            loreDupe.add("&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
+        }
+
         if (!storeItem) {
             if (special != null) {
                 loreDupe.add("&aSpecial Charge&7: &c0/" + special.getRequiredCharge());
-            }
-        } else {
-            if (special != null) {
-                loreDupe.add("&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
             }
         }
 
@@ -115,7 +115,7 @@ public class CarbyneWeapon extends CarbyneGear {
                 loreDupe.add("&aDefensive Effects&7:");
 
                 for (PotionEffect effect : defensivePotionEffects.keySet()) {
-                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + defensivePotionEffects.get(effect)+ "% &f(On Hit)");
+                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + defensivePotionEffects.get(effect) + "% &f(On Hit)");
                 }
             }
 
@@ -124,12 +124,12 @@ public class CarbyneWeapon extends CarbyneGear {
                 loreDupe.add("&aOffensive Effects&7:");
 
                 for (PotionEffect effect : offensivePotionEffects.keySet()) {
-                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + offensivePotionEffects.get(effect)+ "% &f(On Hit)");
+                    loreDupe.add("  &7- &3" + MessageManager.getPotionTypeFriendlyName(effect.getType()) + " &b" + MessageManager.getPotionAmplifierInRomanNumerals(effect.getAmplifier() + 1) + " &6" + (effect.getDuration() / 20) + "s &c" + offensivePotionEffects.get(effect) + "% &f(On Hit)");
                 }
             }
         }
 
-        if (lore != null) {
+        if (lore != null && lore.size() > 0) {
             loreDupe.add("");
             loreDupe.addAll(lore);
         }
@@ -206,7 +206,7 @@ public class CarbyneWeapon extends CarbyneGear {
                 .name(displayName)
                 .addEnchantments(enchantmentHashMap).hideFlags();
 
-        if (lore != null) {
+        if (lore != null && lore.size() > 0) {
             builder.setLore((loreDupe.size() > 0 ? loreDupe : lore));
         } else {
             if (loreDupe.size() > 0) {
@@ -226,9 +226,15 @@ public class CarbyneWeapon extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= defensivePotionEffects.get(effect)) {
-                for (PotionEffect potionEffect : target.getActivePotionEffects())
+                for (PotionEffect potionEffect : target.getActivePotionEffects()) {
                     if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
                         return;
+
+                    if (potionEffect.getType() == effect.getType() && effect.getAmplifier() < potionEffect.getAmplifier() && effect.getDuration() < potionEffect.getDuration()) {
+                        return;
+                    }
+                }
+
 
                 target.addPotionEffect(effect, true);
                 MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
@@ -259,12 +265,12 @@ public class CarbyneWeapon extends CarbyneGear {
 
     @Override
     public void damageItem(Player wielder, ItemStack itemStack) {
-        double durability = getDurability(itemStack);
+        int durability = getDurability(itemStack);
         double chance = 0;
 
         if (itemStack.containsEnchantment(Enchantment.DURABILITY)) {
             int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
-            double calc = (100/(level+1));
+            double calc = (100 / (level + 1));
             chance = calc / 100;
         }
 
@@ -279,12 +285,12 @@ public class CarbyneWeapon extends CarbyneGear {
         if (durability >= 1) {
             durability--;
             Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
-            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - durabilityScale(itemStack)));
+            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - (durabilityScale(itemStack))));
 
             if (itemStack.getDurability() <= 0) {
                 itemStack.setDurability((short) 0);
             } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
-                itemStack.setDurability((short) itemStack.getType().getMaxDurability());
+                itemStack.setDurability(itemStack.getType().getMaxDurability());
             }
 
         } else {
@@ -294,13 +300,13 @@ public class CarbyneWeapon extends CarbyneGear {
     }
 
     @Override
-    public double getDurability(ItemStack itemStack) {
+    public int getDurability(ItemStack itemStack) {
         if (itemStack == null) {
             return -1;
         }
 
         try {
-            return Double.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
         } catch (Exception ez) {
             return -1;
         }
@@ -313,7 +319,7 @@ public class CarbyneWeapon extends CarbyneGear {
             return;
         }
 
-        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 2);
+        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 3);
     }
 
     public int getSpecialCharge(ItemStack itemStack) {
@@ -322,7 +328,7 @@ public class CarbyneWeapon extends CarbyneGear {
         }
 
         try {
-            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1].split("/")[0]);
         } catch (Exception ez) {
             return 0;
         }
@@ -332,8 +338,8 @@ public class CarbyneWeapon extends CarbyneGear {
     public int getRepairCost(ItemStack itemStack) {
         int maxAmount = (int) Math.round(cost * 0.7);
 
-        double per = maxDurability / maxAmount;
-        double dura = getDurability(itemStack);
+        double per = (double) maxDurability / (double) maxAmount;
+        double dura = ((double) (getDurability(itemStack)));
         for (int i = 1; i <= maxAmount; i++) {
             if (dura < per * i) {
                 return (maxAmount + 1) - i;
@@ -344,13 +350,13 @@ public class CarbyneWeapon extends CarbyneGear {
     }
 
     @Override
-    public void setDurability(ItemStack itemStack, double durability) {
+    public void setDurability(ItemStack itemStack, int durability) {
         Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
     }
 
     public int durabilityScale(ItemStack itemStack) {
-        double scale = getDurability(itemStack) / getMaxDurability();
-        double durability = itemStack.getType().getMaxDurability() * scale;
+        double scale = ((double) (getDurability(itemStack))) / ((double) (getMaxDurability()));
+        double durability = ((double) (itemStack.getType().getMaxDurability())) * scale;
         return (int) Math.round(durability);
     }
 

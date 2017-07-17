@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
@@ -60,24 +61,24 @@ public class CarbyneBoardAdapter implements BoardAdapter {
             lines.add("&6Durability:");
 
             if (player.getInventory().getHelmet() != null && gearManager.getDurability(player.getInventory().getHelmet()) > -1) {
-                lines.add(" &eHelmet: &b" + gearManager.getDurability(player.getInventory().getHelmet()));
+                lines.add(" &eHelmet: &b" + ((int) gearManager.getDurability(player.getInventory().getHelmet())));
             }
 
             if (player.getInventory().getChestplate() != null && gearManager.getDurability(player.getInventory().getChestplate()) > -1) {
-                lines.add(" &eChest&eplate: &b" + gearManager.getDurability(player.getInventory().getChestplate()));
+                lines.add(" &eChest&eplate: &b" + ((int) gearManager.getDurability(player.getInventory().getChestplate())));
             }
 
             if (player.getInventory().getLeggings() != null && gearManager.getDurability(player.getInventory().getLeggings()) > -1) {
-                lines.add(" &eLeggings: &b" + gearManager.getDurability(player.getInventory().getLeggings()));
+                lines.add(" &eLeggings: &b" + ((int) gearManager.getDurability(player.getInventory().getLeggings())));
             }
 
             if (player.getInventory().getBoots() != null && gearManager.getDurability(player.getInventory().getBoots()) > -1) {
-                lines.add(" &eBoots: &b" + gearManager.getDurability(player.getInventory().getBoots()));
+                lines.add(" &eBoots: &b" + ((int) gearManager.getDurability(player.getInventory().getBoots())));
             }
         }
 
         if (player.getItemInHand() != null && gearManager.getDurability(player.getItemInHand()) > -1) {
-            lines.add(" &eHand: &b" + gearManager.getDurability(player.getItemInHand()));
+            lines.add(" &eHand: &b" + ((int) gearManager.getDurability(player.getItemInHand())));
         }
 
         if (squadManager.getSquad(player.getUniqueId()) != null) {
@@ -104,10 +105,10 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
             if (profile.isPvpTimePaused() && profile.getRemainingPvPTime() > 1) {
                 lines.add("         ");
-                lines.add("&cPvPTimer: &b" + DateUtil.formatDateDiff(profile.getRemainingTimeLeft()));
+                lines.add("&cPvPTimer: &b" + formatTime(profile.getRemainingPvPTime()));
             } else if (profile.getRemainingPvPTime() > 1) {
                 lines.add("         ");
-                lines.add("&cPvPTimer: &b" + DateUtil.formatDateDiff(profile.getPvpTime()));
+                lines.add("&cPvPTimer: &b" + formatTime(profile.getPvpTime()));
             }
         }
 
@@ -182,9 +183,6 @@ public class CarbyneBoardAdapter implements BoardAdapter {
     private List<String> staffScoreboard(Player player) {
         StaffManager staffManager = main.getStaffManager();
         ArrayList<String> lines = new ArrayList<>();
-
-        lines.add("&9              Staff Mode");
-
         lines.add("&cVanished: &7" + staffManager.isVanished(player));
         lines.add("    ");
 
@@ -225,5 +223,11 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         }
 
         return formatted;
+    }
+
+    String formatTime(long millis) {
+        return String.format("%02d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));
     }
 }

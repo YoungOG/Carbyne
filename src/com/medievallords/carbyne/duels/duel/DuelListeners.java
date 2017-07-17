@@ -8,6 +8,7 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.nisovin.magicspells.events.SpellTargetEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -16,11 +17,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -37,11 +40,21 @@ public class DuelListeners implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGHEST)
+    public void onSquadHit(EntityDamageByEntityEvent event) {
+
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
 
             if (duelManager.getDuelFromUUID(player.getUniqueId()) == null) {
+                return;
+            }
+
+            if (duelManager.getDuelFromUUID(player.getUniqueId()).isEnded()) {
+                event.setCancelled(true);
                 return;
             }
 
@@ -172,6 +185,25 @@ public class DuelListeners implements Listener {
 
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onMagic(SpellTargetEvent event) {
+        if (duelManager.getDuelFromUUID(event.getCaster().getUniqueId()) != null && event.getTarget() instanceof Player) {
+            Player target = (Player) event.getTarget();
+
+            Squad casterS = Carbyne.getInstance().getSquadManager().getSquad(event.getCaster().getUniqueId());
+            Squad targetS = Carbyne.getInstance().getSquadManager().getSquad(target.getUniqueId());
+
+            if (casterS != null && targetS != null && casterS.equals(targetS)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (duelManager.getDuelFromUUID(target.getUniqueId()) != null) {
+                event.setCancelled(false);
+            }
+        }
+    }
+
     @EventHandler
     public void onItemPickup(PlayerPickupItemEvent event) {
         Player player = event.getPlayer();
@@ -194,6 +226,26 @@ public class DuelListeners implements Listener {
         if (request != null) {
             request.cancel();
         } else if (duel != null) {
+            List<ItemStack> drops = new ArrayList<>();
+            for (ItemStack itemStack : player.getInventory().getContents()) {
+                if (itemStack != null && itemStack.getType() != Material.AIR) {
+                    drops.add(itemStack);
+                }
+            }
+
+            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
+                if (itemStack != null && itemStack.getType() != Material.AIR) {
+                    drops.add(itemStack);
+                }
+            }
+
+            for (ItemStack itemStack : drops) {
+                Item item = event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), itemStack);
+                duel.getDrops().add(item);
+            }
+
+            player.getInventory().clear();
+
             duel.getPlayersAlive().remove(player.getUniqueId());
             duel.check();
         }
@@ -231,7 +283,7 @@ public class DuelListeners implements Listener {
             }
         }
 
-        Squad squad = Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId());
+        /*Squad squad = Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId());
 
         if (squad == null) {
             return;
@@ -254,7 +306,7 @@ public class DuelListeners implements Listener {
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
             }
-        }
+        }*/
     }
 
 

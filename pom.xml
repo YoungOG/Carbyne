@@ -56,9 +56,21 @@
             <id>avicus-public</id>
             <url>https://repo.avicus.net/content/groups/public/</url>
         </repository>
+
+        <!-- World Guard -->
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>6.1.1-SNAPSHOT</version>
+        </dependency>
+
         <!--&lt;!&ndash; Spigot API &ndash;&gt;-->
         <!--<dependency>-->
         <!--<groupId>org.spigotmc</groupId>-->

@@ -3,7 +3,6 @@ package com.medievallords.carbyne.gear.types.minecraft;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.ItemBuilder;
-import com.medievallords.carbyne.utils.Namer;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.ChatColor;
@@ -13,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class MinecraftArmor extends CarbyneGear {
@@ -86,13 +84,13 @@ public class MinecraftArmor extends CarbyneGear {
 	}
 
 	@Override
-	public double getDurability(ItemStack itemStack) {
+	public int getDurability(ItemStack itemStack) {
 		if (itemStack == null) {
 			return -1;
 		}
 
 		try {
-			return Double.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
+			return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
 		} catch (Exception ez) {
 			return -1;
 		}
@@ -114,25 +112,8 @@ public class MinecraftArmor extends CarbyneGear {
 	}
 
 	@Override
-	public void setDurability(ItemStack itemStack, double durability) {
-		if (itemStack.hasItemMeta() && !itemStack.getItemMeta().hasLore()) {
-			List<String> loreList = new ArrayList<>();
-			itemStack.getItemMeta().setLore(loreList);
-		}
-
-		if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasLore() && itemStack.getItemMeta().getLore().size() < 2) {
-			for (int i = 0; i < itemStack.getItemMeta().getLore().size(); i++) {
-				if (itemStack.getItemMeta().getLore().size() >= 2) {
-					break;
-				}
-
-				itemStack.getItemMeta().getLore().add("");
-			}
-		}
-
-		if (itemStack.hasItemMeta() && itemStack.getItemMeta().hasLore()) {
-			Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
-		}
+	public void setDurability(ItemStack itemStack, int durability) {
+		itemStack.setDurability((short) durability);
 	}
 
 }
