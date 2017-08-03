@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.utils;
 
 import com.google.common.collect.Maps;
+import com.medievallords.carbyne.Carbyne;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -12,6 +13,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class MessageManager {
 
@@ -59,6 +61,16 @@ public class MessageManager {
                 sendMessage(uniqueId, s);
             }
         }
+    }
+
+    public static void sendStaffMessage(CommandSender sender, String message) {
+        for (Player all : PlayerUtility.getOnlinePlayers()) {
+            if (all.hasPermission("carbyne.staff")) {
+                all.sendMessage(ChatColor.translateAlternateColorCodes('&', "&d" + sender.getName() + ": ") + message);
+            }
+        }
+
+        Carbyne.getInstance().getLogger().log(Level.INFO, "[Staff Message]: " + sender.getName() + ": " + message);
     }
 
     public static void broadcastMessage(String message) {
@@ -133,7 +145,7 @@ public class MessageManager {
                 return "Haste";
             case "HARM":
                 return "Instant Harm";
-            case "FIRE_RESISTANT":
+            case "FIRE_RESISTANCE":
                 return "Fire Resistance";
             case "HEAL":
                 return "Instant Heal";
@@ -184,6 +196,8 @@ public class MessageManager {
                 return "Infinity";
             case "DAMAGE_ALL":
                 return "Sharpness";
+            case "KNOCKBACK":
+                return "Knockback";
             case "DAMAGE_ARTHROPODS":
                 return "Bane of Arthropods";
             case "DAMAGE_UNDEAD":

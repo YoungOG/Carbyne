@@ -28,10 +28,6 @@ public class CliffClimbCommands extends BaseCommand
     @Command(name="cliffclimb")
     public void onCommand(CommandArgs cmd)
     {
-        if(!cliffClimb.isActive()) {
-            MessageManager.sendMessage(cmd.getPlayer(), "&cThis event is not active!");
-        }
-
         Player player = cmd.getPlayer();
         String[] args = cmd.getArgs();
 
@@ -76,6 +72,20 @@ public class CliffClimbCommands extends BaseCommand
                     player.getInventory().clear();
                     cliffClimb.removePlayerFromEvent(player);
                     player.teleport(cliffClimb.getSpawn());
+                }
+            } else if (args[0].equalsIgnoreCase("start")) {
+                if (player.hasPermission("carbyne.event.admin")) {
+                    if (cliffClimb.isActive()) {
+                        MessageManager.sendMessage(player, "&2This event is already active!");
+                        return;
+                    } else {
+                        cliffClimb.start();
+                        MessageManager.sendMessage(player, "&2The event is starting...");
+                        return;
+                    }
+                } else {
+                    MessageManager.sendMessage(player, "&cYou do not have permission to use this command!");
+                    return;
                 }
             }
         }

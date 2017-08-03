@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
@@ -166,6 +167,14 @@ public class StaffModeListeners implements Listener {
     }
 
     @EventHandler
+    public void onCreativeClick(InventoryCreativeEvent event) {
+        if (staffManager.getVanish().contains(event.getWhoClicked().getUniqueId()) && staffManager.getStaffModePlayers().contains(event.getWhoClicked().getUniqueId())) {
+            event.setCancelled(true);
+            ((Player) event.getWhoClicked()).updateInventory();
+        }
+    }
+
+    @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
         if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
@@ -176,6 +185,15 @@ public class StaffModeListeners implements Listener {
             event.getItemDrop().remove();
             event.getPlayer().getInventory().setItem(event.getPlayer().getInventory().getHeldItemSlot(), item);
             */
+        }
+    }
+
+    @EventHandler
+    public void playerCommandEvent(PlayerCommandPreprocessEvent e) {
+        if (staffManager.getStaffModePlayers().contains(e.getPlayer())) {
+            String[] split = e.getMessage().split(" ");
+            if (!staffManager.getStaffmodeCommandWhitelist().contains(split[0]))
+                e.setCancelled(true);
         }
     }
 }

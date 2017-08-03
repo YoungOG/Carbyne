@@ -47,9 +47,9 @@ public class CliffClimb extends Event
 
     private CliffClimbListeners cliffClimbListeners;
 
-    public CliffClimb(EventManager eventManager, String timeString)
+    public CliffClimb(EventManager eventManager)
     {
-        super(eventManager, timeString);
+        super(eventManager);
 
         properties.add(EventProperties.PVP_DISABLED);
         properties.add(EventProperties.SPELLS_DISABLED);

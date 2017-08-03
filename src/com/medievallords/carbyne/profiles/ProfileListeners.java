@@ -58,27 +58,33 @@ public class ProfileListeners implements Listener {
             Bukkit.getPluginManager().callEvent(profileCreatedEvent);
         }
 
-        NametagManager.setup(player);
-
         Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
 
-        if (profile.getUsername().equalsIgnoreCase(player.getName())) {
+        //Bukkit.broadcastMessage("Profile Name: " + profile.getUsername());
+        //Bukkit.broadcastMessage("Player Name: " + player.getName());
+
+        if (!profile.getUsername().equalsIgnoreCase(player.getName())) {
             try {
-                Resident r = TownyUniverse.getDataSource().getResident(profile.getUsername());
-                TownyUniverse.getDataSource().renamePlayer(r, player.getName());
+                //Bukkit.broadcastMessage("Resident Found: " + TownyUniverse.getDataSource().getResident(profile.getUsername()).getName());
+                Resident resident = TownyUniverse.getDataSource().getResident(profile.getUsername());
+                TownyUniverse.getDataSource().renamePlayer(resident, player.getName());
+                //Bukkit.broadcastMessage("Resident Replacement: " + TownyUniverse.getDataSource().getResident(player.getName()).getName());
             } catch (NotRegisteredException ignored) {
             } catch (Exception shouldNeverHappen) {
                 main.getLogger().log(Level.SEVERE, "EXCEPTION OCCURRED IN TOWNY NAME UPDATER: ");
                 shouldNeverHappen.printStackTrace();
             }
+
+            profile.setUsername(player.getName());
         }
+
+        NametagManager.setup(player);
 
         TownBlock townBlock = TownyUniverse.getTownBlock(player.getLocation());
 
         if (townBlock == null) {
             profile.setPvpTimePaused(false);
         } else {
-
             if (!townBlock.getPermissions().pvp) {
                 profile.setPvpTimePaused(true);
             } else {

@@ -31,6 +31,8 @@ public class DuelAcceptCommand extends BaseCommand {
             return;
         }
 
+        request.getArena().stopCancel();
+
         if (request.getBets().size() < 2) {
             MessageManager.sendMessage(player, "&cYou both must enter a bet");
             return;

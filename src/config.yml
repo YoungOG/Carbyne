@@ -102,5 +102,3 @@ allowed-blocks: # This determines what blocks will not disable the portal when b
      - 157
      - 171
      - 175
-votingkeys:
-  keys: []

@@ -30,7 +30,7 @@ public class SlowChatCommand extends BaseCommand {
                     return;
                 }
 
-                MessageManager.broadcastMessage("&eThe chat is now longer slowed");
+                MessageManager.broadcastMessage("&eThe chat is no longer slowed");
                 getStaffManager().setSlowChatTime(0);
 
                 for (UUID id : Cooldowns.cooldowns.rowKeySet()) {

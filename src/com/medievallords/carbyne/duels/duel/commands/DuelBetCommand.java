@@ -80,6 +80,7 @@ public class DuelBetCommand extends BaseCommand {
                     request.getBets().remove(uuid);
                     request.cancelTask();
                     request.runTask();
+                    return;
                 }
 
                 //noinspection ConstantConditions

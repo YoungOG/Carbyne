@@ -164,7 +164,8 @@ public class RegenerationHandler {
         regenInfo.put("regenerationType", type.name());
         try {
             regenInfo.put("time", DateUtil.parseDateDiff(timeData.get(block.getType()), true));
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+        }
 
         data.add(regenInfo);
         wcDoc.put("data", data);

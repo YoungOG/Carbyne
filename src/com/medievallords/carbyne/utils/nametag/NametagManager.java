@@ -63,6 +63,7 @@ public class NametagManager {
         if (toRefreshDuel != null && refreshForDuel != null && toRefreshDuel == refreshForDuel)  {
             if (toRefreshDuel instanceof RegularDuel) {
                 nametag.setPrefix(ChatColor.YELLOW + "");
+                nametag.setSuffix("");
                 refreshForTag.update(toRefreshTag, nametag);
                 return;
             }
@@ -115,6 +116,7 @@ public class NametagManager {
                 if (refreshForSquad.getTargetSquad() != null) {
                     if (refreshForSquad.getTargetSquad().equals(toRefreshSquad)) {
                         nametag.setPrefix(ChatColor.RED + "ENEMY" + ChatColor.RED + "" + ChatColor.BOLD + " ");
+                        nametag.setSuffix("");
 
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
@@ -126,6 +128,7 @@ public class NametagManager {
                 if (refreshForSquad.getTargetUUID() != null) {
                     if (refreshForSquad.getTargetUUID().equals(toRefresh.getUniqueId())) {
                         nametag.setPrefix(ChatColor.RED + "ENEMY" + ChatColor.RED + "" + ChatColor.BOLD + " ");
+                        nametag.setSuffix("");
 
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
@@ -133,10 +136,13 @@ public class NametagManager {
                 }
             }
         }
+
         ZPermissionsService service = Carbyne.getInstance().getService();
+
         if (service != null) {
             String prefix = ChatColor.translateAlternateColorCodes('&', service.getPlayerPrefix(toRefresh.getUniqueId()));
             nametag.setPrefix(prefix.length() > 16 ? prefix.substring(0, 16) : prefix);
+            nametag.setSuffix("");
         }
 
         refreshForTag.update(toRefreshTag, nametag);

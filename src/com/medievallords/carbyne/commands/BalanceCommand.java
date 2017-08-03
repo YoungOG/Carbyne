@@ -32,7 +32,7 @@ public class BalanceCommand extends BaseCommand {
                 return;
             }
 
-            MessageManager.sendMessage(player, "&7Balance: &c" + MessageManager.format(account.getBalance()) + "");
+            MessageManager.sendMessage(player, "&7Balance: &c\u00A9" + MessageManager.format(account.getBalance()) + "");
             return;
         }
 
@@ -58,7 +58,7 @@ public class BalanceCommand extends BaseCommand {
                         int topten = 0;
                         for (Object e : a) {
                             if (topten <= 9) {
-                                MessageManager.sendMessage(player, "&7" + (topten + 1) + ". &c" + ((Map.Entry<String, Double>) e).getKey() + " &7- &c" + MessageManager.format(((Map.Entry<String, Double>) e).getValue()));
+                                MessageManager.sendMessage(player, "&7" + (topten + 1) + ". &c" + ((Map.Entry<String, Double>) e).getKey() + " &7- &c\u00A9" + MessageManager.format(((Map.Entry<String, Double>) e).getValue()));
                             }
 
                             topten++;

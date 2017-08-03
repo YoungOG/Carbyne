@@ -7,20 +7,20 @@ import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-public class VoteCommand extends BaseCommand {
+public class DiscordCommand extends BaseCommand {
 
-    @Command(name = "vote")
+    @Command(name = "discord")
     public void onCommand(CommandArgs commandArgs) {
         Player player = commandArgs.getPlayer();
 
-        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&f[&3Voting&f]: &aYou can vote on our website @ &b&l["))
-                .then("Link")
+        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&7You can join our Discord server using the &b&l["))
+                .then("Invitation")
                 .color(ChatColor.AQUA)
                 .style(ChatColor.BOLD)
                 .style(ChatColor.UNDERLINE)
-                .openURL("http://www.playminecraft.org/vote")
-                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aThis will take you to our website where you can vote."))
-                .then(ChatColor.translateAlternateColorCodes('&', "&r&b&l] &aand &areceive &aup to 3 random crate keys!"))
+                .openURL("https://discord.gg/pk9hPZb")
+                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aThis will invite you to join our discord."))
+                .then(ChatColor.translateAlternateColorCodes('&', "&r&b&l] &alink."))
                 .send(player);
     }
 }

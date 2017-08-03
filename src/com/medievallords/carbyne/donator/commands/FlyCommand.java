@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
  */
 public class FlyCommand extends BaseCommand {
 
-    @Command(name = "fly", aliases = {"ef"}, permission = "carbyne.commands.fly", inGameOnly = true)
+    @Command(name = "fly", aliases = {"ef"}, inGameOnly = true)
     public void onCommand(CommandArgs commandArgs) {
         Player player = commandArgs.getPlayer();
         String[] args = commandArgs.getArgs();
@@ -59,7 +59,7 @@ public class FlyCommand extends BaseCommand {
         } catch (NotRegisteredException ignore) {
         }
 
-        if (residentsTown.equals(check)) {
+        if (residentsTown.equals(check) && player.hasPermission("carbyne.commands.fly")) {
             getGamemodeManager().toggleFlight(player);
             return;
         } else

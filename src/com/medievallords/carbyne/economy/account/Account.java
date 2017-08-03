@@ -126,6 +126,8 @@ public class Account {
         if (!accounts.contains(account)) {
             accounts.add(account);
         }
+
+        //Carbyne.getInstance().getLogger().log(Level.INFO, "Account created for " + accountHolder);
     }
 
     public static void createAccount(UUID accountHolderId, String accountHolder) {

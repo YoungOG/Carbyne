@@ -80,7 +80,6 @@ public class GamemodeCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&cYou are not in your town!");
             return;
         } else {
-
             Town town;
             try {
                 town = TownyUniverse.getDataSource().getResident(player.getName()).getTown();

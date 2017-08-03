@@ -226,19 +226,21 @@ public class CarbyneWeapon extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= defensivePotionEffects.get(effect)) {
-                for (PotionEffect potionEffect : target.getActivePotionEffects()) {
-                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
-                        return;
+                boolean apply = true;
 
-                    if (potionEffect.getType() == effect.getType() && effect.getAmplifier() < potionEffect.getAmplifier() && effect.getDuration() < potionEffect.getDuration()) {
-                        return;
+                for (PotionEffect potionEffect : target.getActivePotionEffects()) {
+                    if (potionEffect.getType() == effect.getType()) {
+                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                            apply = false;
+                        }
                     }
                 }
 
-
-                target.addPotionEffect(effect, true);
-                MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
-                Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
+                if (apply) {
+                    target.addPotionEffect(effect);
+                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
+                }
             }
         }
     }
@@ -252,13 +254,21 @@ public class CarbyneWeapon extends CarbyneGear {
             Double random = Math.random();
 
             if (random <= offensivePotionEffects.get(effect)) {
-                for (PotionEffect potionEffect : target.getActivePotionEffects())
-                    if (potionEffect.getType() != effect.getType() && (potionEffect.getAmplifier() < effect.getAmplifier() && potionEffect.getDuration() < effect.getDuration()))
-                        return;
+                boolean apply = true;
 
-                target.addPotionEffect(effect, true);
-                MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &c" + (effect.getDuration() / 20) + " &asec(s).");
-                Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
+                for (PotionEffect potionEffect : target.getActivePotionEffects()) {
+                    if (potionEffect.getType() == effect.getType()) {
+                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                            apply = false;
+                        }
+                    }
+                }
+
+                if (apply) {
+                    target.addPotionEffect(effect);
+                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &cYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
+                }
             }
         }
     }
@@ -285,13 +295,13 @@ public class CarbyneWeapon extends CarbyneGear {
         if (durability >= 1) {
             durability--;
             Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
-            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - (durabilityScale(itemStack))));
+            itemStack.setDurability((short) 0);
 
-            if (itemStack.getDurability() <= 0) {
-                itemStack.setDurability((short) 0);
-            } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
-                itemStack.setDurability(itemStack.getType().getMaxDurability());
-            }
+//            if (itemStack.getDurability() <= 0) {
+//                itemStack.setDurability((short) 0);
+//            } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
+//                itemStack.setDurability(itemStack.getType().getMaxDurability());
+//            }
 
         } else {
             wielder.getInventory().remove(itemStack);

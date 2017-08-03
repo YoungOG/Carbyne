@@ -32,6 +32,8 @@ import com.medievallords.carbyne.economy.commands.administrator.MarketSetTaxComm
 import com.medievallords.carbyne.economy.commands.player.*;
 import com.medievallords.carbyne.events.EventManager;
 import com.medievallords.carbyne.events.UniversalEventListeners;
+import com.medievallords.carbyne.events.implementations.CliffClimb;
+import com.medievallords.carbyne.events.implementations.commands.CliffClimbCommands;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
@@ -49,6 +51,8 @@ import com.medievallords.carbyne.listeners.*;
 import com.medievallords.carbyne.lootchests.LootChestListeners;
 import com.medievallords.carbyne.lootchests.LootChestManager;
 import com.medievallords.carbyne.lootchests.commands.LootChestCommand;
+import com.medievallords.carbyne.missions.MissionManager;
+import com.medievallords.carbyne.missions.commands.MissionCommand;
 import com.medievallords.carbyne.profiles.ProfileListeners;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
@@ -91,6 +95,7 @@ import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
@@ -148,12 +153,8 @@ public class Carbyne extends JavaPlugin {
     private FileConfiguration gamemodeTownsConfiguration;
     private File eventsFile;
     private FileConfiguration eventsFileConfiguration;
-    private File immunePlayersFile;
-    private FileConfiguration immunePlayersFileConfiguration;
     private File rulesFile;
     private FileConfiguration rulesFileCongfiguration;
-    private File regionPermissionsFile;
-    private FileConfiguration regionPermissionsConfiguration;
 
     private Permission permissions = null;
 
@@ -184,6 +185,7 @@ public class Carbyne extends JavaPlugin {
     private PacketManager packetManager;
     private TrailManager trailManager;
     private EventManager eventManager;
+    private MissionManager missionManager;
 
     public static Carbyne getInstance() {
         return instance;
@@ -252,8 +254,8 @@ public class Carbyne extends JavaPlugin {
         lootChestManager = new LootChestManager();
         gamemodeManager = new GamemodeManager();
         trailManager = new TrailManager();
+        missionManager = new MissionManager();
         packetManager = new PacketManagerImpl(this);
-        //worldGuardManager = new WorldGuardManager();
 
         tabbed = new Tabbed(this);
         aether = new Aether(this, new CarbyneBoardAdapter(this));
@@ -295,7 +297,7 @@ public class Carbyne extends JavaPlugin {
         duelManager.cancelAll();
         mongoClient.close();
         staffManager.shutdown();
-        gearManager.getRepairItems().forEach(item -> item.remove());
+        gearManager.getRepairItems().forEach(Entity::remove);
 
         clearVillagers();
     }
@@ -337,7 +339,6 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new UniversalEventListeners(eventManager), this);
         pm.registerEvents(new SetDamageCommand(), this);
         pm.registerEvents(new FollowCommand(), this);
-        //pm.registerEvents(new RegionListeners(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -355,6 +356,8 @@ public class Carbyne extends JavaPlugin {
         new LogoutCommand();
         new PvpTimerCommand();
         new SetDurabilityCommand();
+        new VoteCommand();
+        new DiscordCommand();
 
         //Gate Commands
         new GearCommands();
@@ -467,6 +470,8 @@ public class Carbyne extends JavaPlugin {
         new ResetPinCommand();
         new InvseeCommand();
         new ReviveCommand();
+        new StaffModeWhitelist();
+        new StaffChatCommand();
 
         new ConquerPointCommand();
 
@@ -480,9 +485,9 @@ public class Carbyne extends JavaPlugin {
         new TrailCommand();
         new RulesCommand();
 
-        //World Guard
-        //new PermissionRegion();
+        new CliffClimbCommands(new CliffClimb(eventManager));
 
+        new MissionCommand();
     }
 
     private void registerPackets() {
@@ -528,7 +533,6 @@ public class Carbyne extends JavaPlugin {
         saveResource("gamemodetowns.yml", false);
         saveResource("events.yml", false);
         saveResource("rules.yml", false);
-        saveResource("regionpermissions.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -563,14 +567,8 @@ public class Carbyne extends JavaPlugin {
         eventsFile = new File(getDataFolder(), "events.yml");
         eventsFileConfiguration = YamlConfiguration.loadConfiguration(eventsFile);
 
-        immunePlayersFile = new File(getDataFolder(), "immuneplayers.yml");
-        immunePlayersFileConfiguration = YamlConfiguration.loadConfiguration(immunePlayersFile);
-
         rulesFile = new File(getDataFolder(), "rules.yml");
         rulesFileCongfiguration = YamlConfiguration.loadConfiguration(rulesFile);
-
-        regionPermissionsFile = new File(getDataFolder(), "regionpermissions.yml");
-        regionPermissionsConfiguration = YamlConfiguration.loadConfiguration(regionPermissionsFile);
 
         File langFile = new File(getDataFolder(), "lang.yml");
         FileConfiguration langFileConfiguration = YamlConfiguration.loadConfiguration(langFile);

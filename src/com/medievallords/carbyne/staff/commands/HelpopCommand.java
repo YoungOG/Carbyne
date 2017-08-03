@@ -27,7 +27,7 @@ public class HelpopCommand extends BaseCommand {
             return;
         }
 
-        String helpMessage = StringUtils.join(args, " ", 1, args.length);
+        String helpMessage = StringUtils.join(args, " ", 0, args.length);
 
         if (Cooldowns.tryCooldown(player.getUniqueId(), "helpopCD", 60000)) {
             MessageManager.sendMessage(player, "&aAll online staff have been alerted.");

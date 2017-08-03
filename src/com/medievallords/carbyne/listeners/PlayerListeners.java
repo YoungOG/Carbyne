@@ -2,6 +2,8 @@ package com.medievallords.carbyne.listeners;
 
 import com.keenant.tabbed.tablist.TitledTabList;
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.utils.InventoryWorkaround;
 import com.medievallords.carbyne.utils.Maths;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.palmergames.bukkit.towny.object.Resident;
@@ -11,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,10 +22,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.github.paperspigot.Title;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -139,32 +144,44 @@ public class PlayerListeners implements Listener {
         if (player != null) {
             Double random = Math.random();
 
-            if (random <= 0.05) {
-                ItemStack reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
-                player.getInventory().addItem(reward);
-                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
-                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
-            } else if (random <= 0.1) {
-                ItemStack reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
-                player.getInventory().addItem(reward);
-                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
-                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            ItemStack reward;
+
+            if (random <= 0.02) {
+                reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
+            } else if (random <= 0.05) {
+                reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
+            } else if (random <= 0.10) {
+                reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
             } else if (random <= 0.15) {
-                ItemStack reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
-                player.getInventory().addItem(reward);
-                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
-                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
-            } else if (random <= 0.2) {
-                ItemStack reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
-                player.getInventory().addItem(reward);
-                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
-                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+                reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
             } else {
-                ItemStack reward = main.getCrateManager().getKey("IronKey").getItem().clone();
-                player.getInventory().addItem(reward);
-                MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a! Vote using &3/vote&a!");
-                MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+                reward = main.getCrateManager().getKey("IronKey").getItem().clone();
             }
+
+            Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(player.getInventory(), reward);
+
+            if (leftovers.values().size() > 0) {
+                MessageManager.sendMessage(player, "&cThis item could not fit in your inventory, and was dropped to the ground.");
+
+                for (ItemStack itemStack : leftovers.values()) {
+                    Item item = player.getWorld().dropItem(player.getEyeLocation(), itemStack);
+                    item.setVelocity(player.getEyeLocation().getDirection().normalize().multiply(1));
+                }
+
+                return;
+            }
+
+            Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + 75.0);
+
+            MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(75.0) + "&a! Vote using &3/vote&a!");
+            MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F) {
+            event.getPlayer().setFallDistance(0.0F);
         }
     }
 }

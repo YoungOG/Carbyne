@@ -5,8 +5,8 @@ import com.medievallords.carbyne.events.Event;
 import com.medievallords.carbyne.events.EventManager;
 import com.medievallords.carbyne.events.EventProperties;
 import com.medievallords.carbyne.events.implementations.commands.RaceCommands;
-import com.medievallords.carbyne.events.implementations.enumerations.RaceType;
 import com.medievallords.carbyne.events.implementations.listeners.RaceListeners;
+import com.medievallords.carbyne.events.implementations.object.RaceObject;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.MessageManager;
@@ -31,7 +31,7 @@ public class Race extends Event {
 
     @Getter
     @Setter
-    private RaceType currentRace;
+    private RaceObject currentRace;
 
     @Getter
     @Setter
@@ -76,7 +76,7 @@ public class Race extends Event {
         for (BaseCommand command : commands)
             Carbyne.getInstance().getCommandFramework().unregisterCommands(command);
 
-        currentRace = RaceType.FIESTA_BOWL;
+        currentRace = null;
     }
 
     @Override
@@ -99,14 +99,14 @@ public class Race extends Event {
                         int secondsUntilStart = (int) Math.floor(((startTime - System.currentTimeMillis()) / 1000));
                         ticks = 0;
                         for (Player p : participants)
-                            MessageManager.sendMessage(p, "&2The %race% will begin in " + secondsUntilStart + " seconds!".replace("%race%", currentRace.getRaceName()));
+                            MessageManager.sendMessage(p, "&2The %race% will begin in " + secondsUntilStart + " seconds!".replace("%race%", currentRace.getName()));
                     }
                 }
             } else {
                 if (winner != null) {
                     MessageManager.broadcastMessage("The winner of %race% is " + winner.getName() + "!".replace("%race%", ""));
                     for (Player player : participants)
-                        player.sendTitle(new Title.Builder().title(winner.getDisplayName()).subtitle(ChatColor.translateAlternateColorCodes('&', "&fis the victor of %race%!".replace("%race%", currentRace.getRaceName()))).stay(55).build());
+                        player.sendTitle(new Title.Builder().title(winner.getDisplayName()).subtitle(ChatColor.translateAlternateColorCodes('&', "&fis the victor of %race%!".replace("%race%", currentRace.getName()))).stay(55).build());
                     this.stop();
                 }
             }
@@ -115,10 +115,10 @@ public class Race extends Event {
 
     @Override
     public synchronized void start() {
-        Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&2%race%".replace("%race%", currentRace.getRaceName()))).subtitle(ChatColor.translateAlternateColorCodes('&', "&f%race% is starting! /cliffclimb join!".replace("%race%", currentRace.getRaceName()))).stay(55).build();
+        Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&2%race%".replace("%race%", currentRace.getName()))).subtitle(ChatColor.translateAlternateColorCodes('&', "&f%race% is starting! /cliffclimb join!".replace("%race%", currentRace.getName()))).stay(55).build();
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.sendTitle(title);
-            MessageManager.sendMessage(player, "The %race% race is starting. /race join".replace("%race%", currentRace.getRaceName()));
+            MessageManager.sendMessage(player, "The %race% race is starting. /race join".replace("%race%", currentRace.getName()));
         }
         try {
             startTime = DateUtil.parseDateDiff(countDownString, true);

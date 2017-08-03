@@ -49,6 +49,7 @@ public class DuelRequest {
                         .suggestCommand("/duel bet <a>").tooltip(ChatColor.LIGHT_PURPLE + "Click to use command").send(player);
             }
         }
+
         runTask();
     }
 
@@ -58,7 +59,7 @@ public class DuelRequest {
         UUID[] uuids = new UUID[2];
         uuids[0] = getFirstPlayer();
         uuids[1] = getSecondPlayer();
-        int bet = -500;
+        int bet = -5;
 
         for (UUID uuid : bets.keySet()) {
             bet += bets.get(uuid);

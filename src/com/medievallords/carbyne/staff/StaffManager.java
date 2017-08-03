@@ -7,10 +7,13 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -25,7 +28,7 @@ public class StaffManager {
     @Getter
     private List<UUID> staffModePlayers = new ArrayList<>();
     @Getter
-    private final Map<UUID, SpecialPlayerInventory> inventories = new HashMap<>();
+    private Map<UUID, SpecialPlayerInventory> inventories = new HashMap<>();
     @Getter
     @Setter
     private boolean chatMuted = false;
@@ -40,7 +43,21 @@ public class StaffManager {
     @Getter
     private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, ticketTool, wand;
 
+    @Getter
+    private File staffWhitelistCommandsFile;
+    @Getter
+    private FileConfiguration staffWhitelistCommandConfiguration;
+
+    @Getter
+    private List<String> staffmodeCommandWhitelist;
+
     public StaffManager() {
+
+        staffWhitelistCommandsFile = new File(main.getDataFolder(), "staffmodewhitelist.yml");
+        staffWhitelistCommandConfiguration = YamlConfiguration.loadConfiguration(staffWhitelistCommandsFile);
+
+        staffmodeCommandWhitelist = staffWhitelistCommandConfiguration.getStringList("Commands");
+
         falsePerms.put(new String("mv.bypass.gamemode.*"), false);
         falsePerms.put(new String("CreativeControl.*"), false);
         truePerms.put(new String("mv.bypass.gamemode.*"), true);
@@ -253,4 +270,13 @@ public class StaffManager {
     public boolean isVanished(Player player) {
         return vanish.contains(player.getUniqueId());
     }
+
+    public static void messageStaff(String... message) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.hasPermission("carbyne.staff")) {
+                MessageManager.sendMessage(player, message);
+            }
+        }
+    }
+
 }

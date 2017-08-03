@@ -108,7 +108,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
                 lines.add("&cPvPTimer: &b" + formatTime(profile.getRemainingPvPTime()));
             } else if (profile.getRemainingPvPTime() > 1) {
                 lines.add("         ");
-                lines.add("&cPvPTimer: &b" + formatTime(profile.getPvpTime()));
+                lines.add("&cPvPTimer: &b" + formatTime(profile.getRemainingPvPTime()));
             }
         }
 

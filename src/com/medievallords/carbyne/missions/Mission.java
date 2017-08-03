@@ -10,4 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Mission {
+
+    private MissionType missionType;
+
 }

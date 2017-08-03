@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class MarketBuyCommand extends BaseCommand {
 
-    @Command(name = "buy", inGameOnly = true)
+    @Command(name = "buy", aliases = {"auc", "auction"}, inGameOnly = true)
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

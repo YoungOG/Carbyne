@@ -447,7 +447,7 @@ public class ChatListener implements Listener {
         } catch (UnknownHostException ex2) {
             title = "&cUnknown Host";
         } catch (Exception ex3) {
-            title = "&cError Occurred";
+            title = "&d" + url;
         } finally {
             title = title + " &7(&c" + (System.currentTimeMillis() - startMillis) + "MS&7)";
         }

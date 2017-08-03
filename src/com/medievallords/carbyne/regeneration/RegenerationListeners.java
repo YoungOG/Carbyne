@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.PistonBaseMaterial;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Created by Calvin on 3/23/2017
@@ -34,8 +35,13 @@ public class RegenerationListeners implements Listener {
     public void onBlockBreak(BlockBreakEvent e) {
         Player player = e.getPlayer();
 
-        if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
-            regenerationHandler.request(e.getBlock(), RegenerationType.BROKEN);
+        new BukkitRunnable() {
+            public void run() {
+                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
+                    regenerationHandler.request(e.getBlock(), RegenerationType.BROKEN);
+            }
+        }.runTaskAsynchronously(main);
+
     }
 
     /**
@@ -47,8 +53,13 @@ public class RegenerationListeners implements Listener {
     public void onBlockPlace(BlockPlaceEvent e) {
         Player player = e.getPlayer();
 
-        if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
-            regenerationHandler.request(e.getBlock(), RegenerationType.PLACED);
+        new BukkitRunnable() {
+            public void run() {
+                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
+                    regenerationHandler.request(e.getBlock(), RegenerationType.PLACED);
+            }
+        }.runTaskAsynchronously(main);
+
     }
 
     /**

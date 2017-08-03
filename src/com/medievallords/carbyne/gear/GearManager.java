@@ -19,9 +19,11 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -485,18 +487,12 @@ public class GearManager {
         ItemStack replacement = null;
 
         if (isDefaultWeapon(item)) {
-            replacement = item;//getDefaultWeapon(item).getItem(false);
+            replacement = getDefaultWeapon(item).getItem(false);
         } else if (isDefaultArmor(item)) {
-            replacement = item;//getDefaultArmor(item).getItem(false);
-            MinecraftArmor armor = getDefaultArmor(replacement);
-
-            if (armor.getDurability(replacement) < 0) {
-                armor.setDurability(replacement, armor.getMaxDurability());
-            }
-
+            replacement = getDefaultArmor(item).getItem(false);
         }
 
-        /*if (replacement != null) {
+        if (replacement != null) {
             for (Enchantment enchantment : item.getEnchantments().keySet()) {
                 replacement.addUnsafeEnchantment(enchantment, item.getEnchantments().get(enchantment));
             }
@@ -512,7 +508,7 @@ public class GearManager {
                     List<String> lore = im.getLore();
 
                     for (String line : item.getItemMeta().getLore()) {
-                        if (!lore.contains(line) && !line.contains("Durability")) {
+                        if (!lore.contains(line) && !line.contains("Damage Reduction")) {
                             lore.add(line);
                         }
                     }
@@ -522,7 +518,9 @@ public class GearManager {
 
                 replacement.setItemMeta(im);
             }
-        }*/
+
+            replacement.setDurability(item.getDurability());
+        }
 
         return replacement;
     }

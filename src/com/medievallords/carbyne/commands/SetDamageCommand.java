@@ -51,5 +51,4 @@ public class SetDamageCommand extends BaseCommand implements Listener {
             }
         }
     }
-
 }

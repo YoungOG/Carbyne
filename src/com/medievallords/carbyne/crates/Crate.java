@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -146,12 +147,44 @@ public class Crate {
 
     public void showRewards(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 54, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
+        List<Integer> randomGear = new ArrayList<>();
+        int i = 0;
 
         for (Reward reward : getRewards()) {
             inventory.addItem(new ItemBuilder(reward.getItem(true)).addLore("").addLore("&aChance: &b" + reward.getChance() + "%").build());
+            ItemStack item = inventory.getItem(i);
+
+            if (item != null && item.getType() != Material.AIR && item.getItemMeta() != null && item.getItemMeta().hasDisplayName() && ChatColor.stripColor(item.getItemMeta().getDisplayName()).equals("Randomly Selected Gear")) {
+                randomGear.add(i);
+            }
+
+            i++;
         }
 
         player.openInventory(inventory);
+
+        if (randomGear.isEmpty())
+            return;
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (player.getOpenInventory() == null || inventory == null) {
+                    cancel();
+                    return;
+                }
+
+                for (int p : randomGear) {
+                    ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(true).getItem(false);
+                    ItemMeta meta = randomCarbyne.getItemMeta();
+                    meta.setLore(inventory.getItem(p).getItemMeta().getLore());
+                    meta.setDisplayName(ChatColor.GOLD + "Randomly Selected Gear");
+                    randomCarbyne.setItemMeta(meta);
+
+                    inventory.setItem(p, randomCarbyne);
+                }
+            }
+        }.runTaskTimer(main, 0, 10);
     }
 
     public void generateRewards(Player player) {

@@ -7,6 +7,7 @@ import com.medievallords.carbyne.duels.duel.DuelStage;
 import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -122,9 +123,13 @@ public class RegularDuel extends Duel {
             Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + getBets());
 
             if (participants[0].equals(winnerId)) {
-                MessageManager.broadcastMessage("&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[1]).getName());
+                for (Player player1 : PlayerUtility.getOnlinePlayers()) {
+                    MessageManager.sendMessage(player1, "&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[1]).getName());
+                }
             } else {
-                MessageManager.broadcastMessage("&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[0]).getName());
+                for (Player player1 : PlayerUtility.getOnlinePlayers()) {
+                    MessageManager.sendMessage(player1, "&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[0]).getName());
+                }
             }
         } else {
             for (UUID uuid : getPlayersAlive()) {
@@ -195,6 +200,7 @@ public class RegularDuel extends Duel {
             Player p = Bukkit.getPlayer(getPlayersAlive().get(0));
             p.setFireTicks(0);
             p.setHealth(p.getMaxHealth());
+
             new BukkitRunnable() {
                 @Override
                 public void run() {

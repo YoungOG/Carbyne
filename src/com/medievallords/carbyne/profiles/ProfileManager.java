@@ -187,7 +187,7 @@ public class ProfileManager {
             }.runTaskAsynchronously(main);
 
             getLoadedProfiles().add(profile);
-            Bukkit.getServer().getLogger().log(Level.INFO, "A new profile was created for " + player.getName() + " at " + System.currentTimeMillis() + "time millis");
+            Bukkit.getServer().getLogger().log(Level.INFO, "A new profile was created for " + player.getName() + ".");
         }
     }
 
@@ -235,6 +235,6 @@ public class ProfileManager {
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(main, 0, 15);
+        }.runTaskTimerAsynchronously(main, 0, 5);
     }
 }

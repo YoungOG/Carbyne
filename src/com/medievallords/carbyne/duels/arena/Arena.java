@@ -152,6 +152,7 @@ public class Arena {
 
             return;
         }
+
         this.duel = new RegularDuel(this, players);
         duel.setBets(bet);
         duel.setPlayerBets(playerBets);
@@ -179,6 +180,7 @@ public class Arena {
             }
             return;
         }
+
         this.duel = new SquadDuel(this, teamOne, teamTwo);
         duel.setBets(bets);
         duel.setPlayerBets(playerBets);

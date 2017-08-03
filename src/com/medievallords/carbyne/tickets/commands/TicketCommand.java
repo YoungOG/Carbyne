@@ -19,6 +19,11 @@ public class TicketCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
+        if (getTicketManager().getNewTickets().containsKey(player.getUniqueId())) {
+            getTicketManager().openRemove(player.getUniqueId());
+            return;
+        }
+
         getTicketManager().openTicketGUI(player.getUniqueId(), player.hasPermission("carbyne.staff.tickets"));
     }
 
@@ -48,6 +53,15 @@ public class TicketCommand extends BaseCommand {
             player.sendMessage("You don't have any tickets");
         }
 
+    }
+
+    @Command(name = "cancelticket", aliases = {"resticket"}, inGameOnly = true, permission = "carbyne.staff.tickets")
+    public void cancel(CommandArgs commandArgs) {
+        String[] args = commandArgs.getArgs();
+        Player player = commandArgs.getPlayer();
+
+        getTicketManager().getNewTickets().remove(player.getUniqueId());
+        MessageManager.sendMessage(player, "&cTicket has been cancelled");
     }
 
     @Command(name = "ticket.stats", aliases = {"modreq.stats"}, inGameOnly = true, permission = "carbyne.staff.tickets")

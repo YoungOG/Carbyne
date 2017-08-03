@@ -11,10 +11,7 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
-import com.medievallords.carbyne.utils.Cooldowns;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.ParticleEffect;
-import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.*;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -119,7 +116,7 @@ public class GearListeners implements Listener {
                         flatDamage = 0.5;
                         break;
                     case FALL:
-                        flatDamage = event.getDamage() - event.getDamage() * (armorReduction - 0.40);
+                        flatDamage = event.getDamage() - event.getDamage() * (armorReduction - 0.20);
                         break;
                 }
 
@@ -156,7 +153,7 @@ public class GearListeners implements Listener {
 
             Player damaged = (Player) event.getEntity();
             if (TownyUniverse.getTownBlock(damaged.getLocation()) != null && !TownyUniverse.getTownBlock(damaged.getLocation()).getPermissions().pvp) {
-                if (carbyne.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) == null) {
+                if (carbyne.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) != null) {
                     return;
                 }
             }
@@ -169,15 +166,14 @@ public class GearListeners implements Listener {
                         if (carbyneGear instanceof CarbyneArmor) {
                             CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
-                            if (itemStack.getType().equals(Material.LEATHER_CHESTPLATE) || itemStack.getType().equals(Material.LEATHER_LEGGINGS)) {
-                                if (carbyneArmor.getDefensivePotionEffects().size() > 0) {
-                                    carbyneArmor.applyDefensiveEffect(damaged);
-                                }
+                            //if (itemStack.getType().equals(Material.LEATHER_CHESTPLATE) || itemStack.getType().equals(Material.LEATHER_LEGGINGS)) {
+                            if (carbyneArmor.getDefensivePotionEffects().size() > 0) {
+                                carbyneArmor.applyDefensiveEffect(damaged);
+                            }
 
-                                if (carbyneArmor.getOffensivePotionEffects().size() > 0) {
-                                    if (event.getDamager() != null && event.getDamager() instanceof Player) {
-                                        carbyneArmor.applyOffensiveEffect((Player) event.getDamager());
-                                    }
+                            if (carbyneArmor.getOffensivePotionEffects().size() > 0) {
+                                if (event.getDamager() != null && event.getDamager() instanceof Player) {
+                                    carbyneArmor.applyOffensiveEffect((Player) event.getDamager());
                                 }
                             }
 
@@ -364,13 +360,13 @@ public class GearListeners implements Listener {
                 MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
 
                 if (minecraftArmor != null) {
-                    event.setCurrentItem(minecraftArmor.getItem(false));
+                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
             } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
                 MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
 
                 if (minecraftWeapon != null) {
-                    event.setCurrentItem(minecraftWeapon.getItem(false));
+                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
             }
         }
@@ -404,6 +400,8 @@ public class GearListeners implements Listener {
                 if (minecraftWeapon != null) {
                     event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
+            } else if (event.getCurrentItem().getType() == Material.NETHER_STAR) {
+                event.setCurrentItem(new ItemBuilder(gearManager.getTokenItem()).amount(event.getCurrentItem().getAmount()).build());
             }
         }
     }
@@ -710,6 +708,28 @@ public class GearListeners implements Listener {
                     }
                     break;
                 case 2:
+                    if (is.getType().toString().contains("HELMET")) {
+                        damageReduction += 0.03;
+                    } else if (is.getType().toString().contains("CHESTPLATE")) {
+                        damageReduction += 0.08;
+                    } else if (is.getType().toString().contains("LEGGINGS")) {
+                        damageReduction += 0.06;
+                    } else if (is.getType().toString().contains("BOOTS")) {
+                        damageReduction += 0.03;
+                    }
+                    break;
+                case 3:
+                    if (is.getType().toString().contains("HELMET")) {
+                        damageReduction += 0.03;
+                    } else if (is.getType().toString().contains("CHESTPLATE")) {
+                        damageReduction += 0.08;
+                    } else if (is.getType().toString().contains("LEGGINGS")) {
+                        damageReduction += 0.06;
+                    } else if (is.getType().toString().contains("BOOTS")) {
+                        damageReduction += 0.03;
+                    }
+                    break;
+                case 4:
                     if (is.getType().toString().contains("HELMET")) {
                         damageReduction += 0.03;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {

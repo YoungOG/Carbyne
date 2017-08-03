@@ -23,10 +23,11 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
+import static com.medievallords.carbyne.duels.duel.DuelStage.FIGHTING;
 
 /**
  * Created by xwiena22 on 2017-03-14.
@@ -49,7 +50,14 @@ public class DuelListeners implements Listener {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
 
-            if (duelManager.getDuelFromUUID(player.getUniqueId()) == null) {
+            Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
+
+            if (duel == null) {
+                return;
+            }
+
+            if (duel.getDuelStage() != FIGHTING) {
+                event.setCancelled(true);
                 return;
             }
 
@@ -226,28 +234,7 @@ public class DuelListeners implements Listener {
         if (request != null) {
             request.cancel();
         } else if (duel != null) {
-            List<ItemStack> drops = new ArrayList<>();
-            for (ItemStack itemStack : player.getInventory().getContents()) {
-                if (itemStack != null && itemStack.getType() != Material.AIR) {
-                    drops.add(itemStack);
-                }
-            }
-
-            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
-                if (itemStack != null && itemStack.getType() != Material.AIR) {
-                    drops.add(itemStack);
-                }
-            }
-
-            for (ItemStack itemStack : drops) {
-                Item item = event.getPlayer().getWorld().dropItemNaturally(event.getPlayer().getLocation(), itemStack);
-                duel.getDrops().add(item);
-            }
-
-            player.getInventory().clear();
-
-            duel.getPlayersAlive().remove(player.getUniqueId());
-            duel.check();
+            player.setHealth(0);
         }
     }
 

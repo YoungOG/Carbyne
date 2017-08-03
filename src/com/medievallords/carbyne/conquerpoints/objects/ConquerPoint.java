@@ -44,7 +44,7 @@ public class ConquerPoint {
         this.pos1 = pos1;
         this.pos2 = pos2;
         this.state = ConquerPointState.OPEN;
-        this.captureTime = 601;
+        this.captureTime = 301;
         this.cooldownTime = 0;
     }
 
@@ -54,7 +54,7 @@ public class ConquerPoint {
         this.pos2 = pos2;
         this.state = ConquerPointState.OPEN;
         this.nation = nation;
-        this.captureTime = 601;
+        this.captureTime = 301;
         this.cooldownTime = 0;
     }
 
@@ -73,7 +73,7 @@ public class ConquerPoint {
                         captureTime--;
                     }
 
-                    if (captureTime <= 601 && captureTime > 16) {
+                    if (captureTime <= 301 && captureTime > 16) {
                         if (captureTime % 30 == 0) {
                             try {
                                 MessageManager.broadcastMessage("&c[&4&lConquer&c]: &5" + resident.getTown().getNation().getName() + " &cis conquering &d" + getId() + "&c! [&4" + MessageManager.convertSecondsToMinutes(captureTime) + "&c]");
@@ -130,7 +130,7 @@ public class ConquerPoint {
                             captureTask.cancel();
 
                         holder = null;
-                        captureTime = 121;
+                        captureTime = 301;
                         cooldownTime = 1801;
 
                         setOnCooldown();
@@ -149,7 +149,7 @@ public class ConquerPoint {
             captureTask.cancel();
 
         holder = null;
-        captureTime = 121;
+        captureTime = 301;
     }
 
     public void setOnCooldown() {

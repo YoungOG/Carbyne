@@ -23,7 +23,7 @@ public class RaceListeners implements Listener {
         if (event.getAction() == Action.PHYSICAL) {
             if (event.getClickedBlock().getLocation().equals(race.getWinningLocation())) {
                 if (race.getParticipants().contains(event.getPlayer()) && race.getWinner() == null && race.isAfterCountdown()) {
-                    MessageManager.sendMessage(event.getPlayer(), "&2You have cleared the %race%!".replace("%race%", race.getCurrentRace().getRaceName()));
+                    MessageManager.sendMessage(event.getPlayer(), "&2You have cleared the %race%!".replace("%race%", race.getCurrentRace().getName()));
                     race.setWinner(event.getPlayer());
                 }
             }

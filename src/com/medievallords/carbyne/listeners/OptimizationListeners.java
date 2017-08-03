@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
@@ -15,18 +16,13 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -64,6 +60,15 @@ public class OptimizationListeners implements Listener {
         allowedMaterials.add(Material.MOB_SPAWNER);
 
         allowedBlockIds.addAll(Arrays.asList(0, 6, 8, 9, 10, 11, 30, 31, 32, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 66, 68, 69, 70, 72, 75, 76, 77, 83, 90, 93, 94, 104, 105, 106, 115));
+    }
+
+    @EventHandler
+    public void onSpawn(CreatureSpawnEvent event) {
+        if (event.getEntity().getWorld().getName().equalsIgnoreCase("world")) {
+            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager)) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
@@ -177,6 +182,10 @@ public class OptimizationListeners implements Listener {
         Player player = event.getEntity();
 
         if (player.getLastDamageCause() != null && player.getLastDamageCause().getCause() != null) {
+            if (!Cooldowns.tryCooldown(player.getUniqueId(), player.getUniqueId().toString() + ":killmessagecooldown", 30 * 1000)) {
+                return;
+            }
+
             switch (player.getLastDamageCause().getCause()) {
                 case FALL:
                     event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e broke their legs"));
@@ -217,20 +226,20 @@ public class OptimizationListeners implements Listener {
                         if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
                             JSONMessage message = JSONMessage.create();
                             message.then(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using "));
-                            String toolTip = "";
+                            StringBuilder toolTip;
 
-                            toolTip = killer.getItemInHand().getItemMeta().getDisplayName() + "\n";
+                            toolTip = new StringBuilder(killer.getItemInHand().getItemMeta().getDisplayName() + "\n");
                             for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet()) {
-                                toolTip = toolTip + "&7" + MessageManager.getEnchantmentFriendlyName(enchantment) + " &7" + MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment)) + "\n";
+                                toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment))).append("\n");
                             }
 
                             for (String s : killer.getItemInHand().getItemMeta().getLore()) {
-                                toolTip = toolTip + s + "\n";
+                                toolTip.append(s).append("\n");
                             }
                             String type = killer.getItemInHand().getType().name().substring(0,1).toUpperCase();
-                            toolTip = toolTip + "\n" + "&7" + type + killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " ");
+                            toolTip.append("\n" + "&7").append(type).append(killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " "));
 
-                            message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip));
+                            message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString()));
 
                             PlayerUtility.getOnlinePlayers().forEach(p -> message.send(p));
                             event.setDeathMessage("");
@@ -563,13 +572,11 @@ public class OptimizationListeners implements Listener {
         }
     }
 
-    /*@EventHandler
-    public void onConsoleCommand(ServerCommandEvent e)
-    {
-        if(e.getCommand().startsWith("/pex"))
-        {
-
+    @EventHandler
+    public void onConsoleCommand(PlayerCommandPreprocessEvent event) {
+        if (event.getMessage().split(" ")[0].contains(":") && !event.getPlayer().isOp()) {
+            event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cSorry, that command syntax is not supported.");
         }
-    }*/
-
+    }
 }

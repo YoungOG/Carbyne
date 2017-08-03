@@ -56,6 +56,16 @@ public class TicketListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
+        if (event.getInventory().getName().equalsIgnoreCase("Cancel ticket")) {
+            event.setCancelled(true);
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.ANVIL) {
+                ticketManager.getNewTickets().remove(player.getUniqueId());
+                player.closeInventory();
+                MessageManager.sendMessage(player, "&cTicket has been cancelled");
+                return;
+            }
+        }
+
         if (event.getInventory().getName().equalsIgnoreCase(TicketManager.GUI_NAME)) {
             event.setCancelled(true);
             ItemStack item = event.getCurrentItem();
@@ -82,6 +92,11 @@ public class TicketListener implements Listener {
             event.setCancelled(true);
             ItemStack item = event.getCurrentItem();
             if (item != null) {
+                if (item.getType() == Material.BARRIER) {
+                    ticketManager.openTicketGUI(player.getUniqueId(), player.hasPermission("carbyne.staff.tickets"));
+                    return;
+                }
+
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                     ticketManager.openTicket(player, item.getItemMeta().getDisplayName(), player.hasPermission("carbyne.staff.tickets"));
                 }
@@ -102,6 +117,14 @@ public class TicketListener implements Listener {
             return;
         }
 
+        if (event.getInventory().getName().equals(TicketManager.CLOSED_TICKET_LIST_GUI_NAME)) {
+            event.setCancelled(true);
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.BARRIER) {
+                ticketManager.openTicketGUI(player.getUniqueId(), player.hasPermission("carbyne.staff.tickets"));
+                return;
+            }
+        }
+
         Ticket ticket = ticketManager.getTicket(event.getInventory().getName());
         if (ticket != null) {
             event.setCancelled(true);
@@ -116,6 +139,20 @@ public class TicketListener implements Listener {
                         ticketManager.closeTicket(player.getUniqueId(), event.getInventory().getName());
                         event.setCurrentItem(null);
                         event.getClickedInventory().setItem(5, new ItemBuilder(ticketManager.getMaterial(ticket)).name(ticketManager.getColor(ticket) + ticket.getStatus().name()).build());
+                        break;
+                    case REDSTONE:
+                        if (ticketManager.getTickets().contains(ticket)) {
+                            ticketManager.getTickets().remove(ticket);
+                        }
+
+                        if (ticketManager.getClosedTickets().contains(ticket)) {
+                            ticketManager.getClosedTickets().remove(ticket);
+                        }
+
+                        MessageManager.sendMessage(player, "&cThe ticket has been removed");
+                        break;
+                    case BARRIER:
+                        ticketManager.openTicketList(player.getUniqueId());
                         break;
                 }
             }

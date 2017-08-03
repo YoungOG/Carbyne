@@ -43,6 +43,7 @@ public class ArenaListeners implements Listener {
                 event.setCancelled(true);
                 MessageManager.sendMessage(event.getPlayer(), "&cYou cannot enter a duel with a pvp timer");
                 event.getPlayer().teleport(arena.getLobbyLocation());
+                return;
             }
 
             List<Location> pedastoolLocations = Arrays.asList(arena.getPedastoolLocations());

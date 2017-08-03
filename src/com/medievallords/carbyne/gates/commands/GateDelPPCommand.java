@@ -25,7 +25,7 @@ public class GateDelPPCommand extends BaseCommand {
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
+        if (!player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Pressure Plate.");
             return;
         }
