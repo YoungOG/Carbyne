@@ -2,18 +2,18 @@ package com.medievallords.carbyne.events;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.utils.MessageManager;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Created by Dalton on 7/8/2017.
@@ -27,6 +27,23 @@ public class UniversalEventListeners implements Listener
     public UniversalEventListeners(EventManager eventManager)
     {
         this.eventManager = eventManager;
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        if (e.getTo().getDirection().equals(e.getFrom().getDirection())) return;
+        final Player player = e.getPlayer();
+        new BukkitRunnable() {
+            public void run() {
+                for (Event event : eventManager.getActiveEvents()) {
+                    if (event.getWaitingTasks().containsKey(player)) {
+                        event.getWaitingTasks().remove(player);
+                        MessageManager.sendMessage(player, "&cTeleportation cancelled!");
+                        break;
+                    }
+                }
+            }
+        }.runTaskAsynchronously(Carbyne.getInstance());
     }
 
     @EventHandler
@@ -93,7 +110,8 @@ public class UniversalEventListeners implements Listener
     public void onPlayerDeath(PlayerDeathEvent e) {
         Profile profile = main.getProfileManager().getProfile(e.getEntity().getUniqueId());
         if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().properties.contains(EventProperties.REMOVE_PLAYER_ON_DEATH)) {
-            profile.getActiveEvent().removePlayerFromEvent(e.getEntity());
+            Event event = profile.getActiveEvent();
+            event.removePlayerFromEvent(e.getEntity());
         }
     }
 
@@ -109,6 +127,13 @@ public class UniversalEventListeners implements Listener
     public void onDrink(PlayerItemConsumeEvent e) {
         Profile profile = main.getProfileManager().getProfile(e.getPlayer().getUniqueId());
         if (profile != null && profile.getActiveEvent() != null && profile.getActiveEvent().properties.contains(EventProperties.PREVENT_POTION_DRINKING))
+            e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onHunger(FoodLevelChangeEvent e) {
+        Profile profile = main.getProfileManager().getProfile(e.getEntity().getUniqueId());
+        if (profile.getActiveEvent() != null && profile.getActiveEvent().properties.contains(EventProperties.HUNGER_DISABLED))
             e.setCancelled(true);
     }
 

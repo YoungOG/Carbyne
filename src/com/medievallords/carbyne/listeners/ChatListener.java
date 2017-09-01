@@ -19,6 +19,7 @@ import com.palmergames.bukkit.towny.permissions.TownyPerms;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -38,10 +39,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,6 +137,19 @@ public class ChatListener implements Listener {
 
         JSONMessage newMessage = JSONMessage.create("");
 
+        Profile playerData = carbyne.getProfileManager().getProfile(player.getUniqueId());
+        if (playerData == null) {
+        } else {
+
+            if (playerData.isLocalChatToggled()) {
+                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&b[Local] &f"));
+            } else if (playerData.isTownChatToggled()) {
+                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&a[Town] &f"));
+            } else if (playerData.isNationChatToggled()) {
+                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&d[Nation] &f"));
+            }
+        }
+
         try {
             Resident resident = TownyUniverse.getDataSource().getResident(player.getName());
 
@@ -223,8 +234,71 @@ public class ChatListener implements Listener {
             newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
         }
 
-        for (Player players : PlayerUtility.getOnlinePlayers()) {
-            newMessage.send(players);
+
+        if (playerData.isLocalChatToggled()) {
+            for (Player players : PlayerUtility.getPlayersInRadius(player.getLocation(), 35)) {
+                if (carbyne.getProfileManager().getProfile(players.getUniqueId()) != null && carbyne.getProfileManager().getProfile(players.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId())) {
+
+                } else {
+                    newMessage.send(players);
+                }
+            }
+        } else if (playerData.isTownChatToggled()) {
+            Resident resident;
+            try {
+                resident = TownyUniverse.getDataSource().getResident(player.getName());
+            } catch (NotRegisteredException e) {
+                return;
+            }
+            if (resident == null) return;
+            Town town;
+            try {
+                town = resident.getTown();
+            } catch (NotRegisteredException e) {
+                return;
+            }
+            List<Player> players = new ArrayList<>();
+            for (Resident res : town.getResidents()) {
+                Player p = Bukkit.getPlayer(res.getName());
+                if (p == null || (!p.isOnline())) continue;
+                players.add(p);
+            }
+            for (Player p : players) newMessage.send(p);
+        } else if (playerData.isNationChatToggled()) {
+            Resident resident;
+            try {
+                resident = TownyUniverse.getDataSource().getResident(player.getName());
+            } catch (NotRegisteredException e) {
+                return;
+            }
+            if (resident == null) return;
+            Town town;
+            try {
+                town = resident.getTown();
+            } catch (NotRegisteredException e) {
+                return;
+            }
+            Nation nation;
+            try {
+                nation = town.getNation();
+            } catch (NotRegisteredException e) {
+                return;
+            }
+            List<Player> players = new ArrayList<>();
+            for (Resident res : nation.getResidents()) {
+                Player p = Bukkit.getPlayer(res.getName());
+                if (p == null || !p.isOnline()) continue;
+                players.add(p);
+            }
+            for (Player p : players) newMessage.send(p);
+        } else {
+            for (Player players : PlayerUtility.getOnlinePlayers()) {
+                if (carbyne.getProfileManager().getProfile(players.getUniqueId()) != null && carbyne.getProfileManager().getProfile(players.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId())) {
+
+                } else {
+                    newMessage.send(players);
+                }
+            }
         }
 
         if (!player.hasPermission("carbyne.bypassrepeat")) {

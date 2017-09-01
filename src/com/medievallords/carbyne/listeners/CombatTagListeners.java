@@ -349,7 +349,7 @@ public class CombatTagListeners implements Listener {
     public void denySafeZoneEntry(PlayerTeleportEvent event) {
         if (isInCombat(event.getPlayer().getUniqueId()) && event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL && !isPvpEnabledAt(event.getTo()) && isPvpEnabledAt(event.getFrom())) {
             event.setCancelled(true);
-            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use ender pearls while in combat. You have been refunded.");
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use enderpearls while in combat. You have been refunded.");
             event.getPlayer().getInventory().addItem(new ItemBuilder(Material.ENDER_PEARL).amount(1).build());
         }
     }
@@ -385,7 +385,7 @@ public class CombatTagListeners implements Listener {
                     villager.setCustomName(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
                     villager.setCustomNameVisible(true);
                     villager.setFireTicks(player.getFireTicks());
-                    player.getActivePotionEffects().forEach(villager::addPotionEffect);
+                    player.getActivePotionEffects().stream().filter(potionEffect -> !(potionEffect.getType() == PotionEffectType.INVISIBILITY)).forEach(villager::addPotionEffect);
                     villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 7, false, false));
                     villager.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
                     villager.setCanPickupItems(false);

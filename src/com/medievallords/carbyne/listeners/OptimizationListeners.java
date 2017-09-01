@@ -10,19 +10,26 @@ import com.medievallords.carbyne.utils.signgui.SignGUIUpdateEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicReloadedEvent;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -62,14 +69,14 @@ public class OptimizationListeners implements Listener {
         allowedBlockIds.addAll(Arrays.asList(0, 6, 8, 9, 10, 11, 30, 31, 32, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 66, 68, 69, 70, 72, 75, 76, 77, 83, 90, 93, 94, 104, 105, 106, 115));
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
         if (event.getEntity().getWorld().getName().equalsIgnoreCase("world")) {
             if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager)) {
                 event.setCancelled(true);
             }
         }
-    }
+    }*/
 
     @EventHandler
     public void onHungerLoss(FoodLevelChangeEvent event) {
@@ -96,6 +103,12 @@ public class OptimizationListeners implements Listener {
                 }
             }
         }.runTaskLater(Carbyne.getInstance(), 5L);
+    }
+
+    @EventHandler
+    public void onReload(MythicReloadedEvent event) {
+        for (MythicSpawner ms : event.getInstance().getSpawnerManager().getSpawners()) {
+        }
     }
 
     @EventHandler

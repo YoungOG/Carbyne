@@ -31,9 +31,11 @@ import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.economy.commands.administrator.MarketSetTaxCommand;
 import com.medievallords.carbyne.economy.commands.player.*;
 import com.medievallords.carbyne.events.EventManager;
+import com.medievallords.carbyne.events.UniversalEventCommand;
 import com.medievallords.carbyne.events.UniversalEventListeners;
-import com.medievallords.carbyne.events.implementations.CliffClimb;
-import com.medievallords.carbyne.events.implementations.commands.CliffClimbCommands;
+import com.medievallords.carbyne.events.component.commands.EventDonationCommands;
+import com.medievallords.carbyne.events.implementations.LastAlive;
+import com.medievallords.carbyne.events.implementations.Race;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
@@ -51,8 +53,20 @@ import com.medievallords.carbyne.listeners.*;
 import com.medievallords.carbyne.lootchests.LootChestListeners;
 import com.medievallords.carbyne.lootchests.LootChestManager;
 import com.medievallords.carbyne.lootchests.commands.LootChestCommand;
-import com.medievallords.carbyne.missions.MissionManager;
+import com.medievallords.carbyne.mechanics.MechanicListener;
+import com.medievallords.carbyne.missions.MissionsManager;
+import com.medievallords.carbyne.missions.commands.MissionAdminCommand;
 import com.medievallords.carbyne.missions.commands.MissionCommand;
+import com.medievallords.carbyne.missions.listeners.MissionListeners;
+import com.medievallords.carbyne.packages.PackageManager;
+import com.medievallords.carbyne.packages.commands.*;
+import com.medievallords.carbyne.packages.listeners.PackageListener;
+import com.medievallords.carbyne.professions.ProfessionManager;
+import com.medievallords.carbyne.professions.commands.ProfessionChooseCommand;
+import com.medievallords.carbyne.professions.commands.ProfessionReloadCommand;
+import com.medievallords.carbyne.professions.commands.ProfessionResetCommand;
+import com.medievallords.carbyne.professions.commands.ProfessionSetCommand;
+import com.medievallords.carbyne.professions.listeners.ProfessionListeners;
 import com.medievallords.carbyne.profiles.ProfileListeners;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
@@ -80,6 +94,7 @@ import com.medievallords.carbyne.utils.combatindicators.PacketManagerImpl;
 import com.medievallords.carbyne.utils.command.CommandFramework;
 import com.medievallords.carbyne.utils.nametag.NametagManager;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
+import com.medievallords.carbyne.war.WarManager;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
@@ -155,6 +170,10 @@ public class Carbyne extends JavaPlugin {
     private FileConfiguration eventsFileConfiguration;
     private File rulesFile;
     private FileConfiguration rulesFileCongfiguration;
+    private File packageFile;
+    private FileConfiguration packageFileConfiguration;
+    private File missionFile;
+    private FileConfiguration missionFileConfiguration;
 
     private Permission permissions = null;
 
@@ -185,7 +204,10 @@ public class Carbyne extends JavaPlugin {
     private PacketManager packetManager;
     private TrailManager trailManager;
     private EventManager eventManager;
-    private MissionManager missionManager;
+    private MissionsManager missionsManager;
+    private WarManager warManager;
+    private PackageManager packageManager;
+    private ProfessionManager professionManager;
 
     public static Carbyne getInstance() {
         return instance;
@@ -238,6 +260,7 @@ public class Carbyne extends JavaPlugin {
             all.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
         }
 
+        professionManager = new ProfessionManager();
         profileManager = new ProfileManager();
         staffManager = new StaffManager();
         marketManager = new MarketManager();
@@ -254,9 +277,10 @@ public class Carbyne extends JavaPlugin {
         lootChestManager = new LootChestManager();
         gamemodeManager = new GamemodeManager();
         trailManager = new TrailManager();
-        missionManager = new MissionManager();
+        //if(townyEnabled) warManager = new WarManager();
+        missionsManager = new MissionsManager();
         packetManager = new PacketManagerImpl(this);
-
+        packageManager = new PackageManager();
         tabbed = new Tabbed(this);
         aether = new Aether(this, new CarbyneBoardAdapter(this));
         signGUI = new SignGUI();
@@ -298,6 +322,7 @@ public class Carbyne extends JavaPlugin {
         mongoClient.close();
         staffManager.shutdown();
         gearManager.getRepairItems().forEach(Entity::remove);
+        eventManager.saveEvents();
 
         clearVillagers();
     }
@@ -339,6 +364,12 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new UniversalEventListeners(eventManager), this);
         pm.registerEvents(new SetDamageCommand(), this);
         pm.registerEvents(new FollowCommand(), this);
+        pm.registerEvents(new PackageListener(), this);
+        pm.registerEvents(new MissionListeners(), this);
+        pm.registerEvents(new ProfessionListeners(), this);
+        pm.registerEvents(new ProfessionResetCommand(), this);
+        pm.registerEvents(new MechanicListener(), this);
+        pm.registerEvents(new IgnoreCommand(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -349,6 +380,7 @@ public class Carbyne extends JavaPlugin {
 
     private void registerCommands() {
         //General Commands
+        new WebsiteCommand();
         new StatsCommand();
         new ChatCommand();
         new ToggleCommand();
@@ -358,6 +390,9 @@ public class Carbyne extends JavaPlugin {
         new SetDurabilityCommand();
         new VoteCommand();
         new DiscordCommand();
+        new LocalChatCommand();
+        new TownChatCommand();
+        new NationChatCommand();
 
         //Gate Commands
         new GearCommands();
@@ -472,6 +507,7 @@ public class Carbyne extends JavaPlugin {
         new ReviveCommand();
         new StaffModeWhitelist();
         new StaffChatCommand();
+        new TestMessageCommand();
 
         new ConquerPointCommand();
 
@@ -485,9 +521,24 @@ public class Carbyne extends JavaPlugin {
         new TrailCommand();
         new RulesCommand();
 
-        new CliffClimbCommands(new CliffClimb(eventManager));
+        new EventDonationCommands();
+        new UniversalEventCommand(new Race(eventManager), new LastAlive(eventManager));
 
+        //Package Commands
+        new PackageListCommand();
+        new PackageGiveCommand();
+        new PackageReloadCommand();
+        new PackageOpenCommand();
+        new PackagePreviewCommand();
+
+        //Profession Commands
+        new ProfessionChooseCommand();
+        new ProfessionReloadCommand();
+        new ProfessionSetCommand();
+
+        //Mission Commands
         new MissionCommand();
+        new MissionAdminCommand();
     }
 
     private void registerPackets() {
@@ -533,6 +584,8 @@ public class Carbyne extends JavaPlugin {
         saveResource("gamemodetowns.yml", false);
         saveResource("events.yml", false);
         saveResource("rules.yml", false);
+        saveResource("packages.yml", false);
+        saveResource("missions.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
@@ -569,6 +622,12 @@ public class Carbyne extends JavaPlugin {
 
         rulesFile = new File(getDataFolder(), "rules.yml");
         rulesFileCongfiguration = YamlConfiguration.loadConfiguration(rulesFile);
+
+        packageFile = new File(getDataFolder(), "packages.yml");
+        packageFileConfiguration = YamlConfiguration.loadConfiguration(packageFile);
+
+        missionFile = new File(getDataFolder(), "missions.yml");
+        missionFileConfiguration = YamlConfiguration.loadConfiguration(missionFile);
 
         File langFile = new File(getDataFolder(), "lang.yml");
         FileConfiguration langFileConfiguration = YamlConfiguration.loadConfiguration(langFile);

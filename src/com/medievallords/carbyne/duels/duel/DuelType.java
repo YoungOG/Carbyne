@@ -6,6 +6,7 @@ package com.medievallords.carbyne.duels.duel;
  */
 public enum DuelType {
     REGULAR,
-    SQUAD
+    SQUAD,
+    PRACTICE
     //PRACTICE
 }

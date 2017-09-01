@@ -43,6 +43,8 @@ public class InvseeCommand extends BaseCommand {
             inv = new SpecialPlayerInventory(t, t.isOnline());
         }
 
+        inv.update();
+
         p.openInventory(inv.getBukkitInventory());
     }
 }

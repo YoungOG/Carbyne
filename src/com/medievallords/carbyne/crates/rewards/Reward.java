@@ -2,6 +2,7 @@ package com.medievallords.carbyne.crates.rewards;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.packages.Package;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,6 +55,8 @@ public class Reward {
             if (gearManager.getCarbyneGear(gearCode).getItem(false) != null) {
                 return new ItemBuilder(gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();
             }
+        } else if (Package.getPackage(displayName) != null) {
+            return Package.getPackage(displayName).getItem(amount);
         } else {
             return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).amount(amount).name(displayName).setLore(lore).addEnchantments(enchantments).build();
         }

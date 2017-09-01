@@ -1,9 +1,12 @@
 package com.medievallords.carbyne.profiles;
 
 import com.medievallords.carbyne.events.Event;
+import com.medievallords.carbyne.professions.Profession;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -16,6 +19,12 @@ public class Profile {
     private long pvpTime, timeLeft;
     private boolean pvpTimePaused, showEffects, safelyLogged, moving;
     private Event activeEvent;
+    private List<UUID> ignoredPlayers = new ArrayList<>();
+    private boolean localChatToggled = false, townChatToggled = false, nationChatToggled = false;
+    private Profession profession;
+    private int professionLevel = 1;
+    private double professionProgress = 0, requiredProfessionProgress = 100;
+    private long professionResetCooldown = 0;
 
     public Profile(UUID uniqueId) {
         this.uniqueId = uniqueId;

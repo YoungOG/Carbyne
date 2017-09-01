@@ -10,6 +10,8 @@ import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.NameTagVisibility;
 import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService;
 
 import java.text.DecimalFormat;
@@ -20,22 +22,22 @@ public class NametagManager {
 
     private static Map<String, NametagPlayer> players = new HashMap<>();
 
-    public static void setup(Player p){
-        if(!players.containsKey(p.getName())){
+    public static void setup(Player p) {
+        if (!players.containsKey(p.getName())) {
             NametagPlayer nametagPlayer = new NametagPlayer(p);
-            players.put(p.getName(),nametagPlayer);
+            players.put(p.getName(), nametagPlayer);
         }
     }
 
-    public static NametagPlayer getPlayer(Player p){
+    public static NametagPlayer getPlayer(Player p) {
         return players.get(p.getName());
     }
 
-    public static boolean contains(Player p){
+    public static boolean contains(Player p) {
         return players.containsKey(p.getName());
     }
 
-    public static void remove(Player p){
+    public static void remove(Player p) {
         if (contains(p)) {
             players.remove(p.getName());
         }
@@ -50,6 +52,22 @@ public class NametagManager {
 
         Nametag nametag;
 
+        if (toRefresh.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+            if (refreshForTag.getPlayerNametag(toRefreshTag) != null) {
+                refreshForTag.removePlayerNametag(toRefreshTag, refreshForTag.getPlayerNametag(toRefreshTag));
+                refreshForTag.refresh();
+            }
+
+            if (toRefresh.getScoreboard() != null)
+                if (toRefresh.getScoreboard().getTeam(toRefresh.getName()) != null)
+                    toRefresh.getScoreboard().getTeam(toRefresh.getName()).setNameTagVisibility(NameTagVisibility.NEVER);
+            return;
+        } else {
+            if (toRefresh.getScoreboard() != null)
+                if (toRefresh.getScoreboard().getTeam(toRefresh.getName()) != null)
+                    toRefresh.getScoreboard().getTeam(toRefresh.getName()).setNameTagVisibility(NameTagVisibility.ALWAYS);
+        }
+
         if (refreshForTag.getPlayerNametag(toRefreshTag) == null) {
             nametag = new Nametag(toRefresh.getName(), "", "");
             refreshForTag.setPlayerNametag(toRefreshTag, nametag);
@@ -60,7 +78,7 @@ public class NametagManager {
         //Duel
         Duel toRefreshDuel = duelManager.getDuelFromUUID(toRefresh.getUniqueId());
         Duel refreshForDuel = duelManager.getDuelFromUUID(refreshFor.getUniqueId());
-        if (toRefreshDuel != null && refreshForDuel != null && toRefreshDuel == refreshForDuel)  {
+        if (toRefreshDuel != null && refreshForDuel != null && toRefreshDuel == refreshForDuel) {
             if (toRefreshDuel instanceof RegularDuel) {
                 nametag.setPrefix(ChatColor.YELLOW + "");
                 nametag.setSuffix("");
@@ -161,7 +179,7 @@ public class NametagManager {
     }
 
     static String formatHealth(double health) {
-        double hearts = health / 2;
+        double hearts = health / 5;
         DecimalFormat format = new DecimalFormat("#");
 
         if (hearts <= 10 && hearts >= 7.5) {

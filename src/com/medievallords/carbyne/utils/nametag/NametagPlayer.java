@@ -84,6 +84,7 @@ public class NametagPlayer {
             NametagEdit nametagEdit = new NametagEdit();
             nametagEdit.setNametag(nametag);
             nametagEdit.setParam(NametagEdit.NametagParam.CREATE);
+            nametagEdit.setCanSeeFriendlyInvisibles(false);
             nametagEdit.sendToPlayer(player);
         } else {
             //Unregister and re-register, to ensure it gets registered
@@ -101,6 +102,7 @@ public class NametagPlayer {
             NametagEdit nametagEdit = new NametagEdit();
             nametagEdit.setNametag(nametag);
             nametagEdit.setParam(NametagEdit.NametagParam.REMOVE);
+            nametagEdit.setCanSeeFriendlyInvisibles(false);
             nametagEdit.sendToPlayer(player);
             registeredNametags.remove(nametag);
         }
@@ -146,6 +148,7 @@ public class NametagPlayer {
             NametagEdit nametagEdit = new NametagEdit();
             nametagEdit.setNametag(nametag);
             nametagEdit.setParam(NametagEdit.NametagParam.REMOVE_PLAYER);
+            nametagEdit.setCanSeeFriendlyInvisibles(false);
             nametagEdit.removePlayer(who.getPlayer()); // Not tested, maybe remove this if it breaks.
             nametagEdit.sendToPlayer(player);
             playerNametags.remove(who);
@@ -171,6 +174,7 @@ public class NametagPlayer {
         nametagEdit.setNametag(nametag);
         nametagEdit.addPlayer(who.getPlayer());
         nametagEdit.setParam(NametagEdit.NametagParam.ADD_PLAYER);
+        nametagEdit.setCanSeeFriendlyInvisibles(false);
         nametagEdit.sendToPlayer(player);
         playerNametags.put(who,nametag);
     }
@@ -185,7 +189,7 @@ public class NametagPlayer {
 
         for (NametagPlayer p : playerNametags.keySet()) {
             Nametag nametag = playerNametags.get(p);
-            setPlayerNametag(p,nametag);
+            setPlayerNametag(p, nametag);
         }
     }
 
@@ -202,6 +206,7 @@ public class NametagPlayer {
             NametagEdit nametagEdit = new NametagEdit();
             nametagEdit.setNametag(nametag);
             nametagEdit.setParam(NametagEdit.NametagParam.REMOVE);
+            nametagEdit.setCanSeeFriendlyInvisibles(false);
             nametagEdit.sendToPlayer(player);
         }
 
@@ -214,6 +219,7 @@ public class NametagPlayer {
             nametagEdit.setNametag(nametag);
             nametagEdit.addPlayer(who.getPlayer());
             nametagEdit.setParam(NametagEdit.NametagParam.UPDATE);
+            nametagEdit.setCanSeeFriendlyInvisibles(false);
             nametagEdit.sendToPlayer(player);
         }
     }

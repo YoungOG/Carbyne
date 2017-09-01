@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 /**
  * Created by Dalton on 6/13/2017.
+ *
  */
 public class FlyCommand extends BaseCommand {
 
@@ -18,25 +19,13 @@ public class FlyCommand extends BaseCommand {
         Player player = commandArgs.getPlayer();
         String[] args = commandArgs.getArgs();
 
-        if (player.hasPermission("carbyne.commands.gamemode.ignore")) {
+        if (player.hasPermission("carbyne.commands.gamemode.ignore") && args.length == 0) {
             getGamemodeManager().toggleFlight(player);
-            return;
-        }
-
-        if (args.length == 1 && args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.fly.toggle")) {
-            getGamemodeManager().toggleTownFlight(commandArgs.getPlayer());
             return;
         }
 
         WorldCoord wc = WorldCoord.parseWorldCoord(player);
 
-        Town check;
-        try {
-            check = wc.getTownBlock().getTown();
-        } catch (NotRegisteredException townNotRegistered) {
-            MessageManager.sendMessage(player, "&cYou are not in your town!");
-            return;
-        }
 
         Resident res;
         try {
@@ -49,30 +38,61 @@ public class FlyCommand extends BaseCommand {
         try {
             residentsTown = res.getTown();
         } catch (NotRegisteredException residentHasNoTown) {
+            MessageManager.sendMessage(player, "&cYou must have a town do to this!");
+            return;
+        }
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.fly.toggle")) {
+            getGamemodeManager().toggleTownFlight(commandArgs.getPlayer());
+            return;
+        }
+
+        Town check;
+        try {
+            check = wc.getTownBlock().getTown();
+        } catch (NotRegisteredException townNotRegistered) {
             MessageManager.sendMessage(player, "&cYou are not in your town!");
             return;
         }
 
-        Nation nation = null;
-        try {
-            nation = check.getNation();
-        } catch (NotRegisteredException ignore) {
-        }
+        if (check.equals(residentsTown)) {
+            if (getGamemodeManager().getFlightTowns().containsKey(residentsTown)) {
+                getGamemodeManager().toggleFlight(player);
+                return;
+            } else if (player.hasPermission("carbyne.commands.fly")) {
+                getGamemodeManager().toggleFlight(player);
+                return;
+            } else {
+                MessageManager.sendMessage(player, "&cYou cannot do this!");
+            }
+        } else {
 
-        if (residentsTown.equals(check) && player.hasPermission("carbyne.commands.fly")) {
-            getGamemodeManager().toggleFlight(player);
-            return;
-        } else
+            Nation nation = null;
+            try {
+                nation = check.getNation();
+            } catch (NotRegisteredException ignore) {
+            }
+
             try {
                 if (nation.equals(residentsTown.getNation())) {
-                    getGamemodeManager().toggleFlight(player);
-                    return;
+                    if (getGamemodeManager().getFlightTowns().containsKey(residentsTown)) {
+                        getGamemodeManager().toggleFlight(player);
+                        return;
+                    } else if (player.hasPermission("carbyne.commands.fly")) {
+                        getGamemodeManager().toggleFlight(player);
+                        return;
+                    } else {
+                        MessageManager.sendMessage(player, "&cYou cannot do this!");
+                        return;
+                    }
                 }
             } catch (NotRegisteredException | NullPointerException notInNationOrTown) {
                 MessageManager.sendMessage(player, "&cYou are not in your town!");
                 return;
             }
-        MessageManager.sendMessage(player, "&cYou are not in your town!");
+        }
+
+        MessageManager.sendMessage(player, "&cYou cannot do this!");
     }
 
 }

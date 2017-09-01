@@ -64,7 +64,7 @@ public class HohengrothEvent extends Event{
 
 
     public HohengrothEvent(EventManager eventManager) {
-        super(eventManager);
+        super(eventManager, "Hohengroth");
         cofferChance = getCofferChancePercent(eventManager.getHohengrothCoffer().getCofferPercent());
     }
 

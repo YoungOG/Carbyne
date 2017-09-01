@@ -102,3 +102,54 @@ allowed-blocks: # This determines what blocks will not disable the portal when b
      - 157
      - 171
      - 175
+Professions:
+  Taming:
+    MaxNuggets: 16
+    MinNuggets: 10
+    Chance: 0.65
+    MaxChance: 0.8
+  Crafting:
+    MaxNuggets: 7
+    MinNuggets: 4
+    Chance: 0.1
+    MaxChance: 0.25
+  Smelting:
+    MaxNuggets: 7
+    MinNuggets: 4
+    Chance: 0.03
+    MaxChance: 0.1
+  Repairing:
+    MaxNuggets: 15
+    MinNuggets: 7
+    Chance: 0.5
+    MaxChance: 0.67
+  Fishing:
+    MaxNuggets: 5
+    MinNuggets: 8
+    Chance: 0.1
+    MaxChance: 0.25
+  Alchemy:
+    MaxNuggets: 8
+    MinNuggets: 5
+    Chance: 0.2
+    MaxChance: 0.35
+  Enchanting:
+    MaxNuggets: 13
+    MinNuggets: 7
+    Chance: 0.4
+    MaxChance: 0.56
+  Farming:
+    MaxNuggets: 8
+    MinNuggets: 5
+    Chance: 0.05
+    MaxChance: 0.15
+  Prospecting:
+    MaxNuggets: 13
+    MinNuggets: 7
+    Chance: 0.1
+    MaxChance: 0.25
+  Hunting:
+    MaxNuggets: 8
+    MinNuggets: 5
+    Chance: 0.1
+    MaxChance: 0.25

@@ -154,13 +154,13 @@ public class StaffModeListeners implements Listener {
 
     @EventHandler
     public void onPlayerItemPickUp(PlayerPickupItemEvent e) {
-        if (staffManager.getVanish().contains(e.getPlayer().getUniqueId()) && staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
+        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (staffManager.getVanish().contains(e.getWhoClicked().getUniqueId()) && staffManager.getStaffModePlayers().contains(e.getWhoClicked().getUniqueId())) {
+        if (staffManager.getStaffModePlayers().contains(e.getWhoClicked().getUniqueId())) {
             e.setCancelled(true);
             ((Player) e.getWhoClicked()).updateInventory();
         }
@@ -168,7 +168,7 @@ public class StaffModeListeners implements Listener {
 
     @EventHandler
     public void onCreativeClick(InventoryCreativeEvent event) {
-        if (staffManager.getVanish().contains(event.getWhoClicked().getUniqueId()) && staffManager.getStaffModePlayers().contains(event.getWhoClicked().getUniqueId())) {
+        if (staffManager.getStaffModePlayers().contains(event.getWhoClicked().getUniqueId())) {
             event.setCancelled(true);
             ((Player) event.getWhoClicked()).updateInventory();
         }

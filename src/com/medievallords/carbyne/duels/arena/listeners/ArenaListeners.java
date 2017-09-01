@@ -49,6 +49,7 @@ public class ArenaListeners implements Listener {
             List<Location> pedastoolLocations = Arrays.asList(arena.getPedastoolLocations());
 
             if (pedastoolLocations.contains(block.getLocation())) {
+
                 if (!arena.getDuelists().contains(event.getPlayer().getUniqueId())) {
                     arena.getDuelists().add(event.getPlayer().getUniqueId());
                     arena.startCancel(event.getPlayer());

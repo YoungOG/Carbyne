@@ -75,7 +75,7 @@ public class VanishListeners implements Listener {
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()) && !event.getPlayer().hasPermission("carbyne.staff.admin")) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in vanish");
         }
@@ -90,7 +90,7 @@ public class VanishListeners implements Listener {
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()) && !event.getPlayer().hasPermission("carbyne.staff.admin")) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot place blocks in vanish");
         }
@@ -98,7 +98,7 @@ public class VanishListeners implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()) && !event.getPlayer().hasPermission("carbyne.staff.admin")) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot break blocks in vanish");
         }
@@ -107,7 +107,7 @@ public class VanishListeners implements Listener {
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player) {
-            if (staffManager.getVanish().contains(event.getDamager().getUniqueId())) {
+            if (staffManager.getVanish().contains(event.getDamager().getUniqueId()) && !event.getDamager().hasPermission("carbyne.staff.admin")) {
                 event.setCancelled(true);
             }
         }
@@ -133,7 +133,7 @@ public class VanishListeners implements Listener {
         }
 
         if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType() == Material.SOIL) {
-            if (staffManager.isVanished(p)) {
+            if (staffManager.isVanished(p) && !e.getPlayer().hasPermission("carbyne.staff.admin")) {
                 e.setCancelled(true);
             }
         }

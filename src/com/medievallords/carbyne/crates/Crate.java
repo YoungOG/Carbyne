@@ -151,7 +151,7 @@ public class Crate {
         int i = 0;
 
         for (Reward reward : getRewards()) {
-            inventory.addItem(new ItemBuilder(reward.getItem(true)).addLore("").addLore("&aChance: &b" + reward.getChance() + "%").build());
+            inventory.addItem(new ItemBuilder(reward.getItem(true)).addLore("").build());
             ItemStack item = inventory.getItem(i);
 
             if (item != null && item.getType() != Material.AIR && item.getItemMeta() != null && item.getItemMeta().hasDisplayName() && ChatColor.stripColor(item.getItemMeta().getDisplayName()).equals("Randomly Selected Gear")) {
@@ -382,13 +382,12 @@ public class Crate {
     private void runObsidianEffect() {
 
         new BukkitRunnable() {
-            double theta = 0;
-            double radius = 0.55;
-
-            ParticleEffect.OrdinaryColor purple = new ParticleEffect.OrdinaryColor(244, 66, 244);
-
             @Override
             public void run() {
+                double theta = 0;
+                double radius = 0.55;
+                ParticleEffect.OrdinaryColor purple = new ParticleEffect.OrdinaryColor(244, 66, 244);
+
                 theta += 0.2;
 
                 double x = Math.cos(theta) * radius;
@@ -396,6 +395,7 @@ public class Crate {
                 double z = Math.sin(theta) * radius;
 
                 Location location = getLocation().clone();
+                if (location == null) return;
                 location.add(0.5,0.5,0.5);
                 location.add(x, y, z);
                 ParticleEffect.REDSTONE.display(purple,location, 40,false);
@@ -409,16 +409,18 @@ public class Crate {
     private void runEmeraldEffect() {
 
         new BukkitRunnable() {
-            double theta = 0;
-            double radius = 0.6;
             @Override
             public void run() {
+                double theta = 0;
+                double radius = 0.6;
+
                 theta += 0.2;
                 double x = Math.cos(theta) * radius;
                 double y = Math.cos(theta) * radius;
                 double z = Math.sin(theta) * radius;
 
                 Location location = getLocation().clone();
+                if (location == null) return;
                 location.add(0.5,0.5,0.5);
                 location.add(x,y,z);
                 ParticleEffect.VILLAGER_HAPPY.display(0,0,0,0,1,location, 40, false);
@@ -428,19 +430,20 @@ public class Crate {
 
     private void runDiamondEffect() {
         new BukkitRunnable() {
-            double theta = 0;
-            double radius = 0.6;
-
-            ParticleEffect.OrdinaryColor blue = new ParticleEffect.OrdinaryColor(66, 212, 244);
-
             @Override
             public void run() {
+                double theta = 0;
+                double radius = 0.6;
+
+                ParticleEffect.OrdinaryColor blue = new ParticleEffect.OrdinaryColor(66, 212, 244);
+
                 theta += 0.13;
 
                 double x = Math.sin(theta) * radius;
                 double z = Math.cos(theta) * radius;
 
                 Location location = getLocation().clone();
+                if (location == null) return;
                 location.add(0.5,0,0.5);
                 location.add(x,0,z);
                 location.add(0,0.25,0);
@@ -454,19 +457,20 @@ public class Crate {
 
     private void runGoldEffect() {
         new BukkitRunnable() {
-            double theta = 0;
-            double radius = 0.6;
-
-            ParticleEffect.OrdinaryColor gold = new ParticleEffect.OrdinaryColor(244, 217, 66);
-
             @Override
             public void run() {
+                double theta = 0;
+                double radius = 0.6;
+
+                ParticleEffect.OrdinaryColor gold = new ParticleEffect.OrdinaryColor(244, 217, 66);
+
                 theta += 0.13;
 
                 double x = Math.sin(theta) * radius;
                 double z = Math.cos(theta) * radius;
 
                 Location location = getLocation().clone();
+                if (location == null) return;
                 location.add(0.5,0.5,0.5);
                 location.add(x,0,z);
                 ParticleEffect.REDSTONE.display(gold, location, 50, true);
@@ -476,18 +480,19 @@ public class Crate {
 
     private void runIronEffect() {
         new BukkitRunnable() {
-            double theta = 0;
-            double radius = 0.6;
-
-            ParticleEffect.OrdinaryColor silver = new ParticleEffect.OrdinaryColor(201, 197, 175);
-
             @Override
             public void run() {
+                double theta = 0;
+                double radius = 0.6;
+
+                ParticleEffect.OrdinaryColor silver = new ParticleEffect.OrdinaryColor(201, 197, 175);
+
                 theta += 0.14;
                 double y = Math.cos(theta) * radius;
                 double z = Math.sin(theta) * radius;
 
                 Location location = getLocation().clone();
+                if (location == null) return;
                 location.add(0.5,0.5,0.5);
                 location.add(0,y,z);
                 ParticleEffect.REDSTONE.display(silver, location, 50, true);

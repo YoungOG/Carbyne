@@ -85,7 +85,7 @@ public class StaffManager {
                     MessageManager.sendMessage(id, "&c\u2588&6\u2588\u2588\u2588&0\u2588&6\u2588\u2588\u2588&c\u2588");
                     MessageManager.sendMessage(id, "&c\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588");
                     MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6You have been frozen! Do not log out or you will be banned!");
-                    MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6Join the TeamSpeak using: go.playminecraft.org");
+                    MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6Join the Discord using: /discord");
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3 * 25L);

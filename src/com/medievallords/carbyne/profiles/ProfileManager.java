@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.profiles;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.professions.Profession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
@@ -9,7 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -47,6 +50,39 @@ public class ProfileManager {
                 int killstreak = document.getInteger("killstreak");
                 boolean showEffects = document.getBoolean("showeffects");
                 boolean safelyLogged = document.getBoolean("safelyLogged");
+                List<UUID> ignoredPlayers = new ArrayList<>();
+                Profession profession = null;
+                boolean localChatToggled = false;
+                long professionResetCooldown = 0;
+                int professionLevel = 1;
+                double professionProgress = 0;
+                double requiredProfessionProgress = 1;
+
+                if (document.getBoolean("localChatToggled") != null)
+                    localChatToggled = document.getBoolean("localChatToggled");
+
+                if (document.containsKey("ignoredPlayers")) {
+                    List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredplayers");
+                    for (String s : uuidNameIgnoredPlayers) {
+                        ignoredPlayers.add(UUID.fromString(s));
+                    }
+                }
+
+                if (document.containsKey("profession"))
+                    if (main.getProfessionManager().getProfession(document.getString("profession")) != null)
+                        profession = main.getProfessionManager().getProfession(document.getString("profession"));
+
+                if (document.containsKey("professionLevel"))
+                    professionLevel = document.getInteger("professionLevel");
+
+                if (document.containsKey("professionProgress"))
+                    professionProgress = document.getDouble("professionProgress");
+
+                if (document.containsKey("requiredProfessionProgress"))
+                    requiredProfessionProgress = document.getDouble("requiredProfessionProgress");
+
+                if (document.containsKey("professionResetCooldown"))
+                    professionResetCooldown = document.getLong("professionResetCooldown");
 
                 Profile profile = new Profile(uniqueId);
                 profile.setUsername(username);
@@ -59,6 +95,13 @@ public class ProfileManager {
                 profile.setSafelyLogged(safelyLogged);
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
                 profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
+                profile.setLocalChatToggled(localChatToggled);
+                profile.setIgnoredPlayers(ignoredPlayers);
+                profile.setProfession(profession);
+                profile.setProfessionLevel(professionLevel);
+                profile.setProfessionProgress(professionProgress);
+                profile.setRequiredProfessionProgress(requiredProfessionProgress);
+                profile.setProfessionResetCooldown(professionResetCooldown);
 
                 if (document.containsKey("closedTickets") && document.containsKey("claimedtickets")) {
                     int closedTickets = document.getInteger("closedTickets");
@@ -110,6 +153,24 @@ public class ProfileManager {
                             document.append("safelyLogged", profile.isSafelyLogged());
                             document.append("pin", profile.getPin());
                             document.append("previous-inventory", profile.getPreviousInventoryContentString());
+                            document.append("localChatToggled", profile.isLocalChatToggled());
+
+                            if (!profile.getIgnoredPlayers().isEmpty()) {
+                                List<String> uuids = new ArrayList<>();
+
+                                for (UUID id : profile.getIgnoredPlayers())
+                                    uuids.add(id.toString());
+
+                                document.append("ignoredPlayers", uuids);
+                            }
+
+                            if (profile.getProfession() != null)
+                                document.append("profession", profile.getProfession().getName());
+
+                            document.append("professionLevel", profile.getProfessionLevel());
+                            document.append("professionProgress", profile.getProfessionProgress());
+                            document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
+                            document.append("professionResetCooldown", profile.getProfessionResetCooldown());
 
                             if (profile.getTimeLeft() > 1)
                                 document.append("timeleft", profile.getTimeLeft());
@@ -137,8 +198,28 @@ public class ProfileManager {
                     document.append("safelyLogged", profile.isSafelyLogged());
                     document.append("pin", profile.getPin());
                     document.append("previous-inventory", profile.getPreviousInventoryContentString());
+
                     if (profile.getTimeLeft() > 1)
                         document.append("timeleft", profile.getTimeLeft());
+
+                    document.append("localChatToggled", profile.isLocalChatToggled());
+
+                    if (!profile.getIgnoredPlayers().isEmpty()) {
+                        List<String> uuids = new ArrayList<>();
+
+                        for (UUID id : profile.getIgnoredPlayers())
+                            uuids.add(id.toString());
+
+                        document.append("ignoredPlayers", uuids);
+                    }
+
+                    if (profile.getProfession() != null)
+                        document.append("profession", profile.getProfession().getName());
+
+                    document.append("professionLevel", profile.getProfessionLevel());
+                    document.append("professionProgress", profile.getProfessionProgress());
+                    document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
+                    document.append("professionResetCooldown", profile.getProfessionResetCooldown());
 
                     profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
                 }
@@ -178,6 +259,25 @@ public class ProfileManager {
             document.append("safelyLogged", profile.isSafelyLogged());
             document.append("pin", profile.getPin());
             document.append("previous-inventory", profile.getPreviousInventoryContentString());
+
+            document.append("localChatToggled", profile.isLocalChatToggled());
+
+            if (!profile.getIgnoredPlayers().isEmpty()) {
+                List<String> uuids = new ArrayList<>();
+
+                for (UUID id : profile.getIgnoredPlayers())
+                    uuids.add(id.toString());
+
+                document.append("ignoredPlayers", uuids);
+            }
+
+            if (profile.getProfession() != null)
+                document.append("profession", profile.getProfession().getName());
+
+            document.append("professionLevel", profile.getProfessionLevel());
+            document.append("professionProgress", profile.getProfessionProgress());
+            document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
+            document.append("professionResetCooldown", profile.getProfessionResetCooldown());
 
             new BukkitRunnable() {
                 @Override

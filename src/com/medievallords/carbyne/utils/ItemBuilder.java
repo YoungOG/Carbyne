@@ -184,4 +184,24 @@ public class ItemBuilder {
     public ItemStack build() {
         return item;
     }
+
+    /**
+     * WARNING: Compares based on item type and display name ONLY!
+     *
+     * @param is1
+     * @param is2
+     * @return
+     */
+    public static boolean areItemsEqual(ItemStack is1, ItemStack is2) {
+        ItemMeta meta1 = is1.getItemMeta();
+        ItemMeta meta2 = is2.getItemMeta();
+
+        if (meta1 == null && meta2 == null) {
+            return true;
+        } else if (meta1 == null || meta2 == null) {
+            return false;
+        } else return meta1.equals(meta2);
+
+    }
+
 }

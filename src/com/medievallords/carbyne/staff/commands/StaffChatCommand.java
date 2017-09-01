@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class StaffChatCommand extends BaseCommand {
 
-    @Command(name = "staffchat", aliases = {"sc"}, permission = "carbyne.staff")
+    @Command(name = "staffchat", permission = "carbyne.staff")
     public void onCommand(CommandArgs commandArgs) {
         MessageManager.sendStaffMessage(commandArgs.getSender(), StringUtils.join(commandArgs.getArgs(), " ", 0, commandArgs.getArgs().length));
     }

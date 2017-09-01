@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static com.medievallords.carbyne.utils.MessageManager.convertSecondsToMinutes;
 
@@ -21,6 +22,45 @@ public class ConquerPointListeners implements Listener {
 
     private Carbyne main = Carbyne.getInstance();
     private ConquerPointManager conquerPointManager = main.getConquerPointManager();
+
+    @EventHandler
+    public void onTeleportAway(PlayerTeleportEvent event) {
+        ConquerPoint conquerPoint = conquerPointManager.getConquerPointFromLocation(event.getFrom());
+        if (conquerPoint != null && (conquerPointManager.getConquerPointFromLocation(event.getTo()) == null || !event.getTo().getWorld().equals(event.getFrom()))) {
+            if (conquerPoint.getHolder() != null && conquerPoint.getHolder().equals(event.getPlayer().getUniqueId())) {
+
+                try {
+                    Resident resident = TownyUniverse.getDataSource().getResident(event.getPlayer().getName());
+
+                    if (!resident.hasTown()) {
+                        return;
+                    }
+
+                    if (!resident.hasNation()) {
+                        return;
+                    }
+
+                    if (!resident.getTown().hasNation()) {
+                        return;
+                    }
+
+                    Nation nation = resident.getTown().getNation();
+                    MessageManager.broadcastMessage("&c[&4&lConquer&c]: &5" + resident.getTown().getNation().getName() + " &chas stopped trying to conquer &d" + conquerPoint.getId() + "&c!");
+                    conquerPoint.stopCapturing();
+                    return;
+                } catch (NotRegisteredException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+
+        conquerPoint = conquerPointManager.getConquerPointFromLocation(event.getTo());
+
+        if (conquerPoint != null) {
+            event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot teleport into a conquerpoint");
+        }
+    }
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {

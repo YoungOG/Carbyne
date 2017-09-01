@@ -6,8 +6,7 @@ package com.medievallords.carbyne.utils.slack;
 public enum SlackTeam
 {
 	// Main
-	MAIN("kMain", "T0QNGPPCY", "B27L7PH7X", "CQXlAVXR2bMWAxUIr5QJd7KF"),
-	;
+    MAIN("MedievalRobot", "192067600547.223484432274", "278b4a651a760ae084c8fe32987ffcfd", "KvvMZsd8PpMeTVzfbDYZy1Q1");
 
 	private String _title;
 	private String _id1;

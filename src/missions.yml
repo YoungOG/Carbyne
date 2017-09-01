@@ -1,0 +1,405 @@
+Items:
+  ROTTEN_FLESH:
+    Material: 'ROTTEN_FLESH'
+    DisplayName:
+    Lore: {}
+    Enchantments: {}
+    Amount: 1
+    ChanceToSpawn: 1
+  REDSTONE_64:
+    Material: 'REDSTONE'
+    DisplayName:
+    Lore: {}
+    Enchantments: {}
+    Amount: 64
+    ChanceToSpawn: 0.75
+  STEAK_64:
+    Material: 'COOKED_BEEF'
+    DisplayName:
+    Lore: {}
+    Enchantments: {}
+    Amount: 64
+    ChanceToSpawn: 0.75
+  Gem:
+    Material: 'EMERALD'
+    DisplayName: '&4G&ee&2m'
+    Lore: {}
+    Enchantments: {}
+    Amount: 3
+    ChanceToSpawn: 0.40
+  Money20Percent:
+    Material: 'NETHER_STAR'
+    Amount: 1
+    ChanceToSpawn: 0.10
+  LumberAxe:
+    Material: 'DIAMOND_AXE'
+    DisplayName: '&4Lumberjack'
+    Lore:
+    - '&5Chop chop'
+    Enchantments:
+    - 'UNBREAKING,2'
+    - 'DAMAGE_ALL,5'
+    Amount: 1
+    ChanceToSpawn: 0.05
+  FarmersHoe:
+    Material: 'DIAMOND_HOE'
+    DisplayName: '&eFarmers Bonde'
+    Lore:
+    - '&aGet it?'
+    Enchantments:
+    - 'DURABILITY,1'
+    - 'DAMAGE_ALL,5'
+    Amount: 1
+    ChanceToSpawn: 0.15
+  MinersPickaxe:
+    Material: 'DIAMOND_PICKAXE'
+    DisplayName: '&bMiners Pickaxe'
+    Lore:
+    - '&cThrough thick and thin, we mine!'
+    Enchantments:
+    - 'DURABILITY,3'
+    - 'DIG_SPEED,4'
+    Amount: 1
+    ChanceToSpawn: 0.12
+  KingsReward:
+    Material: 'DIAMOND_SWORD'
+    DisplayName: '&eRoyale Rapier'
+    Lore:
+    - '&bI think this blade is complaining to me...'
+    - '&bNevertheless, it seems capable.'
+    Enchantments:
+    - 'DAMAGE_ALL,5'
+    - 'FIRE_ASPECT,1'
+    - 'LUCK,2'
+    - 'KNOCKBACK,1'
+    Amount: 1
+    ChanceToSpawn: 0.05
+  FleshArm:
+    Material: 'STONE_SWORD'
+    DisplayName: '&4Flesh Arm'
+    Lore:
+    - '&cIt is still twitching.'
+    Enchantments:
+    - 'DAMAGE_ALL,2'
+    - 'LUCK,4'
+    - 'KNOCKBACK,3'
+    Amount: 1
+    ChanceToSpawn: 0.15
+  BigBone:
+    Material: 'BONE'
+    DisplayName: '&fBig Bone'
+    Lore:
+    - '&fRock hard'
+    Enchantments:
+    - 'DAMAGE_ALL,5'
+    - 'KNOCKBACK,5'
+    Amount: 1
+    ChanceToSpawn: 0.15
+# NOTICE: Cash reward, objective goal, and item drop chance scale with difficulty.
+# MAJOR NOTICE: Loot drop chance scales with difficulty.
+# SCALING: BABY:0.5 EASY:1 MEDIUM:1.5 HARD:2.0 INSANE:2.5 CRAZY:4.0
+# MissionType: BlockBreakingMission, BlockPlacingMission, FishingMission, JoinTownMission, PlayerPickupItemMission, BossHuntMission, KillEntityMission, KillPlayerMission.
+# Time Limit is a constant value regardless of difficulty.
+# In the loot, money is a carbyne token
+Missions:
+  1:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'LOG:0'
+    - 'LOG:1'
+    - 'LOG:2'
+    - 'LOG:3'
+    - 'LOG_2:0'
+    Name: '&aLogging Contract'
+    Description:
+    - '&bThere is a lumber shortage! Able bodied'
+    - '&bmen are needed to collect lumber!'
+    ObjectiveGoal: 30
+    CashReward: 140.0
+    LootTable:
+    - 'LumberAxe'
+    TimeLimit: '3h'
+  2:
+    MissionType: 'FishingMission'
+    ObjectiveData:
+    - 'RAW_FISH:3'
+    Name: '&2Puffer Assassin'
+    Description:
+    - '&bAn assassin needs pufferfish for a deadly poison.'
+    - '&bYou will get paid under the table!'
+    ObjectiveGoal: 4
+    CashReward: 100.0
+    LootTable: {}
+    TimeLimit: '4h'
+  3:
+    MissionType: 'BlockPlacingMission'
+    ObjectiveData:
+    - 'PUMPKIN_STEM:0'
+    - 'MELON_STEM:0'
+    - 'CARROT:0'
+    - 'POTATO:0'
+    - 'CROPS:0'
+    - 'SOIL:0'
+    Name: '&eFarmers Market'
+    Description:
+    - '&bIt is time to plant fresh produce'
+    - '&bto sell at the farmers market!'
+    ObjectiveGoal: 20
+    CashReward: 110.0
+    LootTable:
+    - 'FarmersHoe'
+    TimeLimit: '2h'
+  4:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'IRON_ORE:0'
+    Name: '&7Miner Strike'
+    Description:
+    - '&bThe miners are on strike!'
+    - '&bThe government is buying iron ore for high prices!'
+    ObjectiveGoal: 10
+    CashReward: 96.0
+    LootTable:
+    - 'Gem'
+    - 'Money20Percent'
+    TimeLimit: '2h'
+  5:
+    MissionType: 'FishingMission'
+    ObjectiveData:
+    - 'RAW_FISH:0'
+    - 'RAW_FISH:1'
+    - 'RAW_FISH:2'
+    - 'RAW_FISH:3'
+    Name: '&1Fishing Contest'
+    Description:
+    - '&bThe most dedicated fishers from'
+    - '&baround the world have gathered to compete.'
+    - '&bDo you stand a chance?'
+    ObjectiveGoal: 5
+    CashReward: 125.0
+    LootTable: {}
+    TimeLimit: '2h'
+  6:
+    MissionType: 'BlockPlacingMission'
+    ObjectiveData:
+    - 'NETHER_WARTS:0'
+    - 'NETHER_STALK:0'
+    Name: '&4Strange Habbit'
+    Description:
+    - '&bYou do not know why,'
+    - 'but you want to plant netherwart.'
+    ObjectiveGoal: 5
+    CashReward: 65.0
+    LootTable:
+    TimeLimit: '2h'
+  7:
+    MissionType: 'BlockPlacingMission'
+    ObjectiveData:
+    - 'STONE:0'
+    - 'STONE:1'
+    - 'STONE:2'
+    - 'STONE:3'
+    Name: '&5Material Contractor'
+    Description:
+    - '&bLocal builders are in low supply of'
+    - '&bcobblestone and other building materials!'
+    - '&bThey will pay a good price for them!'
+    ObjectiveGoal: 32
+    CashReward: 100.0
+    LootTable: {}
+    TimeLimit: '2h'
+  8:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'QUARTZ_ORE:0'
+    Name: '&5Quartz Blitz'
+    Description:
+    - '&bQuartz is rare and sells good.'
+    - '&bGo to the nether and mine quartz!'
+    ObjectiveGoal: 20
+    CashReward: 75.0
+    LootTable:
+    - 'Money20Percent'
+    TimeLimit: '2h'
+  9:
+    MissionType: 'PlayerPickupItemMission'
+    SolutionLootTable:
+    - 'ROTTEN_FLESH'
+    Name: '&9Flesh Eaters'
+    Description:
+    - '&bThere is a local cult that eats zombie flesh.'
+    - '&bNo one has satisfied their strange request, will you?'
+    ObjectiveGoal: 15
+    CashReward: 90.0
+    LootTable:
+    - 'Gem'
+    - 'REDSTONE_64'
+    TimeLimit: '2h'
+  10:
+    MissionType: 'KillPlayerMission'
+    SolutionLootTable: {}
+    Name: '&4Wild Bandits'
+    Description:
+    - '&bMen are wanted. If you kill a bunch,'
+    - '&byou will eventually get a bounty!'
+    ObjectiveGoal: 3
+    CashReward: 75.0
+    LootTable:
+    - 'STEAK_64'
+    TimeLimit: '3h'
+  11:
+    MissionType: 'BossHuntMission'
+    BossNames:
+    - 'BurntCastleThayanWitch'
+    Name: '&2Witch Hunt'
+    Description:
+    - '&bGo kill the Thayan Witch in Burnt!'
+    ObjectiveGoal: 1
+    CashReward: 200.0
+    LootTable:
+    - 'Money20Percent'
+    TimeLimit: '3h'
+  12:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'DIAMOND_ORE:0'
+    Name: '&bMine Diamonds'
+    Description:
+    - '&bYou need some of that shiny-shiny!'
+    ObjectiveGoal: 2
+    CashReward: 50.0
+    LootTable:
+    - 'MinersPickaxe'
+    TimeLimit: '4h'
+  13:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'REDSTONE_ORE:0'
+    Name: '&4Regeant Crisis'
+    Description:
+    - '&bThe redstone reserves are depleted!'
+    - '&bGo out and mine some redstone!'
+    ObjectiveGoal: 10
+    CashReward: 50.0
+    LootTable:
+    - 'MinersPickaxe'
+    - 'REDSTONE_64'
+    TimeLimit: '2h'
+  14:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'RABBIT'
+    Name: '&cLunatic Eyes'
+    Description:
+    - '&bI want to kill me some rabbit!'
+    ObjectiveGoal: 8
+    CashReward: 50.0
+    LootTable:
+    - 'REDSTONE_64'
+    TimeLimit: '2h'
+  15:
+    MissionType: 'BlockBreakingMission'
+    ObjectiveData:
+    - 'LAPIS_ORE:0'
+    Name: '&eThe Great Lapis King'
+    Description:
+    - '&bThe lapis King requests your service,'
+    - '&bwhat an honor to lapis mine under him!'
+    ObjectiveGoal: 10
+    CashReward: 100.0
+    LootTable:
+    - 'KingsReward'
+    - 'REDSTONE_64'
+  16:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'ZOMBIE'
+    - 'PIG_ZOMBIE'
+    Name: '&2Zombie Invasion'
+    Description:
+    - '&bThe zombies are taking the world!'
+    - '&bSlaughter the hoard down!'
+    ObjectiveGoal: 20
+    CashReward: 130.0
+    LootTable:
+    - 'REDSTONE_64'
+    - 'FleshArm'
+    TimeLimit: '2h'
+  17:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'SKELETON'
+    Name: '&fSpooky &6Scary &7Skeletons'
+    Description:
+    - '&bGo kill some spooky skeletons!'
+    ObjectiveGoal: 23
+    CashReward: 140.0
+    LootTable:
+    - 'REDSTONE_64'
+    - 'BigBone'
+    TimeLimit: '2h'
+  18:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'SNOWMAN'
+    Name: '&fWhite Death'
+    Description:
+    - '&bWe must remind the snowmen of'
+    - '&btheir place in our world.'
+    ObjectiveGoal: 10
+    CashReward: 125.0
+    LootTable:
+    - 'REDSTONE_64'
+    TimeLimit: '1h'
+  19:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'PIG'
+    - 'COW'
+    - 'SHEEP'
+    Name: '&3Time to Butcher'
+    Description:
+    - '&bIt is time to harvest the meats.'
+    - '&bSlaughter some animals.'
+    ObjectiveGoal: 30
+    CashReward: 76.0
+    LootTable:
+    - 'REDSTONE_64'
+    TimeLimit: '2h'
+  20:
+    MissionType: 'BossHuntMission'
+    BossNames:
+    - 'Inferno'
+    Name: '&6Flame &4Quencher'
+    Description:
+    - '&bKill the Inferno in LBF!'
+    ObjectiveGoal: 1
+    CashReward: 200.0
+    LootTable:
+    - 'Money20Percent'
+    TimeLimit: '3h'
+  21:
+    MissionType: 'BossHuntMission'
+    BossNames:
+    - 'ExiledGreatking'
+    Name: '&7The Great Knight'
+    Description:
+    - '&bKill the Great Knight in UBF!'
+    ObjectiveGoal: 1
+    CashReward: 200.0
+    LootTable:
+    - 'Money20Percent'
+    TimeLimit: '3h'
+  22:
+    MissionType: 'KillEntityMission'
+    EntityTypes:
+    - 'CHICKEN'
+    Name: '&fI Hate Chickens'
+    Description:
+    - '&bThese chickens are everywhere.'
+    - '&bKill them please.'
+    ObjectiveGoal: 20
+    CashReward: 123.0
+    LootTable:
+    - 'REDSTONE_64'
+    TimeLimit: '2h'

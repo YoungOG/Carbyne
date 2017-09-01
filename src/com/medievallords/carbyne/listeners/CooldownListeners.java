@@ -137,7 +137,7 @@ public class CooldownListeners implements Listener {
                         p.updateInventory();
                         MessageManager.sendMessage(p, "&eYou cannot eat another God Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.MINUTES) + " &eseconds!");
                     } else {
-                        new BoardCooldown(board, "godapple", 300.0D);
+                        new BoardCooldown(board, "godapple", 900.0D);
 
 //                        for (ItemStack i : p.getInventory().getContents()) {
 //                            if (i != null) {

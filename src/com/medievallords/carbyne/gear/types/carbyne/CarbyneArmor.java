@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.gear.types.carbyne;
 
+import com.medievallords.carbyne.gear.effects.carbyne.CarbyneEffect;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class CarbyneArmor extends CarbyneGear {
     private List<String> enchantments = new ArrayList<>();
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
     private HashMap<PotionEffect, Double> defensivePotionEffects = new HashMap<>();
+    private List<CarbyneEffect> carbyneEffects = new ArrayList<>();
     private double armorRating = -1;
     private boolean rainbow;
 
@@ -233,13 +235,13 @@ public class CarbyneArmor extends CarbyneGear {
         if (durability >= 1) {
             durability--;
             Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
-            itemStack.setDurability((short) 0);
+            itemStack.setDurability((short) durabilityScale(itemStack));
 
-//            if (itemStack.getDurability() <= 0) {
-//                itemStack.setDurability((short) 0);
-//            } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
-//                itemStack.setDurability(itemStack.getType().getMaxDurability());
-//            }
+            if (itemStack.getDurability() <= 0) {
+                itemStack.setDurability((short) 0);
+            } else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability()) {
+                itemStack.setDurability(itemStack.getType().getMaxDurability());
+            }
         } else {
             wielder.getInventory().remove(itemStack);
             wielder.updateInventory();
@@ -283,6 +285,6 @@ public class CarbyneArmor extends CarbyneGear {
     public int durabilityScale(ItemStack itemStack) {
         double scale = ((double) (getDurability(itemStack))) / ((double) (getMaxDurability()));
         double durability = ((double) (itemStack.getType().getMaxDurability())) * scale;
-        return (int) Math.round(durability);
+        return itemStack.getType().getMaxDurability() - (int) Math.round(durability);
     }
 }

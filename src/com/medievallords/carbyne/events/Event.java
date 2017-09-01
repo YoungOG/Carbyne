@@ -6,11 +6,14 @@ import com.medievallords.carbyne.utils.command.BaseCommand;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Williams on 2017-06-16
@@ -20,7 +23,6 @@ import java.util.List;
  * After reading this you should look at the EventManager class.
  */
 
-//TODO: COMMAND WHITELIST
 public abstract class Event
 {
 
@@ -37,6 +39,8 @@ public abstract class Event
 
     @Getter
     protected List<EventProperties> properties = new ArrayList<>();
+    @Getter
+    protected List<EventComponent> components = new ArrayList<>();
     protected List<BaseCommand> commands = new ArrayList<>();
     @Getter
     protected List<Player> participants = new ArrayList<>();
@@ -48,14 +52,21 @@ public abstract class Event
     @Getter
     private long activationTime; // The actual time the event will activate. Calculated by using timeString and DateUtil.
 
+    @Getter
+    private final String eventName;
+
+    @Getter
+    protected Map<Player, BukkitRunnable> waitingTasks = new HashMap<>();
+
     /**
      * This constructor is designed for events that are meant to be started by command.
      * The arguments that are not set via constructor will be used as flags to not auto schedule the event again.
      * @param eventManager All powerful event manager.
      */
-    public Event(EventManager eventManager)
+    public Event(EventManager eventManager, String name)
     {
         this.eventManager = eventManager;
+        this.eventName = name;
         this.active = false;
         this.timeString = null;
         this.activationTime = -1;
@@ -71,9 +82,10 @@ public abstract class Event
      * @param eventManager All powerful event manager.
      * @param timeString The amount of time an event should wait before running again.
      */
-    public Event(EventManager eventManager, String timeString)
+    public Event(EventManager eventManager, String timeString, String eventName)
     {
         this.eventManager = eventManager;
+        this.eventName = eventName;
         this.active = false;
         this.timeString = timeString;
         try { this.activationTime = DateUtil.parseDateDiff(timeString, true); } catch(Exception howDidYouMessThisUp) { }
@@ -100,6 +112,8 @@ public abstract class Event
     {
         active = true;
 
+        components.stream().forEach(c -> c.start());
+
         for(BaseCommand command : commands)
             Carbyne.getInstance().getCommandFramework().registerCommands(command);
         //Bukkit.getServer().getPluginManager().registerEvents(this, main);
@@ -115,6 +129,8 @@ public abstract class Event
     {
         active = false;
 
+        components.stream().forEach(c -> c.stop());
+
         if(timeString != null)
             try { this.activationTime = DateUtil.parseDateDiff(timeString, true); } catch(Exception howDidYouMessThisUp) { }
 
@@ -123,7 +139,7 @@ public abstract class Event
         //HandlerList.unregisterAll(this);
         eventManager.getActiveEvents().remove(this);
         eventManager.getWaitingEvents().add(this);
-        syncTeleportPlayersToLocationAndLeaveEvent(spawn, participants);
+        teleportPlayersToLocationAndLeaveEvent(spawn, participants);
         participants.clear();
     }
 
@@ -144,19 +160,52 @@ public abstract class Event
         participants.remove(player);
     }
 
-    protected void syncTeleportPlayersToLocationAndLeaveEvent(Location loc, List<Player> players)
+    protected void teleportPlayersToLocationAndLeaveEvent(Location loc, List<Player> players)
     {
         new BukkitRunnable()
         {
             public void run()
             {
-                for(Player p : players)
+                for (int i = 0; i < players.size(); i++)
+                    players.get(i).teleport(spawn);
+                for (int i = 0; i < players.size(); i++)
                 {
-                    p.teleport(loc);
-                    main.getProfileManager().getProfile(p.getUniqueId()).setActiveEvent(null);
+                    removePlayerFromEvent(players.get(i));
+                    i--;
                 }
             }
-        }.runTask(main);
+        }.runTask(Carbyne.getInstance());
+    }
+
+
+    protected void syncChangeBlockLocation(Location location, Material type) {
+        new BukkitRunnable() {
+            public void run() {
+                location.getChunk().load();
+                location.getBlock().setType(type);
+                location.getChunk().unload();
+            }
+        }.runTask(Carbyne.getInstance());
+
+    }
+
+    protected void syncTeleportAllPlayers(Location location) {
+        new BukkitRunnable() {
+            public void run() {
+                for (int i = 0; i < participants.size(); i++) {
+                    participants.get(i).teleport(location);
+                }
+            }
+        }.runTask(Carbyne.getInstance());
+    }
+
+    public EventComponent getEventComponent(Class<?> component) {
+        for (EventComponent comp : components) {
+            if (comp.getClass() == component) {
+                return comp;
+            }
+        }
+        return null;
     }
 
 }

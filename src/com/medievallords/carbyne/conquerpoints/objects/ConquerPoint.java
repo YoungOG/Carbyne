@@ -44,7 +44,7 @@ public class ConquerPoint {
         this.pos1 = pos1;
         this.pos2 = pos2;
         this.state = ConquerPointState.OPEN;
-        this.captureTime = 301;
+        this.captureTime = 601;
         this.cooldownTime = 0;
     }
 
@@ -54,7 +54,7 @@ public class ConquerPoint {
         this.pos2 = pos2;
         this.state = ConquerPointState.OPEN;
         this.nation = nation;
-        this.captureTime = 301;
+        this.captureTime = 601;
         this.cooldownTime = 0;
     }
 
@@ -73,7 +73,7 @@ public class ConquerPoint {
                         captureTime--;
                     }
 
-                    if (captureTime <= 301 && captureTime > 16) {
+                    if (captureTime <= 601 && captureTime > 16) {
                         if (captureTime % 30 == 0) {
                             try {
                                 MessageManager.broadcastMessage("&c[&4&lConquer&c]: &5" + resident.getTown().getNation().getName() + " &cis conquering &d" + getId() + "&c! [&4" + MessageManager.convertSecondsToMinutes(captureTime) + "&c]");
@@ -83,7 +83,14 @@ public class ConquerPoint {
                         }
                     }
 
-                    if (captureTime <= 10 && captureTime >= 1) {
+                    if (captureTime == 10)
+                        try {
+                            MessageManager.broadcastMessage("&c[&4&lConquer&c]: &5" + resident.getTown().getNation().getName() + " &cis conquering &d" + getId() + "&c! [&4" + MessageManager.convertSecondsToMinutes(captureTime) + "&c]");
+                        } catch (NotRegisteredException e) {
+                            e.printStackTrace();
+                        }
+
+                    if (captureTime <= 3 && captureTime >= 1) {
                         try {
                             MessageManager.broadcastMessage("&c[&4&lConquer&c]: &5" + resident.getTown().getNation().getName() + " &cis conquering &d" + getId() + "&c! [&4" + MessageManager.convertSecondsToMinutes(captureTime) + "&c]");
                         } catch (NotRegisteredException e) {
@@ -111,7 +118,7 @@ public class ConquerPoint {
                         }
 
                         for (Player all : TownyUniverse.getOnlinePlayers(nation)) {
-                            MessageManager.sendMessage(all, "&c[&4&lConquer&c]: Your nation has conquered &d" + getId() + "&c!\nDefend it all costs!");
+                            MessageManager.sendMessage(all, "&c[&4&lConquer&c]: Your nation has conquered &d" + getId() + "&c!\nDefend it at all costs!");
                         }
 
                         ItemStack reward = main.getGearManager().getTokenItem().clone();
@@ -131,7 +138,7 @@ public class ConquerPoint {
 
                         holder = null;
                         captureTime = 301;
-                        cooldownTime = 1801;
+                        cooldownTime = 2701;
 
                         setOnCooldown();
                     }
@@ -149,7 +156,7 @@ public class ConquerPoint {
             captureTask.cancel();
 
         holder = null;
-        captureTime = 301;
+        captureTime = 601;
     }
 
     public void setOnCooldown() {

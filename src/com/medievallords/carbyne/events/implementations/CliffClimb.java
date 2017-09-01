@@ -4,6 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.events.Event;
 import com.medievallords.carbyne.events.EventManager;
 import com.medievallords.carbyne.events.EventProperties;
+import com.medievallords.carbyne.events.SingleWinnerEvent;
 import com.medievallords.carbyne.events.implementations.commands.CliffClimbCommands;
 import com.medievallords.carbyne.events.implementations.listeners.CliffClimbListeners;
 import com.medievallords.carbyne.gates.Gate;
@@ -28,7 +29,7 @@ import java.util.logging.Level;
  * Created by Dalton on 7/5/2017.
  */
 @Getter
-public class CliffClimb extends Event
+public class CliffClimb extends Event implements SingleWinnerEvent
 {
 
     private Location cliffClimbSpawn = new Location(Bukkit.getWorld("world"), -365, 18, -1077);
@@ -49,7 +50,7 @@ public class CliffClimb extends Event
 
     public CliffClimb(EventManager eventManager)
     {
-        super(eventManager);
+        super(eventManager, CliffClimb.class.getSimpleName());
 
         properties.add(EventProperties.PVP_DISABLED);
         properties.add(EventProperties.SPELLS_DISABLED);
@@ -89,7 +90,7 @@ public class CliffClimb extends Event
                     eventGate.setKeepOpen(true);
                     eventGate.openGate();
                     for(Player p : participants)
-                        MessageManager.sendMessage(p, "&2The walls are down, climb the mountain!");
+                        MessageManager.sendMessage(p, "&bThe walls are down, climb the mountain!");
                 }
                 else
                 {
@@ -99,7 +100,7 @@ public class CliffClimb extends Event
                         int secondsUntilStart = (int)Math.floor(((startTime - System.currentTimeMillis()) / 1000));
                         ticks = 0;
                         for(Player p : participants)
-                            MessageManager.sendMessage(p, "&2Cliff Climb will begin in " + secondsUntilStart + " seconds!");
+                            MessageManager.sendMessage(p, "&bCliff Climb will begin in " + secondsUntilStart + " seconds!");
                     }
                 }
             }
@@ -121,7 +122,7 @@ public class CliffClimb extends Event
         super.start();
         Carbyne.getInstance().getLogger().log(Level.INFO, "The Cliff Climb event is now active!");
         Bukkit.getPluginManager().registerEvents(cliffClimbListeners, main);
-        Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&2Cliff &fClimb")).subtitle(ChatColor.translateAlternateColorCodes('&', "&fCliff Climb is starting! /cliffclimb join!")).stay(55).build();
+        Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&bCliff &fClimb")).subtitle(ChatColor.translateAlternateColorCodes('&', "&rCliff Climb &bis starting! /cliffclimb join!")).stay(55).build();
         for(Player player : Bukkit.getOnlinePlayers()) {
             player.sendTitle(title);
             MessageManager.sendMessage(player, "The Cliff Climb event is starting. /cliffclimb join");

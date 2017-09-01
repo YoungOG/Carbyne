@@ -11,6 +11,7 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.vexsoftware.votifier.model.VotifierEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
@@ -21,9 +22,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.github.paperspigot.Title;
 
 import java.util.List;
@@ -115,7 +120,7 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getPlayer().getGameMode() == GameMode.CREATIVE) {
             if (event.getPlayer().getItemInHand() != null && event.getPlayer().getItemInHand().getType() != Material.AIR) {
                 ItemStack item = event.getPlayer().getItemInHand();
                 switch (item.getType()) {
@@ -142,15 +147,15 @@ public class PlayerListeners implements Listener {
         Player player = Bukkit.getPlayer(event.getVote().getUsername());
 
         if (player != null) {
-            Double random = Math.random();
+            double random = Math.random();
 
             ItemStack reward;
 
-            if (random <= 0.02) {
+            if (random <= 0.005) {
                 reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
-            } else if (random <= 0.05) {
+            } else if (random <= 0.01) {
                 reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
-            } else if (random <= 0.10) {
+            } else if (random <= 0.04) {
                 reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
             } else if (random <= 0.15) {
                 reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
@@ -184,4 +189,29 @@ public class PlayerListeners implements Listener {
             event.getPlayer().setFallDistance(0.0F);
         }
     }
+
+    @EventHandler
+    public void onDrinkPotion(PlayerItemConsumeEvent event) {
+        if (event.getItem().getType() != Material.POTION) {
+            return;
+        }
+
+        PotionMeta meta = (PotionMeta) event.getItem().getItemMeta();
+        if (isInvisibility(meta)) {
+
+        }
+
+    }
+
+    private boolean isInvisibility(PotionMeta meta) {
+        for (PotionEffect effect : meta.getCustomEffects()) {
+            if (effect.getType() == PotionEffectType.INVISIBILITY) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 }

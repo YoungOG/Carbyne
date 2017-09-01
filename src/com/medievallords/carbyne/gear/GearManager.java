@@ -69,6 +69,7 @@ public class GearManager {
         specials.add(new HinderingShot());
         specials.add(new Frostbite());
         specials.add(new WallSpecial());
+        specials.add(new InfernalExplosion());
 
         carbyneGear.clear();
         defaultArmors.clear();

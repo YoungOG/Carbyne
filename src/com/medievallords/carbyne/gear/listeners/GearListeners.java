@@ -4,6 +4,7 @@ import com.bizarrealex.aether.scoreboard.Board;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.customevents.CarbyneRepairedEvent;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
@@ -13,9 +14,7 @@ import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.*;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -84,54 +83,72 @@ public class GearListeners implements Listener {
             }
 
             if (armorReduction > 0) {
-                double flatDamage = 0.0;
+                float flatDamage = 0.0f;
 
                 //Calculation of certain DamageCauses for precise balancing.
                 switch (event.getCause()) {
                     case FIRE_TICK:
-                        flatDamage = 0.5;
+                        flatDamage = 0.5f;
                         break;
                     case LAVA:
-                        flatDamage = 2.0;
+                        flatDamage = 1.0f;
                         break;
                     case LIGHTNING:
-                        flatDamage = 5.0;
+                        flatDamage = 5.0f;
                         break;
                     case DROWNING:
-                        flatDamage = 2.0;
+                        flatDamage = 2.0f;
                         break;
                     case STARVATION:
-                        flatDamage = 0.5;
+                        flatDamage = 0.5f;
                         break;
                     case VOID:
-                        flatDamage = 4.0;
+                        flatDamage = 4.0f;
                         break;
                     case POISON:
-                        flatDamage = 0.5;
+                        flatDamage = 0.35f;
                         break;
                     case WITHER:
-                        flatDamage = 0.5;
+                        flatDamage = 0.35f;
                         break;
                     case SUFFOCATION:
-                        flatDamage = 0.5;
+                        flatDamage = 0.5f;
                         break;
                     case FALL:
-                        flatDamage = event.getDamage() - event.getDamage() * (armorReduction - 0.20);
+                        flatDamage = (float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f));
                         break;
                 }
 
-                double damage = (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (event.getDamage() - (event.getDamage() * (armorReduction + getProtectionReduction(player)))) : flatDamage);
+                flatDamage *= 5;
 
-                if (damage >= player.getHealth()) {
+                float eventDamage = (float) event.getDamage() * 5;
+
+                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(player)))) : flatDamage);
+
+
+                //event.setDamage(damage);
+                event.setDamage(0);
+
+                if (player.getHealth() <= damage) {
                     event.setCancelled(true);
                     player.setHealth(0);
+                } else {
+                    player.setHealth(player.getHealth() - damage);
+                    player.playEffect(EntityEffect.HURT);
                     //player.damage(damage);
-                    return;
                 }
 
-                event.setDamage(0);
-                player.damage(damage);
+            } else {
+                event.setDamage(event.getDamage() * 5);
             }
+        }
+    }
+
+
+    @EventHandler
+    public void onHealthRegain(EntityRegainHealthEvent event) {
+        if (event.getEntityType() == EntityType.PLAYER) {
+            event.setAmount(event.getAmount() * 5);
         }
     }
 
@@ -156,6 +173,8 @@ public class GearListeners implements Listener {
                 if (carbyne.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) != null) {
                     return;
                 }
+
+                return;
             }
 
             for (ItemStack itemStack : damaged.getInventory().getArmorContents()) {
@@ -243,24 +262,6 @@ public class GearListeners implements Listener {
         }
     }
 
-    @EventHandler// REMOVE THIS SOON
-    public void on(PlayerInteractEvent e) {
-        ItemStack itemStack = e.getPlayer().getItemInHand();
-        if (itemStack == null) {
-            return;
-        }
-
-        CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
-
-        if (carbyneWeapon == null) {
-            return;
-        }
-
-        if (itemStack.getType() != carbyneWeapon.getItem(false).getType()) {
-            e.getPlayer().setItemInHand(carbyneWeapon.getItem(false));
-        }
-    }
-
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         PlayerUtility.checkForIllegalItems(event.getPlayer(), event.getPlayer().getInventory());
@@ -295,7 +296,7 @@ public class GearListeners implements Listener {
         }
 
         if (carbyneWeapon.getSpecial() != null) {
-            if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge()) {
+            if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge() || event.getPlayer().hasPermission("carbyne.specials.override")) {
 
                 Board board = Board.getByPlayer(event.getPlayer());
                 if (board != null) {
@@ -304,7 +305,9 @@ public class GearListeners implements Listener {
                     if (boardCooldown == null) {
                         carbyneWeapon.setSpecialCharge(itemStack, 0);
                         carbyneWeapon.getSpecial().callSpecial(event.getPlayer());
-                        new BoardCooldown(board, "special", 60.0D);
+                        if (!event.getPlayer().hasPermission("carbyne.specials.override")) {
+                            new BoardCooldown(board, "special", 60.0D);
+                        }
                     } else {
                         MessageManager.sendMessage(event.getPlayer(), "&eYou cannot use another weapon special for another &6" + boardCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds.");
                     }
@@ -353,7 +356,7 @@ public class GearListeners implements Listener {
         }
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onCraftItem(CraftItemEvent event) {
         if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
             if (gearManager.isDefaultArmor(event.getCurrentItem())) {
@@ -370,7 +373,7 @@ public class GearListeners implements Listener {
                 }
             }
         }
-    }
+    }*/
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
@@ -507,8 +510,12 @@ public class GearListeners implements Listener {
                 double durability = gear.getDurability(itemStack) + per * amountOfIngots;
                 int breakTime = 0;
                 if (Math.random() < 0.05) {
-                    Random random = new Random();
-                    breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                    if ((repairCost * repairCost) - 3 < 0) {
+                        breakTime = 0;
+                    } else {
+                        Random random = new Random();
+                        breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                    }
                 }
 
                 repairItem(player, item,  durability >= gear.getMaxDurability() ? gear.getMaxDurability() : durability, amountOfIngots, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
@@ -527,8 +534,12 @@ public class GearListeners implements Listener {
                 player.updateInventory();
                 int breakTime = 0;
                 if (Math.random() < 0.05) {
-                    Random random = new Random();
-                    breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                    if ((repairCost * repairCost) - 3 < 0) {
+                        breakTime = 0;
+                    } else {
+                        Random random = new Random();
+                        breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
+                    }
                 }
 
                 repairItem(player, item, gear.getMaxDurability(), repairCost, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
@@ -588,6 +599,7 @@ public class GearListeners implements Listener {
 
                         if (player.isOnline()) {
                             MessageManager.sendMessage(player, "&aYour item has been repaired.");
+                            Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
                         }
 
                     } else {
@@ -608,6 +620,8 @@ public class GearListeners implements Listener {
                             gearManager.getRepairItems().remove(item);
                             item.remove();
                         }
+
+                        Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
                     }
                 }
 
@@ -688,6 +702,12 @@ public class GearListeners implements Listener {
         }
     }
 
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        event.getPlayer().setMaxHealth(100);
+        event.getPlayer().setHealthScale(20);
+    }
+
     public double getProtectionReduction(Player player) {
         double damageReduction = 0.0;
 
@@ -698,46 +718,46 @@ public class GearListeners implements Listener {
             switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
                 case 1:
                     if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.015;
+                        damageReduction += 0.025;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.04;
+                        damageReduction += 0.025;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.025;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.015;
+                        damageReduction += 0.025;
                     }
                     break;
                 case 2:
                     if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.03125;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.08;
+                        damageReduction += 0.03125;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.06;
+                        damageReduction += 0.03125;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.03125;
                     }
                     break;
                 case 3:
                     if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.0375;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.08;
+                        damageReduction += 0.0375;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.06;
+                        damageReduction += 0.0375;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.0375;
                     }
                     break;
                 case 4:
                     if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.04375;
                     } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.08;
+                        damageReduction += 0.04375;
                     } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.06;
+                        damageReduction += 0.04375;
                     } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03;
+                        damageReduction += 0.04375;
                     }
                     break;
             }

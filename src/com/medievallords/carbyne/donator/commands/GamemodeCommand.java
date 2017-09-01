@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 /**
  * Created by Dalton on 6/13/2017.
+ *
  */
 public class GamemodeCommand extends BaseCommand {
 
@@ -18,82 +19,79 @@ public class GamemodeCommand extends BaseCommand {
         Player player = commandArgs.getPlayer();
         String[] args = commandArgs.getArgs();
 
-        if (args.length == 1) {
-            if (args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.tgm.toggle"))
-                getGamemodeManager().toggleTownCreative(player);
-            else
-                MessageManager.sendMessage(player, "&cYou do not have permission to use this command!");
-            return;
-        }
-
-        if (player.hasPermission("carbyne.commands.gamemode.ignore")) {
+        if (player.hasPermission("carbyne.commands.gamemode.ignore") && args.length == 0) {
             getGamemodeManager().toggleGamemode(player);
             return;
         }
 
-        if (player.hasPermission("carbyne.commands.tgm")) {
-            WorldCoord wc = null;
-            wc = WorldCoord.parseWorldCoord(player.getLocation());
+        WorldCoord wc = WorldCoord.parseWorldCoord(player);
 
-            Town check;
-            try {
-                check = wc.getTownBlock().getTown();
-            } catch (NotRegisteredException noTown) {
-                MessageManager.sendMessage(player, "&cYou are not in your town!");
+
+        Resident res;
+        try {
+            res = TownyUniverse.getDataSource().getResident(player.getName());
+        } catch (NotRegisteredException ignore) {
+            return;
+        }
+
+        Town residentsTown;
+        try {
+            residentsTown = res.getTown();
+        } catch (NotRegisteredException residentHasNoTown) {
+            MessageManager.sendMessage(player, "&cYou must have a town do to this!");
+            return;
+        }
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.tgm.toggle")) {
+            getGamemodeManager().toggleTownCreative(commandArgs.getPlayer());
+            return;
+        }
+
+        Town check;
+        try {
+            check = wc.getTownBlock().getTown();
+        } catch (NotRegisteredException townNotRegistered) {
+            MessageManager.sendMessage(player, "&cYou are not in your town!");
+            return;
+        }
+
+        if (check.equals(residentsTown)) {
+            if (getGamemodeManager().getCreativeTowns().containsKey(residentsTown)) {
+                getGamemodeManager().toggleGamemode(player);
                 return;
-            }
-
-            Resident res = null;
-            try {
-                res = TownyUniverse.getDataSource().getResident(player.getName());
-            } catch (NotRegisteredException e) {
-            }
-
-            Town residentTown;
-            try {
-                residentTown = res.getTown();
-            } catch (NotRegisteredException noTown) {
-                MessageManager.sendMessage(player, "&cYou are not in your town!");
+            } else if (player.hasPermission("carbyne.commands.tgm")) {
+                getGamemodeManager().toggleGamemode(player);
                 return;
+            } else {
+                MessageManager.sendMessage(player, "&cYou cannot do this!");
             }
+        } else {
 
             Nation nation = null;
             try {
                 nation = check.getNation();
-            } catch (NotRegisteredException e) {
+            } catch (NotRegisteredException ignore) {
             }
 
-            if (residentTown.equals(check)) {
-                getGamemodeManager().toggleGamemode(player);
-                return;
-            } else {
-                try {
-                    if (nation.equals(residentTown.getNation())) {
+            try {
+                if (nation.equals(residentsTown.getNation())) {
+                    if (getGamemodeManager().getCreativeTowns().containsKey(residentsTown)) {
                         getGamemodeManager().toggleGamemode(player);
                         return;
+                    } else if (player.hasPermission("carbyne.commands.tgm")) {
+                        getGamemodeManager().toggleGamemode(player);
+                        return;
+                    } else {
+                        MessageManager.sendMessage(player, "&cYou cannot do this!");
+                        return;
                     }
-                } catch (NotRegisteredException noTown) {
-                    MessageManager.sendMessage(player, "&cYou are not in your town!");
-                    return;
                 }
-            }
-            MessageManager.sendMessage(player, "&cYou are not in your town!");
-            return;
-        } else {
-            Town town;
-            try {
-                town = TownyUniverse.getDataSource().getResident(player.getName()).getTown();
-            } catch (NotRegisteredException noTown) {
+            } catch (NotRegisteredException | NullPointerException notInNationOrTown) {
                 MessageManager.sendMessage(player, "&cYou are not in your town!");
                 return;
             }
-
-            if (getGamemodeManager().getCreativeTowns().containsKey(town.getName())) {
-                getGamemodeManager().toggleGamemode(player);
-                return;
-            }
-
-            MessageManager.sendMessage(player, "&cYou do not have permission to use this command!");
         }
+
+        MessageManager.sendMessage(player, "&cYou cannot do this!");
     }
 }

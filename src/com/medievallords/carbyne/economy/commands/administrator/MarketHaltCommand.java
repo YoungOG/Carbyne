@@ -33,5 +33,8 @@ public class MarketHaltCommand extends BaseCommand {
                 }
             }
         }
+        //SlackAPI.getInstance().sendMessage(SlackTeam.MAIN, "#economy-log",
+        //new SlackMessage("MedievalRobot", ":robot_face:",
+        //"" + sender.getName() + " has " + ((marketManager.isEconomyHalted() ? "halted" : "unhalted")) + " the market!"), false);
     }
 }

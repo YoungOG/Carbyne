@@ -21,6 +21,10 @@
     </build>
 
     <repositories>
+        <repository>
+            <id>filoghost-repo</id>
+            <url>http://novaguilds.pl/repo/</url>
+        </repository>
         <!-- CombatTagPlus Repo -->
         <repository>
             <id>minelink-repo</id>
@@ -83,6 +87,12 @@
             <groupId>org.nibor.autolink</groupId>
             <artifactId>autolink</artifactId>
             <version>0.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.gmail.filoghost</groupId>
+            <artifactId>holographicdisplays.api</artifactId>
+            <version>2.2.5-SNAPSHOT</version>
         </dependency>
 
         <!--Bukkit API
@@ -276,6 +286,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
         </dependency>
     </dependencies>
 </project>

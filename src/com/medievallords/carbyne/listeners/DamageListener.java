@@ -2,10 +2,14 @@ package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicReloadedEvent;
+import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
+import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -22,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class DamageListener implements Listener {
 
@@ -51,11 +56,29 @@ public class DamageListener implements Listener {
         for (ItemStack item : drops) {
             if (item != null && item.getType() == Material.QUARTZ) {
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
-                    ItemStack replacement = gearManager.getCarbyneGear(ChatColor.stripColor(item.getItemMeta().getDisplayName())).getItem(false);
+                    CarbyneGear replacement = gearManager.getCarbyneGear(ChatColor.stripColor(item.getItemMeta().getDisplayName()));
+
+                    String[] gear = ChatColor.stripColor(item.getItemMeta().getDisplayName()).split(",");
+                    if (gear.length > 1) {
+                        int random = new Random().nextInt(gear.length);
+                        CarbyneGear carbyneGear = gearManager.getCarbyneGear(gear[random]);
+                        if (carbyneGear != null) {
+                            e.getDrops().remove(item);
+                            e.getDrops().add(carbyneGear.getItem(false));
+                        }
+                    }
 
                     if (replacement != null) {
                         e.getDrops().remove(item);
-                        e.getDrops().add(replacement);
+                        e.getDrops().add(replacement.getItem(false));
+                    } else if (ChatColor.stripColor(item.getItemMeta().getDisplayName()).contains("randomGear")) {
+                        String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+                        String[] split = name.split(":");
+                        if (split.length > 1) {
+                            replacement = gearManager.getRandomCarbyneGear(Boolean.parseBoolean(split[1]));
+                            e.getDrops().remove(item);
+                            e.getDrops().add(replacement.getItem(false));
+                        }
                     }
                 }
             }
@@ -107,6 +130,48 @@ public class DamageListener implements Listener {
         } catch (NotRegisteredException ignored) {
         }
     }
+
+    @EventHandler
+    public void onMythicMobDisable(MythicReloadedEvent event) {
+        for (ActiveMob am : event.getInstance().getMobManager().getActiveMobs()) {
+            am.setDead();
+        }
+
+        for (MythicSpawner ms : event.getInstance().getSpawnerManager().getSpawners()) {
+            ms.resetTimers();
+            ms.getAssociatedMobs().clear();
+            ms.setOnWarmup();
+            ms.setRemainingWarmupSeconds(30);
+            if (ms.getWarmupSeconds() > 1000) {
+                ms.setActivationRange(50);
+            } else {
+                ms.setActivationRange(25);
+            }
+        }
+    }
+
+    /*@EventHandler
+    public void onChunkLoad (ChunkLoadEvent event) {
+        for (MythicSpawner ms : MythicMobs.inst().getSpawnerManager().getSpawners()) {
+            if (ms.getLocation().getChunkX() == event.getChunk().getX() && ms.getLocation().getChunkZ() == event.getChunk().getZ() && ms.getWarmupSeconds() > 1000) {
+                try {
+                    Field field = ms.getClass().getDeclaredField("ICD");
+                    field.setAccessible(true);
+                    field.set(ms.getInternalCooldown(), 1);
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }*/
+
+    /*@EventHandler
+    public void onDespawn(Spawner spawner)
+    {
+
+    }*/
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamageIndicator(EntityDamageByEntityEvent event) {

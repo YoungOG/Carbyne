@@ -4,4 +4,10 @@ Races:
     StartMessage:
     StartingLocation:
     WinningLocation:
+    GateLocation:
+LastAlive:
+  0:
+    Name:
+    LobbyLocation:
+    SpawnLocations: {}
 Hohengroth:

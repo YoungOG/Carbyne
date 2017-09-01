@@ -38,6 +38,8 @@ public class ProfileListeners implements Listener {
             return;
         }
 
+        checkTowny(event);
+
         if (!Account.hasAccount(player.getUniqueId())) {
             if (Account.hasAccount(player.getName())) {
                 Account.getAccount(player.getName()).setAccountHolderId(player.getUniqueId());
@@ -91,6 +93,10 @@ public class ProfileListeners implements Listener {
                 profile.setPvpTimePaused(false);
             }
         }
+    }
+
+    public void checkTowny(PlayerJoinEvent event) {
+
     }
 
     @EventHandler

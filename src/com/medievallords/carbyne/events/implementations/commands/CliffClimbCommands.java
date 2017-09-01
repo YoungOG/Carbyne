@@ -2,7 +2,9 @@ package com.medievallords.carbyne.events.implementations.commands;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.events.implementations.CliffClimb;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -10,6 +12,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -35,7 +38,12 @@ public class CliffClimbCommands extends BaseCommand
         {
             if(args[0].equalsIgnoreCase("join"))
             {
-                if(player.getInventory().firstEmpty() != 0)
+                Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+                if (profile.getActiveEvent() != null) {
+                    MessageManager.sendMessage(player, "&cYou are already in an event!");
+                    return;
+                }
+                if (!PlayerUtility.isInventoryEmpty(player))
                 {
                     MessageManager.sendMessage(player, "&cYou need an empty inventory to join!");
                     return;
@@ -54,10 +62,11 @@ public class CliffClimbCommands extends BaseCommand
                     public void run() {
                         cliffClimb.getWaitingTasks().remove(player);
                         player.getInventory().clear();
-                        player.getActivePotionEffects().clear();
+                        for (PotionEffect e : player.getActivePotionEffects()) player.removePotionEffect(e.getType());
                         player.teleport(cliffClimb.getCliffClimbSpawn());
                         player.setGameMode(GameMode.SURVIVAL);
                         player.setFlying(false);
+                        player.setAllowFlight(true);
                         cliffClimb.addPlayerToEvent(player);
                     }
                 };
@@ -72,20 +81,6 @@ public class CliffClimbCommands extends BaseCommand
                     player.getInventory().clear();
                     cliffClimb.removePlayerFromEvent(player);
                     player.teleport(cliffClimb.getSpawn());
-                }
-            } else if (args[0].equalsIgnoreCase("start")) {
-                if (player.hasPermission("carbyne.event.admin")) {
-                    if (cliffClimb.isActive()) {
-                        MessageManager.sendMessage(player, "&2This event is already active!");
-                        return;
-                    } else {
-                        cliffClimb.start();
-                        MessageManager.sendMessage(player, "&2The event is starting...");
-                        return;
-                    }
-                } else {
-                    MessageManager.sendMessage(player, "&cYou do not have permission to use this command!");
-                    return;
                 }
             }
         }

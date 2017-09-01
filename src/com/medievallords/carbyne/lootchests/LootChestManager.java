@@ -3,6 +3,7 @@ package com.medievallords.carbyne.lootchests;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.ParticleEffect;
+import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,21 +28,43 @@ public class LootChestManager {
     @Getter
     private HashMap<String, List<Loot>> lootTables = new HashMap<>();
     @Getter
-    private HashMap<Location, LootChest> lootChests = new HashMap<>();
+    private List<LootChest> lootChests = new ArrayList<>();
 
     public LootChestManager() {
         load(main.getLootChestFileConfiguration());
 
         new BukkitRunnable() {
             public void run() {
-                for (Location location : lootChests.keySet()) {
-                    LootChest lc = lootChests.get(location);
+                for (int i = 0; i < lootChests.size(); i++) {
+                    LootChest lc = lootChests.get(i);
+                    if (lc == null) {
+                        continue;
+                    }
 
                     if (lc.isHidden() && lc.shouldChestSpawn())
                         lc.showChest();
+                    else if (lc.isHidden()) {
+                        lc.setHologramTimeLeft();
+                    }
 
-                    if (!lc.isHidden())
+                    if (!lc.isHidden()) {
                         ParticleEffect.VILLAGER_HAPPY.display(0.3f, 0.3f, 0.3f, 0.02f, 10, lc.getCenter(), 50, true);
+
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                for (ActiveMob activeMob : lc.getMobsAlive()) {
+                                    if (activeMob == null) {
+                                        return;
+                                    }
+
+                                    if (activeMob.getLivingEntity().getLocation().distance(lc.getLocation()) > 14) {
+                                        activeMob.getLivingEntity().teleport(lc.getCenter().clone().add(0, 1.05, 0));
+                                    }
+                                }
+                            }
+                        }.runTask(main);
+                    }
                 }
             }
         }.runTaskTimerAsynchronously(main, 0L, 20L);
@@ -49,6 +72,11 @@ public class LootChestManager {
 
     public void reload() {
         lootTables.clear();
+        for (int i = 0; i < lootChests.size(); i++) {
+            LootChest lc = lootChests.get(i);
+            lc.getHologram().delete();
+        }
+
         lootChests.clear();
 
         if (main.getLootChestFile() == null) {
@@ -119,7 +147,19 @@ public class LootChestManager {
                     String respawnString = fc.getString("LootChests." + lootChest + ".RespawnTime");
                     int maxItems = fc.getInt("LootChests." + lootChest + ".MaxItems");
                     BlockFace blockFace = BlockFace.valueOf(fc.getString("LootChests." + lootChest + ".Face"));
-                    lootChests.put(location, new LootChest(this, lootChest, lootTableName, location, respawnString, maxItems, blockFace));
+                    double maxHealth = fc.getDouble("LootChests." + lootChest + ".Health");
+
+                    List<String> mobs = new ArrayList<>();
+                    if (fc.getStringList("LootChests." + lootChest + ".Mobs") != null) {
+                        mobs.addAll(fc.getStringList("LootChests." + lootChest + ".Mobs"));
+                    }
+
+                    LootChest lc = new LootChest(this, lootChest, lootTableName, location, respawnString, maxItems, blockFace, maxHealth);
+                    if (!mobs.isEmpty()) {
+                        lc.getMobs().addAll(mobs);
+                    }
+
+                    lootChests.add(lc);
                     totalChests++;
                 } catch (Exception e) {
                     main.getLogger().log(Level.SEVERE, "Failed to load loot chest with the name " + lootChest + "!");
@@ -130,8 +170,8 @@ public class LootChestManager {
     }
 
     public LootChest findLootChestWithName(String un) {
-        for (Location l : lootChests.keySet()) {
-            LootChest lc = lootChests.get(l);
+        for (int i = 0; i < lootChests.size(); i++) {
+            LootChest lc = lootChests.get(i);
 
             if (lc.getChestConfigName().equalsIgnoreCase(un))
                 return lc;
@@ -139,4 +179,16 @@ public class LootChestManager {
 
         return null;
     }
+
+    public LootChest getByLocation(Location location) {
+        for (int i = 0; i < lootChests.size(); i++) {
+            LootChest lc = lootChests.get(i);
+            if (lc != null && lc.getLocation().equals(location)) {
+                return lc;
+            }
+        }
+
+        return null;
+    }
+
 }

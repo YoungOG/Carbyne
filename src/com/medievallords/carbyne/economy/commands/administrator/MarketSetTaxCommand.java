@@ -36,6 +36,9 @@ public class MarketSetTaxCommand extends BaseCommand {
         }
 
         getMarketManager().setSalesTax(amount);
+        //SlackAPI.getInstance().sendMessage(SlackTeam.MAIN, "#economy-log",
+        //new SlackMessage("MedievalRobot", ":robot_face:",
+        //"" + sender.getName() + " has set the sale tax to " + MessageManager.format(amount) + "!"), false);
         MessageManager.sendMessage(sender, "&7You have set the Sales Tax to &c" + amount + "%&7.");
     }
 }

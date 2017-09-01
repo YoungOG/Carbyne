@@ -37,7 +37,6 @@ public class TicketManager {
     private MongoCollection<Document> ticketCollection = Carbyne.getInstance().getMongoDatabase().getCollection("tickets");
 
     private ArrayList<Ticket> tickets = new ArrayList<>();
-    private ArrayList<Ticket> closedTickets = new ArrayList<>();
 
     private HashMap<UUID, Ticket> respondingTickets = new HashMap<>();
 
@@ -97,14 +96,7 @@ public class TicketManager {
 
         Carbyne.getInstance().getLogger().log(Level.INFO, "[Tickets] Loaded " + i + " tickets");
 
-        for (int yi = 0; yi < tickets.size(); yi++) {
-            Ticket ticket = tickets.get(yi);
-            if (ticket.getStatus() == TicketStatus.CLOSED) {
-                closedTickets.add(ticket);
-                tickets.remove(ticket);
-                yi--;
-            }
-        }
+
     }
 
     public void saveTickets() {
@@ -118,20 +110,7 @@ public class TicketManager {
             if (ticket.getStaff() != null) {
                 doc.append("staff", ticket.getStaff().toString());
             }
-            doc.append("question", ticket.getQuestion());
-            doc.append("response", ticket.getResponse());
 
-            ticketCollection.replaceOne(Filters.eq("player", ticket.getPlayer().toString()), doc, new UpdateOptions().upsert(true));
-            p++;
-        }
-
-        for (Ticket ticket : closedTickets) {
-
-            Document doc = new Document("player", ticket.getPlayer().toString());
-
-            doc.append("date", ticket.getDate());
-            doc.append("status", ticket.getStatus().toString());
-            doc.append("staff", ticket.getStaff().toString());
             doc.append("question", ticket.getQuestion());
             doc.append("response", ticket.getResponse());
 
@@ -146,37 +125,9 @@ public class TicketManager {
         Player player = Bukkit.getServer().getPlayer(uuid);
         Inventory inv = Bukkit.createInventory(null, 54, player.getName() + "'s Tickets");
 
-        for (int i = closedTickets.size(); i > 0; i--) {
-            Ticket ticket = closedTickets.get(i - 1);
-            if (ticket.getPlayer().equals(player.getUniqueId())) {
-                List<String> lore = new ArrayList<>();
-                lore.add("&a");
-
-                int lenght = 0;
-                int index = 0;
-                for (String s : ticket.getQuestion().split(" ")) {
-                    lenght++;
-
-                    if (lenght >= 12) {
-                        lenght = 0;
-                        index++;
-                        lore.add("&a");
-                    }
-
-                    lore.set(index, lore.get(index) + s + " ");
-
-                }
-                if (inv.firstEmpty() == -1) {
-                    break;
-                } else {
-                    inv.addItem(new ItemBuilder(getMaterial(ticket)).name("&aTicket #" + (i - 1)).setLore(lore).addLore("").addLore("&6" + ticket.getDate()).build());
-                }
-            }
-        }
-
         for (int i = tickets.size(); i > 0; i--) {
             Ticket ticket = tickets.get(i - 1);
-            if (ticket.getPlayer().equals(player.getUniqueId())) {
+            if (ticket.getPlayer().equals(player.getUniqueId()) && ticket.getStatus() == TicketStatus.CLOSED) {
                 List<String> lore = new ArrayList<>();
                 lore.add("&a");
 
@@ -194,7 +145,6 @@ public class TicketManager {
                     lore.set(index, lore.get(index) + s + " ");
 
                 }
-
                 if (inv.firstEmpty() == -1) {
                     break;
                 } else {
@@ -340,9 +290,6 @@ public class TicketManager {
         ticket.setStatus(TicketStatus.CLOSED);
         ticket.setStaff(player);
 
-        closedTickets.add(ticket);
-        tickets.remove(ticket);
-
         Profile profile = profileManager.getProfile(player);
         if (profile != null) {
             profile.setClosedTickets(profile.getClosedTickets() + 1);
@@ -438,6 +385,10 @@ public class TicketManager {
     public Ticket getTicket (String name) {
         String chat = ChatColor.stripColor(name);
         String[] split = chat.replace(" ", "").split("#");
+        if (!chat.startsWith("Ticket")) {
+            return null;
+        }
+
         if (split.length < 2) {
             return null;
         }
@@ -513,6 +464,18 @@ public class TicketManager {
         for (int i = 0; i < tickets.size(); i++) {
             Ticket ticket = tickets.get(i);
             if (ticket != null && ticket.getStatus() == TicketStatus.CLAIMED) {
+                tickets.add(ticket);
+            }
+        }
+
+        return tickets;
+    }
+
+    public List<Ticket> getClosedTickets() {
+        List<Ticket> tickets = new ArrayList<>();
+        for (int i = 0; i < tickets.size(); i++) {
+            Ticket ticket = tickets.get(i);
+            if (ticket != null && ticket.getStatus() == TicketStatus.CLOSED) {
                 tickets.add(ticket);
             }
         }

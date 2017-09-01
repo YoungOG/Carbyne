@@ -242,4 +242,16 @@ public class MessageManager {
         String disSec = (seconds < 10 ? "0" : "") + seconds;
         return disMinu + ":" + disSec;
     }
+
+    public static String stripStringOfAmpersandColors(String string) {
+        if (string == null) return "";
+        char[] chars = string.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < chars.length; i++) {
+            char current = chars[i];
+            if (current == '&') i++;
+            else sb.append(current);
+        }
+        return sb.toString();
+    }
 }

@@ -82,7 +82,7 @@ public class RegenerationListeners implements Listener {
      */
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent e) {
-        if(e.getBlock().getWorld().getName().equalsIgnoreCase("build_world")) return;
+        if (!e.getBlock().getWorld().getName().equalsIgnoreCase("build_world")) return;
         if (e.getBlock().getType().equals(Material.SAND) || e.getBlock().getType().equals(Material.GRAVEL))
             e.setCancelled(true);
     }

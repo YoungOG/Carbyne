@@ -1,6 +1,6 @@
 name: Carbyne
 main: com.medievallords.carbyne.Carbyne
-version: 0.3
+version: 1.0.2
 description: Main core for the Medieval Lords server with carbyne weapons and armors
 author: Young
 depend: [MythicMobs, WorldEdit]

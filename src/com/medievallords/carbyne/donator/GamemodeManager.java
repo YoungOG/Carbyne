@@ -9,6 +9,7 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
@@ -27,8 +28,8 @@ public class GamemodeManager {
 
     private List<Player> flyPlayers = new ArrayList<>();
     private List<Player> gmPlayers = new ArrayList<>();
-    private HashMap<String, Town> flightTowns = new HashMap<>();
-    private HashMap<String, Town> creativeTowns = new HashMap<>();
+    private HashMap<Town, String> flightTowns = new HashMap<>();
+    private HashMap<Town, String> creativeTowns = new HashMap<>();
 
     public GamemodeManager() {
         load();
@@ -44,7 +45,7 @@ public class GamemodeManager {
 
                 if (splitEntry.length == 2)
                     try {
-                        flightTowns.put(splitEntry[0], TownyUniverse.getDataSource().getTown(splitEntry[1]));
+                        flightTowns.put(TownyUniverse.getDataSource().getTown(splitEntry[1]), splitEntry[0]);
                     } catch (NotRegisteredException ex) {}
             }
 
@@ -55,7 +56,7 @@ public class GamemodeManager {
 
                 if (splitEntry.length == 2)
                     try {
-                        creativeTowns.put(splitEntry[0], TownyUniverse.getDataSource().getTown(splitEntry[1]));
+                        creativeTowns.put(TownyUniverse.getDataSource().getTown(splitEntry[1]), splitEntry[0]);
                     } catch (NotRegisteredException ex) {}
             }
     }
@@ -79,20 +80,39 @@ public class GamemodeManager {
     }
 
     public void toggleTownCreative(Player player) {
-        if (creativeTowns.containsKey(player.getUniqueId().toString())) {
-            creativeTowns.remove(player.getUniqueId().toString());
+
+        Town town;
+        Resident resident;
+        try {
+            resident = TownyUniverse.getDataSource().getResident(player.getName());
+        } catch (NotRegisteredException e) {
+            MessageManager.sendMessage(player, "&c An error has occurred");
+            return;
+        }
+
+        try {
+            town = resident.getTown();
+        } catch (NotRegisteredException e) {
+            MessageManager.sendMessage(player, "&c You must have a town to do this");
+            return;
+        }
+
+        if (creativeTowns.containsKey(town)) {
+            creativeTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown creative is disabled!");
-            List<String> temp = main.getGateFileConfiguration().getStringList("CreativeTowns");
+            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("CreativeTowns");
             for (String entry : temp) {
                 String[] entrySplit = entry.split(",");
-                if (entrySplit[0].equalsIgnoreCase(player.getUniqueId().toString())) {
+                if (entrySplit[0].equalsIgnoreCase(town.getName())) {
                     temp.remove(entry);
                     break;
                 }
             }
 
             main.getGamemodeTownsConfiguration().set("CreativeTowns", temp);
+
             try {
+                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
                 main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
             } catch (IOException e) {}
         } else {
@@ -103,21 +123,22 @@ public class GamemodeManager {
                 return;
             }
 
-            Town town = null;
+            Town town2 = null;
             try {
-                town = res.getTown();
+                town2 = res.getTown();
             } catch (NotRegisteredException noTown) {
                 MessageManager.sendMessage(player, "&cYou do not have a town!");
                 return;
             }
 
-            creativeTowns.put(player.getUniqueId().toString(), town);
+            creativeTowns.put(town2, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown creative enabled!");
-            List<String> temp = main.getGateFileConfiguration().getStringList("CreativeTowns");
-            temp.add(player.getUniqueId().toString() + "," + town.getName().toString());
+            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("CreativeTowns");
+            temp.add(town.getName() + "," + player.getUniqueId().toString());
 
             main.getGamemodeTownsConfiguration().set("CreativeTowns", temp);
             try {
+                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
                 main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
             } catch (IOException e) {
             }
@@ -137,14 +158,30 @@ public class GamemodeManager {
     }
 
     public void toggleTownFlight(Player player) {
-        if (flightTowns.containsKey(player.getUniqueId().toString())) {
-            flightTowns.remove(player.getUniqueId().toString());
+        Town town;
+        Resident resident;
+        try {
+            resident = TownyUniverse.getDataSource().getResident(player.getName());
+        } catch (NotRegisteredException e) {
+            MessageManager.sendMessage(player, "&c An error has occurred");
+            return;
+        }
+
+        try {
+            town = resident.getTown();
+        } catch (NotRegisteredException e) {
+            MessageManager.sendMessage(player, "&c You must have a town to do this");
+            return;
+        }
+
+        if (flightTowns.containsKey(town)) {
+            flightTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown flight has been disabled!");
 
             List<String> temp = main.getGamemodeTownsConfiguration().getStringList("FlightTowns");
             for (String entry : temp) {
                 String[] splitEntry = entry.split(",");
-                if (splitEntry[0].equalsIgnoreCase(player.getUniqueId().toString())) {
+                if (splitEntry[0].equalsIgnoreCase(town.getName())) {
                     temp.remove(entry);
                     break;
                 }
@@ -152,26 +189,20 @@ public class GamemodeManager {
 
             main.getGamemodeTownsConfiguration().set("FlightTowns", temp);
             try {
+                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
                 main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
             } catch (IOException e) {}
         } else {
-            Town town;
 
-            try {
-                town = TownyUniverse.getDataSource().getResident(player.getName()).getTown();
-            } catch (NotRegisteredException noTown) {
-                MessageManager.sendMessage(player, "&cYou need a town to use this command!");
-                return;
-            }
-
-            flightTowns.put(player.getUniqueId().toString(), town);
+            flightTowns.put(town, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown flight enabled!");
 
             List<String> temp = main.getGamemodeTownsConfiguration().getStringList("FlightTowns");
-            temp.add(player.getUniqueId().toString() + "," + town.getName());
+            temp.add(town.getName() + "," + player.getUniqueId().toString());
 
             main.getGamemodeTownsConfiguration().set("FlightTowns", temp);
             try {
+                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
                 main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
             } catch (IOException e) {}
         }
