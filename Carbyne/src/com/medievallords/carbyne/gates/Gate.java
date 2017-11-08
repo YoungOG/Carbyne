@@ -1,0 +1,280 @@
+package com.medievallords.carbyne.gates;
+
+import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.heartbeat.BlockType;
+import com.medievallords.carbyne.heartbeat.Heartbeat;
+import com.medievallords.carbyne.heartbeat.HeartbeatBlockQueue;
+import com.medievallords.carbyne.heartbeat.HeartbeatTask;
+import com.medievallords.carbyne.utils.JSONMessage;
+import com.medievallords.carbyne.utils.LocationSerialization;
+import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
+import lombok.Getter;
+import lombok.Setter;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.logging.Level;
+
+/**
+ * Created by Calvin and Chris on 1/18/2017
+ * for the Carbyne-Gear project.
+ */
+
+@Getter
+@Setter
+public class Gate implements HeartbeatTask {
+
+    private Carbyne main = Carbyne.getInstance();
+
+    private int activeLength;
+    private int currentLength;
+    private String gateId;
+    private HashMap<Location, Boolean> pressurePlateMap = new HashMap<>();
+    private ArrayList<Location> buttonLocations = new ArrayList<>();
+    private ArrayList<Location> redstoneBlockLocations = new ArrayList<>();
+    private ArrayList<UUID> entityUUIDs = new ArrayList<>();
+    private int livingMobs = 0;
+    private Heartbeat heartbeat;
+    private boolean open = false;
+    private boolean keepOpen = false;
+    private boolean keepClosed = false;
+
+    public Gate(String gateId) {
+        this.gateId = gateId;
+        this.currentLength = this.activeLength;
+    }
+
+    public Gate(String id, Gate gate) {
+        this.gateId = id;
+        this.pressurePlateMap = gate.pressurePlateMap;
+        this.redstoneBlockLocations = gate.redstoneBlockLocations;
+        this.buttonLocations = gate.buttonLocations;
+        this.activeLength = gate.activeLength;
+        this.currentLength = gate.activeLength;
+        this.entityUUIDs = gate.entityUUIDs;
+    }
+
+    public void pressurePlateActivated(Location location, boolean active) {
+        pressurePlateMap.put(location, active);
+
+        int activePressurePlates = 0;
+
+        for (Location locations : pressurePlateMap.keySet()) {
+            if (pressurePlateMap.get(locations)) {
+                activePressurePlates++;
+            }
+        }
+
+        if (activePressurePlates < pressurePlateMap.keySet().size()) {
+            MessageManager.sendMessage(location, 10, "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aPressure Plates needed to open &b" + gateId + "&a.");
+
+            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aplayers needed to open &b" + gateId + "&a."))
+                    .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+        }
+
+        if (activePressurePlates >= pressurePlateMap.keySet().size()) {
+            MessageManager.sendMessage(location, 10, "&aThe gate &b" + gateId + " &ahas been opened.");
+
+            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate &b" + gateId + " &ahas been opened."))
+                    .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+
+            openGate();
+        }
+    }
+
+    public void buttonActivated(Location location) {
+        MessageManager.sendMessage(location, 10, "&aThe gate &b" + gateId + " &ahas been opened.");
+
+        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate &b" + gateId + " &ahas been opened."))
+                .actionbar(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+
+        openGate();
+    }
+
+    public synchronized void openGate() {
+        if (keepClosed){
+            Bukkit.broadcastMessage("KEEPCLOSED TOGGLED!");
+            return;
+        }
+
+        open = true;
+
+        try {
+            this.currentLength = this.activeLength;
+
+            for (Location location : redstoneBlockLocations) {
+                Block block = location.getBlock();
+
+                if (block.getType() != Material.REDSTONE_BLOCK) {
+                    HeartbeatBlockQueue.types.add(new BlockType(Material.REDSTONE_BLOCK, block.getLocation()));
+                }
+            }
+
+            if (this.heartbeat == null) {
+                this.heartbeat = new Heartbeat(this, 1000L);
+                heartbeat.start();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public synchronized void closeGate() {
+        open = false;
+        keepOpen = false;
+
+        try {
+            for (Location location : redstoneBlockLocations) {
+                Block block = location.getBlock();
+
+                if (block.getType() == Material.REDSTONE_BLOCK) {
+                    HeartbeatBlockQueue.types.add(new BlockType(Material.AIR, block.getLocation()));
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public void saveGate() {
+        ConfigurationSection section = main.getGateFileConfiguration().getConfigurationSection("Gates");
+
+        if (!section.isSet(gateId)) {
+            section.createSection(gateId);
+        }
+
+        if (!section.isSet(gateId + ".ActiveLength")) {
+            section.createSection(gateId + ".ActiveLength");
+        }
+
+        if (!section.isSet(gateId + ".EntityUUIDs")) {
+            section.createSection(gateId + ".EntityUUIDs");
+            section.set(gateId + ".EntityUUIDs", new ArrayList<String>());
+        }
+
+        if (!section.isSet(gateId + ".PressurePlateLocations")) {
+            section.createSection(gateId + ".PressurePlateLocations");
+            section.set(gateId + ".PressurePlateLocations", new ArrayList<String>());
+        }
+
+        if (!section.isSet(gateId + ".ButtonLocations")) {
+            section.createSection(gateId + ".ButtonLocations");
+            section.set(gateId + ".ButtonLocations", new ArrayList<String>());
+        }
+
+        if (!section.isSet(gateId + ".RedstoneBlockLocations")) {
+            section.createSection(gateId + ".RedstoneBlockLocations");
+            section.set(gateId + ".RedstoneBlockLocations", new ArrayList<String>());
+        }
+
+        section.set(gateId + ".ActiveLength", activeLength);
+
+        ArrayList<String> ids = new ArrayList<>();
+        if (entityUUIDs.size() > 0) {
+            for (UUID id : entityUUIDs) {
+                ids.add(id.toString());
+            }
+
+            section.set(gateId + ".EntityUUIDs", ids);
+        }
+
+        if (pressurePlateMap.keySet().size() > 0) {
+            ArrayList<String> locationStrings = new ArrayList<>();
+
+            for (Location location : pressurePlateMap.keySet()) {
+                locationStrings.add(LocationSerialization.serializeLocation(location));
+            }
+
+            section.set(gateId + ".PressurePlateLocations", locationStrings);
+        }
+
+        if (buttonLocations.size() > 0) {
+            ArrayList<String> locationStrings = new ArrayList<>();
+
+            for (Location location : buttonLocations) {
+                locationStrings.add(LocationSerialization.serializeLocation(location));
+            }
+
+            section.set(gateId + ".ButtonLocations", locationStrings);
+        }
+
+        if (redstoneBlockLocations.size() > 0) {
+            ArrayList<String> locationStrings = new ArrayList<>();
+
+            for (Location location : redstoneBlockLocations) {
+                locationStrings.add(LocationSerialization.serializeLocation(location));
+            }
+
+            section.set(gateId + ".RedstoneBlockLocations", locationStrings);
+        }
+
+        try {
+            main.getGateFileConfiguration().save(main.getGateFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+            main.getLogger().log(Level.WARNING, "Failed to save gate " + gateId + "!");
+        }
+    }
+
+    @Override
+    public boolean heartbeat() {
+        Bukkit.broadcastMessage("\n GATE STATUS:" + "gateID: " + this.getGateId() + "\n"
+                + "activeLength: " + this.activeLength + "\n"
+                + "currentLength: " + this.currentLength + "\n"
+                + "open: " + this.open + "" +"\n"
+                + "keepOpen: " + this.keepOpen + "\n"
+                + "keepClosed: " + this.keepClosed + "\n"
+                + "livingMobs: " + this.livingMobs + "\n \n");
+        int pressedPressurePlates = 0;
+
+        if (keepOpen) {
+            currentLength = activeLength;
+        }
+
+        for (Location location : pressurePlateMap.keySet()) {
+            if (pressurePlateMap.get(location)) {
+                pressedPressurePlates++;
+            }
+        }
+
+        if (pressedPressurePlates >= pressurePlateMap.keySet().size()) {
+            openGate();
+        }
+
+        if (currentLength-- > 0) {
+            return true;
+        } else {
+            closeGate();
+            heartbeat = null;
+            return false;
+        }
+    }
+    
+    public void killMob(){
+        this.livingMobs--;
+        
+        if (!open) {
+            if (livingMobs < 1) {
+                keepOpen = true;
+                openGate();
+            }
+        }
+    }
+    public void addMob() {
+        this.livingMobs++;
+
+        if (open) {
+            closeGate();
+        }
+    }
+
+    public Location getLocaton(){
+        return redstoneBlockLocations.get(0).getBlock().getLocation();
+    }
+}
