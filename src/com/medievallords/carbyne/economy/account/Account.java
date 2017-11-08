@@ -23,6 +23,7 @@ public class Account {
 
     private static MongoCollection<Document> accountsCollection = Carbyne.getInstance().getMongoDatabase().getCollection("accounts");
     private static HashSet<Account> accounts = new HashSet<>();
+    private static HashSet<Account> duplicateAccounts = new HashSet<>();
 
     private UUID accountHolderId;
     private String accountHolder;
@@ -32,8 +33,6 @@ public class Account {
         this.accountHolderId = accountHolderId;
         this.accountHolder = accountHolder;
         this.balance = balance;
-
-        accounts.add(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -59,6 +58,34 @@ public class Account {
                     accounts.add(account);
                 }
             }
+
+            for (Account account : accounts) {
+                if (account.getAccountHolderId() != null)
+                    for (Account account1 : accounts) {
+                        if (account1.getAccountHolderId() != null)
+                            if (account.getAccountHolderId() == account1.getAccountHolderId()) {
+                                Carbyne.getInstance().getLogger().log(Level.WARNING, "Duplicate Account found: " + account.getAccountHolderId() + " -> " + account1.getAccountHolderId() + ", " + account.getAccountHolder() + " -> " + account1.getAccountHolder() + ", " + account.getBalance() + " -> " + account1.getBalance());
+                                //                        account.setBalance(account.getBalance() + account1.getBalance());
+                                //                        duplicateAccounts.add(account1);
+                            }
+                    }
+            }
+
+            for (Account account : duplicateAccounts) {
+                Document document = new Document();
+                document.append("accountHolder", account.getAccountHolder());
+
+                if (account.getAccountHolderId() != null) {
+                    document.append("accountHolderId", account.getAccountHolderId().toString());
+                }
+
+                document.append("balance", account.getBalance());
+                accountsCollection.deleteOne(document);
+
+                accounts.remove(account);
+            }
+
+            duplicateAccounts.clear();
 
             Carbyne.getInstance().getLogger().log(Level.INFO, "Successfully loaded " + accounts.size() + " accounts. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }

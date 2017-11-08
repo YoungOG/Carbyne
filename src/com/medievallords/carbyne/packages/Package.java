@@ -265,16 +265,16 @@ public class Package {
         }
 
         return null;
-
     }
 
     public void runFireworks(Location location) {
         Firework firework = (Firework) location.getWorld().spawnEntity(location, EntityType.FIREWORK);
-        org.bukkit.FireworkEffect effect = org.bukkit.FireworkEffect.builder().with(getRandomType()).withColor(getRandomColor()).withColor(getRandomColor()).build();
+        FireworkEffect effect = FireworkEffect.builder().with(getRandomType()).withColor(getRandomColor()).withColor(getRandomColor()).build();
         FireworkMeta meta = firework.getFireworkMeta();
         meta.clearEffects();
         meta.addEffect(effect);
         firework.setFireworkMeta(meta);
+
         new BukkitRunnable() {
             @Override
             public void run() {

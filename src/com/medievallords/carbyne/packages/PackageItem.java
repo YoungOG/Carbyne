@@ -53,6 +53,8 @@ public class PackageItem {
     public ItemStack getItem() {
         if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData()) {
             return new ItemBuilder(gearManager.getTokenItem()).amount(amount).build();
+        } else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData()) {
+            return new ItemBuilder(gearManager.getPolishItem()).amount(amount).build();
         } else if (gearManager.getCarbyneGear(gearCode) != null) {
             if (gearManager.getCarbyneGear(gearCode).getItem(false) != null) {
                 return new ItemBuilder(gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();

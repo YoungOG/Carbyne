@@ -52,17 +52,14 @@ public class ProfileManager {
                 boolean safelyLogged = document.getBoolean("safelyLogged");
                 List<UUID> ignoredPlayers = new ArrayList<>();
                 Profession profession = null;
-                boolean localChatToggled = false;
                 long professionResetCooldown = 0;
                 int professionLevel = 1;
                 double professionProgress = 0;
                 double requiredProfessionProgress = 1;
 
-                if (document.getBoolean("localChatToggled") != null)
-                    localChatToggled = document.getBoolean("localChatToggled");
-
                 if (document.containsKey("ignoredPlayers")) {
-                    List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredplayers");
+                    List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredPlayers");
+
                     for (String s : uuidNameIgnoredPlayers) {
                         ignoredPlayers.add(UUID.fromString(s));
                     }
@@ -95,20 +92,13 @@ public class ProfileManager {
                 profile.setSafelyLogged(safelyLogged);
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
                 profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
-                profile.setLocalChatToggled(localChatToggled);
+                profile.setProfileChatChannel(Profile.ProfileChatChannel.GLOBAL);
                 profile.setIgnoredPlayers(ignoredPlayers);
                 profile.setProfession(profession);
                 profile.setProfessionLevel(professionLevel);
                 profile.setProfessionProgress(professionProgress);
                 profile.setRequiredProfessionProgress(requiredProfessionProgress);
                 profile.setProfessionResetCooldown(professionResetCooldown);
-
-                if (document.containsKey("closedTickets") && document.containsKey("claimedtickets")) {
-                    int closedTickets = document.getInteger("closedTickets");
-                    int claimedTickets = document.getInteger("claimedtickets");
-                    profile.setClaimedTickets(claimedTickets);
-                    profile.setClosedTickets(closedTickets);
-                }
 
                 if (document.containsKey("pvptime"))
                     profile.setPvpTime(document.getLong("pvptime"));
@@ -146,14 +136,11 @@ public class ProfileManager {
                             document.append("carbynedeaths", profile.getCarbyneDeaths());
                             document.append("killstreak", profile.getKillStreak());
                             document.append("pvptime", profile.getPvpTime());
-                            document.append("closedTickets", profile.getClosedTickets());
-                            document.append("claimedtickets", profile.getClaimedTickets());
                             document.append("pvptimepaused", profile.isPvpTimePaused());
                             document.append("showeffects", profile.hasEffectsToggled());
                             document.append("safelyLogged", profile.isSafelyLogged());
                             document.append("pin", profile.getPin());
                             document.append("previous-inventory", profile.getPreviousInventoryContentString());
-                            document.append("localChatToggled", profile.isLocalChatToggled());
 
                             if (!profile.getIgnoredPlayers().isEmpty()) {
                                 List<String> uuids = new ArrayList<>();
@@ -191,8 +178,6 @@ public class ProfileManager {
                     document.append("carbynedeaths", profile.getCarbyneDeaths());
                     document.append("killstreak", profile.getKillStreak());
                     document.append("pvptime", profile.getPvpTime());
-                    document.append("closedTickets", profile.getClosedTickets());
-                    document.append("claimedTickets", profile.getClaimedTickets());
                     document.append("pvptimepaused", profile.isPvpTimePaused());
                     document.append("showeffects", profile.hasEffectsToggled());
                     document.append("safelyLogged", profile.isSafelyLogged());
@@ -202,7 +187,6 @@ public class ProfileManager {
                     if (profile.getTimeLeft() > 1)
                         document.append("timeleft", profile.getTimeLeft());
 
-                    document.append("localChatToggled", profile.isLocalChatToggled());
 
                     if (!profile.getIgnoredPlayers().isEmpty()) {
                         List<String> uuids = new ArrayList<>();
@@ -240,7 +224,7 @@ public class ProfileManager {
             profile.setKillStreak(0);
             profile.setShowEffects(true);
             profile.setSafelyLogged(false);
-            //Set remaining time at creation to 30 minutes.
+            profile.setProfileChatChannel(Profile.ProfileChatChannel.GLOBAL);
             profile.setPvpTime(System.currentTimeMillis() + ((60 * 30) * 1000));
             profile.setPvpTimePaused(true);
             profile.setPin("");
@@ -259,8 +243,6 @@ public class ProfileManager {
             document.append("safelyLogged", profile.isSafelyLogged());
             document.append("pin", profile.getPin());
             document.append("previous-inventory", profile.getPreviousInventoryContentString());
-
-            document.append("localChatToggled", profile.isLocalChatToggled());
 
             if (!profile.getIgnoredPlayers().isEmpty()) {
                 List<String> uuids = new ArrayList<>();

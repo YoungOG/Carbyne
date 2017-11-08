@@ -79,30 +79,56 @@ public class GearGuiManager {
 
     public void setupArmorGui() {
         for (CarbyneArmor carbyneArmor : gearManager.getCarbyneArmor()) {
-            double ar = 0.0;
-            for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getColor())) {
-                ar += set.getArmorRating();
-            }
-
-            List<String> loreCopy = new ArrayList<>();
-
-            loreCopy.add( HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
-            loreCopy.add("&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
-
-            if (carbyneArmor.getLore().size() > 0) {
-                loreCopy.add(" ");
-
-                for (String s : carbyneArmor.getLore()) {
-                    loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
+            if (!carbyneArmor.isHidden()) {
+                double ar = 0.0;
+                for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor())) {
+                    ar += set.getArmorRating();
                 }
-            }
 
+                List<String> loreCopy = new ArrayList<>();
+
+                loreCopy.add(HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
+                loreCopy.add("&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
+
+                if (carbyneArmor.getLore().size() > 0) {
+                    loreCopy.add(" ");
+
+                    for (String s : carbyneArmor.getLore()) {
+                        loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
+                    }
+                }
+
+                armorGui.addItem(new ItemBuilder(carbyneArmor.getItem(true)).setLore(loreCopy).build());
+            }
+        }
+
+        for (CarbyneArmor carbyneArmor : gearManager.getCarbyneArmor()) {
             if (carbyneArmor.isHidden()) {
-                loreCopy.add(" ");
-                loreCopy.add("&cThis is not a purchasable set.");
-            }
+                double ar = 0.0;
+                for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor())) {
+                    ar += set.getArmorRating();
+                }
 
-            armorGui.addItem(new ItemBuilder(carbyneArmor.getItem(true)).setLore(loreCopy).build());
+                List<String> loreCopy = new ArrayList<>();
+
+                loreCopy.add(HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
+                loreCopy.add("&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
+
+                if (carbyneArmor.getLore().size() > 0) {
+                    loreCopy.add(" ");
+
+                    for (String s : carbyneArmor.getLore()) {
+                        loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
+                    }
+                }
+
+                if (carbyneArmor.isHidden()) {
+                    loreCopy.add(" ");
+                    loreCopy.add("&cThis is not a purchasable set.");
+                }
+
+                armorGui.addItem(new ItemBuilder(carbyneArmor.getItem(true)).setLore(loreCopy).build());
+            }
         }
 
         armorGui.setItem(8, new ItemBuilder(Material.BARRIER).name("&c&lGo Back").build());
@@ -115,7 +141,7 @@ public class GearGuiManager {
 
                 inventory.setItem(8, new ItemBuilder(Material.BARRIER).name("&c&lGo Back").build());
 
-                for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getColor())) {
+                for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor())) {
                     int slot = 0;
 
                     if (set.getItem(true).getType().equals(Material.LEATHER_HELMET)) {

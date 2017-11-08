@@ -52,11 +52,6 @@ public class ChatListener implements Listener {
     private Carbyne carbyne = Carbyne.getInstance();
     private ArrayList<UUID> notMoved = new ArrayList<>();
     private HashMap<UUID, String> lastMessage = new HashMap<>();
-    private final Pattern URL_PATTERN;
-
-    public ChatListener() {
-        URL_PATTERN = Pattern.compile("((?:http(?:s)?://)?(?:[wW]{3}\\.)?[a-zA-Z-]+\\.[a-zA-Z]{2,7}[a-zA-Z0-9._/~%\\-+&#?!=()@]*)");
-    }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -79,18 +74,41 @@ public class ChatListener implements Listener {
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
-        if (carbyne.getTicketManager().getNewTickets().containsKey(player.getUniqueId()) || carbyne.getTicketManager().getRespondingTickets().containsKey(player.getUniqueId())) {
+        event.setMessage(event.getMessage().replace("<love>", "\u2764"));
+        event.setMessage(event.getMessage().replace("<happy>", "\u263a"));
+        event.setMessage(event.getMessage().replace("<sad>", "\u2639"));
+        event.setMessage(event.getMessage().replace("<dead>", "\u2620"));
+        event.setMessage(event.getMessage().replace("<peace>", "\u270c"));
+        event.setMessage(event.getMessage().replace("<phone>", "\u2706"));
+        event.setMessage(event.getMessage().replace("<star>", "\u2605"));
+        event.setMessage(event.getMessage().replace("<checkmark>", "\u2713"));
+        event.setMessage(event.getMessage().replace("<yingyang>", "\u262F"));
+        event.setMessage(event.getMessage().replace("<toxic>", "\u2622"));
+        event.setMessage(event.getMessage().replace("<swords>", "\u2694"));
+
+
+        if (event.getMessage().length() >= 5)
+            if (!player.hasPermission("carbyne.staff"))
+                if (MessageManager.is60PercentUpper(event.getMessage())) {
+                    MessageManager.sendMessage(player, "&cYour message contained over 60% upper-case characters.");
+                    event.setMessage(event.getMessage().toLowerCase());
+                }
+
+
+        if (carbyne.getStaffManager().getStaffChatPlayers().contains(player.getUniqueId())) {
+            MessageManager.sendStaffMessage(player, event.getMessage());
+            event.setCancelled(true);
             return;
         }
 
-        if (carbyne.getStaffManager().isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff"))  {
+        if (carbyne.getStaffManager().isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff")) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cThe chat is currently muted.");
             return;
         }
 
         if (carbyne.getStaffManager().getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff")) {
-            if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD",carbyne.getStaffManager().getSlowChatTime() * 1000)) {
+            if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD", carbyne.getStaffManager().getSlowChatTime() * 1000)) {
                 MessageManager.sendMessage(event.getPlayer(), "&cYou may speak again in " + (Cooldowns.getCooldown(event.getPlayer().getUniqueId(), "slowChatCD") / 1000) + " seconds");
                 event.setCancelled(true);
                 return;
@@ -107,6 +125,7 @@ public class ChatListener implements Listener {
 
             if (carbyne.getStaffManager().getFrozenStaff().contains(player.getUniqueId())) {
                 event.setCancelled(true);
+
                 if (!isFourDigitCode(event.getMessage())) {
                     MessageManager.sendMessage(player, "&4That PIN is incorrect. Please try again.");
                     return;
@@ -137,16 +156,19 @@ public class ChatListener implements Listener {
 
         JSONMessage newMessage = JSONMessage.create("");
 
-        Profile playerData = carbyne.getProfileManager().getProfile(player.getUniqueId());
-        if (playerData == null) {
-        } else {
+        Profile profile = carbyne.getProfileManager().getProfile(player.getUniqueId());
 
-            if (playerData.isLocalChatToggled()) {
-                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&b[Local] &f"));
-            } else if (playerData.isTownChatToggled()) {
-                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&a[Town] &f"));
-            } else if (playerData.isNationChatToggled()) {
-                newMessage.then(ChatColor.translateAlternateColorCodes('&', "&d[Nation] &f"));
+        if (profile != null) {
+            switch (profile.getProfileChatChannel()) {
+                case LOCAL:
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&b[Local] &f"));
+                    break;
+                case TOWN:
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&a[Town] &f"));
+                    break;
+                case NATION:
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&d[Nation] &f"));
+                    break;
             }
         }
 
@@ -234,79 +256,96 @@ public class ChatListener implements Listener {
             newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
         }
 
+        if (profile != null) {
+            switch (profile.getProfileChatChannel()) {
+                case LOCAL:
+                    for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 35))
+                        if (!Carbyne.getInstance().getProfileManager().getProfile(all.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId()))
+                            newMessage.send(all);
 
-        if (playerData.isLocalChatToggled()) {
-            for (Player players : PlayerUtility.getPlayersInRadius(player.getLocation(), 35)) {
-                if (carbyne.getProfileManager().getProfile(players.getUniqueId()) != null && carbyne.getProfileManager().getProfile(players.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId())) {
+                    break;
+                case TOWN:
+                    Resident townResident;
+                    try {
+                        townResident = TownyUniverse.getDataSource().getResident(player.getName());
+                    } catch (NotRegisteredException e) {
+                        return;
+                    }
 
-                } else {
-                    newMessage.send(players);
-                }
-            }
-        } else if (playerData.isTownChatToggled()) {
-            Resident resident;
-            try {
-                resident = TownyUniverse.getDataSource().getResident(player.getName());
-            } catch (NotRegisteredException e) {
-                return;
-            }
-            if (resident == null) return;
-            Town town;
-            try {
-                town = resident.getTown();
-            } catch (NotRegisteredException e) {
-                return;
-            }
-            List<Player> players = new ArrayList<>();
-            for (Resident res : town.getResidents()) {
-                Player p = Bukkit.getPlayer(res.getName());
-                if (p == null || (!p.isOnline())) continue;
-                players.add(p);
-            }
-            for (Player p : players) newMessage.send(p);
-        } else if (playerData.isNationChatToggled()) {
-            Resident resident;
-            try {
-                resident = TownyUniverse.getDataSource().getResident(player.getName());
-            } catch (NotRegisteredException e) {
-                return;
-            }
-            if (resident == null) return;
-            Town town;
-            try {
-                town = resident.getTown();
-            } catch (NotRegisteredException e) {
-                return;
-            }
-            Nation nation;
-            try {
-                nation = town.getNation();
-            } catch (NotRegisteredException e) {
-                return;
-            }
-            List<Player> players = new ArrayList<>();
-            for (Resident res : nation.getResidents()) {
-                Player p = Bukkit.getPlayer(res.getName());
-                if (p == null || !p.isOnline()) continue;
-                players.add(p);
-            }
-            for (Player p : players) newMessage.send(p);
-        } else {
-            for (Player players : PlayerUtility.getOnlinePlayers()) {
-                if (carbyne.getProfileManager().getProfile(players.getUniqueId()) != null && carbyne.getProfileManager().getProfile(players.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId())) {
+                    if (townResident == null)
+                        return;
 
-                } else {
-                    newMessage.send(players);
-                }
-            }
-        }
+                    Town residentTown;
 
-        if (!player.hasPermission("carbyne.bypassrepeat")) {
-            lastMessage.put(player.getUniqueId(), event.getMessage());
+                    try {
+                        residentTown = townResident.getTown();
+                    } catch (NotRegisteredException e) {
+                        return;
+                    }
+
+                    List<Player> townResidents = new ArrayList<>();
+                    for (Resident townRes : residentTown.getResidents()) {
+                        Player p = Bukkit.getPlayer(townRes.getName());
+
+                        if (p == null || (!p.isOnline()))
+                            break;
+
+                        townResidents.add(p);
+                    }
+
+                    for (Player all : townResidents)
+                        newMessage.send(all);
+
+                    break;
+                case NATION:
+                    Resident nationResident;
+                    try {
+                        nationResident = TownyUniverse.getDataSource().getResident(player.getName());
+                    } catch (NotRegisteredException e) {
+                        return;
+                    }
+
+                    if (nationResident == null)
+                        return;
+
+                    Town nationTown;
+                    try {
+                        nationTown = nationResident.getTown();
+                    } catch (NotRegisteredException e) {
+                        return;
+                    }
+
+                    Nation nation;
+                    try {
+                        nation = nationTown.getNation();
+                    } catch (NotRegisteredException e) {
+                        return;
+                    }
+
+                    List<Player> nationResidents = new ArrayList<>();
+                    for (Resident nationRes : nation.getResidents()) {
+                        Player p = Bukkit.getPlayer(nationRes.getName());
+
+                        if (p == null || !p.isOnline())
+                            break;
+
+                        nationResidents.add(p);
+                    }
+
+                    for (Player p : nationResidents)
+                        newMessage.send(p);
+
+                    break;
+                case GLOBAL:
+                    for (Player all : PlayerUtility.getOnlinePlayers())
+                        if (!Carbyne.getInstance().getProfileManager().getProfile(all.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId()))
+                            newMessage.send(all);
+
+                    break;
+            }
         }
 
         System.out.println("[Chat Message] " + player.getName() + ": " + event.getMessage());
-
         event.setCancelled(true);
     }
 
@@ -470,7 +509,8 @@ public class ChatListener implements Listener {
             if (TownyEconomyHandler.isActive()) {
                 lines.add("&2Bank: &a" + resident.getHoldingFormattedBalance());
             }
-        } catch(NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
 
         String line = "&2Town: &a";
         if (!resident.hasNation()) {

@@ -13,9 +13,9 @@ import com.medievallords.carbyne.lootchests.LootChestManager;
 import com.medievallords.carbyne.packages.PackageManager;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
+import com.medievallords.carbyne.spellmenu.SpellMenuManager;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.staff.StaffManager;
-import com.medievallords.carbyne.tickets.TicketManager;
 import lombok.Getter;
 
 @Getter
@@ -32,11 +32,11 @@ public class BaseCommand {
     private CrateManager crateManager = carbyne.getCrateManager();
     private DuelManager duelManager = carbyne.getDuelManager();
     private ProfileManager profileManager = carbyne.getProfileManager();
-    private TicketManager ticketManager = carbyne.getTicketManager();
     private LootChestManager lootChestManager = carbyne.getLootChestManager();
     private GamemodeManager gamemodeManager = carbyne.getGamemodeManager();
     private ConquerPointManager conquerPointManager = carbyne.getConquerPointManager();
     private PackageManager packageManager = carbyne.getPackageManager();
+    private SpellMenuManager spellMenuManager = carbyne.getSpellMenuManager();
 
     public BaseCommand() {
         carbyne.getCommandFramework().registerCommands(this);

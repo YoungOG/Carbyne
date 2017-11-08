@@ -9,6 +9,7 @@ import com.medievallords.carbyne.utils.serialization.InventorySerialization;
 import com.palmergames.bukkit.towny.event.PlayerChangePlotEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
+import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.Bukkit;
@@ -38,20 +39,11 @@ public class ProfileListeners implements Listener {
             return;
         }
 
-        checkTowny(event);
-
-        if (!Account.hasAccount(player.getUniqueId())) {
-            if (Account.hasAccount(player.getName())) {
-                Account.getAccount(player.getName()).setAccountHolderId(player.getUniqueId());
-            } else {
-                Account.createAccount(player.getUniqueId(), player.getName());
-            }
+        Account account = Account.getAccount(player.getUniqueId());
+        if (account != null) {
+            account.setAccountHolder(player.getName());
         } else {
-            if (Account.hasAccount(player.getUniqueId())) {
-                Account.getAccount(player.getUniqueId()).setAccountHolder(player.getName());
-            } else {
-                Account.createAccount(player.getUniqueId(), player.getName());
-            }
+            Account.createAccount(player.getUniqueId(), player.getName());
         }
 
         if (!main.getProfileManager().hasProfile(player.getUniqueId())) {
@@ -70,11 +62,17 @@ public class ProfileListeners implements Listener {
                 //Bukkit.broadcastMessage("Resident Found: " + TownyUniverse.getDataSource().getResident(profile.getUsername()).getName());
                 Resident resident = TownyUniverse.getDataSource().getResident(profile.getUsername());
                 TownyUniverse.getDataSource().renamePlayer(resident, player.getName());
+                if (resident.hasTown()) {
+                    Town town = resident.getTown();
+                    TownyUniverse.getDataSource().saveTown(town);
+                }
+
                 //Bukkit.broadcastMessage("Resident Replacement: " + TownyUniverse.getDataSource().getResident(player.getName()).getName());
             } catch (NotRegisteredException ignored) {
             } catch (Exception shouldNeverHappen) {
                 main.getLogger().log(Level.SEVERE, "EXCEPTION OCCURRED IN TOWNY NAME UPDATER: ");
                 shouldNeverHappen.printStackTrace();
+
             }
 
             profile.setUsername(player.getName());
@@ -93,10 +91,6 @@ public class ProfileListeners implements Listener {
                 profile.setPvpTimePaused(false);
             }
         }
-    }
-
-    public void checkTowny(PlayerJoinEvent event) {
-
     }
 
     @EventHandler

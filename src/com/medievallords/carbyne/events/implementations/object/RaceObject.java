@@ -14,10 +14,9 @@ public class RaceObject {
     public static List<RaceObject> raceObjects = new ArrayList<>();
 
     public static RaceObject getRaceObject(String name) {
-        String compare = name;
         for (RaceObject raceObject : raceObjects) {
             String currentCompare = MessageManager.stripStringOfAmpersandColors(raceObject.getName());
-            if (compare.equalsIgnoreCase(currentCompare)) return raceObject;
+            if (name.equalsIgnoreCase(currentCompare)) return raceObject;
         }
         return null;
     }

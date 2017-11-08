@@ -75,7 +75,6 @@ public class StormMechanic extends SkillMechanic implements ITargetedEntitySkill
                 centerLocation.subtract(x, y, z);
 
                 ran++;
-                radius -= 0.2;
                 if (ran > times) {
                     this.cancel();
                 }

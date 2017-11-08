@@ -3,6 +3,7 @@ package com.medievallords.carbyne.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
+import com.medievallords.carbyne.packages.Package;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.WorldCoord;
@@ -56,6 +57,13 @@ public class DamageListener implements Listener {
         for (ItemStack item : drops) {
             if (item != null && item.getType() == Material.QUARTZ) {
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                    Package pack = Package.getPackage(ChatColor.stripColor(item.getItemMeta().getDisplayName()));
+                    if (pack != null) {
+                        e.getDrops().remove(item);
+                        e.getDrops().add(pack.getItem(item.getAmount()));
+                        return;
+                    }
+
                     CarbyneGear replacement = gearManager.getCarbyneGear(ChatColor.stripColor(item.getItemMeta().getDisplayName()));
 
                     String[] gear = ChatColor.stripColor(item.getItemMeta().getDisplayName()).split(",");
@@ -65,6 +73,7 @@ public class DamageListener implements Listener {
                         if (carbyneGear != null) {
                             e.getDrops().remove(item);
                             e.getDrops().add(carbyneGear.getItem(false));
+                            return;
                         }
                     }
 
@@ -142,6 +151,7 @@ public class DamageListener implements Listener {
             ms.getAssociatedMobs().clear();
             ms.setOnWarmup();
             ms.setRemainingWarmupSeconds(30);
+
             if (ms.getWarmupSeconds() > 1000) {
                 ms.setActivationRange(50);
             } else {

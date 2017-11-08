@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 
 /**
@@ -21,8 +22,10 @@ public class FarmingProfession extends Profession {
         super(name, chance, minNuggets, maxNuggets, goldMessage);
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onFarmBlock(BlockBreakEvent event) {
+        if (event.isCancelled()) return;
+
         Block block = event.getBlock();
         if (!isCrop(block)) {
             return;

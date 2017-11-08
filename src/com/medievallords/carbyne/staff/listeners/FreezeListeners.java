@@ -90,7 +90,7 @@ public class FreezeListeners implements Listener {
         if (staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
             String message = event.getMessage();
 
-            if (!message.startsWith("/message") && !message.startsWith("/r") && !message.startsWith("/msg") && !message.startsWith("/reply")) {
+            if (!message.startsWith("/message") && !message.startsWith("/r") && !message.startsWith("/msg") && !message.startsWith("/reply") && !message.startsWith("/discord")) {
                 event.setCancelled(true);
                 MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use this command while frozen.");
             }

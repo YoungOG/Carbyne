@@ -7,14 +7,11 @@ import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
-import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -42,12 +39,6 @@ public class DuelListeners implements Listener {
     private GearManager gearManager = Carbyne.getInstance().getGearManager();
     private HashMap<UUID, Location> toSpawn = new HashMap<>();
 
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onSquadHit(EntityDamageByEntityEvent event) {
-        Player player;
-    }
-
     @EventHandler(priority = EventPriority.HIGH)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
@@ -71,35 +62,12 @@ public class DuelListeners implements Listener {
 
             event.setCancelled(false);
 
-            //Player dead?
             if (player.isDead()) {
                 event.setCancelled(true);
                 return;
             }
 
-            double armorReduction = 0.0;
-
-            //Get DamageReduction values from all peices of currently worn armor.
-            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
-                if (itemStack.getType().equals(Material.AIR))
-                    continue;
-
-                if (gearManager.isCarbyneArmor(itemStack)) {
-                    CarbyneArmor carbyneArmor = gearManager.getCarbyneArmor(itemStack);
-
-                    if (carbyneArmor != null) {
-                        armorReduction = armorReduction + carbyneArmor.getArmorRating();
-                    }
-                }
-
-                if (gearManager.isDefaultArmor(itemStack)) {
-                    MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
-
-                    if (minecraftArmor != null) {
-                        armorReduction = armorReduction + minecraftArmor.getArmorRating();
-                    }
-                }
-            }
+            double armorReduction = gearManager.getDamageReduction(player);
 
             if (armorReduction > 0) {
                 float flatDamage = 0.0f;
@@ -134,7 +102,7 @@ public class DuelListeners implements Listener {
                         flatDamage = 0.5f;
                         break;
                     case FALL:
-                        flatDamage = (float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f));
+                        flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
                         break;
                 }
 
@@ -142,21 +110,23 @@ public class DuelListeners implements Listener {
 
                 float eventDamage = (float) event.getDamage() * 5;
 
-                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(player)))) : flatDamage);
+                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + gearManager.getProtectionReduction(player)))) : flatDamage);
 
 
                 //event.setDamage(damage);
                 event.setDamage(0);
 
+                damage = gearManager.calculatePotionEffects(damage, player);
+
                 if (player.getHealth() <= damage) {
                     event.setCancelled(true);
                     player.setHealth(0);
                 } else {
+                    System.out.print("Damage: " + (player.getHealth() - damage));
                     player.setHealth(player.getHealth() - damage);
                     player.playEffect(EntityEffect.HURT);
                     //player.damage(damage);
                 }
-
             } else {
                 event.setDamage(event.getDamage() * 5);
             }
@@ -364,7 +334,6 @@ public class DuelListeners implements Listener {
             if (commands.contains(args[0])) {
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
-                return;
             }
         }
 
@@ -392,64 +361,5 @@ public class DuelListeners implements Listener {
                 MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
             }
         }*/
-    }
-
-
-    public double getProtectionReduction(Player player) {
-        double damageReduction = 0.0;
-
-        for (ItemStack is : player.getInventory().getArmorContents()) {
-            if (is.getType().equals(Material.AIR))
-                continue;
-
-            switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-                case 1:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.0125;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.0125;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.0125;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.0125;
-                    }
-                    break;
-                case 2:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.015;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.015;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.015;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.015;
-                    }
-                    break;
-                case 3:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.025;
-                    }
-                    break;
-                case 4:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03125;
-                    }
-                    break;
-            }
-        }
-
-        return damageReduction;
     }
 }

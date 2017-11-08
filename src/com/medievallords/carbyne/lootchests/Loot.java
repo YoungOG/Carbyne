@@ -45,9 +45,11 @@ public class Loot {
     public ItemStack getItem() {
         if (displayName != null && !displayName.equals("")) {
             String[] gear = displayName.split(",");
+
             if (gear.length > 1) {
                 int random = new Random().nextInt(gear.length);
                 CarbyneGear carbyneGear = Carbyne.getInstance().getGearManager().getCarbyneGear(gear[random]);
+
                 if (carbyneGear != null) {
                     return carbyneGear.getItem(false);
                 }
@@ -58,9 +60,9 @@ public class Loot {
             } else if (displayName.contains("randomGear")) {
                 String name = displayName;
                 String[] split = name.split(":");
+
                 if (split.length > 1) {
                     return Carbyne.getInstance().getGearManager().getRandomCarbyneGear(Boolean.parseBoolean(split[1])).getItem(false);
-
                 }
             }
         }

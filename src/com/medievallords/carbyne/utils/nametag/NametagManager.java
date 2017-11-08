@@ -10,8 +10,6 @@ import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scoreboard.NameTagVisibility;
 import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService;
 
 import java.text.DecimalFormat;
@@ -51,22 +49,6 @@ public class NametagManager {
         NametagPlayer refreshForTag = NametagManager.getPlayer(refreshFor);
 
         Nametag nametag;
-
-        if (toRefresh.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-            if (refreshForTag.getPlayerNametag(toRefreshTag) != null) {
-                refreshForTag.removePlayerNametag(toRefreshTag, refreshForTag.getPlayerNametag(toRefreshTag));
-                refreshForTag.refresh();
-            }
-
-            if (toRefresh.getScoreboard() != null)
-                if (toRefresh.getScoreboard().getTeam(toRefresh.getName()) != null)
-                    toRefresh.getScoreboard().getTeam(toRefresh.getName()).setNameTagVisibility(NameTagVisibility.NEVER);
-            return;
-        } else {
-            if (toRefresh.getScoreboard() != null)
-                if (toRefresh.getScoreboard().getTeam(toRefresh.getName()) != null)
-                    toRefresh.getScoreboard().getTeam(toRefresh.getName()).setNameTagVisibility(NameTagVisibility.ALWAYS);
-        }
 
         if (refreshForTag.getPlayerNametag(toRefreshTag) == null) {
             nametag = new Nametag(toRefresh.getName(), "", "");

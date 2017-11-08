@@ -14,7 +14,6 @@ import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
-import com.medievallords.carbyne.utils.ReflectionUtils;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Coord;
@@ -390,8 +389,7 @@ public class CombatTagListeners implements Listener {
                     villager.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
                     villager.setCanPickupItems(false);
                     villager.setMetadata("logger", new FixedMetadataValue(main, player.getUniqueId().toString()));
-
-                    ReflectionUtils.setCollidable(villager, false);
+//                    ReflectionUtils.setCollidable(villager, false);
 
                     loggers.put(player.getUniqueId(), villager);
                     inventories.get(player.getUniqueId()).add(player.getInventory().getContents());
@@ -437,18 +435,6 @@ public class CombatTagListeners implements Listener {
             return;
         }
 
-//        Bukkit.broadcastMessage("Safe Logged: " + profile.isSafelyLogged());
-//        Bukkit.broadcastMessage("Contains Villager: " + (loggers.containsKey(player.getUniqueId())));
-//        Bukkit.broadcastMessage("Villager Null: " + (loggers.get(player.getUniqueId()) != null));
-
-        if (loggers.get(player.getUniqueId()) != null) {
-//            Bukkit.broadcastMessage("Villager Health: " + loggers.get(player.getUniqueId()).getHealth());
-//            Bukkit.broadcastMessage("Villager Dead: " + loggers.get(player.getUniqueId()).isDead());
-//
-//            Bukkit.broadcastMessage("Villager 1: " + (loggers.get(player.getUniqueId()).getHealth() > 0 && !loggers.get(player.getUniqueId()).isDead()));
-//            Bukkit.broadcastMessage("Villager 2: " + (loggers.get(player.getUniqueId()).getHealth() > 0 && loggers.get(player.getUniqueId()).isDead()));
-        }
-
         if (profile.isSafelyLogged()) {
             if (loggers.containsKey(player.getUniqueId())) {
                 if (loggers.get(player.getUniqueId()).getHealth() > 0 && !loggers.get(player.getUniqueId()).isDead()) {
@@ -466,6 +452,27 @@ public class CombatTagListeners implements Listener {
             profile.setSafelyLogged(false);
         } else {
             if (loggers.containsKey(player.getUniqueId())) {
+                if (loggers.get(player.getUniqueId()).getLocation().getBlockY() <= 0 || player.getLocation().getBlockY() <= 0) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            player.getInventory().clear();
+                            player.getInventory().setHelmet(null);
+                            player.getInventory().setChestplate(null);
+                            player.getInventory().setLeggings(null);
+                            player.getInventory().setBoots(null);
+                            player.setHealth(0.0);
+                        }
+                    }.runTaskLater(main, 5L);
+
+                    tasks.remove(loggers.get(player.getUniqueId()));
+                    loggers.get(player.getUniqueId()).remove();
+                    loggers.remove(player.getUniqueId());
+                    inventories.removeAll(player.getUniqueId());
+
+                    return;
+                }
+
                 if ((loggers.get(player.getUniqueId()).getHealth() > 0 && loggers.get(player.getUniqueId()).isDead())) {
                     if (player.getWorld().getName().equalsIgnoreCase("world")) {
                         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());

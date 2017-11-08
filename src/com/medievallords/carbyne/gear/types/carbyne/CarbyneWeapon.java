@@ -232,7 +232,7 @@ public class CarbyneWeapon extends CarbyneGear {
 
                 for (PotionEffect potionEffect : target.getActivePotionEffects()) {
                     if (potionEffect.getType() == effect.getType()) {
-                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                        if (potionEffect.getAmplifier() >= effect.getAmplifier() | potionEffect.getDuration() >= effect.getDuration()) {
                             apply = false;
                         }
                     }
@@ -260,7 +260,7 @@ public class CarbyneWeapon extends CarbyneGear {
 
                 for (PotionEffect potionEffect : target.getActivePotionEffects()) {
                     if (potionEffect.getType() == effect.getType()) {
-                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                        if (potionEffect.getAmplifier() >= effect.getAmplifier() | potionEffect.getDuration() >= effect.getDuration()) {
                             apply = false;
                         }
                     }
@@ -268,7 +268,7 @@ public class CarbyneWeapon extends CarbyneGear {
 
                 if (apply) {
                     target.addPotionEffect(effect);
-                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &cYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
                     Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
                 }
             }

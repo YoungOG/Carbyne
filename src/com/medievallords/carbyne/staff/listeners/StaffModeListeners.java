@@ -37,7 +37,7 @@ public class StaffModeListeners implements Listener {
                 switch (tool.getType()) {
                     case BOOK: {
                         e.setCancelled(true);
-                        staffManager.showPlayerInventory((Player) e.getRightClicked(), e.getPlayer());
+                        e.getPlayer().performCommand("inv " + e.getRightClicked().getName());
                         break;
                     }
                     case ICE: {
@@ -80,21 +80,15 @@ public class StaffModeListeners implements Listener {
                     default:
                         break;
                 }
-            }
-            else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
+            } else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
                 Material tool = e.getItem().getType();
-                switch(tool)
-                {
-                    case WATCH:
-                    {
+                switch (tool) {
+                    case WATCH: {
                         staffManager.teleportToPlayerUnderY30(staff);
                         break;
                     }
-                    case PAPER: {
-                        Carbyne.getInstance().getTicketManager().openTicketGUI(staff.getUniqueId(), true);
+                    default:
                         break;
-                    }
-                    default: break;
                 }
             }
         }
@@ -143,7 +137,6 @@ public class StaffModeListeners implements Listener {
         if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
     }*/
-
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
@@ -188,12 +181,12 @@ public class StaffModeListeners implements Listener {
         }
     }
 
-    @EventHandler
-    public void playerCommandEvent(PlayerCommandPreprocessEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer())) {
-            String[] split = e.getMessage().split(" ");
-            if (!staffManager.getStaffmodeCommandWhitelist().contains(split[0]))
-                e.setCancelled(true);
-        }
-    }
+//    @EventHandler
+//    public void playerCommandEvent(PlayerCommandPreprocessEvent e) {
+//        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
+//            String[] split = e.getMessage().split(" ");
+//            if (!staffManager.getStaffmodeCommandWhitelist().contains(split[0]))
+//                e.setCancelled(true);
+//        }
+//    }
 }

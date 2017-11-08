@@ -10,30 +10,24 @@ import com.medievallords.carbyne.utils.signgui.SignGUIUpdateEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicReloadedEvent;
-import io.lumine.xikage.mythicmobs.spawning.spawners.MythicSpawner;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -69,14 +63,14 @@ public class OptimizationListeners implements Listener {
         allowedBlockIds.addAll(Arrays.asList(0, 6, 8, 9, 10, 11, 30, 31, 32, 37, 38, 39, 40, 50, 51, 55, 59, 63, 65, 66, 68, 69, 70, 72, 75, 76, 77, 83, 90, 93, 94, 104, 105, 106, 115));
     }
 
-    /*@EventHandler
+    @EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
         if (event.getEntity().getWorld().getName().equalsIgnoreCase("world")) {
-            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager)) {
+            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem)) {
                 event.setCancelled(true);
             }
         }
-    }*/
+    }
 
     @EventHandler
     public void onHungerLoss(FoodLevelChangeEvent event) {
@@ -106,12 +100,6 @@ public class OptimizationListeners implements Listener {
     }
 
     @EventHandler
-    public void onReload(MythicReloadedEvent event) {
-        for (MythicSpawner ms : event.getInstance().getSpawnerManager().getSpawners()) {
-        }
-    }
-
-    @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
     }
@@ -129,7 +117,7 @@ public class OptimizationListeners implements Listener {
             return;
         }
 
-        if (player.getGameMode() != GameMode.CREATIVE) {
+        if (player.getGameMode() == GameMode.CREATIVE && !player.hasPermission("carbyne.caneditsigns")) {
             return;
         }
 
@@ -254,7 +242,7 @@ public class OptimizationListeners implements Listener {
 
                             message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString()));
 
-                            PlayerUtility.getOnlinePlayers().forEach(p -> message.send(p));
+                            PlayerUtility.getOnlinePlayers().forEach(message::send);
                             event.setDeathMessage("");
                             //event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using &c" + killer.getItemInHand().getItemMeta().getDisplayName()));
                         } else {
@@ -285,6 +273,18 @@ public class OptimizationListeners implements Listener {
             }
         } else {
             event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e died"));
+        }
+    }
+
+    @EventHandler
+    public void onConsume(PlayerItemConsumeEvent event) {
+        if (event.getItem().getType() == Material.GOLDEN_APPLE || event.getItem().getType() == Material.POTION) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    event.getPlayer().removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+                }
+            }.runTaskLater(Carbyne.getInstance(), 3L);
         }
     }
 
@@ -554,18 +554,6 @@ public class OptimizationListeners implements Listener {
     }
 
     @EventHandler
-    public void onConsume(PlayerItemConsumeEvent event) {
-        if (event.getItem().getType() == Material.GOLDEN_APPLE || event.getItem().getType() == Material.POTION) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    event.getPlayer().removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-                }
-            }.runTaskLater(Carbyne.getInstance(), 3L);
-        }
-    }
-
-    @EventHandler
     public void onDespawn(LeavesDecayEvent event) {
         if (!(event.getBlock().getWorld().getName().equalsIgnoreCase("player_world") || event.getBlock().getWorld().getName().equalsIgnoreCase("player_world_nether"))) {
             event.setCancelled(true);
@@ -591,5 +579,63 @@ public class OptimizationListeners implements Listener {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cSorry, that command syntax is not supported.");
         }
+    }
+
+    @EventHandler
+    private void onProjectileLaunch(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof ThrownPotion) || !(event.getEntity().getShooter() instanceof Player))
+            return;
+
+        Player player = (Player) event.getEntity().getShooter();
+        ThrownPotion potion = (ThrownPotion) event.getEntity();
+
+        if (!player.isDead() && player.isSprinting())
+            for (PotionEffect potionEffect : potion.getEffects())
+                if (potionEffect.getType().equals(PotionEffectType.HEAL)) {
+                    player.setHealth((player.getHealth() + 3.0 > player.getMaxHealth()) ? player.getMaxHealth() : (player.getHealth() + 3.0));
+                    potion.setVelocity(potion.getVelocity().setY(-2));
+                }
+    }
+
+    @EventHandler
+    public void onEnterInTheMinecart(VehicleEnterEvent event) {
+        if (!(event.getVehicle() instanceof Minecart) || !(event.getEntered() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntered();
+        Location minecartLoc = event.getVehicle().getLocation();
+        Location qualifierLoc = new Location(player.getWorld(), (double) minecartLoc.getBlockX(), (double) minecartLoc.getBlockY(), (double) minecartLoc.getBlockZ());
+        Material material = qualifierLoc.getBlock().getType();
+
+        if (material == Material.FENCE_GATE || material == Material.SIGN_POST) {
+            event.setCancelled(true);
+
+            if (player.isSneaking()) {
+                player.teleport(getCoords(qualifierLoc, qualifierLoc.getBlockY(), 254));
+                MessageManager.sendMessage(player, "&aSuccessfully teleported to the top.");
+                player.playSound(player.getLocation(), Sound.ENDERMAN_TELEPORT, 10.0f, 1.0f);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F) {
+            event.getPlayer().setFallDistance(0.0F);
+        }
+    }
+
+    public Location getCoords(Location loc, int min, int max) {
+        for (int tp = min; tp < max; ++tp) {
+            Material material1 = new Location(loc.getWorld(), (double) loc.getBlockX(), (double) tp, (double) loc.getBlockZ()).getBlock().getType();
+            Material material2 = new Location(loc.getWorld(), (double) loc.getBlockX(), (double) (tp + 1), (double) loc.getBlockZ()).getBlock().getType();
+
+            if (material1 == Material.AIR && material2 == Material.AIR) {
+                return new Location(loc.getWorld(), (double) loc.getBlockX(), (double) tp, (double) loc.getBlockZ());
+            }
+        }
+
+        return new Location(loc.getWorld(), (double) loc.getBlockX(), (double) loc.getWorld().getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ()), (double) loc.getBlockZ());
     }
 }

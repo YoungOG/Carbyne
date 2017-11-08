@@ -179,6 +179,20 @@ public class CommandFramework implements CommandExecutor {
         }
     }
 
+    public void unregisterAll() {
+        for (String s : commandMap.keySet()) {
+            Object object = commandMap.get(s).getKey();
+            for (Method m : object.getClass().getMethods()) {
+                if (m.getAnnotation(Command.class) != null) {
+                    Command command = m.getAnnotation(Command.class);
+                    commandMap.remove(command.name().toLowerCase());
+                    commandMap.remove(this.plugin.getName() + ":" + command.name().toLowerCase());
+                    map.getCommand(command.name().toLowerCase()).unregister(map);
+                }
+            }
+        }
+    }
+
     public void registerCommand(Command command, String label, Method m, Object obj) {
         commandMap.put(label.toLowerCase(), new AbstractMap.SimpleEntry<>(m, obj));
         commandMap.put(this.plugin.getName() + ':' + label.toLowerCase(), new AbstractMap.SimpleEntry<>(m, obj));

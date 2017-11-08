@@ -3,12 +3,10 @@ package com.medievallords.carbyne.listeners;
 import com.keenant.tabbed.tablist.TitledTabList;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.account.Account;
-import com.medievallords.carbyne.utils.InventoryWorkaround;
-import com.medievallords.carbyne.utils.Maths;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
+import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.utils.*;
 import com.vexsoftware.votifier.model.VotifierEvent;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -22,18 +20,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.github.paperspigot.Title;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by Dalton on 6/22/2017.
@@ -41,6 +34,9 @@ import java.util.UUID;
 public class PlayerListeners implements Listener {
 
     private Carbyne main = Carbyne.getInstance();
+
+    @Getter
+    private static int voteCount = 0;
 
     private String joinMessage, tablistHeader, tablistFooter;
     private String[] subtitles;
@@ -55,7 +51,7 @@ public class PlayerListeners implements Listener {
         subtitles = initSubs.toArray(new String[initSubs.size()]);
 
         if (subtitles.length < 1 || subtitles[0] == null)
-            subtitles = new String[]{ChatColor.translateAlternateColorCodes('&', "&eWelcome")};
+            subtitles = new String[]{};
 
         for (int i = 0; i < subtitles.length; i++)
             subtitles[i] = ChatColor.translateAlternateColorCodes('&', subtitles[i]);
@@ -63,40 +59,23 @@ public class PlayerListeners implements Listener {
         tablistHeader = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistHeader"));
 
         if (tablistHeader == null)
-            tablistHeader = ChatColor.translateAlternateColorCodes('&', "&5Medieval Lords");
+            tablistHeader = "";
 
         tablistFooter = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistFooter"));
 
         if (tablistFooter == null)
-            tablistFooter = ChatColor.translateAlternateColorCodes('&', "&5Welcome");
+            tablistFooter = "";
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.sendTitle(new Title.Builder().title(joinMessage).subtitle(subtitles[Maths.randomNumberBetween(subtitles.length, 0)]).stay(55).build());
+
+        if (!player.hasPlayedBefore())
+            player.sendTitle(new Title.Builder().title(joinMessage).subtitle(subtitles[Maths.randomNumberBetween(subtitles.length, 0)]).stay(55).build());
 
         TitledTabList tabList = main.getTabbed().newTitledTabList(player);
         tabList.setHeaderFooter(tablistHeader, tablistFooter);
-
-        UUID id = event.getPlayer().getUniqueId();
-        String currName = event.getPlayer().getName();
-
-        if (Carbyne.getInstance().getProfileManager().getProfile(id) == null) {
-            return;
-        }
-
-        String oldName = Carbyne.getInstance().getProfileManager().getProfile(id).getUsername();
-
-        if (!oldName.equals(currName)) {
-            try {
-                Resident r = TownyUniverse.getDataSource().getResident(oldName);
-                TownyUniverse.getDataSource().renamePlayer(r, currName);
-            } catch (Exception ignored) {
-            }
-
-            Carbyne.getInstance().getProfileManager().getProfile(id).setUsername(currName);
-        }
     }
 
     @EventHandler
@@ -147,17 +126,37 @@ public class PlayerListeners implements Listener {
         Player player = Bukkit.getPlayer(event.getVote().getUsername());
 
         if (player != null) {
+            voteCount++;
+
+            for (Player online : PlayerUtility.getOnlinePlayers()) {
+                Profile profile = main.getProfileManager().getProfile(online.getUniqueId());
+
+                profile.setShowVoteCount(true);
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (Cooldowns.tryCooldown(profile.getUniqueId(), "ShowVoteCD", 5000))
+                            profile.setShowVoteCount(false);
+                    }
+                }.runTaskLaterAsynchronously(main, 5 * 20L);
+            }
+
+            if (voteCount % 15 == 0 && voteCount < 100) {
+                MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l" + voteCount + " &aconsecutive votes has been reached! Vote using &3/vote&a!");
+            }
+
             double random = Math.random();
 
             ItemStack reward;
 
-            if (random <= 0.005) {
+            if (random <= 0.02) {
                 reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
-            } else if (random <= 0.01) {
+            } else if (random <= 0.028) {
                 reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
-            } else if (random <= 0.04) {
-                reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
             } else if (random <= 0.15) {
+                reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
+            } else if (random <= 0.25) {
                 reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
             } else {
                 reward = main.getCrateManager().getKey("IronKey").getItem().clone();
@@ -176,42 +175,61 @@ public class PlayerListeners implements Listener {
                 return;
             }
 
-            Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + 75.0);
+            double anotherRandom = Math.random();
+            int amount;
 
-            MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(75.0) + "&a! Vote using &3/vote&a!");
+            if (anotherRandom <= 0.05) {
+                amount = 300;
+            } else if (anotherRandom <= 0.1) {
+                amount = 250;
+            } else if (anotherRandom <= 0.25) {
+                amount = 150;
+            } else {
+                amount = 75;
+            }
+
+            Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + amount);
+
+            MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
             MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
         }
-    }
 
-    @EventHandler
-    public void onTeleport(PlayerTeleportEvent event) {
-        if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F) {
-            event.getPlayer().setFallDistance(0.0F);
-        }
-    }
+        if (voteCount >= 100) {
+            voteCount = 0;
 
-    @EventHandler
-    public void onDrinkPotion(PlayerItemConsumeEvent event) {
-        if (event.getItem().getType() != Material.POTION) {
-            return;
-        }
+            ItemStack reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
 
-        PotionMeta meta = (PotionMeta) event.getItem().getItemMeta();
-        if (isInvisibility(meta)) {
+            double anotherRandom = Math.random();
+            int amount;
 
-        }
-
-    }
-
-    private boolean isInvisibility(PotionMeta meta) {
-        for (PotionEffect effect : meta.getCustomEffects()) {
-            if (effect.getType() == PotionEffectType.INVISIBILITY) {
-                return true;
+            if (anotherRandom <= 0.05) {
+                amount = 300;
+            } else if (anotherRandom <= 0.1) {
+                amount = 250;
+            } else if (anotherRandom <= 0.25) {
+                amount = 150;
+            } else {
+                amount = 75;
             }
+
+            for (Player online : PlayerUtility.getOnlinePlayers()) {
+                Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(online.getInventory(), reward);
+
+                if (leftovers.values().size() > 0) {
+                    MessageManager.sendMessage(online, "&cThis item could not fit in your inventory, and was dropped to the ground.");
+
+                    for (ItemStack itemStack : leftovers.values()) {
+                        Item item = online.getWorld().dropItem(online.getEyeLocation(), itemStack);
+                        item.setVelocity(online.getEyeLocation().getDirection().normalize().multiply(1));
+                    }
+
+                    return;
+                }
+
+                Account.getAccount(online.getUniqueId()).setBalance(Account.getAccount(online.getUniqueId()).getBalance() + amount);
+            }
+
+            MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l100 &aconsecutive votes has been reached, everyone online gets 1 " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
         }
-
-        return false;
     }
-
-
 }

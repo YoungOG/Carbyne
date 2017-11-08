@@ -13,34 +13,11 @@ import java.util.Random;
 
 public class PacketManagerImpl extends PacketManager {
 
-    private Plugin plugin;
     private static Random random;
+    private Plugin plugin;
 
     public PacketManagerImpl(Plugin plugin) {
         this.plugin = plugin;
-    }
-
-    @Override
-    public void sendDamageIndicator(Entity nearTo, Location loc, String name, boolean move, int hideAfterTicks) {
-        int passengerID = FakeEntityIDs.next();
-        int vehicleID = FakeEntityIDs.next();
-
-        try {
-            Packet armorStandPacket = spawnArmorStandPacket(name, loc, passengerID);
-            Location center = nearTo.getLocation();
-            sendPackets(center, armorStandPacket);
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Packet destroyPacket = destoryPacket(vehicleID, passengerID);
-                    sendPackets(center, destroyPacket);
-                }
-            }.runTaskLater(plugin, (long) hideAfterTicks);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            plugin.getLogger().severe("Unable to send damage indicators, please report this error!");
-        }
     }
 
     private static Packet destoryPacket(int... entityIDs) {
@@ -65,16 +42,18 @@ public class PacketManagerImpl extends PacketManager {
 
     private static void sendPackets(Location nearTo, Packet... packets) {
         for (Player player : nearTo.getWorld().getPlayers()) {
-            if (nearTo.distanceSquared(player.getLocation()) < 1024.0) {
-                PlayerConnection conn = ((CraftPlayer) player).getHandle().playerConnection;
+            if (nearTo.getWorld().getName().equalsIgnoreCase(player.getWorld().getName())) {
+                if (nearTo.distanceSquared(player.getLocation()) < 1024.0) {
+                    PlayerConnection conn = ((CraftPlayer) player).getHandle().playerConnection;
 
-                if (conn == null) {
-                    continue;
-                }
+                    if (conn == null) {
+                        continue;
+                    }
 
-                for (Packet packet : packets) {
-                    if (packet != null) {
-                        conn.sendPacket(packet);
+                    for (Packet packet : packets) {
+                        if (packet != null) {
+                            conn.sendPacket(packet);
+                        }
                     }
                 }
             }
@@ -85,5 +64,28 @@ public class PacketManagerImpl extends PacketManager {
         Field field = obj.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(obj, newValue);
+    }
+
+    @Override
+    public void sendDamageIndicator(Entity nearTo, Location loc, String name, boolean move, int hideAfterTicks) {
+        int passengerID = FakeEntityIDs.next();
+        int vehicleID = FakeEntityIDs.next();
+
+        try {
+            Packet armorStandPacket = spawnArmorStandPacket(name, loc, passengerID);
+            Location center = nearTo.getLocation();
+            sendPackets(center, armorStandPacket);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Packet destroyPacket = destoryPacket(vehicleID, passengerID);
+                    sendPackets(center, destroyPacket);
+                }
+            }.runTaskLater(plugin, (long) hideAfterTicks);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            plugin.getLogger().severe("Unable to send damage indicators, please report this error!");
+        }
     }
 }

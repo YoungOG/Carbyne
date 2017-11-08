@@ -133,7 +133,7 @@ public class PinListeners implements Listener {
         Player player = event.getPlayer();
 
         if (player.hasPermission("carbyne.staff.pin")) {
-            if (!event.getMessage().toLowerCase().contains("/setpin")) {
+            if (!event.getMessage().toLowerCase().contains("/setpin")) { //It's like this line is ignored xD
                 Profile profile = profileManager.getProfile(player.getUniqueId());
 
                 if (!profile.hasPin()) {

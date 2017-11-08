@@ -29,6 +29,7 @@ public abstract class Profession implements Listener {
     private String name;
     private double chance, maxChance;
     private int minNuggets, maxNuggets;
+    //    private HashMapCache
     private String goldMessage;
 
     public Profession(String name, double chance, int minNuggets, int maxNuggets, String goldMessage) {

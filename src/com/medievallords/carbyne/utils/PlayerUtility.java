@@ -258,4 +258,64 @@ public class PlayerUtility {
     public static boolean isInventoryEmpty(Player player) {
         return player.getInventory().firstEmpty() == 0;
     }
+
+    public static void removeItems(Inventory inventory, Material type, int data, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+
+        int size = inventory.getSize();
+
+        for (int slot = 0; slot < size; slot++) {
+            ItemStack is = inventory.getItem(slot);
+
+            if (is == null) {
+                continue;
+            }
+
+            if (type == is.getType() && is.getDurability() == data) {
+                int newAmount = is.getAmount() - amount;
+
+                if (newAmount > 0) {
+                    is.setAmount(newAmount);
+                    break;
+                } else {
+                    inventory.clear(slot);
+                    amount = -newAmount;
+
+                    if (amount == 0)
+                        break;
+                }
+            }
+        }
+    }
+
+    public static void removeItems(Inventory inventory, ItemStack itemStack, int amount) {
+        if (amount <= 0)
+            return;
+
+        int size = inventory.getSize();
+
+        for (int slot = 0; slot < size; slot++) {
+            ItemStack is = inventory.getItem(slot);
+
+            if (is == null || is.getType() == Material.AIR)
+                continue;
+
+            if (itemStack.isSimilar(is)) {
+                int newAmount = is.getAmount() - amount;
+
+                if (newAmount > 0) {
+                    is.setAmount(newAmount);
+                    break;
+                } else {
+                    inventory.clear(slot);
+                    amount = -newAmount;
+
+                    if (amount == 0)
+                        break;
+                }
+            }
+        }
+    }
 }

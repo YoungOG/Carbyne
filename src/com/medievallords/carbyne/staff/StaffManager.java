@@ -14,6 +14,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -26,9 +29,7 @@ public class StaffManager {
     @Getter
     private HashSet<UUID> vanish = new HashSet<>(), frozen = new HashSet<>(), frozenStaff = new HashSet<>();
     @Getter
-    private List<UUID> staffModePlayers = new ArrayList<>();
-    @Getter
-    private Map<UUID, SpecialPlayerInventory> inventories = new HashMap<>();
+    private List<UUID> staffModePlayers = new ArrayList<>(), staffChatPlayers = new ArrayList<>();
     @Getter
     @Setter
     private boolean chatMuted = false;
@@ -41,7 +42,7 @@ public class StaffManager {
 
     private Map<String, Boolean> falsePerms = new HashMap<>(), truePerms = new HashMap<>();
     @Getter
-    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, ticketTool, wand;
+    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, wand;
 
     @Getter
     private File staffWhitelistCommandsFile;
@@ -52,7 +53,6 @@ public class StaffManager {
     private List<String> staffmodeCommandWhitelist;
 
     public StaffManager() {
-
         staffWhitelistCommandsFile = new File(main.getDataFolder(), "staffmodewhitelist.yml");
         staffWhitelistCommandConfiguration = YamlConfiguration.loadConfiguration(staffWhitelistCommandsFile);
 
@@ -69,8 +69,15 @@ public class StaffManager {
         inspectInventoryTool = new ItemBuilder(Material.BOOK).name("&2Inspect Inventory").addLore("&fView the contents of a player\'s inventory").build();
         thruTool = new ItemBuilder(Material.COMPASS).name("&4Thru Tool").addLore("&fWarp through walls and doors").build();
         air = new ItemBuilder(Material.AIR).build();
-        ticketTool = new ItemBuilder(Material.PAPER).name("&6Tickets").build();
         wand = new ItemBuilder(Material.WOOD_AXE).name("&6World Edit").build();
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                int amount = PlayerUtility.getOnlinePlayers().size();
+                logToFile("[Players] Online: " + amount + " ------ Time: " + new Date().toString());
+            }
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 20 * 60 * 30);
 
         new BukkitRunnable() {
             @Override
@@ -85,6 +92,7 @@ public class StaffManager {
                     MessageManager.sendMessage(id, "&c\u2588&6\u2588\u2588\u2588&0\u2588&6\u2588\u2588\u2588&c\u2588");
                     MessageManager.sendMessage(id, "&c\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588");
                     MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6You have been frozen! Do not log out or you will be banned!");
+                    MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6You have &c5 minutes &6to join our Discord.");
                     MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6Join the Discord using: /discord");
                 }
             }
@@ -110,7 +118,7 @@ public class StaffManager {
             if (PlayerUtility.isInventoryEmpty(player)) {
                 toggleGamemode(player, true);
                 staffModePlayers.add(pUUID);
-                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, ticketTool, wand, air, toggleVanishTool, randomTeleportTool});
+                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, toggleVanishTool, randomTeleportTool});
                 vanishPlayer(player);
                 //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + player.getName() + " add mv.bypass.gamemode.*");
                 PermissionUtils.setPermissions(player.addAttachment(main), truePerms, true);
@@ -154,9 +162,11 @@ public class StaffManager {
     public void teleportToRandomPlayer(Player player) {
         List<Player> players = new ArrayList<>();
 
-        for (Player p : Bukkit.getOnlinePlayers())
-            if (!player.equals(p) && (!player.hasPermission("carbyne.staff") || !player.isOp()))
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.getUniqueId().equals(player.getUniqueId()) && (!p.hasPermission("carbyne.staff") || !p.isOp())) {
                 players.add(p);
+            }
+        }
 
         if (players.size() == 0) {
             MessageManager.sendMessage(player, "&cThere are no available players to teleport to.");
@@ -203,17 +213,7 @@ public class StaffManager {
         }
     }
 
-    public void showPlayerInventory(Player playerInv, Player viewer) {
-        SpecialPlayerInventory inv = inventories.get(playerInv.getUniqueId());
-
-        if (inv == null) {
-            inv = new SpecialPlayerInventory(playerInv, playerInv.isOnline());
-        }
-
-        viewer.openInventory(inv.getBukkitInventory());
-    }
-
-    private void vanishPlayer(Player player) {
+    public void vanishPlayer(Player player) {
         for (Player all : PlayerUtility.getOnlinePlayers()) {
             if (!all.getUniqueId().equals(player.getUniqueId())) {
                 if (!all.hasPermission("carbyne.staff.canseevanished")) {
@@ -222,7 +222,8 @@ public class StaffManager {
             }
         }
 
-        vanish.add(player.getUniqueId());
+        if (!vanish.contains(player.getUniqueId()))
+            vanish.add(player.getUniqueId());
     }
 
     public void showPlayer(Player player) {
@@ -233,6 +234,7 @@ public class StaffManager {
                 //}
             }
         }
+
         vanish.remove(player.getUniqueId());
     }
 
@@ -279,4 +281,22 @@ public class StaffManager {
         }
     }
 
+    public void logToFile(String message) {
+        try {
+            File saveTo = new File(Carbyne.getInstance().getDataFolder(), "playersLog.txt");
+
+            if (!saveTo.exists()) {
+                saveTo.createNewFile();
+            }
+
+            FileWriter fw = new FileWriter(saveTo, true);
+
+            PrintWriter pw = new PrintWriter(fw);
+            pw.println(message);
+            pw.flush();
+            pw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

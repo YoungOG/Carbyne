@@ -254,4 +254,16 @@ public class MessageManager {
         }
         return sb.toString();
     }
+
+    public static boolean is60PercentUpper(String string) {
+        return string.chars()
+                .filter(Character::isLetter)
+                .map(MessageManager::upperCaseMapper)
+                .summaryStatistics()
+                .getAverage() >= 0.60;
+    }
+
+    public static int upperCaseMapper(int c) {
+        return Character.isUpperCase(c) ? 1 : 0;
+    }
 }

@@ -204,7 +204,7 @@ public class ItemDb {
             nameList = nameList.subList(0, 14);
         }
 
-        return StringUtil.joinList(", ", nameList);
+        return StringUtils.joinList(", ", nameList);
     }
 
     public String name(ItemStack item) {

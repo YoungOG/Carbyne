@@ -20,12 +20,14 @@ public class GearEffects implements HeartbeatTask {
 
     private Heartbeat heartbeat;
     private Random random = new Random();
+
     public GearEffects(){
 
         if (this.heartbeat == null) {
             this.heartbeat = new Heartbeat(this, 250L);
             heartbeat.start();
         }
+
         random.doubles(-1.5D, 1.5D);
     }
 

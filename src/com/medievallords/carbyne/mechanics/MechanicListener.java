@@ -18,6 +18,13 @@ public class MechanicListener implements Listener {
             case "coding":
                 event.register(new CodingMechanic(event.getMechanicName(), event.getConfig(), 1));
                 break;
+            case "bomb":
+                event.register(new BombMechanic(event.getMechanicName(), event.getConfig(), 1));
+                break;
+            /*case "dropchest":
+                event.register(new DropChestMechanic(event.getMechanicName(), event.getConfig(), 1));
+                break;
+*/
         }
     }
 }

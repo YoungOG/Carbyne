@@ -21,10 +21,6 @@
     </build>
 
     <repositories>
-        <repository>
-            <id>filoghost-repo</id>
-            <url>http://novaguilds.pl/repo/</url>
-        </repository>
         <!-- CombatTagPlus Repo -->
         <repository>
             <id>minelink-repo</id>
@@ -90,9 +86,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.gmail.filoghost</groupId>
-            <artifactId>holographicdisplays.api</artifactId>
-            <version>2.2.5-SNAPSHOT</version>
+            <groupId>com.github.kevinsawicki</groupId>
+            <artifactId>http-request</artifactId>
+            <version>6.0</version>
         </dependency>
 
         <!--Bukkit API

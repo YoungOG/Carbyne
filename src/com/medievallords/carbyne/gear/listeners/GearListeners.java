@@ -3,6 +3,7 @@ package com.medievallords.carbyne.gear.listeners;
 import com.bizarrealex.aether.scoreboard.Board;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
+import com.codingforcookies.armorequip.ArmorEquipEvent;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.CarbyneRepairedEvent;
 import com.medievallords.carbyne.duels.duel.Duel;
@@ -16,7 +17,6 @@ import com.medievallords.carbyne.utils.*;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,8 +31,11 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -58,29 +61,7 @@ public class GearListeners implements Listener {
                 return;
             }
 
-            double armorReduction = 0.0;
-
-            //Get DamageReduction values from all peices of currently worn armor.
-            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
-                if (itemStack.getType().equals(Material.AIR))
-                    continue;
-
-                if (gearManager.isCarbyneArmor(itemStack)) {
-                    CarbyneArmor carbyneArmor = gearManager.getCarbyneArmor(itemStack);
-
-                    if (carbyneArmor != null) {
-                        armorReduction = armorReduction + carbyneArmor.getArmorRating();
-                    }
-                }
-
-                if (gearManager.isDefaultArmor(itemStack)) {
-                    MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
-
-                    if (minecraftArmor != null) {
-                        armorReduction = armorReduction + minecraftArmor.getArmorRating();
-                    }
-                }
-            }
+            double armorReduction = gearManager.getDamageReduction(player);
 
             if (armorReduction > 0) {
                 float flatDamage = 0.0f;
@@ -115,7 +96,7 @@ public class GearListeners implements Listener {
                         flatDamage = 0.5f;
                         break;
                     case FALL:
-                        flatDamage = (float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f));
+                        flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
                         break;
                 }
 
@@ -123,11 +104,13 @@ public class GearListeners implements Listener {
 
                 float eventDamage = (float) event.getDamage() * 5;
 
-                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(player)))) : flatDamage);
+                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + gearManager.getProtectionReduction(player)))) : flatDamage);
 
 
                 //event.setDamage(damage);
                 event.setDamage(0);
+
+                damage = gearManager.calculatePotionEffects(damage, player);
 
                 if (player.getHealth() <= damage) {
                     event.setCancelled(true);
@@ -143,7 +126,6 @@ public class GearListeners implements Listener {
             }
         }
     }
-
 
     @EventHandler
     public void onHealthRegain(EntityRegainHealthEvent event) {
@@ -166,9 +148,22 @@ public class GearListeners implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityDamagebyEntity(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player) {
+        if (event.getDamager() instanceof Player) {
+            Player damager = (Player) event.getDamager();
 
+            if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+                for (PotionEffect effect : damager.getActivePotionEffects()) {
+                    if (effect.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                        event.setDamage(event.getDamage() * (1 + (0.1 * effect.getAmplifier())));
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (event.getEntity() instanceof Player) {
             Player damaged = (Player) event.getEntity();
+
             if (TownyUniverse.getTownBlock(damaged.getLocation()) != null && !TownyUniverse.getTownBlock(damaged.getLocation()).getPermissions().pvp) {
                 if (carbyne.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) != null) {
                     return;
@@ -346,9 +341,9 @@ public class GearListeners implements Listener {
 
                 if (livingEntity instanceof Player) {
                     if (Cooldowns.tryCooldown(livingEntity.getKiller().getUniqueId(), livingEntity.getUniqueId().toString() + ":charge", 300000))
-                        specialCharge += 5;
+                        specialCharge += 10;
                 } else if (livingEntity instanceof Monster) {
-                    specialCharge += 1;
+                    specialCharge += 5;
                 }
 
                 carbyneWeapon.setSpecialCharge(itemStack, specialCharge);
@@ -403,7 +398,7 @@ public class GearListeners implements Listener {
                 if (minecraftWeapon != null) {
                     event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
                 }
-            } else if (event.getCurrentItem().getType() == Material.NETHER_STAR) {
+            } else if (event.getCurrentItem().getType() == Material.NETHER_STAR && !event.getInventory().getTitle().contains("Spell")) {
                 event.setCurrentItem(new ItemBuilder(gearManager.getTokenItem()).amount(event.getCurrentItem().getAmount()).build());
             }
         }
@@ -416,7 +411,7 @@ public class GearListeners implements Listener {
 
         if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
             event.setCancelled(true);
-            MessageManager.sendMessage(player, "&cYou cannot craft with carbyne gear.");
+            MessageManager.sendMessage(player, "&cYou cannot craft with Carbyne gear.");
         }
     }
 
@@ -427,16 +422,7 @@ public class GearListeners implements Listener {
 
         if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
             event.setCancelled(true);
-            MessageManager.sendMessage(player, "&cYou cannot enchant carbyne gear.");
-            return;
-        }
-
-        for (Enchantment enchantment : event.getEnchantsToAdd().keySet()) {
-            if (enchantment == Enchantment.PROTECTION_ENVIRONMENTAL) {
-                if (event.getEnchantsToAdd().get(enchantment) > 2) {
-                    event.getEnchantsToAdd().put(enchantment, 2);
-                }
-            }
+            MessageManager.sendMessage(player, "&cYou cannot enchant Carbyne gear.");
         }
     }
 
@@ -448,7 +434,7 @@ public class GearListeners implements Listener {
             if (inv.getItem(0) != null) {
                 if (gearManager.isCarbyneArmor(inv.getItem(0)) || gearManager.isCarbyneWeapon(inv.getItem(0))) {
                     event.setCancelled(true);
-                    MessageManager.sendMessage(event.getWhoClicked(), "&cYou cannot enchant or rename carbyne gear.");
+                    MessageManager.sendMessage(event.getWhoClicked(), "&cYou cannot enchant or re-name Carbyne gear.");
                 }
             }
         }
@@ -492,9 +478,7 @@ public class GearListeners implements Listener {
             int repairCost = gear.getRepairCost(itemStack);
 
             if (!player.getInventory().containsAtLeast(gearManager.getTokenItem(), repairCost)) {
-
                 int amountOfIngots = getAmountOfIngots(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData());
-                double per = gear.getMaxDurability()/  ((int) Math.round(gear.getCost() * 0.7));
 
                 removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), repairCost);
 
@@ -507,8 +491,8 @@ public class GearListeners implements Listener {
                 item.setPickupDelay(1000000000);
                 player.setItemInHand(null);
                 player.updateInventory();
-                double durability = gear.getDurability(itemStack) + per * amountOfIngots;
                 int breakTime = 0;
+
                 if (Math.random() < 0.05) {
                     if ((repairCost * repairCost) - 3 < 0) {
                         breakTime = 0;
@@ -518,8 +502,7 @@ public class GearListeners implements Listener {
                     }
                 }
 
-                repairItem(player, item,  durability >= gear.getMaxDurability() ? gear.getMaxDurability() : durability, amountOfIngots, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
-
+                repairItem(player, item, amountOfIngots, gear, block.getLocation().add(0.5, 1.12, 0.5), breakTime);
             } else {
                 removeItems(player.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), repairCost);
 
@@ -533,6 +516,7 @@ public class GearListeners implements Listener {
                 player.setItemInHand(null);
                 player.updateInventory();
                 int breakTime = 0;
+
                 if (Math.random() < 0.05) {
                     if ((repairCost * repairCost) - 3 < 0) {
                         breakTime = 0;
@@ -542,93 +526,9 @@ public class GearListeners implements Listener {
                     }
                 }
 
-                repairItem(player, item, gear.getMaxDurability(), repairCost, gear, block.getLocation().add(0.5,1.12,0.5), breakTime);
+                repairItem(player, item, repairCost, gear, block.getLocation().add(0.5, 1.12, 0.5), breakTime);
             }
         }
-    }
-
-    public void repairItem(Player player, Item item, double durability, int repairCost, CarbyneGear gear, Location location, int breakTime) {
-
-        gearManager.getRepairItems().add(item);
-
-        new BukkitRunnable() {
-            int i = -1;
-            boolean far = false;
-
-            @Override
-            public void run() {
-                i++;
-
-                if (breakTime > 0 && i >= breakTime) {
-                    cancel();
-                    MessageManager.sendMessage(player, "&cYour item broke!");
-
-                    ParticleEffect.SMOKE_LARGE.display(0f, 0f, 0f, 0.002f, 4, location, 40, true);
-                    player.getWorld().playSound(location, Sound.ANVIL_BREAK, 10f, (float) Math.random() * 2.5f);
-
-                    if (item != null) {
-                        gearManager.getRepairItems().remove(item);
-                        item.remove();
-                    }
-
-                    return;
-                }
-
-                if ((!player.getWorld().getName().equals(location.getWorld().getName()) && !far) || ((player.getWorld().getName().equals(location.getWorld().getName()) && (player.getLocation().distance(location) >= 9 && !far)))) {
-                    far = true;
-                    MessageManager.sendMessage(player, "&cYou are too far from the anvil, your item will be dropped on the ground");
-                }
-
-                if (player.getWorld().getName().equals(location.getWorld().getName()) && (far && player.getLocation().distance(location) < 9)) {
-                    far = false;
-                    MessageManager.sendMessage(player, "&aYou are no longer too far away");
-                }
-
-                if (i >= repairCost * 6) {
-                    cancel();
-
-                    ItemStack itemStack = gear.getItem(false).clone();
-
-                    if (!player.isOnline() || far) {
-                        location.getWorld().dropItem(location, itemStack);
-
-                        if (item != null) {
-                            gearManager.getRepairItems().remove(item);
-                            item.remove();
-                        }
-
-                        if (player.isOnline()) {
-                            MessageManager.sendMessage(player, "&aYour item has been repaired.");
-                            Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
-                        }
-
-                    } else {
-
-                        if (player.getItemInHand() != null) {
-                            if (player.getInventory().firstEmpty() == -1) {
-                                player.getWorld().dropItem(player.getLocation(), itemStack);
-                                return;
-                            }
-
-                            player.getInventory().addItem(itemStack);
-                        } else {
-                            player.setItemInHand(itemStack);
-                        }
-
-                        MessageManager.sendMessage(player, "&aYour item has been repaired.");
-                        if (item != null) {
-                            gearManager.getRepairItems().remove(item);
-                            item.remove();
-                        }
-
-                        Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
-                    }
-                }
-
-                ParticleEffect.FLAME.display(0f, 0f, 0f, 0.075f, 20, location, 40, true);
-                player.getWorld().playSound(location, Sound.ANVIL_USE, 10f, (float) Math.random() * 2.5f);
-            }
-        }.runTaskTimer(Carbyne.getInstance(), 0,20);
     }
 
     @EventHandler
@@ -653,7 +553,7 @@ public class GearListeners implements Listener {
     }
 
     @EventHandler
-    public void onPick(final PlayerPickupItemEvent event) {
+    public void onPick(PlayerPickupItemEvent event) {
         new BukkitRunnable() {
             public void run() {
                 PlayerUtility.checkForIllegalItems(event.getPlayer(), event.getPlayer().getInventory());
@@ -673,9 +573,8 @@ public class GearListeners implements Listener {
 
             Potion potion = Potion.fromItemStack(itemStack);
 
-            for (PotionEffect effect : potion.getEffects()) {
-                player.addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false), false);
-            }
+            for (PotionEffect effect : potion.getEffects())
+                player.addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false), true);
         }
     }
 
@@ -688,7 +587,7 @@ public class GearListeners implements Listener {
                 Player affectedPlayer = (Player) affectedEntity;
 
                 for (PotionEffect effect : event.getPotion().getEffects()) {
-                    affectedPlayer.addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false), false);
+                    affectedPlayer.addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), false, false), true);
                 }
             }
         }
@@ -704,66 +603,145 @@ public class GearListeners implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        event.getPlayer().setMaxHealth(100);
-        event.getPlayer().setHealthScale(20);
-    }
+        Player player = event.getPlayer();
+        player.setMaxHealth(100);
+        player.setHealthScale(20);
 
-    public double getProtectionReduction(Player player) {
-        double damageReduction = 0.0;
-
-        for (ItemStack is : player.getInventory().getArmorContents()) {
-            if (is.getType().equals(Material.AIR))
-                continue;
-
-            switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-                case 1:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.025;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.025;
-                    }
-                    break;
-                case 2:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.03125;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03125;
-                    }
-                    break;
-                case 3:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.0375;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.0375;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.0375;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.0375;
-                    }
-                    break;
-                case 4:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.04375;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.04375;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.04375;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.04375;
-                    }
-                    break;
-            }
+        if (gearManager.getPlayerGearFadeSchedulers().containsKey(player.getUniqueId())) {
+            gearManager.getPlayerGearFadeSchedulers().get(player.getUniqueId()).cancel();
+            gearManager.getPlayerGearFadeSchedulers().remove(player.getUniqueId());
         }
 
-        return damageReduction;
+        gearManager.getPlayerGearFadeSchedulers().put(player.getUniqueId(), new BukkitRunnable() {
+            boolean shouldFadeUp = false;
+            int prizedHue = 0;
+
+            @Override
+            public void run() {
+                if (!player.isOnline()) {
+                    Bukkit.broadcastMessage("Broadcast");
+                    gearManager.getPlayerGearFadeSchedulers().remove(player.getUniqueId());
+                    cancel();
+                }
+
+                if (player.getInventory().getArmorContents().length > 0)
+                    for (ItemStack itemStack : player.getInventory().getArmorContents()) {
+                        boolean isPrized;
+
+                        if (itemStack == null)
+                            continue;
+
+                        if (gearManager.isCarbyneArmor(itemStack)) {
+                            CarbyneArmor armor = gearManager.getCarbyneArmor(itemStack);
+
+                            if (armor.isPolished(itemStack)) {
+                                isPrized = armor.getGearCode().equalsIgnoreCase("PH") || armor.getGearCode().equalsIgnoreCase("PC") || armor.getGearCode().equalsIgnoreCase("PL") || armor.getGearCode().equalsIgnoreCase("PB");
+
+                                LeatherArmorMeta laMeta = (LeatherArmorMeta) itemStack.getItemMeta();
+
+                                int r = laMeta.getColor().getRed(),
+                                        g = laMeta.getColor().getGreen(),
+                                        b = laMeta.getColor().getBlue();
+
+                                if (r >= armor.getMaxFadeColor().getRed() && g >= armor.getMaxFadeColor().getGreen() && b >= armor.getMaxFadeColor().getBlue())
+                                    shouldFadeUp = false;
+                                else if (r <= armor.getMinFadeColor().getRed() && g <= armor.getMinFadeColor().getGreen() && b <= armor.getMinFadeColor().getBlue())
+                                    shouldFadeUp = true;
+
+                                if (isPrized) {
+                                    if (shouldFadeUp)
+                                        prizedHue++;
+                                    else
+                                        prizedHue--;
+
+                                    r = HSLColor.toRGB(prizedHue, 100, 50).getRed();
+                                    g = HSLColor.toRGB(prizedHue, 100, 50).getGreen();
+                                    b = HSLColor.toRGB(prizedHue, 100, 50).getBlue();
+                                } else {
+                                    if (shouldFadeUp) {
+                                        r += armor.getTickFadeColor()[0];
+                                        g += armor.getTickFadeColor()[1];
+                                        b += armor.getTickFadeColor()[2];
+                                    } else {
+                                        r -= armor.getTickFadeColor()[0];
+                                        g -= armor.getTickFadeColor()[1];
+                                        b -= armor.getTickFadeColor()[2];
+                                    }
+                                }
+
+                                if (r < 0)
+                                    r = 0;
+                                else if (r > 255)
+                                    r = 255;
+
+                                if (g < 0)
+                                    g = 0;
+                                else if (g > 255)
+                                    g = 255;
+
+                                if (b < 0)
+                                    b = 0;
+                                else if (b > 255)
+                                    b = 255;
+
+                                Color color = Color.fromRGB(r, g, b);
+
+                                laMeta.setColor(color);
+                                itemStack.setItemMeta(laMeta);
+                            }
+                        }
+                    }
+            }
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 5L));
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+
+        if (gearManager.getPlayerGearFadeSchedulers().containsKey(player.getUniqueId())) {
+            gearManager.getPlayerGearFadeSchedulers().get(player.getUniqueId()).cancel();
+            gearManager.getPlayerGearFadeSchedulers().remove(player.getUniqueId());
+        }
+
+        if (player.getInventory().getArmorContents().length > 0)
+            for (ItemStack itemStack : player.getInventory().getArmorContents()) {
+                if (itemStack == null)
+                    continue;
+
+                if (gearManager.isCarbyneArmor(itemStack)) {
+                    CarbyneArmor armor = gearManager.getCarbyneArmor(itemStack);
+
+                    if (!armor.isPolished(itemStack)) {
+                        LeatherArmorMeta laMeta = (LeatherArmorMeta) itemStack.getItemMeta();
+                        laMeta.setColor(armor.getBaseColor());
+                        itemStack.setItemMeta(laMeta);
+                    }
+                }
+            }
+    }
+
+    @EventHandler
+    public void onEquip(ArmorEquipEvent event) {
+        if (event.getOldArmorPiece() != null && event.getOldArmorPiece().getType() != Material.AIR) {
+            ItemStack item = event.getOldArmorPiece();
+
+            if (gearManager.isCarbyneArmor(item)) {
+                CarbyneArmor armor = gearManager.getCarbyneArmor(item);
+
+                if (armor.isPolished(item)) {
+                    ItemMeta meta = item.getItemMeta();
+                    LeatherArmorMeta lameta = (LeatherArmorMeta) meta;
+                    lameta.setColor(armor.getMinFadeColor());
+                    item.setItemMeta(lameta);
+                } else {
+                    ItemMeta meta = item.getItemMeta();
+                    LeatherArmorMeta lameta = (LeatherArmorMeta) meta;
+                    lameta.setColor(armor.getBaseColor());
+                    item.setItemMeta(lameta);
+                }
+            }
+        }
     }
 
     public void removeItems(Inventory inventory, Material type, int data, int amount) {
@@ -813,5 +791,87 @@ public class GearListeners implements Listener {
             }
         }
         return amount;
+    }
+
+    public void repairItem(Player player, Item item, int repairCost, CarbyneGear gear, Location location, int breakTime) {
+        gearManager.getRepairItems().add(item);
+
+        new BukkitRunnable() {
+            int i = -1;
+            boolean far = false;
+
+            @Override
+            public void run() {
+                i++;
+
+                if (breakTime > 0 && i >= breakTime) {
+                    cancel();
+                    MessageManager.sendMessage(player, "&cYour item broke!");
+
+                    ParticleEffect.SMOKE_LARGE.display(0f, 0f, 0f, 0.002f, 4, location, 40, true);
+                    player.getWorld().playSound(location, Sound.ANVIL_BREAK, 10f, (float) Math.random() * 2.5f);
+
+                    if (item != null) {
+                        gearManager.getRepairItems().remove(item);
+                        item.remove();
+                    }
+
+                    return;
+                }
+
+                if ((!player.getWorld().getName().equals(location.getWorld().getName()) && !far) || ((player.getWorld().getName().equals(location.getWorld().getName()) && (player.getLocation().distance(location) >= 9 && !far)))) {
+                    far = true;
+                    MessageManager.sendMessage(player, "&cYou are too far from the anvil, your item will be dropped on the ground");
+                }
+
+                if (player.getWorld().getName().equals(location.getWorld().getName()) && (far && player.getLocation().distance(location) < 9)) {
+                    far = false;
+                    MessageManager.sendMessage(player, "&aYou are no longer too far away");
+                }
+
+                if (i >= repairCost * 4) {
+                    cancel();
+
+                    ItemStack itemStack = gear.getItem(false).clone();
+
+                    if (!player.isOnline() || far) {
+                        location.getWorld().dropItem(location, itemStack);
+
+                        if (item != null) {
+                            gearManager.getRepairItems().remove(item);
+                            item.remove();
+                        }
+
+                        if (player.isOnline()) {
+                            MessageManager.sendMessage(player, "&aYour item has been repaired.");
+                            Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
+                        }
+                    } else {
+                        if (player.getItemInHand() != null) {
+                            if (player.getInventory().firstEmpty() == -1) {
+                                player.getWorld().dropItem(player.getLocation(), itemStack);
+                                return;
+                            }
+
+                            player.getInventory().addItem(itemStack);
+                        } else {
+                            player.setItemInHand(itemStack);
+                        }
+
+                        MessageManager.sendMessage(player, "&aYour item has been repaired.");
+
+                        if (item != null) {
+                            gearManager.getRepairItems().remove(item);
+                            item.remove();
+                        }
+
+                        Bukkit.getServer().getPluginManager().callEvent(new CarbyneRepairedEvent(player, gear));
+                    }
+                }
+
+                ParticleEffect.FLAME.display(0f, 0f, 0f, 0.075f, 20, location, 40, true);
+                player.getWorld().playSound(location, Sound.ANVIL_USE, 10f, (float) Math.random() * 2.5f);
+            }
+        }.runTaskTimer(Carbyne.getInstance(), 0, 20);
     }
 }

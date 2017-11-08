@@ -18,205 +18,776 @@
 # REGENERATION, SATURATION, SLOW, SLOW_DIGGING, SPEED, WATER_BREATHING, WEAKNESS, WITHER.
 # ==========================================================================================
 # For Weapons:
-# 	Special: Name of special
+#   Special: Name of special
 # ============ List of Specials ============================
 # ForceBlast, LightningStorm, ShadowSweep, SummonHealing.
 # ==========================================================
-#	SpecialCost: Number of charges to cast. Maximum 50.
+#   SpecialCost: Number of charges to cast. Maximum 50.
 # For Armour:
 # Armour Rating: Percent of damage blocked by this piece.
 # With armour rating keep in mind diamond blocks 0.80 or 80% damage in a full set.
-Store:
-  TokenItem:
-      ItemId: 399
-      ItemData: 0
-      DisplayName: '&4Carbyne Token'
-      Lore:
-      - '&eThe default money item for the store'
-      Code: token
+TokenItem:
+  ItemId: 399
+  ItemData: 0
+  Code: 'token'
+  DisplayName: '&4Carbyne Ingot'
+  Lore:
+    - '&eUsed to purchase Carbyne Gear.'
+    - '&eUse &b/cg store &eto access the Carbyne store.'
+PolishItem:
+  ItemId: 339
+  ItemData: 0
+  Code: 'polish'
+  DisplayName: '&5Polishing Cloth'
+  Lore:
+    - '&aThis is used to polish Carbyne Armor'
+    - '&aUse &b/cg polish &awhile holding the Carbyne Armor!'
+    - '&r'
+    - '&aWhen Applied:'
+    - '&r &7- &bIncreases Armor Durability'
+    - '&r &7- &bAdds a cosmetic fade'
 Carbyne-Armor:
   1:
     Helmet:
-      DisplayName: '&4Test Helmet'
-      GearCode: 'TH'
-      Color: '255,0,0'
-      Durability: 1000
+      DisplayName: '&8Cursed Helmet'
+      GearCode: 'CH'
+      BaseColor: '31,31,31'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '100,100,100'
+      TickFadeColor: '5,5,5'
+      Durability: 2500
       Lore:
-        - '&eTest'
-      Enchantments: {}
-      Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
-    Chestplate:
-      DisplayName: '&4Test Chestplate'
-      GearCode: 'TC'
-      Color: '255,0,0'
-      Durability: 1000
-      Lore:
-        - '&eTest'
+        - '&8&k12345678910'
+        - '&8It makes you feel uneasy but you cant place why'
       Enchantments: {}
       OffensivePotionEffects:
-        - 'POISON,1,3,0.2'
-      DefensivePotionEffects:
-        - 'INCREASE_DAMAGE,2,3,0.1'
+        - 'WITHER,0,80,0.025'
+        - 'POISON,1,60,0.025'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 5
+      ArmorRating: 0.17
+    Chestplate:
+      DisplayName: '&8Cursed Chestplate'
+      GearCode: 'CC'
+      BaseColor: '31,31,31'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '100,100,100'
+      TickFadeColor: '5,5,5'
+      Durability: 2900
+      Lore:
+        - '&8It makes you feel uneasy but you cant place why'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'WITHER,0,80,0.1'
+        - 'POISON,1,60,0.055'
+      Hidden: false
+      Cost: 12
+      ArmorRating: 0.32
     Leggings:
-      DisplayName: '&4Test Leggings'
-      GearCode: 'TL'
-      Color: '255,0,0'
-      Durability: 1000
+      DisplayName: '&8Cursed Leggings'
+      GearCode: 'CL'
+      BaseColor: '31,31,31'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '100,100,100'
+      TickFadeColor: '5,5,5'
+      Durability: 2800
       Lore:
-        - '&eTest'
+        - '&8It makes you feel uneasy but you cant place why'
       Enchantments: {}
+      OffensivePotionEffects:
+        - 'WITHER,0,80,0.05'
+        - 'POISON,1,60,0.05'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 8
+      ArmorRating: 0.24
     Boots:
-      DisplayName: '&4Test Boots'
-      GearCode: 'TB'
-      Color: '255,0,0'
-      Durability: 1000
+      DisplayName: '&8Cursed Boots'
+      GearCode: 'CB'
+      BaseColor: '31,31,31'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '100,100,100'
+      TickFadeColor: '5,5,5'
+      Durability: 2500
       Lore:
-        - '&eTest'
+        - '&8It makes you feel uneasy but you cant place why'
       Enchantments: {}
+      OffensivePotionEffects:
+        - 'WITHER,0,80,0.025'
+        - 'POISON,1,60,0.025'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 5
+      ArmorRating: 0.17
   2:
     Helmet:
-      DisplayName: '&4Test Helmet'
-      GearCode: 'TH2'
-      Color: '0,255,0'
-      Durability: 1000
+      DisplayName: '&9Mithril Helmet'
+      GearCode: 'MH'
+      BaseColor: '0,102,204'
+      MinFadeColor: '0,0,128'
+      MaxFadeColor: '0,0,255'
+      TickFadeColor: '0,0,3'
+      Durability: 2500
       Lore:
-        - '&eTest'
+        - '&9&k12345678910'
+        - '&9It shines bright in the darkest of nights'
       Enchantments: {}
+      DefensivePotionEffects:
+        - 'DAMAGE_RESISTANCE,0,70,0.025'
+        - 'REGENERATION,1,60,0.025'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 5
+      ArmorRating: 0.17
     Chestplate:
-      DisplayName: '&4Test Chestplate'
-      GearCode: 'TC2'
-      Color: '0,255,0'
-      Durability: 1000
+      DisplayName: '&9Mithril Chestplate'
+      GearCode: 'MC'
+      BaseColor: '0,102,204'
+      MinFadeColor: '0,0,128'
+      MaxFadeColor: '0,0,255'
+      TickFadeColor: '0,0,3'
+      Durability: 2900
       Lore:
-        - '&eTest'
+        - '&9It shines bright in the darkest of nights'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'DAMAGE_RESISTANCE,0,70,0.05'
+        - 'REGENERATION,1,60,0.07'
+      Hidden: false
+      Cost: 12
+      ArmorRating: 0.33
+    Leggings:
+      DisplayName: '&9Mithril Leggings'
+      GearCode: 'ML'
+      BaseColor: '0,102,204'
+      MinFadeColor: '0,0,128'
+      MaxFadeColor: '0,0,255'
+      TickFadeColor: '0,0,3'
+      Durability: 2800
+      Lore:
+        - '&9It shines bright in the darkest of nights'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'DAMAGE_RESISTANCE,0,70,0.05'
+        - 'REGENERATION,1,60,0.05'
+      Hidden: false
+      Cost: 8
+      ArmorRating: 0.25
+    Boots:
+      DisplayName: '&9Mithril Boots'
+      GearCode: 'MB'
+      BaseColor: '0,102,204'
+      MinFadeColor: '0,0,128'
+      MaxFadeColor: '0,0,255'
+      TickFadeColor: '0,0,3'
+      Durability: 2500
+      Lore:
+        - '&9It shines bright in the darkest of nights'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'DAMAGE_RESISTANCE,0,70,0.025'
+        - 'REGENERATION,1,60,0.025'
+      Hidden: false
+      Cost: 5
+      ArmorRating: 0.17
+  3:
+    Helmet:
+      DisplayName: '&2Verite Helmet'
+      GearCode: 'VH'
+      BaseColor: '102,204,0'
+      MinFadeColor: '0,255,0'
+      MaxFadeColor: '120,255,0'
+      TickFadeColor: '1,5,0'
+      Durability: 2500
+      Lore:
+        - '&2May your arrow fly true'
       Enchantments: {}
       OffensivePotionEffects:
-        - 'POISON,1,3,0.2'
+        - 'SLOW,1,65,0.025'
+        - 'CONFUSION,1,65,0.025'
       DefensivePotionEffects:
-        - 'INCREASE_DAMAGE,2,3,0.1'
+        - 'SPEED,1,80,0.025'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 5
+      ArmorRating: 0.17
+    Chestplate:
+      DisplayName: '&2Verite Chestplate'
+      GearCode: 'VC'
+      BaseColor: '102,204,0'
+      MinFadeColor: '0,255,0'
+      MaxFadeColor: '120,255,0'
+      TickFadeColor: '1,5,0'
+      Durability: 2900
+      Lore:
+        - '&2May your arrow fly true'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'SLOW,1,65,0.06'
+        - 'CONFUSION,1,65,0.07'
+      DefensivePotionEffects:
+        - 'SPEED,1,80,0.06'
+      Hidden: false
+      Cost: 12
+      ArmorRating: 0.33
     Leggings:
-      DisplayName: '&4Test Leggings'
-      GearCode: 'TL2'
-      Color: '0,255,0'
-      Durability: 1000
+      DisplayName: '&2Verite Leggings'
+      GearCode: 'VL'
+      BaseColor: '102,204,0'
+      MinFadeColor: '0,255,0'
+      MaxFadeColor: '120,255,0'
+      TickFadeColor: '1,5,0'
+      Durability: 2800
       Lore:
-        - '&eTest'
+        - '&2May your arrow fly true'
       Enchantments: {}
+      OffensivePotionEffects:
+        - 'SLOW,1,65,0.04'
+        - 'CONFUSION,1,65,0.04'
+      DefensivePotionEffects:
+        - 'SPEED,1,80,0.04'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
+      Cost: 8
+      ArmorRating: 0.25
     Boots:
-      DisplayName: '&4Test Boots'
-      GearCode: 'TB2'
-      Color: '0,255,0'
-      Durability: 1000
+      DisplayName: '&2Verite Boots'
+      GearCode: 'VB'
+      BaseColor: '102,204,0'
+      MinFadeColor: '0,255,0'
+      MaxFadeColor: '120,255,0'
+      TickFadeColor: '1,5,0'
+      Durability: 2500
       Lore:
-        - '&eTest'
+        - '&2May your arrow fly true'
       Enchantments: {}
+      OffensivePotionEffects:
+        - 'SLOW,1,65,0.025'
+        - 'CONFUSION,1,65,0.025'
+      DefensivePotionEffects:
+        - 'SPEED,1,80,0.025'
       Hidden: false
-      Cost: 10
-      ArmorRating: 0.20
-
+      Cost: 5
+      ArmorRating: 0.17
+  4:
+    Helmet:
+      DisplayName: '&cFlame Helmet'
+      GearCode: 'FH'
+      BaseColor: '243,90,90'
+      MinFadeColor: '255,0,0'
+      MaxFadeColor: '120,0,0'
+      TickFadeColor: '3,0,0'
+      Durability: 2500
+      Lore:
+        - '&cSurprisingly cool.'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'WEAKNESS,1,65,0.025'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,70,0.025'
+      Hidden: false
+      Cost: 5
+      ArmorRating: 0.17
+    Chestplate:
+      DisplayName: '&cFlame Chestplate'
+      GearCode: 'FC'
+      BaseColor: '243,90,90'
+      MinFadeColor: '255,0,0'
+      MaxFadeColor: '120,0,0'
+      TickFadeColor: '3,0,0'
+      Durability: 2900
+      Lore:
+        - '&cSurprisingly cool.'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'WEAKNESS,1,65,0.05'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,70,0.05'
+      Hidden: false
+      Cost: 12
+      ArmorRating: 0.33
+    Leggings:
+      DisplayName: '&cFlame Leggings'
+      GearCode: 'FL'
+      BaseColor: '243,90,90'
+      MinFadeColor: '255,0,0'
+      MaxFadeColor: '120,0,0'
+      TickFadeColor: '3,0,0'
+      Durability: 2800
+      Lore:
+        - '&cSurprisingly cool.'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'WEAKNESS,1,65,0.03'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,70,0.03'
+      Hidden: false
+      Cost: 8
+      ArmorRating: 0.24
+    Boots:
+      DisplayName: '&cFlame Boots'
+      GearCode: 'FB'
+      BaseColor: '243,90,90'
+      MinFadeColor: '255,0,0'
+      MaxFadeColor: '120,0,0'
+      TickFadeColor: '3,0,0'
+      Durability: 2500
+      Lore:
+        - '&cSurprisingly cool.'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'WEAKNESS,1,65,0.025'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,70,0.025'
+      Hidden: false
+      Cost: 5
+      ArmorRating: 0.17
+  5:
+    Helmet:
+      DisplayName: '&4P&bR&3I&aZ&fE&cD &3H&bE&4L&fM&aE&cT'
+      GearCode: 'PH'
+      BaseColor: '255,255,255'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 1337
+      Lore:
+        - '&5You''re a somebody now!'
+      Enchantments:
+      - 'protection,2'
+      OffensivePotionEffects:
+        - 'WEAKNESS,0,65,0.045'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,70,0.045'
+      Hidden: true
+      Cost: 100
+      ArmorRating: 0.15
+    Chestplate:
+      DisplayName: '&4P&bR&3I&aZ&fE&cD &cC&bH&3E&fS&4T&aP&bL&3A&aT&cE'
+      GearCode: 'PC'
+      BaseColor: '255,255,255'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 1337
+      Lore:
+        - '&5You''re a somebody now!'
+      Enchantments:
+      - 'protection,2'
+      DefensivePotionEffects:
+        - 'REGENERATION,0,75,0.065'
+        - 'DAMAGE_RESISTANCE,1,80,0.065'
+      Hidden: true
+      Cost: 100
+      ArmorRating: 0.28
+    Leggings:
+      DisplayName: '&4P&bR&3I&aZ&fE&cD &cL&bE&3G&fG&4I&aN&bG&aS'
+      GearCode: 'PL'
+      BaseColor: '255,255,255'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 1337
+      Lore:
+        - '&5You''re a somebody now!'
+      Enchantments:
+      - 'protection,2'
+      OffensivePotionEffects:
+        - 'SLOW,1,80,0.055'
+        - 'CONFUSION,0,80,0.055'
+      DefensivePotionEffects:
+        - 'SPEED,1,70,0.055'
+      Hidden: true
+      Cost: 100
+      ArmorRating: 0.22
+    Boots:
+      DisplayName: '&4P&bR&3I&aZ&fE&cD &bB&3O&aO&fT&cS'
+      GearCode: 'PB'
+      BaseColor: '255,255,255'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 1337
+      Lore:
+        - '&5You''re a somebody now!'
+      OffensivePotionEffects:
+        - 'WITHER,0,80,0.045'
+        - 'POISON,1,60,0.045'
+      Enchantments:
+        - 'protection,2'
+      Hidden: true
+      Cost: 100
+      ArmorRating: 0.14
+  6:
+    Helmet:
+      DisplayName: '&3Calcite Helmet'
+      GearCode: 'DH'
+      BaseColor: '99,239,254'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3000
+      Lore:
+        - '&bMade from high quality material!'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'REGENERATION,0,80,0.025'
+        - 'DAMAGE_RESISTANCE,0,100,0.025'
+      Hidden: false
+      Cost: 2000
+      ArmorRating: 0.18
+    Chestplate:
+      DisplayName: '&3Calcite Chestplate'
+      GearCode: 'DC'
+      BaseColor: '99,239,254'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3200
+      Lore:
+        - '&bMade from high quality material!'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,0,100,0.025'
+        - 'DAMAGE_RESISTANCE,0,100,0.06'
+      Hidden: false
+      Cost: 2000
+      ArmorRating: 0.33
+    Leggings:
+      DisplayName: '&3Calcite Leggings'
+      GearCode: 'DL'
+      BaseColor: '99,239,254'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3100
+      Lore:
+        - '&bMade from high quality material!'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'REGENERATION,0,80,0.015'
+        - 'INCREASE_DAMAGE,0,100,0.025'
+        - 'DAMAGE_RESISTANCE,0,100,0.025'
+      Hidden: false
+      Cost: 2000
+      ArmorRating: 0.25
+    Boots:
+      DisplayName: '&3Calcite Boots'
+      GearCode: 'DB'
+      BaseColor: '99,239,254'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3000
+      Lore:
+        - '&bMade from high quality material!'
+      Enchantments: {}
+      DefensivePotionEffects:
+        - 'REGENERATION,0,80,0.025'
+        - 'DAMAGE_RESISTANCE,0,100,0.025'
+      Hidden: false
+      Cost: 2000
+      ArmorRating: 0.16
+  7:
+    Helmet:
+      DisplayName: '&6Smaug Helmet'
+      GearCode: 'SMH'
+      BaseColor: '255,103,0'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3000
+      Lore:
+        - '&eMade from the scales of a dragon!'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,0,80,0.025'
+        - 'WITHER,1,65,0.025'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,100,0.03'
+      Hidden: true
+      Cost: 10000
+      ArmorRating: 0.17
+    Chestplate:
+      DisplayName: '&6Smaug Chestplate'
+      GearCode: 'SMC'
+      BaseColor: '255,103,0'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3200
+      Lore:
+        - '&eMade from the scales of a dragon!'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,0,80,0.05'
+        - 'WITHER,1,65,0.05'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,100,0.06'
+      Hidden: true
+      Cost: 10000
+      ArmorRating: 0.32
+    Leggings:
+      DisplayName: '&6Smaug Leggings'
+      GearCode: 'SML'
+      BaseColor: '255,103,0'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3100
+      Lore:
+        - '&eMade from the scales of a dragon!'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,0,80,0.035'
+        - 'WITHER,1,65,0.035'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,100,0.04'
+      Hidden: true
+      Cost: 10000
+      ArmorRating: 0.24
+    Boots:
+      DisplayName: '&6Smaug Boots'
+      GearCode: 'SMB'
+      BaseColor: '255,103,0'
+      MinFadeColor: '0,0,0'
+      MaxFadeColor: '0,0,0'
+      TickFadeColor: '0,0,0'
+      Durability: 3000
+      Lore:
+        - '&eMade from the scales of a dragon!'
+      Enchantments: {}
+      OffensivePotionEffects:
+        - 'POISON,0,80,0.035'
+        - 'WITHER,1,65,0.035'
+      DefensivePotionEffects:
+        - 'INCREASE_DAMAGE,1,100,0.025'
+      Hidden: true
+      Cost: 10000
+      ArmorRating: 0.17
 Carbyne-Weapons:
   1:
-    DisplayName: '&4Test Sword'
+    DisplayName: '&5The Decapitator'
+    Type: 'axe'
+    Material: 'diamond'
+    Durability: 3125
+    Special: ''
+    Lore:
+      - '&4Off with his head!'
+    Enchantments:
+      - 'sharpness,6'
+      - 'fire,2'
+    OffensivePotionEffects: {}
+    DefensivePotionEffects: {}
+    Hidden: true
+    Cost: 20
+    GearCode: 'decapitator'
+  2:
+    DisplayName: '&aAlbus &4Bow'
+    Type: 'bow'
+    Durability: 475
+    Lore:
+      - '&eThis bow was used to slay Cyrus!'
+    Enchantments:
+      - 'damage,7'
+      - 'fire,2'
+      - 'infinite,1'
+    Hidden: true
+    Cost: 16
+    Special: 'Hindering_Shot'
+    GearCode: 'albusBow'
+  3:
+    DisplayName: '&5Bewitched Blade'
     Type: 'sword'
     Material: 'diamond'
-    Durability: 100
+    Special: 'FireStorm'
+    Durability: 3125
     Lore:
-      - '&ei cut you muhaha'
+      - '&4Double, double toil and trouble'
     Enchantments:
-      - 'sharpness,2'
-      - 'unbreaking,10'
+      - 'sharpness,5'
+      - 'fire,2'
+    Hidden: true
     OffensivePotionEffects:
-      - 'POISON,1,3,0.2'
+      - 'POISON,1,60,0.8'
+      - 'WITHER,0,60,0.09'
+      - 'SLOW,1,80,0.07'
     DefensivePotionEffects:
-      - 'INCREASE_DAMAGE,2,3,0.1'
-    Hidden: false
-    Cost: 10
-    Special: 'FIRESTORM'
-    SpecialCost: 50
-  2:
-    DisplayName: '&4Test Bow'
-    Type: 'bow'
-    Durability: 100
+      - 'SPEED,1,80,0.08'
+    Cost: 16
+    GearCode: 'bewitchedBlade'
+  4:
+    DisplayName: '&bFrostbite'
+    Type: 'sword'
+    Material: 'diamond'
+    Special: 'Frostbite'
+    Durability: 2000
     Lore:
-      - '&ei cut you muhaha'
+      - '&bFreezing....'
     Enchantments:
-      - 'sharpness,2'
-      - 'unbreaking,10'
-    OffensivePotionEffects:
-      - 'POISON,1,3,0.2'
-    DefensivePotionEffects:
-      - 'INCREASE_DAMAGE,2,3,0.1'
+      - 'sharpness,5'
     Hidden: false
-    Cost: 10
-  3:
-    DisplayName: '&4Test Axe'
+    OffensivePotionEffects:
+      - 'SLOW,2,100,0.06'
+    Cost: 20
+    GearCode: 'soulRender'
+  5:
+    DisplayName: '&5Excalibur'
+    Type: 'sword'
+    Material: 'iron'
+    Special: 'Wall_Special'
+    Durability: 2000
+    Lore:
+      - '&5Free the souls of the damned'
+    Enchantments:
+      - 'sharpness,6'
+      - 'fire,2'
+    Hidden: false
+    Cost: 15
+    GearCode: 'excalibur'
+  6:
+    DisplayName: '&9Juggernaut'
+    Type: 'sword'
+    Material: 'diamond'
+    Special: 'Bastion_Of_Health'
+    Durability: 2000
+    Lore:
+      - '&9Each hit shall make thy stronger!'
+    Enchantments:
+      - 'sharpness,5'
+    Hidden: false
+    DefensivePotionEffects:
+      - 'REGENERATION,1,80,0.06'
+      - 'DAMAGE_RESISTANCE,0,60,0.08'
+    Cost: 25
+    GearCode: 'juggernaut'
+  7:
+    DisplayName: '&4Hellfire'
+    Type: 'sword'
+    Material: 'gold'
+    Special: 'Fire_Storm'
+    Durability: 2000
+    Lore:
+      - '&eAbandon all hope ye at the end of this blade'
+    Enchantments:
+      - 'sharpness,7'
+      - 'fire,3'
+    Hidden: false
+    OffensivePotionEffects:
+    DefensivePotionEffects:
+      - 'INCREASE_DAMAGE,2,80,0.05'
+    Cost: 12
+    GearCode: 'hellfire'
+  8:
+    DisplayName: '&6Blasphemer''s Bludgeon'
+    Type: 'axe'
+    Material: 'diamond'
+    Durability: 2000
+    Special: 'Lightning_Storm'
+    Lore:
+      - '&4Crafted by Lucifer himself!'
+    Enchantments:
+      - 'sharpness,5'
+    OffensivePotionEffects:
+      - 'BLINDNESS,1,100,0.15'
+    DefensivePotionEffects:
+      - 'SPEED,0,100,0.045'
+    Hidden: false
+    Cost: 13
+    GearCode: 'blasphemersBludgeon'
+  9:
+    DisplayName: '&5Warhammer'
+    Type: 'hoe'
+    Material: 'diamond'
+    Durability: 2000
+    Special: ''
+    Lore: {}
+    Enchantments:
+      - 'sharpness,10'
+    OffensivePotionEffects:
+    DefensivePotionEffects:
+      - 'SPEED,0,100,0.06'
+    Hidden: true
+    Cost: 13
+    GearCode: 'warhammer'
+  10:
+    DisplayName: '&5Lumberjack'
     Type: 'axe'
     Material: 'iron'
-    Durability: 100
-    Lore:
-      - '&ei cut you muhaha'
+    Durability: 2000
+    Special: ''
+    Lore: {}
     Enchantments:
-      - 'sharpness,2'
-      - 'unbreaking,10'
+      - 'sharpness,6'
+      - 'knockback,2'
     OffensivePotionEffects:
-      - 'POISON,1,3,0.2'
     DefensivePotionEffects:
-      - 'INCREASE_DAMAGE,2,3,0.1'
     Hidden: false
-    Cost: 10
-  4:
-    DisplayName: '&4Test Hoe'
-    Type: 'hoe'
+    Cost: 13
+    GearCode: 'lumberjack'
+  11:
+    DisplayName: '&6Roar'
+    Type: 'bow'
+    Durability: 2000
+    Special: ''
+    Lore: {}
+    Enchantments:
+      - 'damage,8'
+    OffensivePotionEffects:
+    DefensivePotionEffects:
+    Hidden: true
+    Cost: 13
+    GearCode: 'roar'
+  12:
+    DisplayName: '&6Unidentified Weapon'
+    Type: 'axe'
     Material: 'gold'
-    Durability: 100
+    Durability: 2000
+    Special: ''
     Lore:
-      - '&ei cut you muhaha'
+      - '&4It does the job'
     Enchantments:
-      - 'sharpness,2'
-      - 'unbreaking,10'
+      - 'sharpness,6'
     OffensivePotionEffects:
-      - 'POISON,1,3,0.2'
+      - 'SLOW,1,100,0.15'
     DefensivePotionEffects:
-      - 'INCREASE_DAMAGE,2,3,0.1'
+      - 'INCREASE_DAMAGE,0,50,0.045'
     Hidden: false
-    Cost: 10
-  5:
-    DisplayName: '&4Test Spade'
-    Type: 'spade'
-    Material: 'stone'
-    Durability: 100
+    Cost: 13
+    GearCode: 'unidentifiedWeapon'
+  13:
+    DisplayName: '&4Rapier of Unfairness'
+    Type: 'sword'
+    Material: 'diamond'
+    Special: 'Infernal_Explosion'
+    Durability: 1000
     Lore:
-      - '&ei cut you muhaha'
+      - '&cNow thats unfair!'
     Enchantments:
-      - 'sharpness,2'
-      - 'unbreaking,10'
-    OffensivePotionEffects:
-      - 'POISON,1,3,0.2'
+      - 'sharpness,6'
+      - 'fire,3'
+      - 'knockback,1'
     DefensivePotionEffects:
-      - 'INCREASE_DAMAGE,2,3,0.1'
-    Hidden: false
-    Cost: 10
-
+      - 'SPEED,2,80,0.06'
+      - 'INCREASE_DAMAGE,0,80,0.09'
+    Hidden: true
+    Cost: 10000
+    GearCode: 'rapierofunfairness'
+  14:
+    DisplayName: '&4P&bR&3I&aZ&fE&cD &cS&bW&3O&fR&4D'
+    Type: 'sword'
+    Material: 'diamond'
+    Special: 'Lightning_Storm'
+    Durability: 3500
+    Lore:
+      - '&5You''re a somebody now!'
+    Enchantments:
+      - 'sharpness,6'
+      - 'fire,3'
+    OffensivePotionEffects:
+      - 'POISON,1,60,0.06'
+      - 'SLOW,1,80,0.08'
+    DefensivePotionEffects:
+      - 'SPEED,2,100,0.07'
+      - 'INCREASE_DAMAGE,0,80,0.09'
+    Hidden: true
+    Cost: 10000
+    GearCode: 'prizedSword'
 #
 # This section is for configuring the default Minecraft armours and adding Carbyne versions of them
 #
@@ -225,90 +796,137 @@ Minecraft-Armor:
     Diamond:
         Helmet:
             Durability: 1000
-            ArmorRating: 0.20
+            ArmorRating: 0.123
+            Cost: 7
         Chestplate:
             Durability: 1200
-            ArmorRating: 0.20
+            ArmorRating: 0.249
+            Cost: 11
         Leggings:
             Durability: 1100
-            ArmorRating: 0.20
+            ArmorRating: 0.204
+            Cost: 9
         Boots:
             Durability: 950
-            ArmorRating: 0.20
+            ArmorRating: 0.124
+            Cost: 6
         Sword:
     Iron:
         Helmet:
             Durability: 1000
-            ArmorRating: 0.10
+            ArmorRating: 0.085
+            Cost: 7
         Chestplate:
             Durability: 1200
-            ArmorRating: 0.10
+            ArmorRating: 0.26
+            Cost: 11
         Leggings:
             Durability: 1100
-            ArmorRating: 0.10
+            ArmorRating: 0.17
+            Cost: 9
         Boots:
             Durability: 950
-            ArmorRating: 0.10
+            ArmorRating: 0.085
+            Cost: 6
     Gold:
         Helmet:
             Durability: 1000
-            ArmorRating: 0.10
+            ArmorRating: 0.07
+            Cost: 7
         Chestplate:
             Durability: 1200
-            ArmorRating: 0.10
+            ArmorRating: 0.235
+            Cost: 11
         Leggings:
             Durability: 1100
-            ArmorRating: 0.10
+            ArmorRating: 0.145
+            Cost: 9
         Boots:
             Durability: 950
-            ArmorRating: 0.10
+            ArmorRating: 0.07
+            Cost: 6
     Chainmail:
         Helmet:
             Durability: 1000
-            ArmorRating: 0.10
+            ArmorRating: 0.07
+            Cost: 7
         Chestplate:
             Durability: 1200
-            ArmorRating: 0.10
+            ArmorRating: 0.235
+            Cost: 11
         Leggings:
             Durability: 1100
-            ArmorRating: 0.10
+            ArmorRating: 0.145
+            Cost:
         Boots:
             Durability: 950
-            ArmorRating: 0.10
-
+            ArmorRating: 0.07
+            Cost: 6
+    Leather:
+        Helmet:
+            Durability: 250
+            ArmorRating: 0.05
+            Cost: 7
+        Chestplate:
+            Durability: 375
+            ArmorRating: 0.18
+            Cost: 11
+        Leggings:
+            Durability: 325
+            ArmorRating: 0.11
+            Cost: 9
+        Boots:
+            Durability: 275
+            ArmorRating: 0.05
+            Cost: 6
 Minecraft-Weapons:
     Diamond:
         Sword:
             Durability: 1200
+            Cost: 10
         Axe:
             Durability: 1000
+            Cost: 9
         Hoe:
             Durability: 1600
+            Cost: 8
     Stone:
         Sword:
             Durability: 220
+            Cost: 10
         Axe:
             Durability: 200
+            Cost: 9
         Hoe:
             Durability: 300
+            Cost: 8
     Iron:
         Sword:
             Durability: 600
+            Cost: 10
         Axe:
             Durability: 500
+            Cost: 9
         Hoe:
             Durability: 800
+            Cost: 8
     Gold:
         Sword:
             Durability: 500
+            Cost: 10
         Axe:
             Durability: 400
+            Cost: 9
         Hoe:
             Durability: 700
+            Cost: 8
     Wood:
         Sword:
             Durability: 75
+            Cost: 10
         Axe:
             Durability: 65
+            Cost: 9
         Hoe:
             Durability: 85
+            Cost: 8

@@ -19,18 +19,19 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
 @Setter
 public class CarbyneArmor extends CarbyneGear {
 
-    private Color color;
+    private Color baseColor, minFadeColor, maxFadeColor;
+    private int[] tickFadeColor;
     private List<String> enchantments = new ArrayList<>();
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
     private HashMap<PotionEffect, Double> defensivePotionEffects = new HashMap<>();
     private List<CarbyneEffect> carbyneEffects = new ArrayList<>();
     private double armorRating = -1;
-    private boolean rainbow;
 
     @Override
     public boolean load(ConfigurationSection cs, String type) {
@@ -41,51 +42,77 @@ public class CarbyneArmor extends CarbyneGear {
         if ((armorRating = cs.getDouble(type + ".ArmorRating")) == -1) return false;
 
         this.type = type;
-        displayName = cs.getString(type + ".DisplayName");
-        gearCode = cs.getString(type + ".GearCode");
-        maxDurability = cs.getInt(type + ".Durability");
-        lore = cs.getStringList(type + ".Lore");
-        enchantments = cs.getStringList(type + ".Enchantments");
-        cost = cs.getInt(type + ".Cost");
-        hidden = cs.getBoolean(type + ".Hidden");
-        armorRating = cs.getDouble(type + ".ArmorRating");
+        this.displayName = cs.getString(type + ".DisplayName");
+        this.gearCode = cs.getString(type + ".GearCode");
+        this.maxDurability = cs.getInt(type + ".Durability");
+        this.lore = cs.getStringList(type + ".Lore");
+        this.enchantments = cs.getStringList(type + ".Enchantments");
+        this.cost = cs.getInt(type + ".Cost");
+        this.hidden = cs.getBoolean(type + ".Hidden");
+        this.armorRating = cs.getDouble(type + ".ArmorRating");
 
-        if (cs.getString(type + ".Color") != null) {
-            String[] split = cs.getString(type + ".Color").split(",");
+        if (cs.getString(type + ".BaseColor") != null) {
+            String[] split = cs.getString(type + ".BaseColor").split(",");
 
             if (split.length == 3) {
-                color = Color.fromRGB(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+                baseColor = Color.fromRGB(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
             } else {
-                color = Color.WHITE;
+                baseColor = Color.WHITE;
+            }
+        }
+
+        if (cs.getString(type + ".MinFadeColor") != null) {
+            String[] split = cs.getString(type + ".MinFadeColor").split(",");
+
+            if (split.length == 3) {
+                minFadeColor = Color.fromRGB(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+            } else {
+                minFadeColor = Color.WHITE;
+            }
+        }
+
+        if (cs.getString(type + ".MaxFadeColor") != null) {
+            String[] split = cs.getString(type + ".MaxFadeColor").split(",");
+
+            if (split.length == 3) {
+                maxFadeColor = Color.fromRGB(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+            } else {
+                maxFadeColor = Color.WHITE;
+            }
+        }
+
+        if (cs.getString(type + ".TickFadeColor") != null) {
+            String[] split = cs.getString(type + ".TickFadeColor").split(",");
+
+            if (split.length == 3) {
+                tickFadeColor = new int[]{Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2])};
+            } else {
+                tickFadeColor = new int[]{0, 0, 0};
             }
         }
 
         //if (type.equalsIgnoreCase("chestplate") || type.equalsIgnoreCase("leggings")) {
-            if (cs.getStringList(type + ".OffensivePotionEffects") != null) {
-                for (String potion : cs.getStringList(type + ".OffensivePotionEffects")) {
-                    String[] split = potion.split(",");
+        if (cs.getStringList(type + ".OffensivePotionEffects") != null) {
+            for (String potion : cs.getStringList(type + ".OffensivePotionEffects")) {
+                String[] split = potion.split(",");
 
-                    if (split.length == 3) {
-                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
-                    } else if (split.length == 4) {
-                        offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
-                    }
+                if (split.length == 3) {
+                    offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
+                } else if (split.length == 4) {
+                    offensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
                 }
             }
-            if (cs.getStringList(type + ".DefensivePotionEffects") != null) {
-                for (String potion : cs.getStringList(type + ".DefensivePotionEffects")) {
-                    String[] split = potion.split(",");
+        }
+        if (cs.getStringList(type + ".DefensivePotionEffects") != null) {
+            for (String potion : cs.getStringList(type + ".DefensivePotionEffects")) {
+                String[] split = potion.split(",");
 
-                    if (split.length == 3) {
-                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
-                    } else if (split.length == 4) {
-                        defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
-                    }
+                if (split.length == 3) {
+                    defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[1]), 0, false, false), Double.parseDouble(split[2]));
+                } else if (split.length == 4) {
+                    defensivePotionEffects.put(new PotionEffect(PotionEffectType.getByName(split[0].toUpperCase()), Integer.parseInt(split[2]), Integer.parseInt(split[1]), false, false), Double.parseDouble(split[3]));
                 }
             }
-
-        if (cs.get(type + ".Rainbow") != null) {
-            rainbow = cs.getBoolean(type + ".Rainbow");
         }
 
         return true;
@@ -98,6 +125,7 @@ public class CarbyneArmor extends CarbyneGear {
         loreDupe.add(HiddenStringUtils.encodeString(gearCode));
         loreDupe.add("&aDamage Reduction&7: &b" + (int) (armorRating * 100) + "%");
         loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+        loreDupe.add("&aPolished&7: &cfalse");
 
         if (offensivePotionEffects.keySet().size() > 0 || defensivePotionEffects.keySet().size() > 0) {
             if (defensivePotionEffects.keySet().size() > 0) {
@@ -155,7 +183,7 @@ public class CarbyneArmor extends CarbyneGear {
         ItemBuilder builder = new ItemBuilder(Material.getMaterial(("leather_" + type).toUpperCase()))
                 .name(displayName)
                 .addEnchantments(enchantmentHashMap)
-                .color(color);
+                .color(baseColor);
 
         if (lore != null && lore.size() > 0) {
             builder.setLore((loreDupe.size() > 0 ? loreDupe : lore));
@@ -181,7 +209,7 @@ public class CarbyneArmor extends CarbyneGear {
 
                 for (PotionEffect potionEffect : target.getActivePotionEffects()) {
                     if (potionEffect.getType() == effect.getType()) {
-                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                        if (potionEffect.getAmplifier() >= effect.getAmplifier() | potionEffect.getDuration() >= effect.getDuration()) {
                             apply = false;
                         }
                     }
@@ -209,7 +237,7 @@ public class CarbyneArmor extends CarbyneGear {
 
                 for (PotionEffect potionEffect : target.getActivePotionEffects()) {
                     if (potionEffect.getType() == effect.getType()) {
-                        if (potionEffect.getAmplifier() > effect.getAmplifier() && potionEffect.getDuration() > effect.getDuration()) {
+                        if (potionEffect.getAmplifier() >= effect.getAmplifier() | potionEffect.getDuration() >= effect.getDuration()) {
                             apply = false;
                         }
                     }
@@ -226,6 +254,10 @@ public class CarbyneArmor extends CarbyneGear {
 
     @Override
     public void damageItem(Player wielder, ItemStack itemStack) {
+        if (isPolished(itemStack))
+            if (ThreadLocalRandom.current().nextDouble(1.0) <= 0.15)
+                return;
+
         int durability = getDurability(itemStack);
 
         if (durability == -1) {
@@ -286,5 +318,29 @@ public class CarbyneArmor extends CarbyneGear {
         double scale = ((double) (getDurability(itemStack))) / ((double) (getMaxDurability()));
         double durability = ((double) (itemStack.getType().getMaxDurability())) * scale;
         return itemStack.getType().getMaxDurability() - (int) Math.round(durability);
+    }
+
+    public ItemStack getPolishedItem() {
+        return new ItemBuilder(getItem(false)).setLore(3, "&aPolished: &ctrue").color(getMinFadeColor()).build();
+    }
+
+    public boolean isPolished(ItemStack itemStack) {
+        if (itemStack == null)
+            return false;
+
+        if (!itemStack.hasItemMeta())
+            return false;
+
+        if (!itemStack.getItemMeta().hasLore())
+            return false;
+
+        if (itemStack.getItemMeta().getLore().size() < 4)
+            return false;
+
+        try {
+            return Boolean.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1]);
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }

@@ -34,20 +34,20 @@ public class MarketManager {
     private int goldWorth = 0;
 
     public MarketManager() {
-        salesCollection.createIndex(new Document("transactionId", 1));
-        salesCollection.createIndex(new Document("uniqueId", 1));
+//        salesCollection.createIndex(new Document("transactionId", 1));
+//        salesCollection.createIndex(new Document("uniqueId", 1));
 
         salesTax = main.getConfig().getDouble("economy.sales-tax");
         goldWorth = main.getConfig().getInt("economy.gold-worth");
 
         Account.loadAccounts();
-        loadSales();
+//        loadSales();
 
         new BukkitRunnable() {
             @Override
             public void run() {
                 Account.saveAccounts(true);
-                saveSales(true);
+//                saveSales(true);
             }
         }.runTaskTimer(main, 0L, 300 * 20L);
     }

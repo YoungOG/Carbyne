@@ -227,12 +227,7 @@ public class RegularDuel extends Duel {
 
     @Override
     public void task() {
-        this.taskId = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Carbyne.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                end(null);
-            }
-        }, 800 * 20);
+        this.taskId = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Carbyne.getInstance(), () -> end(null), 800 * 20);
     }
 
     @Override

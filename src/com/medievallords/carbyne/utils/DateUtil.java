@@ -135,7 +135,7 @@ public class DateUtil {
             int diff = dateDiff(types[i], fromDate, toDate, future);
             if (diff > 0) {
                 accuracy++;
-                sb.append(" ").append(diff).append(" ").append(names[i * 2 + (diff > 1 ? 1 : 0)]);
+                sb.append(" ").append(diff).append(" ").append(names[i << 2 + (diff > 1 ? 1 : 0)]);
             }
         }
         if (sb.length() == 0)

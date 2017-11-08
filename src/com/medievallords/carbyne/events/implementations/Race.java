@@ -114,13 +114,11 @@ public class Race extends Event implements SingleWinnerEvent {
     @Override
     public synchronized void start() {
         Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&b%race%".replace("%race%", currentRace.getName()))).subtitle(ChatColor.translateAlternateColorCodes('&', "&bThe %race% &bis starting! /event race join!".replace("%race%", currentRace.getName()))).stay(55).build();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendTitle(title);
-            String message = new String("&bThe %race%&b race is starting. Click here to join!".replace("%race%", currentRace.getName()));
-            JSONMessage json = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', message));
-            json.runCommand("/event race join");
-            json.send(Bukkit.getOnlinePlayers().toArray(new Player[0]));
-        }
+        for (Player player : Bukkit.getOnlinePlayers()) player.sendTitle(title);
+        String message = new String("&bThe %race%&b race is starting. Click here to join!".replace("%race%", currentRace.getName()));
+        JSONMessage json = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', message));
+        json.runCommand("/event race join");
+        json.send(Bukkit.getOnlinePlayers().toArray(new Player[0]));
         try {
             startTime = DateUtil.parseDateDiff(countDownString, true);
         } catch (Exception e) {

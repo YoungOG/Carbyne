@@ -4,6 +4,8 @@ JoinMessageSubtitles:
     - '&eHail to the King, BABY!'
 TablistHeader: '&5&lMedieval Lords'
 TablistFooter: '&eHail to the King, BABY!'
+Motd: {}
+HitDelay: 20
 crates:
   #How fast crates should scroll through the rewards.
   crate-opening-speed: 10
@@ -29,16 +31,10 @@ combat-tag:
 blocked-cmds:
   warzone:
     - '/esethome'
-    - '/e:sethome'
-    - '/ess:sethome'
     - '/sethome'
-    - '/essentials:sethome'
   safezone:
     - '/esethome'
-    - '/e:sethome'
-    - '/ess:sethome'
     - '/sethome'
-    - '/essentials:sethome'
 regeneration:
   - 'stone,stone,30'
   - 'granite,granite,30'

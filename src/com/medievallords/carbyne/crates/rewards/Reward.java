@@ -49,6 +49,8 @@ public class Reward {
     public ItemStack getItem(boolean displayItem) {
         if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData()) {
             return new ItemBuilder(gearManager.getTokenItem()).amount(amount).build();
+        } else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData()) {
+            return new ItemBuilder(gearManager.getPolishItem()).amount(amount).build();
         } else if (gearCode.contains("randomgear") && !displayItem) {
             return new ItemBuilder(gearManager.getRandomCarbyneGear(Boolean.valueOf(gearCode.split(":")[1])).getItem(false)).amount(amount).build();
         } else if (gearManager.getCarbyneGear(gearCode) != null) {

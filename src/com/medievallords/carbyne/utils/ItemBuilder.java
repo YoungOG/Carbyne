@@ -1,8 +1,11 @@
 package com.medievallords.carbyne.utils;
 
+import net.minecraft.server.v1_8_R3.NBTTagCompound;
+import net.minecraft.server.v1_8_R3.NBTTagInt;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -75,6 +78,19 @@ public class ItemBuilder {
         }
 
         meta.setLore(lores);
+        item.setItemMeta(meta);
+        return this;
+    }
+
+    public ItemBuilder setLore(int index, String line) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = meta.getLore();
+
+        if (lore == null)
+            lore = new ArrayList<>();
+
+        lore.set(index, ChatColor.translateAlternateColorCodes('&', line));
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return this;
     }
@@ -177,6 +193,28 @@ public class ItemBuilder {
         meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 
         item.setItemMeta(meta);
+
+        return this;
+    }
+
+    public ItemBuilder addGlow() {
+        item.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 1);
+        net.minecraft.server.v1_8_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+        NBTTagCompound tag = nmsStack.hasTag() ? nmsStack.getTag() : new NBTTagCompound();
+        tag.set("HideFlags", new NBTTagInt(1));
+        nmsStack.setTag(tag);
+        item = CraftItemStack.asCraftMirror(nmsStack);
+
+        return this;
+    }
+
+    public ItemBuilder hideGlow() {
+        item.removeEnchantment(Enchantment.ARROW_DAMAGE);
+        net.minecraft.server.v1_8_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+        NBTTagCompound tag = nmsStack.hasTag() ? nmsStack.getTag() : new NBTTagCompound();
+        tag.set("HideFlags", new NBTTagInt(0));
+        nmsStack.setTag(tag);
+        item = CraftItemStack.asCraftMirror(nmsStack);
 
         return this;
     }

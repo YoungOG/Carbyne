@@ -16,12 +16,12 @@ import org.bukkit.event.HandlerList;
  * The profile is already created after this event is called, so setCancelled does nothing.
  * Implementation class: ProfileListeners.java
  */
+@Getter
 public class ProfileCreatedEvent extends Event implements Cancellable
 {
 
     private static final HandlerList handlers = new HandlerList();
 
-    @Getter
     private Player player;
     private Profile playerProfile;
     private boolean isCancelled;

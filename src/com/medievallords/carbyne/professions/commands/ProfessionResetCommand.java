@@ -37,7 +37,7 @@ public class ProfessionResetCommand extends BaseCommand implements Listener {
                     MessageManager.sendMessage(player, "&cCould not find that ");
                     return;
                 } else {
-                    Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+                    Profile profile = Carbyne.getInstance().getProfileManager().getProfile(playerTo.getUniqueId());
                     if (profile == null) {
                         MessageManager.sendMessage(player, "&cAn error has occurred");
                         return;
@@ -49,7 +49,7 @@ public class ProfessionResetCommand extends BaseCommand implements Listener {
                     MessageManager.sendMessage(player, "&aPlayers profession reset");
                 }
             } else {
-                Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = Carbyne.getInstance().getProfileManager().getProfile(playerTo.getUniqueId());
                 if (profile == null) {
                     MessageManager.sendMessage(player, "&cAn error has occurred");
                     return;

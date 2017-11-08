@@ -5,13 +5,13 @@ import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class GearGuiListeners implements Listener {
@@ -102,7 +102,7 @@ public class GearGuiListeners implements Listener {
                             return;
                         }
 
-                        removeItems(p.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), carbyneWeapon.getCost());
+                        PlayerUtility.removeItems(p.getInventory(), gearManager.getTokenItem(), carbyneWeapon.getCost());
 
                         p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneWeapon.getDisplayName() + " &afor &c" + carbyneWeapon.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
@@ -180,7 +180,7 @@ public class GearGuiListeners implements Listener {
                             return;
                         }
 
-                        removeItems(p.getInventory(), gearManager.getTokenMaterial(), gearManager.getTokenData(), carbyneArmor.getCost());
+                        PlayerUtility.removeItems(p.getInventory(), gearManager.getTokenItem(), carbyneArmor.getCost());
 
                         p.getInventory().addItem(carbyneArmor.getItem(false).clone());
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + " &afor &c" + carbyneArmor.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
@@ -195,36 +195,5 @@ public class GearGuiListeners implements Listener {
 
     public boolean canBuy(Player player, int cost) {
         return player.getInventory().containsAtLeast(gearManager.getTokenItem(), cost);
-    }
-
-    public void removeItems(Inventory inventory, Material type, int data, int amount) {
-        if (amount <= 0) {
-            return;
-        }
-
-        int size = inventory.getSize();
-
-        for (int slot = 0; slot < size; slot++) {
-            ItemStack is = inventory.getItem(slot);
-
-            if (is == null) {
-                continue;
-            }
-
-            if (type == is.getType() && is.getDurability() == data) {
-                int newAmount = is.getAmount() - amount;
-
-                if (newAmount > 0) {
-                    is.setAmount(newAmount);
-                    break;
-                } else {
-                    inventory.clear(slot);
-                    amount = -newAmount;
-
-                    if (amount == 0)
-                        break;
-                }
-            }
-        }
     }
 }

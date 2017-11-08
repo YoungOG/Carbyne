@@ -26,9 +26,7 @@ public class LocalChatCommand extends BaseCommand {
             return;
         }
 
-        profile.setLocalChatToggled(!profile.isLocalChatToggled());
-        profile.setTownChatToggled(false);
-        profile.setNationChatToggled(false);
-        MessageManager.sendMessage(player, "&bLocal chat toggled " + (getProfileManager().getProfile(player.getUniqueId()).isLocalChatToggled() ? "&aon" : "&coff"));
+        profile.setProfileChatChannel((profile.getProfileChatChannel() != Profile.ProfileChatChannel.LOCAL ? Profile.ProfileChatChannel.LOCAL : Profile.ProfileChatChannel.GLOBAL));
+        MessageManager.sendMessage(player, "&bLocal chat toggled " + (profile.getProfileChatChannel() == Profile.ProfileChatChannel.LOCAL ? "&aon" : "&coff"));
     }
 }

@@ -15,12 +15,12 @@ public class Profile {
 
     private UUID uniqueId;
     private String username, pin, previousInventoryContentString;
-    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak, claimedTickets, closedTickets;
+    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak;
     private long pvpTime, timeLeft;
-    private boolean pvpTimePaused, showEffects, safelyLogged, moving;
+    private boolean pvpTimePaused, showEffects, safelyLogged, showVoteCount;
     private Event activeEvent;
+    private ProfileChatChannel profileChatChannel;
     private List<UUID> ignoredPlayers = new ArrayList<>();
-    private boolean localChatToggled = false, townChatToggled = false, nationChatToggled = false;
     private Profession profession;
     private int professionLevel = 1;
     private double professionProgress = 0, requiredProfessionProgress = 100;
@@ -78,6 +78,10 @@ public class Profile {
         return Math.round(ratio * 100.0D) / 100.0D;
     }
 
+    public void tickArmorFade() {
+
+    }
+
     public long getRemainingPvPTime() {
         return pvpTime - System.currentTimeMillis();
     }
@@ -98,5 +102,9 @@ public class Profile {
 
             this.pvpTimePaused = paused;
         }
+    }
+
+    public enum ProfileChatChannel {
+        GLOBAL, LOCAL, TOWN, NATION
     }
 }

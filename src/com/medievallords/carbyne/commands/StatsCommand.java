@@ -18,8 +18,8 @@ public class StatsCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
-        if (args.length > 1) {
-            MessageManager.sendMessage(player, "&cUsage: /stats <player>");
+        if (args.length > 2) {
+            MessageManager.sendMessage(player, "&cUsage: /stats <player/reset> [stat]");
             return;
         }
 
@@ -73,6 +73,10 @@ public class StatsCommand extends BaseCommand {
                 MessageManager.sendMessage(player, "&7Iron &aMined: &b" + target.getStatistic(Statistic.MINE_BLOCK, Material.IRON_ORE));
                 MessageManager.sendMessage(player, "&8Coal &aMined: &b" + target.getStatistic(Statistic.MINE_BLOCK, Material.COAL_ORE));
             }
+        }
+
+        if (args.length == 2) {
+
         }
     }
 }

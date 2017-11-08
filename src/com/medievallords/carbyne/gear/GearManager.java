@@ -24,13 +24,15 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
+@Getter
 public class GearManager {
 
     private Carbyne carbyne = Carbyne.getInstance();
@@ -41,20 +43,22 @@ public class GearManager {
     private List<CarbyneGear> defaultArmors = new ArrayList<>();
     private List<CarbyneGear> defaultWeapons = new ArrayList<>();
     private List<Special> specials = new ArrayList<>();
-    @Getter
     private List<Item> repairItems = new ArrayList<>();
 
-    private int tokenId;
-    private int tokenData;
-    private String tokenDisplayName;
-    private List<String> tokenLore;
-    private String tokenCode;
+    private HashMap<UUID, BukkitTask> playerGearFadeSchedulers = new HashMap<>();
+
+    private int tokenId, polishId;
+    private int tokenData, polishData;
+    private String tokenDisplayName, polishDisplayName;
+    private List<String> tokenLore, polishLore;
+    private String tokenCode, polishCode;
 
     public GearManager() {
         gearEffects = new GearEffects();
 
         load(carbyne.getGearFileConfiguration());
-        loadStoreOptions(carbyne.getGearFileConfiguration());
+        loadTokenOptions(carbyne.getGearFileConfiguration());
+        loadPolishOptions(carbyne.getGearFileConfiguration());
 
         gearGuiManager = new GearGuiManager(this);
 
@@ -160,13 +164,22 @@ public class GearManager {
         Carbyne.getInstance().getLogger().info(carbyneGear.size() + " carbyne gear loaded");
     }
 
-    public void loadStoreOptions(FileConfiguration cs) {
-        tokenId = cs.getInt("Store.TokenItem.ItemId");
-        tokenData = cs.getInt("Store.TokenItem.ItemData");
-        tokenDisplayName = cs.getString("Store.TokenItem.DisplayName");
-        tokenCode = cs.getString("Store.TokenItem.Code");
-        tokenLore = cs.getStringList("Store.TokenItem.Lore");
+    public void loadTokenOptions(FileConfiguration cs) {
+        tokenId = cs.getInt("TokenItem.ItemId");
+        tokenData = cs.getInt("TokenItem.ItemData");
+        tokenCode = cs.getString("TokenItem.Code");
+        tokenDisplayName = cs.getString("TokenItem.DisplayName");
+        tokenLore = cs.getStringList("TokenItem.Lore");
         tokenLore.add(0, HiddenStringUtils.encodeString(tokenCode));
+    }
+
+    public void loadPolishOptions(FileConfiguration cs) {
+        polishId = cs.getInt("PolishItem.ItemId");
+        polishData = cs.getInt("PolishItem.ItemData");
+        polishCode = cs.getString("PolishItem.Code");
+        polishDisplayName = cs.getString("PolishItem.DisplayName");
+        polishLore = cs.getStringList("PolishItem.Lore");
+        polishLore.add(0, HiddenStringUtils.encodeString(polishCode));
     }
 
     public CarbyneGear getCarbyneGear(String gearCode) {
@@ -199,26 +212,33 @@ public class GearManager {
     }
 
     public CarbyneArmor getCarbyneArmor(ItemStack is) {
-        if (is.getItemMeta() == null) {
+        if (is == null || is.getType() == Material.AIR)
             return null;
-        }
+
+        if (!is.hasItemMeta())
+            return null;
+
+        if (is.getItemMeta() == null)
+            return null;
+
+        if (!is.getItemMeta().hasLore())
+            return null;
+
+        if (is.getItemMeta().getLore() == null)
+            return null;
 
         List<String> lore = is.getItemMeta().getLore();
 
-        if (lore == null || lore.isEmpty()) {
+        if (lore == null || lore.isEmpty())
             return null;
-        }
 
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneArmor)) {
+            if (!(cg instanceof CarbyneArmor))
                 continue;
-            }
 
-            if (cg.getItem(false).getType() == is.getType()) {
-                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+            if (cg.getItem(false).getType() == is.getType())
+                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
                     return (CarbyneArmor) cg;
-                }
-            }
         }
 
         return null;
@@ -226,13 +246,11 @@ public class GearManager {
 
     public CarbyneArmor getCarbyneArmor(String gearCode) {
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneArmor)) {
+            if (!(cg instanceof CarbyneArmor))
                 continue;
-            }
 
-            if (cg.getGearCode().equalsIgnoreCase(gearCode)) {
+            if (cg.getGearCode().equalsIgnoreCase(gearCode))
                 return (CarbyneArmor) cg;
-            }
         }
 
         return null;
@@ -245,9 +263,8 @@ public class GearManager {
             if (carbyneGear instanceof CarbyneArmor) {
                 CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
-                if (carbyneArmor.getItem(false).getType() == Material.LEATHER_CHESTPLATE) {
+                if (carbyneArmor.getItem(false).getType() == Material.LEATHER_CHESTPLATE)
                     carbyneArmorList.add(carbyneArmor);
-                }
             }
         }
 
@@ -257,24 +274,32 @@ public class GearManager {
     }
 
     public CarbyneWeapon getCarbyneWeapon(ItemStack is) {
-        if (is.getItemMeta() == null) {
+        if (is == null || is.getType() == Material.AIR)
             return null;
-        }
+
+        if (!is.hasItemMeta())
+            return null;
+
+        if (is.getItemMeta() == null)
+            return null;
+
+        if (!is.getItemMeta().hasLore())
+            return null;
+
+        if (is.getItemMeta().getLore() == null)
+            return null;
 
         List<String> lore = is.getItemMeta().getLore();
 
-        if (lore == null || lore.isEmpty()) {
+        if (lore == null || lore.isEmpty())
             return null;
-        }
 
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneWeapon)) {
+            if (!(cg instanceof CarbyneWeapon))
                 continue;
-            }
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
-                    return (CarbyneWeapon) cg;
-            }
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+                return (CarbyneWeapon) cg;
         }
 
         return null;
@@ -282,13 +307,11 @@ public class GearManager {
 
     public CarbyneWeapon getCarbyneWeapon(String gearCode) {
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneWeapon)) {
+            if (!(cg instanceof CarbyneWeapon))
                 continue;
-            }
 
-            if (cg.getGearCode().equalsIgnoreCase(gearCode)) {
+            if (cg.getGearCode().equalsIgnoreCase(gearCode))
                 return (CarbyneWeapon) cg;
-            }
         }
 
         return null;
@@ -298,10 +321,8 @@ public class GearManager {
         List<CarbyneWeapon> carbyneWeapons = new ArrayList<>();
 
         for (CarbyneGear cg : carbyneGear) {
-            if (cg instanceof CarbyneWeapon) {
-
+            if (cg instanceof CarbyneWeapon)
                 carbyneWeapons.add((CarbyneWeapon) cg);
-            }
         }
 
         carbyneWeapons.sort((o1, o2) -> Boolean.compare(o1.isHidden(), o2.isHidden()));
@@ -310,174 +331,175 @@ public class GearManager {
     }
 
     public boolean isCarbyneWeapon(ItemStack is) {
-        if (is.getItemMeta() == null) {
+        if (is == null || is.getType() == Material.AIR)
             return false;
-        }
+
+        if (!is.hasItemMeta())
+            return false;
+
+        if (is.getItemMeta() == null)
+            return false;
+
+        if (!is.getItemMeta().hasLore())
+            return false;
+
+        if (is.getItemMeta().getLore() == null)
+            return false;
 
         List<String> lore = is.getItemMeta().getLore();
 
-        if (lore == null || lore.isEmpty()) {
+        if (lore == null || lore.isEmpty())
             return false;
-        }
+
+        if (lore.get(0) == null)
+            return false;
 
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneWeapon)) {
+            if (!(cg instanceof CarbyneWeapon))
                 continue;
-            }
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
                 return true;
-            }
         }
 
         return false;
     }
 
     public boolean isCarbyneArmor(ItemStack is) {
-        if (is == null) {
+        if (is == null || is.getType() == Material.AIR)
             return false;
-        }
 
-        if (is.getItemMeta() == null) {
+        if (!is.hasItemMeta())
             return false;
-        }
+
+        if (is.getItemMeta() == null)
+            return false;
+
+        if (!is.getItemMeta().hasLore())
+            return false;
+
+        if (is.getItemMeta().getLore() == null)
+            return false;
 
         List<String> lore = is.getItemMeta().getLore();
 
-        if (lore == null || lore.isEmpty()) {
+        if (lore == null || lore.isEmpty())
             return false;
-        }
+
+        if (lore.get(0) == null)
+            return false;
 
         for (CarbyneGear cg : carbyneGear) {
-            if (!(cg instanceof CarbyneArmor)) {
+            if (!(cg instanceof CarbyneArmor))
                 continue;
-            }
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
                 return true;
-            }
         }
 
         return false;
     }
 
     public MinecraftArmor getDefaultArmor(ItemStack itemStack) {
-        if (itemStack.getItemMeta() == null) {
+        if (itemStack.getItemMeta() == null)
             return null;
-        }
 
-        if (isCarbyneArmor(itemStack)) {
+        if (isCarbyneArmor(itemStack))
             return null;
-        }
 
         for (CarbyneGear cg : defaultArmors) {
-            if (!(cg instanceof MinecraftArmor)) {
+            if (!(cg instanceof MinecraftArmor))
                 continue;
-            }
 
-            if (cg.getItem(false).getType().equals(itemStack.getType())) {
+            if (cg.getItem(false).getType().equals(itemStack.getType()))
                 return (MinecraftArmor) cg;
-            }
         }
 
         return null;
     }
 
     public boolean isDefaultArmor(ItemStack itemStack) {
-        if (itemStack.getItemMeta() == null) {
+        if (itemStack.getItemMeta() == null)
             return false;
-        }
 
-        if (isCarbyneArmor(itemStack)) {
+        if (isCarbyneArmor(itemStack))
             return false;
-        }
 
         for (CarbyneGear cg : defaultArmors) {
             if (!(cg instanceof MinecraftArmor)) {
                 continue;
             }
 
-            if (cg.getItem(false).getType().equals(itemStack.getType())) {
+            if (cg.getItem(false).getType().equals(itemStack.getType()))
                 return true;
-            }
         }
 
         return false;
     }
 
     public boolean isDefaultWeapon(ItemStack itemStack) {
-        if (itemStack.getItemMeta() == null) {
+        if (itemStack.getItemMeta() == null)
             return false;
-        }
 
-        if (isCarbyneWeapon(itemStack)) {
+        if (isCarbyneWeapon(itemStack))
             return false;
-        }
 
         for (CarbyneGear cg : defaultWeapons) {
-            if (!(cg instanceof MinecraftWeapon)) {
+            if (!(cg instanceof MinecraftWeapon))
                 continue;
-            }
 
-            if (cg.getItem(false).getType().equals(itemStack.getType())) {
+            if (cg.getItem(false).getType().equals(itemStack.getType()))
                 return true;
-            }
         }
 
         return false;
     }
 
     public MinecraftWeapon getDefaultWeapon(ItemStack itemStack) {
-        if (itemStack.getItemMeta() == null) {
+        if (itemStack.getItemMeta() == null)
             return null;
-        }
 
-        if (isCarbyneWeapon(itemStack)) {
+        if (isCarbyneWeapon(itemStack))
             return null;
-        }
 
         for (CarbyneGear cg : defaultWeapons) {
-            if (!(cg instanceof MinecraftWeapon)) {
+            if (!(cg instanceof MinecraftWeapon))
                 continue;
-            }
 
-            if (cg.getItem(false).getType().equals(itemStack.getType())) {
+            if (cg.getItem(false).getType().equals(itemStack.getType()))
                 return (MinecraftWeapon) cg;
-            }
         }
 
         return null;
     }
 
     public double getDurability(ItemStack itemStack) {
-        if (itemStack == null) {
+        if (itemStack == null)
             return -1;
-        }
 
-        if (isCarbyneArmor(itemStack)) {
+        if (isCarbyneArmor(itemStack))
             return getCarbyneArmor(itemStack).getDurability(itemStack);
-        } else if (isCarbyneWeapon(itemStack)) {
+        else if (isCarbyneWeapon(itemStack))
             return getCarbyneWeapon(itemStack).getDurability(itemStack);
-        } else if (isDefaultArmor(itemStack)) {
+        else if (isDefaultArmor(itemStack))
             return (getDefaultArmor(itemStack) != null ? itemStack.getType().getMaxDurability() - itemStack.getDurability() : -1);
-        } else if (isDefaultWeapon(itemStack)) {
+        else if (isDefaultWeapon(itemStack))
             return (getDefaultWeapon(itemStack) != null ? itemStack.getType().getMaxDurability() - itemStack.getDurability() : -1);
-        } else if (itemStack.getType().getMaxDurability() > 0) {
+        else if (itemStack.getType().getMaxDurability() > 0)
             return itemStack.getType().getMaxDurability() - itemStack.getDurability();
-        } else {
+        else
             return -1;
-        }
     }
 
     public List<CarbyneArmor> getCarbyneArmorByColor(Color color) {
         List<CarbyneArmor> carbyneArmorList = new ArrayList<>();
+
         for (CarbyneGear carbyneGear : carbyneGear) {
             if (carbyneGear instanceof CarbyneArmor) {
                 CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
-                if (carbyneArmor.getColor().equals(color)) {
+                if (carbyneArmor.getBaseColor().equals(color))
                     carbyneArmorList.add(carbyneArmor);
-                }
             }
         }
 
@@ -487,31 +509,27 @@ public class GearManager {
     public ItemStack convertDefaultItem(ItemStack item) {
         ItemStack replacement = null;
 
-        if (isDefaultWeapon(item)) {
+        if (isDefaultWeapon(item))
             replacement = getDefaultWeapon(item).getItem(false);
-        } else if (isDefaultArmor(item)) {
+        else if (isDefaultArmor(item))
             replacement = getDefaultArmor(item).getItem(false);
-        }
 
         if (replacement != null) {
-            for (Enchantment enchantment : item.getEnchantments().keySet()) {
+            for (Enchantment enchantment : item.getEnchantments().keySet())
                 replacement.addUnsafeEnchantment(enchantment, item.getEnchantments().get(enchantment));
-            }
 
             if (item.hasItemMeta()) {
                 ItemMeta im = replacement.getItemMeta();
 
-                if (item.getItemMeta().hasDisplayName()) {
+                if (item.getItemMeta().hasDisplayName())
                     im.setDisplayName(item.getItemMeta().getDisplayName());
-                }
 
                 if (item.getItemMeta().hasLore()) {
                     List<String> lore = im.getLore();
 
                     for (String line : item.getItemMeta().getLore()) {
-                        if (!lore.contains(line) && !line.contains("Damage Reduction")) {
+                        if (!lore.contains(line) && !line.contains("Damage Reduction"))
                             lore.add(line);
-                        }
                     }
 
                     im.setLore(lore);
@@ -529,11 +547,10 @@ public class GearManager {
     public CarbyneGear getRandomCarbyneGear(boolean includeHidden) {
         ArrayList<CarbyneGear> gears = new ArrayList<>();
         for (CarbyneGear gear : getCarbyneGear()) {
-            if (gear.isHidden() && includeHidden) {
+            if (gear.isHidden() && includeHidden)
                 gears.add(gear);
-            } else {
+            else
                 gears.add(gear);
-            }
         }
 
         return gears.get(ThreadLocalRandom.current().nextInt(0, gears.size()));
@@ -541,9 +558,8 @@ public class GearManager {
 
     public Special getSpecialByName(String name) {
         for (Special special : specials) {
-            if (special.getSpecialName().equalsIgnoreCase(name)) {
+            if (special.getSpecialName().equalsIgnoreCase(name))
                 return special;
-            }
         }
 
         return null;
@@ -553,6 +569,10 @@ public class GearManager {
         return new ItemBuilder(Material.getMaterial(tokenId)).durability(tokenData).name(tokenDisplayName).setLore(tokenLore).build();
     }
 
+    public ItemStack getPolishItem() {
+        return new ItemBuilder(Material.getMaterial(polishId)).durability(polishData).name(polishDisplayName).setLore(polishLore).build();
+    }
+
     public void convertToMoneyItem(ItemStack itemStack) {
         if (itemStack != null && (itemStack.getType() == getTokenMaterial() && itemStack.getDurability() == tokenData)) {
             Namer.setName(itemStack, tokenDisplayName);
@@ -560,73 +580,277 @@ public class GearManager {
         }
     }
 
+    public void convertToPolishItem(ItemStack itemStack) {
+        if (itemStack != null && (itemStack.getType() == getPolishMaterial() && itemStack.getDurability() == polishData)) {
+            Namer.setName(itemStack, polishDisplayName);
+            Namer.setLore(itemStack, polishLore);
+        }
+    }
+
     public boolean isInFullCarbyne(Player player) {
         ItemStack[] armorContents = player.getInventory().getArmorContents();
-        boolean chestplate = false, leggings = false;
+        boolean helmet = false, chestplate = false, leggings = false, boots = false;
 
-        if (armorContents != null && armorContents.length > 0) {
-            for (ItemStack item : armorContents) {
-                if (item != null && (item.getType().toString().contains("CHESTPLATE") || item.getType().toString().contains("LEGGINGS"))) {
-                    if (getCarbyneGear(item) != null) {
-                        if (item.getType().toString().contains("CHESTPLATE")) {
-                            chestplate = true;
+        if (armorContents != null && armorContents.length > 0)
+            for (ItemStack item : armorContents)
+                if (item != null && (item.getType().toString().contains("HELMET") || item.getType().toString().contains("CHESTPLATE") || item.getType().toString().contains("LEGGINGS") || item.getType().toString().contains("BOOTS")))
+                    if (getCarbyneGear(item) != null)
+                        switch (item.getType().toString()) {
+                            case "HELMET":
+                                helmet = true;
+                                break;
+                            case "CHESTPLATE":
+                                chestplate = true;
+                                break;
+                            case "LEGGINGS":
+                                leggings = true;
+                                break;
+                            case "BOOTS":
+                                boots = true;
+                                break;
                         }
 
-                        if (item.getType().toString().contains("LEGGINGS")) {
-                            leggings = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return (chestplate && leggings);
+        return (helmet && chestplate && leggings && boots);
     }
 
     public Material getTokenMaterial() {
         return Material.getMaterial(tokenId);
     }
 
-    public int getTokenData() {
-        return tokenData;
+    public Material getPolishMaterial() {
+        return Material.getMaterial(polishId);
     }
 
-    public String getTokenCode() {
-        return tokenCode;
-    }
+    public double getDamageReduction(Player player) {
+        double damageReduction = 0.0;
 
-    public List<CarbyneGear> getCarbyneGear() {
-        return carbyneGear;
-    }
+        for (ItemStack itemStack : player.getInventory().getArmorContents()) {
+            if (itemStack == null)
+                continue;
 
-    public List<CarbyneGear> getDefaultArmors() {
-        return defaultArmors;
-    }
+            if (itemStack.getType().equals(Material.AIR))
+                continue;
 
-    public List<CarbyneGear> getDefaultWeapons() {
-        return defaultWeapons;
-    }
+            if (isCarbyneArmor(itemStack)) {
+                CarbyneArmor carbyneArmor = getCarbyneArmor(itemStack);
 
-    public GearGuiManager getGearGuiManager() {
-        return gearGuiManager;
-    }
+                if (carbyneArmor != null)
+                    damageReduction += carbyneArmor.getArmorRating();
+            }
 
-    public GearEffects getGearEffects() {return gearEffects; }
+            if (isDefaultArmor(itemStack)) {
+                MinecraftArmor minecraftArmor = getDefaultArmor(itemStack);
 
-    public Material getRelativeRepairMaterial(ItemStack itemStack) {
-        String name = itemStack.getType().name().toLowerCase();
-        if (name.contains("diamond")) {
-            return Material.DIAMOND;
-        } else if (name.contains("gold")) {
-            return Material.GOLD_INGOT;
-        } else if (name.contains("iron")) {
-            return Material.IRON_INGOT;
-        } else if (name.contains("leather")) {
-            return Material.LEATHER;
-        } else if (name.contains("chain")) {
-            return Material.IRON_INGOT;
-        } else {
-            return null;
+                if (minecraftArmor != null)
+                    damageReduction += minecraftArmor.getArmorRating();
+            }
         }
+
+        return damageReduction;
+    }
+
+    public double getProtectionReduction(Player player) {
+        String[] types = {"HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"};
+        double damageReduction = 0.0;
+
+        for (ItemStack is : player.getInventory().getArmorContents()) {
+            int index;
+            for (index = 0; index < types.length; index++)
+                if (is.getType().toString().contains(types[index]))
+                    break;
+
+            if (is == null)
+                continue;
+
+            if (is.getType().equals(Material.AIR))
+                continue;
+
+            switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
+                case 1: //0.125% / 4 = 0.03125
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.03125;
+                            break;
+                        case 1:
+                            damageReduction += 0.03125;
+                            break;
+                        case 2:
+                            damageReduction += 0.03125;
+                            break;
+                        case 3:
+                            damageReduction += 0.03125;
+                            break;
+                    }
+                    break;
+                case 2: //0.15 / 4 = 0.0375
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.0375;
+                            break;
+                        case 1:
+                            damageReduction += 0.0375;
+                            break;
+                        case 2:
+                            damageReduction += 0.0375;
+                            break;
+                        case 3:
+                            damageReduction += 0.0375;
+                            break;
+                    }
+                    break;
+                case 3: //0.175 / 4 = 0.04375
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.04375;
+                            break;
+                        case 1:
+                            damageReduction += 0.04375;
+                            break;
+                        case 2:
+                            damageReduction += 0.04375;
+                            break;
+                        case 3:
+                            damageReduction += 0.04375;
+                            break;
+                    }
+                    break;
+                case 4: //0.20 / 4 = 0.05
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.05;
+                            break;
+                        case 1:
+                            damageReduction += 0.05;
+                            break;
+                        case 2:
+                            damageReduction += 0.05;
+                            break;
+                        case 3:
+                            damageReduction += 0.05;
+                            break;
+                    }
+                    break;
+                case 5: //0.235 / 4 = 0.05875
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.05875;
+                            break;
+                        case 1:
+                            damageReduction += 0.05875;
+                            break;
+                        case 2:
+                            damageReduction += 0.05875;
+                            break;
+                        case 3:
+                            damageReduction += 0.05875;
+                            break;
+                    }
+                    break;
+                case 6: //0.25 / 4 = 0.0625
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.0625;
+                            break;
+                        case 1:
+                            damageReduction += 0.0625;
+                            break;
+                        case 2:
+                            damageReduction += 0.0625;
+                            break;
+                        case 3:
+                            damageReduction += 0.0625;
+                            break;
+                    }
+                    break;
+                case 7: //0.275 / 4 = 0.06875
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.06875;
+                            break;
+                        case 1:
+                            damageReduction += 0.06875;
+                            break;
+                        case 2:
+                            damageReduction += 0.06875;
+                            break;
+                        case 3:
+                            damageReduction += 0.06875;
+                            break;
+                    }
+                    break;
+                case 8: //0.30 / 4 = 0.075
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.075;
+                            break;
+                        case 1:
+                            damageReduction += 0.075;
+                            break;
+                        case 2:
+                            damageReduction += 0.075;
+                            break;
+                        case 3:
+                            damageReduction += 0.075;
+                            break;
+                    }
+                    break;
+                case 9: //0.335 / 4 = 0.08375
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.08375;
+                            break;
+                        case 1:
+                            damageReduction += 0.08375;
+                            break;
+                        case 2:
+                            damageReduction += 0.08375;
+                            break;
+                        case 3:
+                            damageReduction += 0.08375;
+                            break;
+                    }
+                    break;
+                case 10: //0.35 / 4 = 0.0875
+                    switch (index) {
+                        case 0:
+                            damageReduction += 0.0875;
+                            break;
+                        case 1:
+                            damageReduction += 0.0875;
+                            break;
+                        case 2:
+                            damageReduction += 0.0875;
+                            break;
+                        case 3:
+                            damageReduction += 0.0875;
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        return damageReduction;
+    }
+
+    public float calculatePotionEffects(float damage, Player player) {
+        if (player.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE))
+            for (PotionEffect effect : player.getActivePotionEffects())
+                if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE))
+                    return damage - (damage * (0.1f * (float) effect.getAmplifier()));
+
+        return damage;
+    }
+
+    public float getFeatherFallingCalculation(Player player) {
+        float damageReduction = 1.0f;
+
+        ItemStack itemStack = player.getInventory().getBoots();
+
+        if (itemStack == null)
+            return 1;
+
+        int level = itemStack.getEnchantmentLevel(Enchantment.PROTECTION_FALL);
+
+        return damageReduction * (1f - (0.05f * (float) level));
     }
 }

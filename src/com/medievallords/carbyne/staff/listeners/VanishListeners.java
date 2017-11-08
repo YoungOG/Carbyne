@@ -31,8 +31,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.Inventory;
 
-import java.util.HashMap;
-
 /**
  * Created by Calvin on 6/11/2017
  * for the Carbyne project.
@@ -41,16 +39,23 @@ public class VanishListeners implements Listener {
 
     private StaffManager staffManager = Carbyne.getInstance().getStaffManager();
 
-    private HashMap<Player, Boolean> silentOpens = new HashMap<>();
-
-
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (staffManager.isVanished(all)) {
-                player.hidePlayer(all);
+        if (staffManager.getStaffChatPlayers().contains(player.getUniqueId()))
+            staffManager.getStaffChatPlayers().remove(player.getUniqueId());
+
+        if (player.hasPermission("carbyne.staff.staffmode"))
+            staffManager.vanishPlayer(player);
+        else if (staffManager.isVanished(player))
+            staffManager.showPlayer(player);
+
+        if (!player.hasPermission("carbyne.staff.canseevanished")) {
+            for (Player all : PlayerUtility.getOnlinePlayers()) {
+                if (staffManager.isVanished(all)) {
+                    player.hidePlayer(all);
+                }
             }
         }
     }
@@ -116,11 +121,11 @@ public class VanishListeners implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
+
         if (!p.isSneaking() && (e.getAction() == Action.RIGHT_CLICK_BLOCK) && staffManager.isVanished(p)) {
             Block b = e.getClickedBlock();
-            Inventory inv = null;
+            Inventory inv;
             BlockState blockState = b.getState();
-            Inventory silentInv = null;
 
             switch (b.getType()) {
                 case TRAPPED_CHEST:
@@ -129,7 +134,6 @@ public class VanishListeners implements Listener {
                     e.setCancelled(true);
                     openCustomInventory(inv, ((CraftPlayer) p).getHandle(), "minecraft:chest");
             }
-
         }
 
         if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType() == Material.SOIL) {
@@ -140,16 +144,20 @@ public class VanishListeners implements Listener {
     }
 
     private void openCustomInventory(Inventory inventory, EntityPlayer player, String windowType) {
-        if (player.playerConnection == null) return;
+        if (player.playerConnection == null)
+            return;
+
         Container container = new CraftContainer(inventory, player.getBukkitEntity(), player.nextContainerCounter());
         container = CraftEventFactory.callInventoryOpenEvent(player, container);
-        if (container == null) return;
-        String title = container.getBukkitView().getTitle();
+
+        if (container == null)
+            return;
+
         int size = container.getBukkitView().getTopInventory().getSize();
+
         player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, IChatBaseComponent.ChatSerializer.a("Chest"), size, 1));
         player.getBukkitEntity().getHandle().activeContainer = container;
         player.getBukkitEntity().getHandle().activeContainer.addSlotListener(player);
-
     }
 
     @EventHandler
@@ -160,6 +168,4 @@ public class VanishListeners implements Listener {
             }
         }
     }
-
-
 }

@@ -69,15 +69,14 @@ public class LastAlive extends Event implements SingleWinnerEvent {
             if (!isAfterCountdown) {
                 if (maxPlayers() == participants.size()) {
                     begin();
-                    return;
                 } else if (timeoutActual <= System.currentTimeMillis()) {
                     begin();
-                    return;
                 } else {
                     int minutesUntilTimeout = (int) Math.floor(((timeoutActual - System.currentTimeMillis()) / (1000 * 60)) % 60) + 1;
+
                     if (minutesUntilTimeout != lastMinute) {
                         lastMinute = minutesUntilTimeout;
-                        String message = new String("&bThe %name%&b is going to begin in " + minutesUntilTimeout + ((minutesUntilTimeout == 1) ? " minute" : " minutes") + " &bor when " + getCurrentLastAliveObject().getSpawnLocations().size() + " &bplayers join!").replace("%name%", currentLastAliveObject.getName());
+                        String message = ("&bThe %name%&b is going to begin in " + minutesUntilTimeout + ((minutesUntilTimeout == 1) ? " minute" : " minutes") + " &bor when " + getCurrentLastAliveObject().getSpawnLocations().size() + " &bplayers join!").replace("%name%", currentLastAliveObject.getName());
                         JSONMessage json = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', message + " &bClick here to join!"));
                         json.runCommand("/event lastalive join");
                         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -85,20 +84,22 @@ public class LastAlive extends Event implements SingleWinnerEvent {
                             else MessageManager.sendMessage(player, message);
                         }
                     }
-                    if (lastMinute == -1) lastMinute = minutesUntilTimeout;
+
+                    if (lastMinute == -1)
+                        lastMinute = minutesUntilTimeout;
                 }
             } else {
                 if (winner != null) {
-                    String winMsg = new String("&bThe winner of %name%&b is " + winner.getName() + "&b!").replace("%name%", currentLastAliveObject.getName());
+                    String winMsg = ("&bThe winner of %name%&b is " + winner.getName() + "&b!").replace("%name%", currentLastAliveObject.getName());
                     MessageManager.broadcastMessage(winMsg);
                     this.stop();
                 } else if (participants.size() == 1) {
                     winner = participants.get(0);
-                    String winMsg = new String("&bThe winner of %name%&b is " + winner.getName() + "&b!").replace("%name%", currentLastAliveObject.getName());
+                    String winMsg = ("&bThe winner of %name%&b is " + winner.getName() + "&b!").replace("%name%", currentLastAliveObject.getName());
                     MessageManager.broadcastMessage(winMsg);
                     this.stop();
                 } else if (participants.size() == 0) {
-                    String winMsg = new String("&bThe participants of %name%&b are all dead!").replace("%name%", currentLastAliveObject.getName());
+                    String winMsg = "&bThe participants of %name%&b are all dead!".replace("%name%", currentLastAliveObject.getName());
                     MessageManager.broadcastMessage(winMsg);
                     this.stop();
                 }
@@ -114,15 +115,19 @@ public class LastAlive extends Event implements SingleWinnerEvent {
     @Override
     public synchronized void start() {
         Title title = new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&b%name%".replace("%name%", currentLastAliveObject.getName()))).subtitle(ChatColor.translateAlternateColorCodes('&', "&bThe %name% &bis starting! /event lastalive join!".replace("%name%", currentLastAliveObject.getName()))).stay(55).build();
+
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.sendTitle(title);
         }
+
         Bukkit.getServer().getPluginManager().registerEvents(lastAliveListeners, main);
+
         try {
             timeoutActual = DateUtil.parseDateDiff(timeoutString, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         super.start();
     }
 
@@ -130,6 +135,7 @@ public class LastAlive extends Event implements SingleWinnerEvent {
     public synchronized void stop() {
         if (participants.size() >= 1)
             participants.get(0).getInventory().clear();
+
         isAfterCountdown = false;
         HandlerList.unregisterAll(lastAliveListeners);
         super.stop();

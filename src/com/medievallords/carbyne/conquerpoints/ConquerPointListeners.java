@@ -106,7 +106,7 @@ public class ConquerPointListeners implements Listener {
                 if (conquerPointManager.getConquerPointFromLocation(player.getLocation()) != null) {
                     if (Cooldowns.getCooldown(player.getUniqueId(), "CaptureCooldown") > 0) {
                         if (Cooldowns.tryCooldown(player.getUniqueId(), "MessageCooldown", 3000))
-                            MessageManager.sendMessage(player, "&c[&4&lConquer&c]: &cYou are on cooldown, pleas try again in " + (Cooldowns.getCooldown(player.getUniqueId(), "CaptureCooldown") / 1000) + " seconds.");
+                            MessageManager.sendMessage(player, "&c[&4&lConquer&c]: &cYou are on cooldown, please try again in " + (Cooldowns.getCooldown(player.getUniqueId(), "CaptureCooldown") / 1000) + " seconds.");
 
                         return;
                     }

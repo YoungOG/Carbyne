@@ -11,6 +11,7 @@ import com.medievallords.carbyne.conquerpoints.objects.ConquerPointState;
 import com.medievallords.carbyne.economy.account.Account;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
+import com.medievallords.carbyne.listeners.PlayerListeners;
 import com.medievallords.carbyne.missions.object.Mission;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.profiles.ProfileManager;
@@ -63,12 +64,17 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
         if (!CombatTagListeners.isInCombat(player.getUniqueId())) {
             if (Account.getAccount(player.getName()) != null) {
-                lines.add("&aBalance&b: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
+                lines.add("&aBalance&7: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
+            }
+
+            if (profileManager.getProfile(player.getUniqueId()).isShowVoteCount()) {
+                lines.add("&aConsecutive Votes&7: " + PlayerListeners.getVoteCount());
             }
 
             if (main.getMissionsManager().getUuidMissions().containsKey(player.getUniqueId())) {
                 ArrayList<Mission> activeMissions = new ArrayList<>();
                 Mission[] missions = main.getMissionsManager().getUuidMissions().get(player.getUniqueId()).getCurrentMissions();
+
                 for (Mission mission : missions) {
                     if (mission != null && !mission.isActive())
                         continue;
@@ -78,20 +84,22 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
                 if (activeMissions.size() > 0) {
                     lines.add(" ");
-                    lines.add("&aActive Missions&b: " + activeMissions.size());
-
-//            for (Mission mission : activeMissions)
-//                lines.add("&b- " + mission.getName() + " &fb[&f" + mission.getTimeLeft() + "&b]");
+                    lines.add("&aActive Missions&7: " + activeMissions.size());
                 }
             }
 
             if (profileManager.getProfile(player.getUniqueId()).getProfession() != null) {
                 Profile profile = profileManager.getProfile(player.getUniqueId());
                 lines.add(" ");
-                lines.add("&aProfession&b: " + profile.getProfession().getName());
-                lines.add("  &aLevel&b: " + profile.getProfessionLevel());
-                lines.add("  &aProgress&b: " + profile.getProfessionProgress());
+                lines.add("&aProfession&7: " + profile.getProfession().getName());
+                lines.add("  &aLevel&7: " + profile.getProfessionLevel());
+                lines.add("  &aProgress&7: " + profile.getProfessionProgress());
             }
+        }
+
+        if (gearManager.getDamageReduction(player) > 0.0 || gearManager.getProtectionReduction(player) > 0.0) {
+            lines.add(" ");
+            lines.add("&aDamage Reduction&7: " + doubleFormat((gearManager.getDamageReduction(player) + gearManager.getProtectionReduction(player)) * 100.0) + "%");
         }
 
         /*if ((player.getItemInHand() != null && gearManager.getDurability(player.getItemInHand()) > -1.0) || (player.getInventory().getHelmet() != null && gearManager.getDurability(player.getInventory().getHelmet()) > -1.0) || (player.getInventory().getChestplate() != null && gearManager.getDurability(player.getInventory().getChestplate()) > -1.0) || (player.getInventory().getLeggings() != null && gearManager.getDurability(player.getInventory().getLeggings()) > -1.0) || (player.getInventory().getBoots() != null && gearManager.getDurability(player.getInventory().getBoots()) > -1.0)) {
@@ -124,15 +132,11 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
             if (squad.getMembers().size() > 0) {
                 lines.add(" ");
-                lines.add("&dSquad [&b" + (squad.getType() == SquadType.PUBLIC ? "&b" : "&c") + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1) + "&d]:");
+                lines.add("&dSquad [&7" + (squad.getType() == SquadType.PUBLIC ? "&7" : "&c") + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1) + "&d]:");
 
                 for (UUID member : squad.getAllPlayers()) {
                     if (!member.equals(player.getUniqueId())) {
-                        if (squad.getLeader().equals(member)) {
-                            lines.add(" &b&l" + Bukkit.getPlayer(member).getName() + " " + formatHealth(Bukkit.getPlayer(member).getHealth()));
-                        } else {
-                            lines.add(" &b" + Bukkit.getPlayer(member).getName() + " " + formatHealth(Bukkit.getPlayer(member).getHealth()));
-                        }
+                        lines.add(" &7" + (squad.getLeader() == member ? "&l" : "") + (Bukkit.getPlayer(member).getName().length() > 7 ? Bukkit.getPlayer(member).getName().substring(0, 8) : Bukkit.getPlayer(member).getName()) + "    " + formatHealth(Bukkit.getPlayer(member).getHealth()));
                     }
                 }
             }
@@ -154,10 +158,10 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
             if (profile.isPvpTimePaused() && profile.getRemainingPvPTime() > 1) {
                 lines.add("         ");
-                lines.add("&cPvPTimer&b: " + formatTime(profile.getRemainingPvPTime()));
+                lines.add("&cPvPTimer&7: " + formatTime(profile.getRemainingPvPTime()));
             } else if (profile.getRemainingPvPTime() > 1) {
                 lines.add("         ");
-                lines.add("&cPvPTimer&b: " + formatTime(profile.getRemainingPvPTime()));
+                lines.add("&cPvPTimer&7: " + formatTime(profile.getRemainingPvPTime()));
             }
         }
 
@@ -181,7 +185,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
                 if (cooldown.getId().equals("logout")) {
                     lines.add("       ");
-                    lines.add("&cLogout&b: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&cLogout&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("target")) {
@@ -190,7 +194,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
                         if (squad.getTargetUUID() != null || squad.getTargetSquad() != null) {
                             lines.add("     ");
-                            lines.add("&cTarget&b: " + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
+                            lines.add("&cTarget&7: " + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
                         }
                     }
                 }
@@ -198,23 +202,23 @@ public class CarbyneBoardAdapter implements BoardAdapter {
                 if (cooldown.getId().equals("combattag")) {
                     if (CombatTagListeners.isInCombat(player.getUniqueId())) {
                         lines.add("  ");
-                        lines.add("&cCombat Timer&b: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                        lines.add("&cCombat Timer&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                     }
                 }
 
                 if (cooldown.getId().equals("special")) {
                     lines.add("   ");
-                    lines.add("&cSpecial CD&b: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&cSpecial&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("enderpearl")) {
                     lines.add("   ");
-                    lines.add("&cEnderpearl CD&b: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&cEnderpearl&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("godapple")) {
                     lines.add("   ");
-                    lines.add("&cGod Apple CD&b: " + cooldown.getFormattedString(BoardFormat.MINUTES));
+                    lines.add("&cGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
                 }
             }
         } catch (Exception e) {
@@ -264,19 +268,14 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         }
     }
 
-    String formatBalance(double amount) {
-        DecimalFormat formatter = new DecimalFormat("#,##0.00");
-        String formatted = formatter.format(amount);
-        if (formatted.endsWith(".")) {
-            formatted = formatted.substring(0, formatted.length() - 1);
-        }
-
-        return formatted;
-    }
-
     String formatTime(long millis) {
         return String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));
+    }
+
+    String doubleFormat(double number) {
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(number).replaceAll("\\.00$", "");
     }
 }

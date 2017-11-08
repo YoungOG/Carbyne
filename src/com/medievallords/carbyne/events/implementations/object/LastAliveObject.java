@@ -18,10 +18,9 @@ public class LastAliveObject {
     public static List<LastAliveObject> lastAliveObjects = new ArrayList<>();
 
     public static LastAliveObject getLastAliveObject(String name) {
-        String compare = name;
         for (LastAliveObject lastAliveObject : lastAliveObjects) {
             String currentCompare = MessageManager.stripStringOfAmpersandColors(lastAliveObject.getName());
-            if (compare.equalsIgnoreCase(currentCompare)) return lastAliveObject;
+            if (name.equalsIgnoreCase(currentCompare)) return lastAliveObject;
         }
         return null;
     }
@@ -56,7 +55,7 @@ public class LastAliveObject {
 
     @Override
     public String toString() {
-        return new String("&bName: " + name + "\n&bLobby: " + (lobby != null) + "\n&bSpawn Locations: " + spawnLocations.size());
+        return "&bName: " + name + "\n&bLobby: " + (lobby != null) + "\n&bSpawn Locations: " + spawnLocations.size();
     }
 
     public void checkReady() {

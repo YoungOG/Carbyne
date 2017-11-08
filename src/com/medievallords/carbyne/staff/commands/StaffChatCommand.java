@@ -12,8 +12,22 @@ import org.apache.commons.lang.StringUtils;
  */
 public class StaffChatCommand extends BaseCommand {
 
-    @Command(name = "staffchat", permission = "carbyne.staff")
+    @Command(name = "staffchat", permission = "carbyne.staff", aliases = {"sc"})
     public void onCommand(CommandArgs commandArgs) {
-        MessageManager.sendStaffMessage(commandArgs.getSender(), StringUtils.join(commandArgs.getArgs(), " ", 0, commandArgs.getArgs().length));
+        if (commandArgs.isPlayer()) {
+            if (commandArgs.length() == 0) {
+                if (!getStaffManager().getStaffChatPlayers().contains(commandArgs.getPlayer().getUniqueId())) {
+                    getStaffManager().getStaffChatPlayers().add(commandArgs.getPlayer().getUniqueId());
+                    MessageManager.sendMessage(commandArgs.getPlayer(), "&aYou have entered Staff Chat.");
+                } else {
+                    getStaffManager().getStaffChatPlayers().remove(commandArgs.getPlayer().getUniqueId());
+                    MessageManager.sendMessage(commandArgs.getPlayer(), "&cYou have left Staff Chat.");
+                }
+            } else {
+                MessageManager.sendStaffMessage(commandArgs.getSender(), StringUtils.join(commandArgs.getArgs(), " ", 0, commandArgs.getArgs().length));
+            }
+        } else {
+            MessageManager.sendStaffMessage(commandArgs.getSender(), StringUtils.join(commandArgs.getArgs(), " ", 0, commandArgs.getArgs().length));
+        }
     }
 }
