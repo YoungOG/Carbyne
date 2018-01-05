@@ -10,9 +10,9 @@ import com.medievallords.carbyne.missions.object.implementations.noobmissions.Aq
 import com.medievallords.carbyne.missions.object.implementations.noobmissions.JoinATownMission;
 import com.medievallords.carbyne.missions.object.interfaces.BossHuntMission;
 import com.medievallords.carbyne.utils.DateUtil;
-import com.medievallords.carbyne.utils.InventoryUpdater;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.Maths;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,11 +38,10 @@ import java.util.logging.Level;
  */
 public class MissionsManager {
 
-    private static String inventoryTitle = ChatColor.translateAlternateColorCodes('&', "&b&lMissions ");
     public static String timeUntilNewMissions;
     public static Map<String, ItemStack> lootItems = new HashMap<>();
     public static Map<String, Double> chance = new HashMap<>();
-
+    private static String inventoryTitle = ChatColor.translateAlternateColorCodes('&', "&b&lMissions ");
     @Getter
     private final List<MissionData> missionData;
 
@@ -290,7 +289,7 @@ public class MissionsManager {
                 else
                     for (HumanEntity humanEntity : inv.getViewers())
                         if (humanEntity instanceof Player)
-                            InventoryUpdater.updateChestInventoryTitle((Player) humanEntity, inventoryTitle + timeUntilNewMissions);
+                            PlayerUtility.updateChestInventoryTitle((Player) humanEntity, inventoryTitle + timeUntilNewMissions);
                 new BukkitRunnable() {
                     public void run() {
                         for (int i = 12; i < 15; i++) {

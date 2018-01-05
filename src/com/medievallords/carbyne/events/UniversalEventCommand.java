@@ -375,7 +375,7 @@ public class UniversalEventCommand extends BaseCommand {
                 }
             }
 
-            if (!PlayerUtility.isInventoryEmpty(player)) {
+            if (!PlayerUtility.isInventoryEmpty(player.getInventory())) {
                 MessageManager.sendMessage(player, "&cYou need an empty inventory to join!");
                 return;
             }

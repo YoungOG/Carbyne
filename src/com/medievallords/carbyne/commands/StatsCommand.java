@@ -1,6 +1,6 @@
 package com.medievallords.carbyne.commands;
 
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;

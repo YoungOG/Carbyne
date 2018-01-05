@@ -88,14 +88,14 @@ public class CrateManager {
                 Location location = null;
                 int rewardsAmount = 1;
                 List<Reward> rewards = new ArrayList<>();
+                int progressInscreaseP = crateConfigurationSection.getInt(name + ".ProgressIncreaseP");
+                int progressInscreaseM = crateConfigurationSection.getInt(name + ".ProgressIncreaseM");
 
-                if (crateConfigurationSection.get(name + ".Location") != null) {
+                if (crateConfigurationSection.get(name + ".Location") != null)
                     location = LocationSerialization.deserializeLocation(crateConfigurationSection.getString(name + ".Location"));
-                }
 
-                if (crateConfigurationSection.get(name + ".RewardsAmount") != null) {
+                if (crateConfigurationSection.get(name + ".RewardsAmount") != null)
                     rewardsAmount = crateConfigurationSection.getInt(name + ".RewardsAmount");
-                }
 
                 if (crateConfigurationSection.get(name + ".Rewards") != null) {
                     ConfigurationSection rewardsSection = crateConfigurationSection.getConfigurationSection(name + ".Rewards");
@@ -112,6 +112,8 @@ public class CrateManager {
                             List<String> commands = rewardsSection.getStringList(rewardId + ".Commands");
                             boolean displayItemOnly = rewardsSection.getBoolean(rewardId + ".DisplayItem");
                             double chance = rewardsSection.getDouble(rewardId + ".Chance");
+                            double progress = rewardsSection.getDouble(rewardId + ".Progress");
+                            int slot = rewardsSection.getInt(rewardId + ".Slot");
 
                             if (displayName != null) {
                                 if (displayName.contains("randomgear")) {
@@ -138,6 +140,8 @@ public class CrateManager {
                             reward.setCommands(commands);
                             reward.setDisplayItemOnly(displayItemOnly);
                             reward.setChance(chance);
+                            reward.setProgress(progress);
+                            reward.setSlot(slot);
 
                             rewards.add(reward);
                         }
@@ -146,19 +150,19 @@ public class CrateManager {
                     }
                 }
 
-                if (location != null) {
+                if (location != null)
                     crate.setLocation(location);
-                }
 
                 crate.setRewardsAmount(rewardsAmount);
+                crate.setProgressIncreaseP(progressInscreaseP);
+                crate.setProgressIncreaseM(progressInscreaseM);
 
-                if (rewards.size() > 0) {
-                    for (Reward reward : rewards) {
+                if (rewards.size() > 0)
+                    for (Reward reward : rewards)
                         crate.getRewards().add(reward);
-                    }
-                }
 
                 getCrates().add(crate);
+                crate.runEffect(name);
             }
 
             main.getLogger().log(Level.INFO, "Successfully loaded " + getCrates().size() + " crate(s).");
@@ -169,88 +173,69 @@ public class CrateManager {
         if (getCrates().size() > 0) {
             main.getLogger().log(Level.INFO, "Preparing to save " + getCrates().size() + " crate(s).");
 
-            for (Crate crate : getCrates()) {
+            for (Crate crate : getCrates())
                 crate.save(crateFileConfiguration);
-            }
 
             main.getLogger().log(Level.INFO, "Successfully saved " + getCrates().size() + " crate(s).");
         }
     }
 
     public Crate getCrate(String name) {
-        for (Crate crate : getCrates()) {
-            if (crate.getName().equalsIgnoreCase(name)) {
+        for (Crate crate : getCrates())
+            if (crate.getName().equalsIgnoreCase(name))
                 return crate;
-            }
-        }
 
         return null;
     }
 
     public Crate getCrate(Location location) {
-        for (Crate crate : getCrates()) {
-            if (crate.getLocation() != null) {
-                if (crate.getLocation().getBlockX() == location.getBlockX() && crate.getLocation().getBlockY() == location.getBlockY() && crate.getLocation().getBlockZ() == location.getBlockZ()) {
+        for (Crate crate : getCrates())
+            if (crate.getLocation() != null)
+                if (crate.getLocation().getBlockX() == location.getBlockX() && crate.getLocation().getBlockY() == location.getBlockY() && crate.getLocation().getBlockZ() == location.getBlockZ())
                     return crate;
-                }
-            }
-        }
 
         return null;
     }
 
     public Crate getCrate(UUID uniqueId) {
-        for (Crate crate : getCrates()) {
-            if (crate.getEditors().contains(uniqueId)) {
+        for (Crate crate : getCrates())
+            if (crate.getEditors().contains(uniqueId))
                 return crate;
-            }
-        }
 
         return null;
     }
 
     public Key getKey(String name) {
-        for (Key key : getKeys()) {
-            if (key.getName().equalsIgnoreCase(name)) {
+        for (Key key : getKeys())
+            if (key.getName().equalsIgnoreCase(name))
                 return key;
-            }
-        }
 
         return null;
     }
 
     public Key getKey(Crate crate) {
-        for (Key key : getKeys()) {
-            if (key.getCrate().equalsIgnoreCase(crate.getName())) {
+        for (Key key : getKeys())
+            if (key.getCrate().equalsIgnoreCase(crate.getName()))
                 return key;
-            }
-        }
 
         return null;
     }
 
     public Key getKey(ItemStack itemStack) {
-        for (Key key : getKeys()) {
-            if (itemStack.getTypeId() == key.getItemId() && itemStack.getDurability() == key.getItemData()) {
-                if (itemStack.hasItemMeta() && key.getItem().hasItemMeta()) {
-                    if (itemStack.getItemMeta().hasDisplayName() && key.getItem().getItemMeta().hasDisplayName()) {
-                        if (itemStack.getItemMeta().getDisplayName().equalsIgnoreCase(key.getItem().getItemMeta().getDisplayName())) {
+        for (Key key : getKeys())
+            if (itemStack.getTypeId() == key.getItemId() && itemStack.getDurability() == key.getItemData())
+                if (itemStack.hasItemMeta() && key.getItem().hasItemMeta())
+                    if (itemStack.getItemMeta().hasDisplayName() && key.getItem().getItemMeta().hasDisplayName())
+                        if (itemStack.getItemMeta().getDisplayName().equalsIgnoreCase(key.getItem().getItemMeta().getDisplayName()))
                             return key;
-                        }
-                    }
-                }
-            }
-        }
 
         return null;
     }
 
     public boolean isOpeningCrate(Player player) {
-        for (Crate crate : getCrates()) {
-            if (crate.getCrateOpeners().containsKey(player.getUniqueId())) {
+        for (Crate crate : getCrates())
+            if (crate.getCrateOpeners().containsKey(player.getUniqueId()))
                 return true;
-            }
-        }
 
         return false;
     }

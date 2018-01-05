@@ -2,7 +2,7 @@ package com.medievallords.carbyne.duels.duel.request;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;

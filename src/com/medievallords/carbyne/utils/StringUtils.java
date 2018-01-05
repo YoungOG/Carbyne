@@ -1,25 +1,24 @@
 package com.medievallords.carbyne.utils;
 
+import org.bukkit.ChatColor;
+
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtils {
 
+    public static final Pattern pattern = Pattern.compile("(&.)");
     private static final long serialVersionUID = 1L;
     private static final Pattern INVALIDFILECHARS = Pattern.compile("[^a-z0-9-]");
     private static final Pattern STRICTINVALIDCHARS = Pattern.compile("[^a-z0-9]");
     private static final Pattern INVALIDCHARS = Pattern.compile("[^\t\n\r\u0020-\u007E\u0085\u00A0-\uD7FF\uE000-\uFFFC]");
-
     /**
      * Current justification for formatting
      */
     private Alignment currentAlignment;
-
     /**
      * Current max length in a line
      */
@@ -86,6 +85,22 @@ public class StringUtils {
             }
         }
         return buf.toString();
+    }
+
+    public static String fixNameTag(String tag) {
+        Matcher matcher = pattern.matcher(tag.substring(0, 16));
+        List<String> chars = new ArrayList<>();
+        while (matcher.find()) {
+            chars.add(matcher.group(1).substring(1));
+        }
+        Collections.reverse(chars);
+        for (String character : chars) {
+            ChatColor c = ChatColor.getByChar(character);
+            if (c != null) {
+                return (tag.substring(0, 16) + "&" + character + tag.substring(17));
+            }
+        }
+        return tag;
     }
 
     public void StringUtils(int maxChars, Alignment align) {

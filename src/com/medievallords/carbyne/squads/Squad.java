@@ -1,9 +1,9 @@
 package com.medievallords.carbyne.squads;
 
-import com.bizarrealex.aether.scoreboard.Board;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;

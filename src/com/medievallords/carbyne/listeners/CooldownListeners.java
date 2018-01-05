@@ -1,9 +1,10 @@
 package com.medievallords.carbyne.listeners;
 
-import com.bizarrealex.aether.scoreboard.Board;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
+
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
+import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

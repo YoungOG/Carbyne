@@ -2,14 +2,20 @@ package com.medievallords.carbyne.gear.specials.types;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
-import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.InstantFirework;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Firework;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Williams on 2017-03-12
@@ -18,7 +24,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class FireStorm implements Special {
 
     private double damagePerRound = 5;
-    private Firework fireworkTo;
+    private final FireworkEffect[] effects;
+
+    public FireStorm() {
+        this.effects = getFireworkEffect();
+    }
 
     @Override
     public int getRequiredCharge() {
@@ -31,61 +41,46 @@ public class FireStorm implements Special {
     }
 
     @Override
-    public void callSpecial(Player caster) {
-        Location centerLocation = caster.getLocation();
-
+    public void callSpecial(final Player caster) {
+        final Location centerLocation = caster.getLocation();
         new BukkitRunnable() {
-            double t = 0;
-            int times = 0;
-            double radius = 1.0;
-            Location copy = centerLocation.clone();
+            private double t = 0;
+            private double times = 0;
+            private final double radius = 8;
+
             @Override
             public void run() {
                 t = t + 0.35;
+                final double x = Math.sin(t) + Math.sin(t) * radius;
+                final double y = t - t + 1;
+                final double z = Math.cos(t) + Math.cos(t) * radius;
+                final List<Player> players = new ArrayList<>();
                 if (times == 20 || times == 40 || times == 60) {
-                    for (Entity entity : copy.getWorld().getNearbyEntities(copy, radius, radius, radius)) {
+                    for (final Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation, radius, radius, radius)) {
                         if (entity instanceof LivingEntity && !entity.equals(caster)) {
-                            damageEntity((LivingEntity) entity, caster);
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    damageEntity((LivingEntity) entity);
+                                }
+                            }.runTask(Carbyne.getInstance());
+                        }
+
+                        if (entity.getType() == EntityType.PLAYER) {
+                            players.add((Player) entity);
                         }
                     }
-                    copy.getWorld().playSound(copy, Sound.FIREWORK_BLAST2, 3.0f, 0.8f);
                 }
-                if (radius < 3 && radius > 0) {
-                    for (int i = 0; i < 360; i += 5) {
-                        double x = Math.cos(i) * radius;
-                        double y = 1;
-                        double z = Math.sin(i) * radius;
-                        copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
-                        copy.subtract(x, y, z);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        centerLocation.add(x, y, z);
+                        InstantFirework.spawn(centerLocation, players, effects);
+                        centerLocation.subtract(x, y, z);
                     }
-                }
-
-                else if (radius < 6 && radius >= 3) {
-                    for (int i = 0; i < 360; i += 3.5) {
-                        double x = Math.cos(i) * radius;
-                        double y = 1;
-                        double z = Math.sin(i) * radius;
-                        copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
-                        copy.subtract(x, y, z);
-                    }
-                }
-
-                else if (radius < 10 && radius >= 6) {
-                    for (int i = 0; i < 360; i += 1) {
-                        double x = Math.cos(i) * radius;
-                        double y = 1;
-                        double z = Math.sin(i) * radius;
-                        copy.add(x, y, z);
-                        ParticleEffect.LAVA.display(0f, 0f, 0f, 0f ,1, copy, 30, false);
-                        copy.subtract(x, y, z);
-                    }
-                }
+                }.runTask(Carbyne.getInstance());
 
                 times++;
-                radius += 0.2;
-
                 if (times > 60) {
                     this.cancel();
                 }
@@ -95,19 +90,28 @@ public class FireStorm implements Special {
         broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
-    public void damageEntity(LivingEntity entity, Player caster) {
+    private void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
                 double health = entity.getHealth();
-                double max = entity.getMaxHealth();
-                double damage = health - (health * 0.66);
+                double damage = health - (health * 0.67);
                 entity.damage(damage);
-                entity.setFireTicks(20 * 5);
+                entity.setFireTicks(20 * 10);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
                 return;
             }
 
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
             entity.damage(damagePerRound);
-            entity.setFireTicks(20 * 5);
+            entity.setFireTicks(20 * 10);
         }
+    }
+
+    public FireworkEffect[] getFireworkEffect() {
+        FireworkEffect effect = FireworkEffect.builder().flicker(false).trail(false).withColor(Color.ORANGE).withFade(Color.YELLOW).with(FireworkEffect.Type.BURST).build();
+        FireworkEffect effect1 = FireworkEffect.builder().trail(false).flicker(false).withColor(Color.YELLOW).withFade(Color.RED).with(FireworkEffect.Type.BURST).build();
+        return new FireworkEffect[]{
+                effect, effect1
+        };
     }
 }

@@ -28,7 +28,7 @@ public class BastionOfHealth implements Special {
     }
 
     @Override
-    public void callSpecial(Player caster) {
+    public void callSpecial(final Player caster) {
 
         new BukkitRunnable() {
 

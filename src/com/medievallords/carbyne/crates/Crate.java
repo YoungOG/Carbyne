@@ -3,8 +3,10 @@ package com.medievallords.carbyne.crates;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.crates.rewards.RewardGenerator;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.LocationSerialization;
+import com.medievallords.carbyne.utils.Maths;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +19,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -38,75 +39,38 @@ public class Crate {
     private HashMap<UUID, Inventory> crateOpeners = new HashMap<>();
     private HashMap<UUID, Integer> crateOpenersAmount = new HashMap<>();
     private ArrayList<UUID> editors = new ArrayList<>();
-    private int rewardsAmount;
+    private int rewardsAmount, progressIncreaseP, progressIncreaseM;
 
     public Crate(String name) {
         this.name = name;
-
-        if (name.contains("Obsidian")) {
-            runObsidianEffect();
-            return;
-        }
-
-        if (name.contains("Emerald")) {
-            runEmeraldEffect();
-            return;
-        }
-
-        if (name.contains("Diamond")) {
-            runDiamondEffect();
-            return;
-        }
-
-        if (name.contains("Gold")) {
-            runGoldEffect();
-            return;
-        }
-
-        if (name.contains("Iron")) {
-            runIronEffect();
-            return;
-        }
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (location != null) {
-
-                    if (main.getConfig().getString("crates.effect.type") != null && !main.getConfig().getString("crates.effect.type").isEmpty()) {
-                        ParticleEffect.valueOf(main.getConfig().getString("crates.effect.type")).display(Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetX")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetY")), Float.valueOf("" + main.getConfig().getDouble("crates.effect.offsetZ")), main.getConfig().getInt("crates.effect.speed"), main.getConfig().getInt("crates.effect.amount"), location, main.getConfig().getInt("crates.effect.range"), false);
-                    }
-                }
-            }
-        }.runTaskTimerAsynchronously(main, 10L, main.getConfig().getInt("crates.effects.repeat"));
     }
 
     public void save(FileConfiguration crateFileConfiguration) {
         ConfigurationSection configurationSection = crateFileConfiguration.getConfigurationSection("Crates");
 
-        if (!configurationSection.isSet(name)) {
+        if (!configurationSection.isSet(name))
             configurationSection.createSection(name);
-        }
 
-        if (!configurationSection.isSet(name + ".Locations")) {
+        if (!configurationSection.isSet(name + ".Locations"))
             configurationSection.createSection(name + ".Location");
-        }
 
-        if (!configurationSection.isSet(name + ".Rewards")) {
+        if (!configurationSection.isSet(name + ".Rewards"))
             configurationSection.createSection(name + ".Rewards");
-        }
 
-        if (!configurationSection.isSet(name + ".RewardsAmount")) {
+        if (!configurationSection.isSet(name + ".RewardsAmount"))
             configurationSection.createSection(".RewardsAmount");
-        }
 
-        if (location != null) {
+        if (location != null)
             configurationSection.set(name + ".Location", LocationSerialization.serializeLocation(location));
-        }
 
-        if (rewardsAmount > 0) {
+        if (rewardsAmount > 0)
             configurationSection.set(name + ".RewardsAmount", rewardsAmount);
-        }
+
+        if (!configurationSection.isSet(name + ".ProgressIncreaseP"))
+            configurationSection.set(name + ".ProgressIncreaseP", progressIncreaseP);
+
+        if (!configurationSection.isSet(name + ".ProgressIncreaseM"))
+            configurationSection.set(name + ".ProgressIncreaseM", progressIncreaseM);
 
         try {
             crateFileConfiguration.save(main.getCrateFile());
@@ -126,9 +90,8 @@ public class Crate {
                 itemStack = new ItemBuilder(itemStack)
                         .addLore(" ")
                         .addLore("&aCommands:").build();
-                for (String command : reward.getCommands()) {
+                for (String command : reward.getCommands())
                     new ItemBuilder(itemStack).addLore("&c" + command);
-                }
             }
 
             itemStack = new ItemBuilder(itemStack)
@@ -148,17 +111,11 @@ public class Crate {
     public void showRewards(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 54, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
         List<Integer> randomGear = new ArrayList<>();
-        int i = 0;
 
-        for (Reward reward : getRewards()) {
-            inventory.addItem(new ItemBuilder(reward.getItem(true)).addLore("").build());
-            ItemStack item = inventory.getItem(i);
-
-            if (item != null && item.getType() != Material.AIR && item.getItemMeta() != null && item.getItemMeta().hasDisplayName() && ChatColor.stripColor(item.getItemMeta().getDisplayName()).equals("Randomly Selected Gear")) {
-                randomGear.add(i);
-            }
-
-            i++;
+        for (Reward reward : rewards) {
+            inventory.setItem(reward.getSlot(), new ItemBuilder(reward.getItem(true)).addLore("").build());
+            if (reward.getGearCode().startsWith("randomgear"))
+                randomGear.add(reward.getSlot());
         }
 
         player.openInventory(inventory);
@@ -169,17 +126,17 @@ public class Crate {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (player.getOpenInventory() == null || inventory == null) {
+                if (player.getOpenInventory() == null) {
                     cancel();
                     return;
                 }
 
                 for (int p : randomGear) {
                     ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(true).getItem(false);
-                    ItemMeta meta = randomCarbyne.getItemMeta();
-                    meta.setLore(inventory.getItem(p).getItemMeta().getLore());
-                    meta.setDisplayName(ChatColor.GOLD + "Randomly Selected Gear");
-                    randomCarbyne.setItemMeta(meta);
+                    //ItemMeta meta = randomCarbyne.getItemMeta();
+                    //meta.setLore(inventory.getItem(p).getItemMeta().getLore());
+                    //meta.setDisplayName(ChatColor.GOLD + "Randomly Selected Gear");
+                    //randomCarbyne.setItemMeta(meta);
 
                     inventory.setItem(p, randomCarbyne);
                 }
@@ -197,9 +154,8 @@ public class Crate {
         if (player.getItemInHand().getAmount() > 1) {
             player.getItemInHand().setAmount(player.getItemInHand().getAmount() - 1);
             player.setItemInHand(player.getItemInHand());
-        } else {
+        } else
             player.setItemInHand(new ItemStack(Material.AIR));
-        }
 
         crateOpeners.put(player.getUniqueId(), inventory);
         crateOpenersAmount.put(player.getUniqueId(), rewardsAmount - 1);
@@ -209,50 +165,45 @@ public class Crate {
 
             @Override
             public void run() {
-                if (runTime > 0) {
+                if (runTime > 0)
                     runTime--;
-                } else {
+                else {
                     cancel();
                     return;
                 }
 
                 if (rewardsAmount == 1) {
                     for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 13) {
+                        if (i == 13)
                             continue;
-                        }
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
                 } else if (rewardsAmount == 2) {
                     for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 12 || i == 14) {
+                        if (i == 12 || i == 14)
                             continue;
-                        }
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
                 } else if (rewardsAmount == 3) {
                     for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i >= 12 && i <= 14) {
+                        if (i >= 12 && i <= 14)
                             continue;
-                        }
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
                 } else if (rewardsAmount == 5) {
                     for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i >= 11 && i <= 15) {
+                        if (i >= 11 && i <= 15)
                             continue;
-                        }
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
                 } else {
                     for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 13) {
+                        if (i == 13)
                             continue;
-                        }
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
@@ -266,11 +217,9 @@ public class Crate {
             @Override
             public void run() {
                 if (!crateOpeners.containsKey(player.getUniqueId())) {
-                    for (RewardGenerator rewardGenerator : rewardGenerators) {
-                        if (!rewardGenerator.hasRan()) {
+                    for (RewardGenerator rewardGenerator : rewardGenerators)
+                        if (!rewardGenerator.hasRan())
                             rewardGenerator.stopScheduler(player, true);
-                        }
-                    }
 
                     cancel();
                 }
@@ -278,15 +227,15 @@ public class Crate {
         }.runTaskTimer(main, 0L, 1L);
 
         List<ItemStack> rewardItems = new ArrayList<>();
-        for (Reward reward : rewards) {
+        for (Reward reward : rewards)
             rewardItems.add(reward.getItem(false));
-        }
 
-        List<Reward> chosenRewards = getRewards(rewardsAmount);
+        Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+        List<Reward> chosenRewards = getRewards(rewardsAmount, profile);
 
-        if (rewardsAmount == 1) {
+        if (rewardsAmount == 1)
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
-        } else if (rewardsAmount == 2) {
+        else if (rewardsAmount == 2) {
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 12, 0, openTime, rewardItems, chosenRewards.get(0)));
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 14, 10, openTime, rewardItems, chosenRewards.get(1)));
         } else if (rewardsAmount == 3) {
@@ -299,10 +248,17 @@ public class Crate {
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 20, openTime, rewardItems, chosenRewards.get(2)));
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 14, 30, openTime, rewardItems, chosenRewards.get(3)));
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 15, 40, openTime, rewardItems, chosenRewards.get(4)));
-        } else {
+        } else
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
-        }
 
+        if (!profile.getCrateProgression().containsKey(name))
+            profile.getCrateProgression().put(name, 0.0);
+
+        double random = (double) Maths.randomNumberBetween(progressIncreaseP, progressIncreaseM);
+        profile.getCrateProgression().put(name, profile.getCrateProgression().get(name) + random);
+        Bukkit.broadcastMessage("Before: " + profile.getCrateProgression().get(name));
+        Bukkit.broadcastMessage("Random: " + random);
+        Bukkit.broadcastMessage("After: " + profile.getCrateProgression().get(name));
         player.openInventory(inventory);
     }
 
@@ -319,18 +275,23 @@ public class Crate {
         player.setVelocity(nv2);
     }
 
-    public Reward getReward() {
+    public Reward getReward(Profile profile) {
         double totalPercentage = 0;
 
-        for (Reward reward : getRewards()) {
-            totalPercentage += reward.getChance();
+        if (!profile.getCrateProgression().containsKey(name)) {
+            profile.getCrateProgression().put(name, 0.0);
         }
+        double progress = profile.getCrateProgression().get(name);
+
+        for (Reward reward : getRewards())
+            totalPercentage += reward.getChance();
 
         int index = -1;
         double random = Math.random() * totalPercentage;
 
         for (int i = 0; i < rewards.size(); i++) {
-            random -= rewards.get(i).getChance();
+            Reward reward = getRewards().get(i);
+            random -= ((reward.getChance()) + (reward.getProgress() * progress));
 
             if (random <= 0) {
                 index = i;
@@ -338,24 +299,36 @@ public class Crate {
             }
         }
 
+        if (progress >= 100) {
+            profile.getCrateProgression().put(name, 0.0);
+        }
+
         return rewards.get(index);
     }
 
-    public ArrayList<Reward> getRewards(int amount) {
+    public ArrayList<Reward> getRewards(int amount, Profile profile) {
         ArrayList<Reward> rewards = new ArrayList<>();
+
+        if (!profile.getCrateProgression().containsKey(name)) {
+            profile.getCrateProgression().put(name, .0);
+        }
+        double progress = profile.getCrateProgression().get(name);
 
         for (int a = 0; a < amount; a++) {
             double totalPercentage = 0;
 
             for (Reward reward : getRewards()) {
-                totalPercentage += reward.getChance();
+                Bukkit.broadcastMessage(reward.getDisplayName() + " : " + (reward.getProgress() * progress));
+                totalPercentage += (reward.getChance() + (reward.getProgress() * progress));
             }
 
             int index = -1;
             double random = Math.random() * totalPercentage;
 
             for (int i = 0; i < getRewards().size(); i++) {
-                random -= getRewards().get(i).getChance();
+                Reward reward = getRewards().get(i);
+
+                random -= ((reward.getChance()) + (reward.getProgress() * progress));
 
                 if (random <= 0) {
                     index = i;
@@ -366,26 +339,49 @@ public class Crate {
             rewards.add(getRewards().get(index));
         }
 
+        Bukkit.broadcastMessage("Progress : " + progress);
+        if (progress >= 100) {
+            profile.getCrateProgression().put(name, 0.0);
+        }
+
         return rewards;
     }
 
     public Reward getReward(int id) {
-        for (Reward reward : rewards) {
-            if (reward.getId() == id) {
+        for (Reward reward : rewards)
+            if (reward.getId() == id)
                 return reward;
-            }
-        }
 
         return null;
     }
 
-    private void runObsidianEffect() {
+    public void runEffect(String crateName) {
+        switch (crateName) {
+            case "ObsidianCrate":
+                runObsidianEffect();
+                break;
+            case "EmeraldCrate":
+                runEmeraldEffect();
+                break;
+            case "DiamondCrate":
+                runDiamondEffect();
+                break;
+            case "GoldCrate":
+                runGoldEffect();
+                break;
+            case "IronCrate":
+                runIronEffect();
+                break;
+        }
+    }
 
+    private void runObsidianEffect() {
         new BukkitRunnable() {
+            private double theta = 0, radius = 0.55;
+            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
+
             @Override
             public void run() {
-                double theta = 0;
-                double radius = 0.55;
                 ParticleEffect.OrdinaryColor purple = new ParticleEffect.OrdinaryColor(244, 66, 244);
 
                 theta += 0.2;
@@ -394,47 +390,42 @@ public class Crate {
                 double y = Math.cos(theta) * radius;
                 double z = Math.sin(theta) * radius;
 
-                Location location = getLocation().clone();
-                if (location == null) return;
-                location.add(0.5,0.5,0.5);
-                location.add(x, y, z);
-                ParticleEffect.REDSTONE.display(purple,location, 40,false);
-                location.subtract(x,0,z);
-                location.subtract(x, 0, z);
-                ParticleEffect.REDSTONE.display(purple,location, 40,false);
-             }
+                loc.add(x, y, z);
+                ParticleEffect.REDSTONE.display(purple, loc, 40, false);
+                loc.subtract(x, 0, z);
+                loc.subtract(x, 0, z);
+                ParticleEffect.REDSTONE.display(purple, loc, 40, false);
+                loc.add(x, -y, z);
+            }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }
 
     private void runEmeraldEffect() {
-
         new BukkitRunnable() {
+            private double theta = 0, radius = 0.6;
+            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
+
             @Override
             public void run() {
-                double theta = 0;
-                double radius = 0.6;
-
                 theta += 0.2;
                 double x = Math.cos(theta) * radius;
                 double y = Math.cos(theta) * radius;
                 double z = Math.sin(theta) * radius;
 
-                Location location = getLocation().clone();
-                if (location == null) return;
-                location.add(0.5,0.5,0.5);
-                location.add(x,y,z);
-                ParticleEffect.VILLAGER_HAPPY.display(0,0,0,0,1,location, 40, false);
+                loc.add(x, y, z);
+                ParticleEffect.VILLAGER_HAPPY.display(0, 0, 0, 0, 1, loc, 40, false);
+                loc.subtract(x, y, z);
             }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }
 
     private void runDiamondEffect() {
         new BukkitRunnable() {
+            private double theta = 0, radius = 0.6;
+            private Location loc = getLocation().clone().add(0.5, 0, 0.5);
+
             @Override
             public void run() {
-                double theta = 0;
-                double radius = 0.6;
-
                 ParticleEffect.OrdinaryColor blue = new ParticleEffect.OrdinaryColor(66, 212, 244);
 
                 theta += 0.13;
@@ -442,26 +433,23 @@ public class Crate {
                 double x = Math.sin(theta) * radius;
                 double z = Math.cos(theta) * radius;
 
-                Location location = getLocation().clone();
-                if (location == null) return;
-                location.add(0.5,0,0.5);
-                location.add(x,0,z);
-                location.add(0,0.25,0);
-
-                ParticleEffect.REDSTONE.display(blue, location, 50, true);
-                location.add(0,0.25,0);
-                ParticleEffect.REDSTONE.display(blue, location, 50, true);
+                loc.add(x, 0, z);
+                loc.add(0, 0.25, 0);
+                ParticleEffect.REDSTONE.display(blue, loc, 50, true);
+                loc.add(0, 0.25, 0);
+                ParticleEffect.REDSTONE.display(blue, loc, 50, true);
+                loc.subtract(x, 0.5, z);
             }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }
 
     private void runGoldEffect() {
         new BukkitRunnable() {
+            private double theta = 0, radius = 0.6;
+            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
+
             @Override
             public void run() {
-                double theta = 0;
-                double radius = 0.6;
-
                 ParticleEffect.OrdinaryColor gold = new ParticleEffect.OrdinaryColor(244, 217, 66);
 
                 theta += 0.13;
@@ -469,35 +457,30 @@ public class Crate {
                 double x = Math.sin(theta) * radius;
                 double z = Math.cos(theta) * radius;
 
-                Location location = getLocation().clone();
-                if (location == null) return;
-                location.add(0.5,0.5,0.5);
-                location.add(x,0,z);
-                ParticleEffect.REDSTONE.display(gold, location, 50, true);
+                loc.add(x, 0, z);
+                ParticleEffect.REDSTONE.display(gold, loc, 50, true);
+                loc.subtract(x, 0, z);
             }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }
 
     private void runIronEffect() {
         new BukkitRunnable() {
+            private double theta = 0, radius = 0.6;
+            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
+
             @Override
             public void run() {
-                double theta = 0;
-                double radius = 0.6;
-
                 ParticleEffect.OrdinaryColor silver = new ParticleEffect.OrdinaryColor(201, 197, 175);
 
                 theta += 0.14;
                 double y = Math.cos(theta) * radius;
                 double z = Math.sin(theta) * radius;
 
-                Location location = getLocation().clone();
-                if (location == null) return;
-                location.add(0.5,0.5,0.5);
-                location.add(0,y,z);
-                ParticleEffect.REDSTONE.display(silver, location, 50, true);
+                loc.add(0, y, z);
+                ParticleEffect.REDSTONE.display(silver, loc, 50, true);
+                loc.subtract(0, y, z);
             }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }
-
 }

@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.duels.duel.commands;
 
 import com.medievallords.carbyne.duels.duel.request.DuelRequest;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;

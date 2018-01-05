@@ -8,6 +8,7 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -83,6 +84,7 @@ public class GearGuiListeners implements Listener {
 
                     if (p.hasPermission("carbyne.administrator") || p.isOp()) {
                         p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
+                        p.playSound(p.getLocation(), Sound.LEVEL_UP, 1, 1);
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &4" + carbyneWeapon.getDisplayName() + "&a.");
                         return;
                     }
@@ -105,6 +107,7 @@ public class GearGuiListeners implements Listener {
                         PlayerUtility.removeItems(p.getInventory(), gearManager.getTokenItem(), carbyneWeapon.getCost());
 
                         p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
+                        p.playSound(p.getLocation(), Sound.LEVEL_UP, 1, 1);
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneWeapon.getDisplayName() + " &afor &c" + carbyneWeapon.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
                     } else {
                         MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
@@ -161,6 +164,7 @@ public class GearGuiListeners implements Listener {
 
                     if (p.hasPermission("carbyne.administrator") || p.isOp()) {
                         p.getInventory().addItem(carbyneArmor.getItem(false).clone());
+                        p.playSound(p.getLocation(), Sound.LEVEL_UP, 1, 1);
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + "&a.");
                         return;
                     }
@@ -183,6 +187,7 @@ public class GearGuiListeners implements Listener {
                         PlayerUtility.removeItems(p.getInventory(), gearManager.getTokenItem(), carbyneArmor.getCost());
 
                         p.getInventory().addItem(carbyneArmor.getItem(false).clone());
+                        p.playSound(p.getLocation(), Sound.LEVEL_UP, 1, 1);
                         MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + " &afor &c" + carbyneArmor.getCost() + " &aof &b" + ChatColor.stripColor(gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
                     } else {
                         MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");

@@ -18,16 +18,21 @@ import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.palmergames.bukkit.towny.permissions.TownyPerms;
 import com.palmergames.bukkit.util.ChatTools;
 import com.palmergames.util.StringMgmt;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -74,6 +79,19 @@ public class ChatListener implements Listener {
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
+        if (!player.hasPermission("carbyne.staff")) {
+            RegionManager regionManager = carbyne.getWorldGuardPlugin().getRegionManager(player.getWorld());
+            ApplicableRegionSet regionSet = regionManager.getApplicableRegions(player.getLocation());
+
+            for (ProtectedRegion region : regionSet.getRegions()) {
+                if (region.getId().equalsIgnoreCase("SpawnNoTalk")) {
+                    MessageManager.sendMessage(player, "&cYou cannot talk in this region.");
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
         event.setMessage(event.getMessage().replace("<love>", "\u2764"));
         event.setMessage(event.getMessage().replace("<happy>", "\u263a"));
         event.setMessage(event.getMessage().replace("<sad>", "\u2639"));
@@ -86,14 +104,12 @@ public class ChatListener implements Listener {
         event.setMessage(event.getMessage().replace("<toxic>", "\u2622"));
         event.setMessage(event.getMessage().replace("<swords>", "\u2694"));
 
-
         if (event.getMessage().length() >= 5)
             if (!player.hasPermission("carbyne.staff"))
                 if (MessageManager.is60PercentUpper(event.getMessage())) {
                     MessageManager.sendMessage(player, "&cYour message contained over 60% upper-case characters.");
                     event.setMessage(event.getMessage().toLowerCase());
                 }
-
 
         if (carbyne.getStaffManager().getStaffChatPlayers().contains(player.getUniqueId())) {
             MessageManager.sendStaffMessage(player, event.getMessage());
@@ -228,33 +244,58 @@ public class ChatListener implements Listener {
                 .build();
 
         String[] msg = message.split(" ");
-        String chatFix = "";
+        //String chatFix = "";
         for (String s : msg) {
-            LinkSpan link = null;
+            if (s.equalsIgnoreCase("%item%") && player.hasPermission("carbyne.donator")) {
+                ItemStack item = player.getItemInHand();
+                String type = item.getType().name().substring(0, 1).toUpperCase();
+                String sl = type + item.getType().name().substring(1).toLowerCase().replace("_", " ");
 
-            if (linkExtractor.extractLinks(s).iterator().hasNext()) {
-                link = linkExtractor.extractLinks(s).iterator().next();
-            }
+                StringBuilder toolTip;
 
-            if (link != null) {
-                if (chatFix.length() > 0) {
-                    newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
-                    chatFix = "";
+                toolTip = new StringBuilder((item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl) + "\n");
+                for (Enchantment enchantment : player.getItemInHand().getEnchantments().keySet()) {
+                    toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(item.getEnchantments().get(enchantment))).append("\n");
                 }
 
-                newMessage.then("[Link] ").color(ChatColor.AQUA)
-                        .openURL(s.substring(link.getBeginIndex(), link.getEndIndex()))
-                        .tooltip(getUrlInfoMessagePart(s));
+                if (item.getItemMeta().hasLore()) {
+                    for (String l : item.getItemMeta().getLore()) {
+                        toolTip.append(l).append("\n");
+                    }
+                }
 
+                toolTip.append("\n" + "&7").append(sl);
 
+                newMessage.then(" ").then(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString())).then(" ");
             } else {
-                chatFix = chatFix + s + " ";
+                LinkSpan link = null;
+
+                if (linkExtractor.extractLinks(s).iterator().hasNext()) {
+                    link = linkExtractor.extractLinks(s).iterator().next();
+                }
+
+                if (link != null) {
+                    /*if (chatFix.length() > 0) {
+                        newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
+                        chatFix = "";
+                    }*/
+
+                    newMessage.then("[Link] ").color(ChatColor.AQUA)
+                            .openURL(s.substring(link.getBeginIndex(), link.getEndIndex()))
+                            .tooltip(getUrlInfoMessagePart(s));
+
+
+                } else {
+                    newMessage.then((player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('&', s) : s) + " ");
+                }
             }
         }
 
-        if (chatFix.length() > 0) {
+        /*if (chatFix.length() > 0) {
             newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
-        }
+        }*/
+
+
 
         if (profile != null) {
             switch (profile.getProfileChatChannel()) {

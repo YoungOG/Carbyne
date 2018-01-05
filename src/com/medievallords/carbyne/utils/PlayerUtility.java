@@ -1,18 +1,24 @@
 package com.medievallords.carbyne.utils;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
-import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
+import net.minecraft.server.v1_8_R3.ChatMessage;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
+import net.minecraft.server.v1_8_R3.PacketPlayOutOpenWindow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class PlayerUtility {
+
+    private static final int PROTOCOL_VERSION = 47;
 
     public static Collection<? extends Player> getOnlinePlayers() {
         return Bukkit.getOnlinePlayers();
@@ -81,72 +89,11 @@ public class PlayerUtility {
         }
     }
 
-    public static double calculateDamageReduction(Player player, double originalDamage, EntityDamageEvent.DamageCause cause) {
-        double armorReduction = 0.0;
-
-        //Get DamageReduction values from all pieces of currently worn armor.
-        for (ItemStack itemStack : player.getInventory().getArmorContents()) {
-            if (itemStack.getType().equals(Material.AIR))
-                continue;
-
-            if (Carbyne.getInstance().getGearManager().isCarbyneArmor(itemStack)) {
-                CarbyneArmor carbyneArmor = Carbyne.getInstance().getGearManager().getCarbyneArmor(itemStack);
-
-                if (carbyneArmor != null) {
-                    armorReduction = armorReduction + carbyneArmor.getArmorRating();
-                }
-            }
-
-            if (Carbyne.getInstance().getGearManager().isDefaultArmor(itemStack)) {
-                MinecraftArmor minecraftArmor = Carbyne.getInstance().getGearManager().getDefaultArmor(itemStack);
-
-                if (minecraftArmor != null) {
-                    armorReduction = armorReduction + minecraftArmor.getArmorRating();
-                }
-            }
-        }
-
-        if (armorReduction > 0) {
-            double flatDamage = 0.0;
-
-            //Calculation of certain DamageCauses for precise balancing.
-            switch (cause) {
-                case FIRE_TICK:
-                    flatDamage = 0.5;
-                    break;
-                case LAVA:
-                    flatDamage = 4.0;
-                    break;
-                case LIGHTNING:
-                    flatDamage = 5.0;
-                    break;
-                case DROWNING:
-                    flatDamage = 2.0;
-                    break;
-                case STARVATION:
-                    flatDamage = 0.5;
-                    break;
-                case VOID:
-                    flatDamage = 4.0;
-                    break;
-                case POISON:
-                    flatDamage = 0.5;
-                    break;
-                case WITHER:
-                    flatDamage = 0.5;
-                    break;
-                case SUFFOCATION:
-                    flatDamage = 0.5;
-                    break;
-                case FALL:
-                    flatDamage = originalDamage - originalDamage * (armorReduction - 0.40);
-                    break;
-            }
-
-            return (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (originalDamage - (originalDamage * (armorReduction + getProtectionReduction(player)))) : flatDamage);
-        }
-
-        return 0.0;
+    public static void updateChestInventoryTitle(Player p, String title) {
+        EntityPlayer ep = ((CraftPlayer) p).getHandle();
+        PacketPlayOutOpenWindow packet = new PacketPlayOutOpenWindow(ep.activeContainer.windowId, "minecraft:chest", new ChatMessage(title), p.getOpenInventory().getTopInventory().getSize());
+        ep.playerConnection.sendPacket(packet);
+        ep.updateInventory(ep.activeContainer);
     }
 
     public static ArrayList<Player> getPlayersInRadius(Location radiusCenter, int radius) {
@@ -161,102 +108,58 @@ public class PlayerUtility {
         return playerList;
     }
 
-    public static double getProtectionReduction(Player player) {
-        double damageReduction = 0.0;
-
-        for (ItemStack is : player.getInventory().getArmorContents()) {
-            if (is.getType().equals(Material.AIR))
-                continue;
-
-            switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-                case 1:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.015;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.04;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.03;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.015;
-                    }
-                    break;
-                case 2:
-                    if (is.getType().toString().contains("HELMET")) {
-                        damageReduction += 0.03;
-                    } else if (is.getType().toString().contains("CHESTPLATE")) {
-                        damageReduction += 0.08;
-                    } else if (is.getType().toString().contains("LEGGINGS")) {
-                        damageReduction += 0.06;
-                    } else if (is.getType().toString().contains("BOOTS")) {
-                        damageReduction += 0.03;
-                    }
-                    break;
-            }
-        }
-
-        return damageReduction;
-    }
-
-    private static final int PROTOCOL_VERSION = 47;
     /**
      * @param header The header of the tab list.
      */
-    public static void broadcastHeader(String header)
-    {
+    public static void broadcastHeader(String header) {
         broadcastHeaderAndFooter(header, null);
     }
+
     /**
      * @param footer The footer of the tab list.
      */
-    public static void broadcastFooter(String footer)
-    {
+    public static void broadcastFooter(String footer) {
         broadcastHeaderAndFooter(null, footer);
     }
+
     /**
      * @param header The header of the tab list.
      * @param footer The footer of the tab list.
      */
-    public static void broadcastHeaderAndFooter(String header, String footer)
-    {
+    public static void broadcastHeaderAndFooter(String header, String footer) {
         for (Player player : Bukkit.getOnlinePlayers()) setHeaderAndFooter(player, header, footer);
     }
+
     /**
      * @param p      The Player.
      * @param header The header.
      */
-    public static void setHeader(Player p, String header)
-    {
+    public static void setHeader(Player p, String header) {
         setHeaderAndFooter(p, header, null);
     }
+
     /**
-     * @param p The Player
+     * @param p      The Player
      * @param footer The footer.
      */
-    public static void setFooter(Player p, String footer)
-    {
+    public static void setFooter(Player p, String footer) {
         setHeaderAndFooter(p, null, footer);
     }
 
     /**
-     * @param player The Player.
+     * @param player    The Player.
      * @param rawHeader The header in raw text.
      * @param rawFooter The footer in raw text.
      */
     public static void setHeaderAndFooter(Player player, String rawHeader, String rawFooter) {
+        PacketContainer pc = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+        pc.getChatComponents().write(0, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawHeader))).write(1, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawFooter)));
 
-
-//PacketContainer pc = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
-//        pc.getChatComponents().write(0, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawHeader))).write(1, WrappedChatComponent.fromText(ChatColor.translateAlternateColorCodes('&', rawFooter)));
-//
-//        try {
-//            ProtocolLibrary.getProtocolManager().sendServerPacket(player, pc);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-    }
-
-    public static boolean isInventoryEmpty(Player player) {
-        return player.getInventory().firstEmpty() == 0;
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player, pc);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public static void removeItems(Inventory inventory, Material type, int data, int amount) {
@@ -317,5 +220,30 @@ public class PlayerUtility {
                 }
             }
         }
+    }
+
+    public static int getEmptyInventorySlots(Inventory inventory) {
+        int count = 0;
+        for (int i = 0; i < inventory.getContents().length; i++) {
+            if (inventory.getContents()[i] == null || inventory.getContents()[i].getType() == Material.AIR)
+                count++;
+        }
+        return count;
+    }
+
+    public static boolean isInventoryEmpty(Inventory inventory) {
+        for (ItemStack itemStack : inventory.getContents())
+            if (itemStack != null && itemStack.getType() != Material.AIR)
+                return false;
+
+        return true;
+    }
+
+    public static ItemFrame getFrame(Location loc) {
+        for (Entity e : loc.getChunk().getEntities())
+            if (e instanceof ItemFrame)
+                if (e.getLocation().getBlock().getLocation().distance(loc) == 0)
+                    return (ItemFrame) e;
+        return null;
     }
 }

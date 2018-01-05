@@ -1,22 +1,20 @@
 package com.medievallords.carbyne.utils.nametag;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.duels.duel.Duel;
-import com.medievallords.carbyne.duels.duel.DuelManager;
-import com.medievallords.carbyne.duels.duel.types.RegularDuel;
-import com.medievallords.carbyne.duels.duel.types.SquadDuel;
+import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 public class NametagManager {
+
+    private static SquadManager squadManager = Carbyne.getInstance().getSquadManager();
 
     private static Map<String, NametagPlayer> players = new HashMap<>();
 
@@ -42,9 +40,6 @@ public class NametagManager {
     }
 
     public static void updateNametag(Player toRefresh, Player refreshFor) {
-        DuelManager duelManager = Carbyne.getInstance().getDuelManager();
-        SquadManager squadManager = Carbyne.getInstance().getSquadManager();
-
         NametagPlayer toRefreshTag = NametagManager.getPlayer(toRefresh);
         NametagPlayer refreshForTag = NametagManager.getPlayer(refreshFor);
 
@@ -57,16 +52,23 @@ public class NametagManager {
             nametag = refreshForTag.getPlayerNametag(toRefreshTag);
         }
 
+        if (CombatTagListeners.isInCombat(toRefresh.getUniqueId())) {
+            int health = (int) toRefresh.getHealth() / 5;
+            String suffix = formatHealthBar(health);
+            nametag.setSuffix(" " + suffix);
+        } else {
+            nametag.setSuffix("");
+        }
+
         //Duel
-        Duel toRefreshDuel = duelManager.getDuelFromUUID(toRefresh.getUniqueId());
-        Duel refreshForDuel = duelManager.getDuelFromUUID(refreshFor.getUniqueId());
-        if (toRefreshDuel != null && refreshForDuel != null && toRefreshDuel == refreshForDuel) {
-            if (toRefreshDuel instanceof RegularDuel) {
-                nametag.setPrefix(ChatColor.YELLOW + "");
-                nametag.setSuffix("");
-                refreshForTag.update(toRefreshTag, nametag);
-                return;
-            }
+        /*Squad squad1 = squadManager.getSquad(refreshFor.getUniqueId());
+        Squad squad2 = squadManager.getSquad(toRefresh.getUniqueId());
+        if (squad1 != null && squad2 != null && squad1 == squad2) {
+            nametag.setPrefix(ChatColor.AQUA + "");
+        } else {
+            nametag.setPrefix(ChatColor.GOLD + "");
+        }*/
+            /*
 
             if (toRefreshDuel instanceof SquadDuel) {
                 SquadDuel squadDuel = (SquadDuel) toRefreshDuel;
@@ -95,7 +97,9 @@ public class NametagManager {
                 return;
             }
         }
+        */
 
+        nametag.setPrefix(ChatColor.GOLD + "");
         //Squad
         Squad toRefreshSquad = squadManager.getSquad(toRefresh.getUniqueId());
         Squad refreshForSquad = squadManager.getSquad(refreshFor.getUniqueId());
@@ -103,11 +107,9 @@ public class NametagManager {
         if (toRefreshSquad != null && refreshForSquad != null) {
             if (toRefreshSquad.getUniqueId().equals(refreshForSquad.getUniqueId())) {
                 if (toRefreshSquad.getLeader().equals(toRefresh.getUniqueId())) {
-                    nametag.setPrefix(ChatColor.AQUA + "SQUAD" + ChatColor.AQUA + "" + ChatColor.BOLD + " ");
-                    nametag.setSuffix(ChatColor.translateAlternateColorCodes('&', formatHealth(toRefresh.getHealth())));
+                    nametag.setPrefix(ChatColor.AQUA + "" + ChatColor.BOLD);
                 } else {
-                    nametag.setPrefix(ChatColor.AQUA + "SQUAD ");
-                    nametag.setSuffix(ChatColor.translateAlternateColorCodes('&', formatHealth(toRefresh.getHealth())));
+                    nametag.setPrefix(ChatColor.AQUA + "");
                 }
 
                 refreshForTag.update(toRefreshTag, nametag);
@@ -115,9 +117,7 @@ public class NametagManager {
             } else {
                 if (refreshForSquad.getTargetSquad() != null) {
                     if (refreshForSquad.getTargetSquad().equals(toRefreshSquad)) {
-                        nametag.setPrefix(ChatColor.RED + "ENEMY" + ChatColor.RED + "" + ChatColor.BOLD + " ");
-                        nametag.setSuffix("");
-
+                        nametag.setPrefix(ChatColor.RED + "");
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
                     }
@@ -127,9 +127,7 @@ public class NametagManager {
             if (refreshForSquad != null) {
                 if (refreshForSquad.getTargetUUID() != null) {
                     if (refreshForSquad.getTargetUUID().equals(toRefresh.getUniqueId())) {
-                        nametag.setPrefix(ChatColor.RED + "ENEMY" + ChatColor.RED + "" + ChatColor.BOLD + " ");
-                        nametag.setSuffix("");
-
+                        nametag.setPrefix(ChatColor.RED + "");
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
                     }
@@ -137,13 +135,13 @@ public class NametagManager {
             }
         }
 
-        ZPermissionsService service = Carbyne.getInstance().getService();
+        //ZPermissionsService service = Carbyne.getInstance().getService();
 
-        if (service != null) {
-            String prefix = ChatColor.translateAlternateColorCodes('&', service.getPlayerPrefix(toRefresh.getUniqueId()));
-            nametag.setPrefix(prefix.length() > 16 ? prefix.substring(0, 16) : prefix);
-            nametag.setSuffix("");
-        }
+        //if (service != null) {
+        //String prefix = ChatColor.translateAlternateColorCodes('&', service.getPlayerPrefix(toRefresh.getUniqueId()));
+        //nametag.setPrefix(prefix.length() > 16 ? prefix.substring(0, 16) : prefix);
+        //nametag.setSuffix("");
+        //}
 
         refreshForTag.update(toRefreshTag, nametag);
     }
@@ -173,5 +171,31 @@ public class NametagManager {
         } else {
             return String.format(" &c%s \u2764", format.format(hearts));
         }
+    }
+
+    static String formatHealthBar(int health) {
+        StringBuilder s = new StringBuilder();
+
+        if (health >= 13)
+            s.append("§a");
+        else if (health >= 7)
+            s.append("§e");
+        else
+            s.append("§c");
+
+        health /= 2;
+
+        int req = (10 - health);
+        int oReq = health;
+
+        for (int i = 0; i < oReq; i++)
+            s.append("\u2758");
+
+        s.append("§7");
+
+        for (int i = 0; i < req; i++)
+            s.append("\u2758");
+
+        return s.toString();
     }
 }

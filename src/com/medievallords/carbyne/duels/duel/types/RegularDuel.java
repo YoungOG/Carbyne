@@ -4,7 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.duels.duel.DuelStage;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -50,6 +51,9 @@ public class RegularDuel extends Duel {
                 return;
             }
 
+            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 2);
+            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&cGO!")).stay(7).build());
+
             player.teleport(arena.getSpawnPointLocations()[locationIndex].clone().add(0.0, 0.5, 0.0));
 
             player.setHealth(player.getMaxHealth());
@@ -84,7 +88,7 @@ public class RegularDuel extends Duel {
                 }
             }
 
-            if (squadOne != null && squadOne.getLeader().equals(two.getUniqueId())) {
+            if (squadOne.getLeader().equals(two.getUniqueId())) {
                 if (squadOne.getMembers().size() > 0) {
                     squadOne.setLeader(squadOne.getMembers().get(0));
                     squadOne.getMembers().remove(squadOne.getMembers().get(0));
@@ -174,20 +178,21 @@ public class RegularDuel extends Duel {
 
             @Override
             public void run() {
-                for (UUID uuid : participants) {
-                    Player player = Bukkit.getServer().getPlayer(uuid);
-
-                    if (player != null) {
-                        player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
-                    }
-                }
-
-                countdown--;
-
                 if (countdown <= 0) {
                     this.cancel();
                     start();
                     setDuelStage(DuelStage.FIGHTING);
+                } else {
+                    for (UUID uuid : participants) {
+                        Player player = Bukkit.getServer().getPlayer(uuid);
+
+                        if (player != null) {
+                            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+                            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
+                        }
+                    }
+
+                    countdown--;
                 }
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 20);

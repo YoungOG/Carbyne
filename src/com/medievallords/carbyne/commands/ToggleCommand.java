@@ -1,12 +1,11 @@
 package com.medievallords.carbyne.commands;
 
-import com.bizarrealex.aether.AetherOptions;
-import com.bizarrealex.aether.scoreboard.Board;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import com.medievallords.carbyne.utils.scoreboard.Board;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -47,7 +46,7 @@ public class ToggleCommand extends BaseCommand {
                     player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
                     MessageManager.sendMessage(player, "&aYour scoreboard HUD have been disabled.");
                 } else {
-                    new Board(player, getCarbyne().getAether(), new AetherOptions().hook(false).scoreDirectionDown(false));
+                    new Board(player, getCarbyne().getCarbyneBoardAdapter());
                     MessageManager.sendMessage(player, "&aYour scoreboard HUD have been enabled.");
                 }
             } else {
@@ -76,7 +75,7 @@ public class ToggleCommand extends BaseCommand {
             } else if (args[0].equalsIgnoreCase("hud") || args[0].equalsIgnoreCase("scoreboard")) {
                 if (args[1].equalsIgnoreCase("on")) {
                     if (Board.getByPlayer(player) == null) {
-                        new Board(player, getCarbyne().getAether(), new AetherOptions().hook(false).scoreDirectionDown(false));
+                        player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
                         MessageManager.sendMessage(player, "&aYour scoreboard HUD have been enabled.");
                     }
                 } else if (args[1].equalsIgnoreCase("off")) {

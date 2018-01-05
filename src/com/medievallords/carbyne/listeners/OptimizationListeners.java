@@ -28,7 +28,6 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -76,27 +75,9 @@ public class OptimizationListeners implements Listener {
     public void onHungerLoss(FoodLevelChangeEvent event) {
         Player player = (Player) event.getEntity();
 
-        if ((event.getFoodLevel() < player.getFoodLevel()) && (new Random().nextInt(100) > 4)) {
+        if ((event.getFoodLevel() < player.getFoodLevel()) && (new Random().nextInt(100) > 8)) {
             event.setCancelled(true);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onRain(WeatherChangeEvent event) {
-        World world = event.getWorld();
-
-        if (!world.hasStorm()) {
-            event.setCancelled(true);
-        }
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (world.hasStorm()) {
-                    world.setStorm(false);
-                }
-            }
-        }.runTaskLater(Carbyne.getInstance(), 5L);
     }
 
     @EventHandler

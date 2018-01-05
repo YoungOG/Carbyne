@@ -143,7 +143,7 @@ public class DateUtil {
         return sb.toString().trim();
     }
 
-    public static String readableTime(long time) {
+    public static String readableTime(long time, boolean abbreviate) {
         int SECOND = 1000;
         int MINUTE = 60 * SECOND;
         int HOUR = 60 * MINUTE;
@@ -152,19 +152,19 @@ public class DateUtil {
         long ms = time;
         StringBuilder text = new StringBuilder("");
         if (ms > DAY) {
-            text.append(ms / DAY).append(" days ");
+            text.append(ms / DAY).append((!abbreviate ? " days " : "d "));
             ms %= DAY;
         }
         if (ms > HOUR) {
-            text.append(ms / HOUR).append(" hours ");
+            text.append(ms / HOUR).append((!abbreviate ? " hours " : "h "));
             ms %= HOUR;
         }
         if (ms > MINUTE) {
-            text.append(ms / MINUTE).append(" minutes ");
+            text.append(ms / MINUTE).append((!abbreviate ? " minutes " : "m "));
             ms %= MINUTE;
         }
         if (ms > SECOND) {
-            text.append(ms / SECOND).append(" seconds ");
+            text.append(ms / SECOND).append((!abbreviate ? " seconds" : "s"));
         }
 
         return text.toString();

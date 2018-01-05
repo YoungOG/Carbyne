@@ -43,7 +43,7 @@ public class CliffClimbCommands extends BaseCommand
                     MessageManager.sendMessage(player, "&cYou are already in an event!");
                     return;
                 }
-                if (!PlayerUtility.isInventoryEmpty(player))
+                if (!PlayerUtility.isInventoryEmpty(player.getInventory()))
                 {
                     MessageManager.sendMessage(player, "&cYou need an empty inventory to join!");
                     return;

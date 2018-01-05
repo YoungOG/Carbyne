@@ -1,8 +1,8 @@
 package com.medievallords.carbyne.staff.listeners;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.webhook.DiscordMessage;
-import com.medievallords.carbyne.webhook.StaffHook;
+import com.medievallords.carbyne.utils.webhook.DiscordMessage;
+import com.medievallords.carbyne.utils.webhook.StaffHook;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

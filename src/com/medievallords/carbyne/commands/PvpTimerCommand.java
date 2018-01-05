@@ -58,12 +58,7 @@ public class PvpTimerCommand extends BaseCommand {
                     return;
                 }
 
-                if (profile.isPvpTimePaused()) {
-                    MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getRemainingTimeLeft()) + " remaining.");
-                    return;
-                }
-
-                MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getPvpTime()) + " remaining.");
+                MessageManager.sendMessage(player, "&cYour PvPTimer has " + DateUtil.formatDateDiff(profile.getRemainingPvPTime()) + " remaining.");
             }
 
         } else if (args.length == 2) {
@@ -93,7 +88,8 @@ public class PvpTimerCommand extends BaseCommand {
                         try {
                             long time = Integer.parseInt(args[2]);
                             rProfile.setPvpTime(System.currentTimeMillis() + (time * 1000));
-                            rProfile.setTimeLeft(rProfile.getRemainingPvPTime());
+                            rProfile.setTimeLeft((time * 1000));
+                            //rProfile.setTimeLeft(rProfile.getRemainingPvPTime());
                             rProfile.setPvpTimePaused(true);
 
                             MessageManager.sendMessage(sender, "&aPvP Timer for player has been set to:&b " + time + " seconds");

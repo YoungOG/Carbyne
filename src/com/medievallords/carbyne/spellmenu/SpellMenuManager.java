@@ -1,12 +1,16 @@
 package com.medievallords.carbyne.spellmenu;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.ItemBuilder;
+import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.PlayerUtility;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.Spellbook;
+import com.nisovin.magicspells.util.CastItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -18,7 +22,6 @@ import org.bukkit.inventory.ItemStack;
  */
 public class SpellMenuManager {
 
-    private Carbyne main = Carbyne.getInstance();
     private ItemStack[] spellItems;
 
     public SpellMenuManager() {
@@ -153,29 +156,94 @@ public class SpellMenuManager {
         }
 
         player.openInventory(inventory);
+        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
     }
 
-    public void openSpellOptions(Player player, String spellName) {
-        Inventory inventory = Bukkit.createInventory(player, InventoryType.HOPPER, ChatColor.translateAlternateColorCodes('&', "&aSpell Options&5: " + spellName));
+    public void openSpellSubMenu(Player player, String spellName) {
+        Inventory inventory = Bukkit.createInventory(player, InventoryType.HOPPER, ChatColor.translateAlternateColorCodes('&', "&aSpell Configuration&5: " + spellName));
 
-        inventory.setItem(0, new ItemBuilder(Material.INK_SACK).durability(10).name("&a&lBind")
-                .addLore("&7Click to bind the &5" + spellName + " &7spell to your currently")
-                .addLore("&7held item.")
+        for (int i = 0; i < inventory.getSize(); i++)
+            inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE).durability(15).name(" ").build());
+
+        inventory.setItem(0, new ItemBuilder(Material.ENCHANTMENT_TABLE)
+                .name("&a&lConfigure")
+                .addLore("&7Click to bind or unbind the &5" + spellName + " &7spell to an item")
+                .addLore("&7in your inventory.")
+                .addLore("")
+                .addLore("&c&lPlease note that you can only have a max of &4&l5 &c&lspells at any given time.")
                 .build());
 
-        inventory.setItem(2, new ItemBuilder(Material.INK_SACK).durability(8).name("&7&lUnbind")
-                .addLore("&7Click to  unbind the &5" + spellName + " &7spell from your currently")
-                .addLore("&7held item.")
-                .build());
-
-        inventory.setItem(4, new ItemBuilder(Material.REDSTONE).name("&c&lForget")
+        inventory.setItem(4, new ItemBuilder(Material.REDSTONE)
+                .name("&c&lForget")
                 .addLore("&7Click to forget the &5" + spellName + " &7spell.")
                 .addLore("")
-                .addLore("&cPlease note this action costs 5 diamonds.")
+                .addLore("&c&lPlease note this action costs 5 diamonds.")
                 .build());
 
-        SpellMenuListeners.getUsers().add(player.getUniqueId());
+        player.closeInventory();
+
+        SpellMenuListeners.getSpellSubMenuUsers().add(player.getUniqueId());
 
         player.openInventory(inventory);
+        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+    }
+
+    public void openSpellConfigurationMenu(Player player, String spellName) {
+        Inventory inventory = Bukkit.createInventory(player, 36, ChatColor.translateAlternateColorCodes('&', "&aBind/Unbind: &5" + spellName));
+
+        if (PlayerUtility.isInventoryEmpty(player.getInventory())) {
+            MessageManager.sendMessage(player, "&cYou need to have items in your inventory to bind/unbind this spell.");
+            openSpellSubMenu(player, spellName);
+            return;
+        }
+
+        Spellbook spellbook = MagicSpells.getSpellbook(player);
+        Spell spell = MagicSpells.getSpellByInGameName(spellName);
+
+        if (spell == null) {
+            MessageManager.sendMessage(player, "&cAn error has occurred.");
+            openSpellConfigurationMenu(player, spellName);
+            return;
+        }
+
+        ItemStack[] items = player.getInventory().getContents();
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = items[i];
+
+            if (item != null && item.getType() != Material.AIR) {
+                CastItem castItem = new CastItem(item);
+                ItemBuilder itemBuilder = new ItemBuilder(item.clone())
+                        .addLore("");
+
+                boolean removed = spellbook.removeCastItem(spell, castItem);
+                if (!removed) {
+                    itemBuilder
+                            .addLore("")
+                            .addLore("&bThe &5" + spell.getName() + " &bspell is not bound to this item.")
+                            .addLore("")
+                            .addLore("&7&lClick this item to &c&lunbind &7&lthe &5&l" + spell.getName() + " &7&lspell from this item.");
+
+                    inventory.setItem(i, new ItemBuilder(itemBuilder.build()).hideGlow().build());
+                } else {
+                    spellbook.addCastItem(spell, castItem);
+                    spellbook.save();
+
+                    itemBuilder
+                            .addLore("")
+                            .addLore("&bThe &5" + spell.getName() + " &bspell is bound to this item.")
+                            .addLore("")
+                            .addLore("&7&lClick this item to &a&lbind &7&lthe &5&l" + spell.getName() + " &7&lspell from this item.");
+
+                    inventory.setItem(i, new ItemBuilder(itemBuilder.build()).addGlow().build());
+                }
+            }
+        }
+
+        player.closeInventory();
+
+        SpellMenuListeners.getSpellConfigurationMenuUsers().put(player.getUniqueId(), spellName);
+
+        player.openInventory(inventory);
+        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
     }
 }

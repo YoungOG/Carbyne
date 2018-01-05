@@ -240,7 +240,9 @@ public class CarbyneWeapon extends CarbyneGear {
 
                 if (apply) {
                     target.addPotionEffect(effect);
-                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    String s = ChatColor.translateAlternateColorCodes('&', "&aYou have received &b" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    JSONMessage json = JSONMessage.create(s);
+                    json.actionbar(target);
                     Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
                 }
             }
@@ -268,7 +270,9 @@ public class CarbyneWeapon extends CarbyneGear {
 
                 if (apply) {
                     target.addPotionEffect(effect);
-                    MessageManager.sendMessage(target, "&7[&aCarbyne&7]: &aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    String s = ChatColor.translateAlternateColorCodes('&', "&aYou have received &c" + Namer.getPotionEffectName(effect) + " &afor &b" + (effect.getDuration() / 20) + " &asec(s).");
+                    JSONMessage json = JSONMessage.create(s);
+                    json.actionbar(target);
                     Cooldowns.setCooldown(target.getUniqueId(), "EffectCooldown", 3000L);
                 }
             }

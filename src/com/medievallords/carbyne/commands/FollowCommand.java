@@ -4,7 +4,6 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import com.nisovin.magicspells.MagicSpells;
 import net.minecraft.server.v1_8_R3.PacketPlayOutCamera;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,7 +47,6 @@ public class FollowCommand extends BaseCommand implements Listener {
             ((CraftPlayer) player).getHandle().playerConnection.sendPacket(camera);
             MessageManager.sendMessage(player, "&cYou stopped following &e" + followers.get(player).getName());
             followers.remove(player);
-            MagicSpells.getBossBarManager().removePlayerBar(player);
             return;
         }
 
@@ -72,7 +70,6 @@ public class FollowCommand extends BaseCommand implements Listener {
         }.runTaskLater(getCarbyne(), 60);
 
         followers.put(player, target);
-        MagicSpells.getBossBarManager().setPlayerBar(player, "Following " + target.getName(), 50);
 
         new BukkitRunnable() {
 
@@ -103,7 +100,6 @@ public class FollowCommand extends BaseCommand implements Listener {
                     ((CraftPlayer) player).getHandle().playerConnection.sendPacket(camera);
                     MessageManager.sendMessage(player, "&cYou stopped following &e" + followers.get(player).getName());
                     followers.remove(player);
-                    MagicSpells.getBossBarManager().removePlayerBar(player);
                 }
             }
         }

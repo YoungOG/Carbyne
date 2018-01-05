@@ -17,9 +17,9 @@ import java.util.Set;
  */
 public class LightningStorm implements Special {
 
-    private double radius = 5;
-    private int maxTimes = 3;
-    private double damagePerLightning = 13;
+    private final double radius = 5;
+    private final int maxTimes = 3;
+    private final double damagePerLightning = 13;
 
     @Override
     public String getSpecialName() {
@@ -32,11 +32,11 @@ public class LightningStorm implements Special {
     }
 
     @Override
-    public void callSpecial(Player caster) {
-        Location center = caster.getTargetBlock((Set<Material>) null, 9).getLocation();
-        List<LivingEntity> entitiesToHit = new ArrayList<>();
+    public void callSpecial(final Player caster) {
+        final Location center = caster.getTargetBlock((Set<Material>) null, 9).getLocation();
+        final List<LivingEntity> entitiesToHit = new ArrayList<>();
         int times = 0;
-        for (Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
+        for (final Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
             if (times >= maxTimes) {
                 return;
             }
@@ -54,9 +54,9 @@ public class LightningStorm implements Special {
             }
         }
         if (!entitiesToHit.isEmpty()) {
-            for (LivingEntity entity : entitiesToHit) {
+            for (final LivingEntity entity : entitiesToHit) {
                 entity.getWorld().strikeLightningEffect(entity.getLocation());
-                damageEntity(entity, caster);
+                damageEntity(entity);
                 entity.getWorld().playEffect(entity.getEyeLocation(), Effect.VOID_FOG, 3);
             }
         }
@@ -64,7 +64,7 @@ public class LightningStorm implements Special {
         broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
-    public void damageEntity(LivingEntity entity, Player caster) {
+    private void damageEntity(LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
                 double health = entity.getHealth();

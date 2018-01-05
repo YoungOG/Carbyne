@@ -18,3 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 2017-09-12
 ### Changed
 - Changed the drop rates of keys when voting. Exact changes are listed in local-history
+
+
+## 2017-09-12
+### Changed
+- Changed the drop rates of keys when voting. Exact changes are listed in local-history

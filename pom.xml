@@ -21,12 +21,6 @@
     </build>
 
     <repositories>
-        <!-- CombatTagPlus Repo -->
-        <repository>
-            <id>minelink-repo</id>
-            <url>http://repo.minelink.net/content/repositories/public</url>
-        </repository>
-
         <!-- ProtocolLib Repo -->
         <repository>
             <id>dmulloy2-repo</id>
@@ -56,20 +50,10 @@
             <id>avicus-public</id>
             <url>https://repo.avicus.net/content/groups/public/</url>
         </repository>
-
-        <!-- World Guard -->
-        <repository>
-            <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo/</url>
-        </repository>
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>6.1.1-SNAPSHOT</version>
-        </dependency>
+
 
         <!--&lt;!&ndash; Spigot API &ndash;&gt;-->
         <!--<dependency>-->
@@ -100,102 +84,12 @@
         </dependency> -->
 
         <!-- CombatTagPlus plugin -->
-        <dependency>
-            <groupId>net.minelink</groupId>
-            <artifactId>CombatTagPlus</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>craftbukkit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusHook</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusFactions-v1_6</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-v1_7_R3</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusFactions-v1_8</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-v1_7_R4</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusWG-v5</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusWG-v6</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-API</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusFactions-v2_6</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-v1_8_R3</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusFactions-v2_7</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-v1_8_R2</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>CombatTagPlusCompat-v1_8_R1</artifactId>
-                    <groupId>net.minelink</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>metrics-lite</artifactId>
-                    <groupId>org.mcstats.bukkit</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.minelink</groupId>
-                    <artifactId>CombatTagPlusCompat-v1_9_R1</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.minelink</groupId>
-                    <artifactId>CombatTagPlusCompat-v1_9_R2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.minelink</groupId>
-                    <artifactId>
-                        CombatTagPlusCompat-v1_10_R1
-                    </artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <!-- ProtocolLib plugin -->
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib-API</artifactId>
-            <version>4.2.0</version>
+            <version>LATEST</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

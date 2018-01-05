@@ -1491,15 +1491,9 @@ public enum ParticleEffect {
 			try {
 				Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
 
-				if (profile != null) {
-					if (!profile.hasEffectsToggled() && !bypass) {
-						return;
-					}
-				}
-
-				if (Carbyne.getInstance().getStaffManager().isVanished(player)) {
-					return;
-				}
+                if (profile != null)
+                    if (!profile.hasEffectsToggled() && !bypass)
+                        return;
 
 				sendPacket.invoke(playerConnection.get(getHandle.invoke(player)), packet);
 			} catch (Exception exception) {

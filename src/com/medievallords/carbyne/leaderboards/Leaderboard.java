@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.leaderboards;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
@@ -54,7 +54,7 @@ public class Leaderboard {
             public void run() {
                 updateSigns(leaderboardType);
             }
-        }.runTaskTimer(main, 5*20L, 5*20L);
+        }.runTaskTimer(main, 5 * 20L, 5 * 20L);
     }
 
     public void stop() {
@@ -531,26 +531,29 @@ public class Leaderboard {
 
                         if (names.get(i) != null) {
                             int finalI = i;
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    if (names.get(finalI).startsWith("town-")) {
-                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "AcE_whatever") : "AcE_whatever"));
-                                    } else if (names.get(finalI).startsWith("nation-")) {
-                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "pologobbyboy") : "pologobbyboy"));
-                                    } else {
-                                        skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "MHF_Question") : "MHF_Question"));
-                                    }
 
-                                    new BukkitRunnable() {
-                                        @Override
-                                        public void run() {
-                                            skull.update();
-                                            skull.update(true);
+                            if (names.get(finalI) != null) {
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        if (names.get(finalI).startsWith("town-")) {
+                                            skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "AcE_whatever") : "AcE_whatever"));
+                                        } else if (names.get(finalI).startsWith("nation-")) {
+                                            skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "pologobbyboy") : "pologobbyboy"));
+                                        } else {
+                                            skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "MHF_Question") : "MHF_Question"));
                                         }
-                                    }.runTask(main);
-                                }
-                            }.runTaskAsynchronously(main);
+
+                                        new BukkitRunnable() {
+                                            @Override
+                                            public void run() {
+                                                skull.update();
+                                                skull.update(true);
+                                            }
+                                        }.runTask(main);
+                                    }
+                                }.runTaskAsynchronously(main);
+                            }
                         }
                     }
                 }
@@ -648,7 +651,7 @@ public class Leaderboard {
                     next();
                     leaderboardType = get();
                 }
-            }.runTaskTimerAsynchronously(main, 0L, 5*20);
+            }.runTaskTimerAsynchronously(main, 0L, 5 * 20);
         }
 
         private void next() {
@@ -663,9 +666,5 @@ public class Leaderboard {
         public LeaderboardType prev() {
             return Arrays.asList(LeaderboardType.values()).get((Arrays.asList(LeaderboardType.values()).size() + index - 1) % Arrays.asList(LeaderboardType.values()).size());
         }
-    }
-
-    public interface HeadThreadCallback {
-        void finished(String name, Block block);
     }
 }

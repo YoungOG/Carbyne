@@ -32,34 +32,33 @@ public class HinderingShot implements Special {
 
 
     @Override
-    public void callSpecial(Player caster) {
+    public void callSpecial(final Player caster) {
         new BukkitRunnable() {
-
-            Location loc = caster.getEyeLocation();
-            Vector vector = loc.getDirection().normalize();
+            final Location loc = caster.getEyeLocation();
+            final Vector vector = loc.getDirection().normalize();
             double t = 0;
             @Override
             public void run() {
                 t++;
-                double x = vector.getX() * t;
-                double y = vector.getY() * t;
-                double z = vector.getZ() * t;
+                final double x = vector.getX() * t;
+                final double y = vector.getY() * t;
+                final double z = vector.getZ() * t;
                 loc.add(x, y, z);
 
                 if (t > 175 || loc.getBlock().getType() != Material.AIR) {
                     this.cancel();
                     loc.getWorld().playEffect(loc, Effect.EXPLOSION_HUGE, 1);
                     ParticleEffect.LAVA.display(0f, 0f, 0f, 1f, 5, loc, 30, false);
-                    for (Entity entity : loc.getWorld().getNearbyEntities(loc, 5, 5, 5)) {
+                    for (final Entity entity : loc.getWorld().getNearbyEntities(loc, 5, 5, 5)) {
                         if (entity instanceof LivingEntity && !entity.equals(caster)) {
-                            damageEntity((LivingEntity) entity, caster, 7);
+                            damageEntity((LivingEntity) entity, 7);
                         }
                     }
                 }
 
-                for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1.4, 1.4, 1.4)) {
+                for (final Entity entity : loc.getWorld().getNearbyEntities(loc, 1.4, 1.4, 1.4)) {
                     if (entity instanceof LivingEntity && !entity.equals(caster)) {
-                        damageEntity((LivingEntity) entity, caster, 10);
+                        damageEntity((LivingEntity) entity, 10);
                     }
                 }
 
@@ -71,11 +70,11 @@ public class HinderingShot implements Special {
         broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
-    public void damageEntity(LivingEntity entity, Player caster, double damage) {
+    public void damageEntity(final LivingEntity entity, final double damage) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                double health = entity.getHealth();
-                double damageToDeal = health - (health * 0.31);
+                final double health = entity.getHealth();
+                final double damageToDeal = health - (health * 0.31);
                 entity.damage(damageToDeal);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
                 entity.setFireTicks(20 * 5);

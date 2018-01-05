@@ -102,7 +102,7 @@ public abstract class Event {
     /**
      * Universal start method. This method can be overridden and called again in the subclass. I recommend this.
      * Start is special because it is called automatically if the event repeats alone.
-     * Notice that start registers and stop unregisters the event class which is a listener of itself (Not sure if this will work or not, but if it did, it would be cool, if not, we can use method overriding to do this).
+     * Notice that start registers and stop unregisters the event class which is a listeners of itself (Not sure if this will work or not, but if it did, it would be cool, if not, we can use method overriding to do this).
      */
     public synchronized void start() {
         active = true;

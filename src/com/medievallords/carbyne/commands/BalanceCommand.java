@@ -1,6 +1,6 @@
 package com.medievallords.carbyne.commands;
 
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
@@ -19,7 +19,7 @@ public class BalanceCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
-        if (getMarketManager().isEconomyHalted()) {
+        if (getEconomyManager().isEconomyHalted()) {
             MessageManager.sendMessage(player, "&cThe economy is temporarily disabled. The administrators will let you know when it is re-enabled.");
             return;
         }

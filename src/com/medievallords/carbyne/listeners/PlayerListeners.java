@@ -1,44 +1,38 @@
 package com.medievallords.carbyne.listeners;
 
-import com.keenant.tabbed.tablist.TitledTabList;
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.economy.account.Account;
-import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.*;
 import com.vexsoftware.votifier.model.VotifierEvent;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.github.paperspigot.Title;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Dalton on 6/22/2017.
- */
 public class PlayerListeners implements Listener {
-
-    private Carbyne main = Carbyne.getInstance();
 
     @Getter
     private static int voteCount = 0;
-
-    private String joinMessage, tablistHeader, tablistFooter;
+    private Carbyne main = Carbyne.getInstance();
+    private String joinMessage;
     private String[] subtitles;
 
     public PlayerListeners() {
@@ -55,27 +49,35 @@ public class PlayerListeners implements Listener {
 
         for (int i = 0; i < subtitles.length; i++)
             subtitles[i] = ChatColor.translateAlternateColorCodes('&', subtitles[i]);
-
-        tablistHeader = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistHeader"));
-
-        if (tablistHeader == null)
-            tablistHeader = "";
-
-        tablistFooter = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistFooter"));
-
-        if (tablistFooter == null)
-            tablistFooter = "";
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
 
         if (!player.hasPlayedBefore())
             player.sendTitle(new Title.Builder().title(joinMessage).subtitle(subtitles[Maths.randomNumberBetween(subtitles.length, 0)]).stay(55).build());
 
-        TitledTabList tabList = main.getTabbed().newTitledTabList(player);
-        tabList.setHeaderFooter(tablistHeader, tablistFooter);
+
+//        try {
+//            //Get the MapManager instance
+//            MapManager mapManager = ((MapManagerPlugin) Bukkit.getPluginManager().getPlugin("MapManager")).getMapManager();
+//
+//            //Wrap the local file "myImage.png"
+//            MapWrapper mapWrapper = mapManager.wrapImage(ImageIO.read(new URL("https://res.cloudinary.com/teepublic/image/private/s--s51yUeiA--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1463091852/production/designs/510568_1.jpg")));
+//            MapController mapController = mapWrapper.getController();
+//
+//            //Add "inventivetalent" as a viewer and send the content
+//            mapController.addViewer(player);
+//            mapController.sendContent(player);
+//
+//            //At this point, the player is able to see the image
+//            //So we can show we can show it in ItemFrames
+//            mapController.showInFrame(player, PlayerUtility.getFrame(new Location(Bukkit.getWorld("world"), -763.5, 105, 308.5)));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @EventHandler
@@ -95,7 +97,6 @@ public class PlayerListeners implements Listener {
             }
         }
     }
-
 
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
@@ -124,43 +125,28 @@ public class PlayerListeners implements Listener {
     @EventHandler
     public void onVote(VotifierEvent event) {
         Player player = Bukkit.getPlayer(event.getVote().getUsername());
+        player.playSound(player.getLocation(), Sound.ORB_PICKUP, 1, .1f);
 
         if (player != null) {
             voteCount++;
 
-            for (Player online : PlayerUtility.getOnlinePlayers()) {
-                Profile profile = main.getProfileManager().getProfile(online.getUniqueId());
-
-                profile.setShowVoteCount(true);
-
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (Cooldowns.tryCooldown(profile.getUniqueId(), "ShowVoteCD", 5000))
-                            profile.setShowVoteCount(false);
-                    }
-                }.runTaskLaterAsynchronously(main, 5 * 20L);
-            }
-
-            if (voteCount % 15 == 0 && voteCount < 100) {
+            if (voteCount % 15 == 0 && voteCount < 100)
                 MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l" + voteCount + " &aconsecutive votes has been reached! Vote using &3/vote&a!");
-            }
 
             double random = Math.random();
 
             ItemStack reward;
 
-            if (random <= 0.02) {
+            if (random <= 0.02)
                 reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
-            } else if (random <= 0.028) {
+            else if (random <= 0.028)
                 reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
-            } else if (random <= 0.15) {
+            else if (random <= 0.15)
                 reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
-            } else if (random <= 0.25) {
+            else if (random <= 0.25)
                 reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
-            } else {
+            else
                 reward = main.getCrateManager().getKey("IronKey").getItem().clone();
-            }
 
             Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(player.getInventory(), reward);
 
@@ -178,15 +164,14 @@ public class PlayerListeners implements Listener {
             double anotherRandom = Math.random();
             int amount;
 
-            if (anotherRandom <= 0.05) {
+            if (anotherRandom <= 0.05)
                 amount = 300;
-            } else if (anotherRandom <= 0.1) {
+            else if (anotherRandom <= 0.1)
                 amount = 250;
-            } else if (anotherRandom <= 0.25) {
+            else if (anotherRandom <= 0.25)
                 amount = 150;
-            } else {
+            else
                 amount = 75;
-            }
 
             Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + amount);
 
@@ -202,15 +187,14 @@ public class PlayerListeners implements Listener {
             double anotherRandom = Math.random();
             int amount;
 
-            if (anotherRandom <= 0.05) {
+            if (anotherRandom <= 0.05)
                 amount = 300;
-            } else if (anotherRandom <= 0.1) {
+            else if (anotherRandom <= 0.1)
                 amount = 250;
-            } else if (anotherRandom <= 0.25) {
+            else if (anotherRandom <= 0.25)
                 amount = 150;
-            } else {
+            else
                 amount = 75;
-            }
 
             for (Player online : PlayerUtility.getOnlinePlayers()) {
                 Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(online.getInventory(), reward);
@@ -230,6 +214,64 @@ public class PlayerListeners implements Listener {
             }
 
             MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l100 &aconsecutive votes has been reached, everyone online gets 1 " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        ItemStack blood = new ItemBuilder(Material.INK_SACK).durability(1).build();
+        ItemStack blood2 = new ItemBuilder(Material.REDSTONE).build();
+        ItemStack bone = new ItemBuilder(Material.BONE).build();
+
+        Player player = event.getEntity();
+        player.getWorld().playSound(player.getLocation(), Sound.VILLAGER_HIT, 1, 0.15f);
+        ParticleEffect.LAVA.display(0, 0, 0, 0, 2, player.getLocation(), 60, false);
+        List<Item> items = new ArrayList<>();
+
+        for (int i = 0; i < 7; i++) {
+            Item item = player.getWorld().dropItem(player.getLocation(), blood);
+            Item item2 = player.getWorld().dropItem(player.getLocation(), bone);
+            Item item3 = player.getWorld().dropItem(player.getLocation(), blood2);
+            item.setVelocity(new Vector(Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5).multiply(1.1));
+            item2.setVelocity(new Vector(Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5).multiply(1.1));
+            item3.setVelocity(new Vector(Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5, Maths.randomNumberBetween(0, 10) - 5).multiply(1.1));
+            item.setPickupDelay(1000000000);
+            item2.setPickupDelay(1000000000);
+            item3.setPickupDelay(1000000000);
+            items.add(item);
+            items.add(item2);
+            items.add(item3);
+        }
+
+        new BukkitRunnable() {
+            private int i = 0;
+
+            @Override
+            public void run() {
+                for (Item item : items)
+                    if (item.isOnGround()) {
+                        item.getWorld().playSound(item.getLocation(), Sound.LAVA_POP, 1, 1f);
+                        i++;
+                    }
+
+                if (items.size() <= 0 || i >= 3)
+                    cancel();
+            }
+        }.runTaskTimerAsynchronously(main, 0, 5);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Item item : items)
+                    item.remove();
+                items.clear();
+            }
+        }.runTaskLater(main, 150);
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (event.getFrom().getWorld().equals(event.getTo().getWorld()) && event.getFrom().distance(event.getTo()) > 10) {
+            event.getPlayer().playSound(event.getTo(), Sound.ENDERMAN_TELEPORT, .6f, 1);
         }
     }
 }

@@ -33,7 +33,24 @@ public class SetMotdCommand extends BaseCommand implements Listener {
             motd[i] = ChatColor.translateAlternateColorCodes('&', motd[i]);
     }
 
-    @Command(name = "setmotd", aliases = {"motd"})
+    @Command(name = "reloadmotd", permission = "carbyne.administrator")
+    public void execute(CommandArgs commandArgs) {
+        Carbyne.getInstance().reloadConfig();
+        Carbyne.getInstance().saveConfig();
+
+        List<String> initMotd = Carbyne.getInstance().getConfig().getStringList("Motd");
+        motd = initMotd.toArray(new String[initMotd.size()]);
+
+        if (motd.length < 1 || motd[0] == null)
+            motd = new String[]{"Example", "Motd"};
+
+        for (int i = 0; i < motd.length; i++)
+            motd[i] = ChatColor.translateAlternateColorCodes('&', motd[i]);
+
+        MessageManager.sendMessage(commandArgs.getSender(), "&cThe motd has been changed.");
+    }
+
+    @Command(name = "setmotd", aliases = {"motd"}, permission = "carbyne.administrator")
     public void onCommand(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();

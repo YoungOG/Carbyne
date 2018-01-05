@@ -1,26 +1,20 @@
 package com.medievallords.carbyne.utils;
 
-import com.bizarrealex.aether.scoreboard.Board;
-import com.bizarrealex.aether.scoreboard.BoardAdapter;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardFormat;
-import com.google.common.collect.Collections2;
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.conquerpoints.objects.ConquerPoint;
-import com.medievallords.carbyne.conquerpoints.objects.ConquerPointState;
-import com.medievallords.carbyne.economy.account.Account;
-import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
-import com.medievallords.carbyne.listeners.PlayerListeners;
-import com.medievallords.carbyne.missions.object.Mission;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.staff.StaffManager;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
+import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -29,27 +23,26 @@ import java.util.logging.Level;
 
 /**
  * Created by Calvin on 3/13/2017
- *
+ * <p>
  * for the Carbyne project.
  */
-public class CarbyneBoardAdapter implements BoardAdapter {
+public class CarbyneBoardAdapter {
 
     private Carbyne main;
+    private ProfileManager profileManager;
+    private SquadManager squadManager;
 
     public CarbyneBoardAdapter(Carbyne main) {
         this.main = main;
+        this.profileManager = main.getProfileManager();
+        this.squadManager = main.getSquadManager();
     }
 
-    @Override
     public String getTitle(Player player) {
         return "&b&lMedieval Lords";
     }
 
-    @Override
     public List<String> getScoreboard(Player player, Board board, Set<BoardCooldown> set) {
-        ProfileManager profileManager = main.getProfileManager();
-        GearManager gearManager = main.getGearManager();
-        SquadManager squadManager = main.getSquadManager();
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
@@ -59,73 +52,49 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
         if (player.hasPermission("carbyne.staff.staffmode")) {
             lines.add("&7Vanished&c: " + main.getStaffManager().isVanished(player));
-            lines.add("    ");
         }
 
-        if (!CombatTagListeners.isInCombat(player.getUniqueId())) {
-            if (Account.getAccount(player.getName()) != null) {
-                lines.add("&aBalance&7: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
-            }
-
-            if (profileManager.getProfile(player.getUniqueId()).isShowVoteCount()) {
-                lines.add("&aConsecutive Votes&7: " + PlayerListeners.getVoteCount());
-            }
-
-            if (main.getMissionsManager().getUuidMissions().containsKey(player.getUniqueId())) {
-                ArrayList<Mission> activeMissions = new ArrayList<>();
-                Mission[] missions = main.getMissionsManager().getUuidMissions().get(player.getUniqueId()).getCurrentMissions();
-
-                for (Mission mission : missions) {
-                    if (mission != null && !mission.isActive())
-                        continue;
-
-                    activeMissions.add(mission);
-                }
-
-                if (activeMissions.size() > 0) {
-                    lines.add(" ");
-                    lines.add("&aActive Missions&7: " + activeMissions.size());
-                }
-            }
-
-            if (profileManager.getProfile(player.getUniqueId()).getProfession() != null) {
-                Profile profile = profileManager.getProfile(player.getUniqueId());
-                lines.add(" ");
-                lines.add("&aProfession&7: " + profile.getProfession().getName());
-                lines.add("  &aLevel&7: " + profile.getProfessionLevel());
-                lines.add("  &aProgress&7: " + profile.getProfessionProgress());
-            }
+        Profile profile = profileManager.getProfile(player.getUniqueId());
+        if (profile.getRemainingPvPTime() > 1) {
+            lines.add("         ");
+            lines.add("&dProtection&7: " + formatTime(profile.getRemainingPvPTime()));
         }
 
-        if (gearManager.getDamageReduction(player) > 0.0 || gearManager.getProtectionReduction(player) > 0.0) {
-            lines.add(" ");
-            lines.add("&aDamage Reduction&7: " + doubleFormat((gearManager.getDamageReduction(player) + gearManager.getProtectionReduction(player)) * 100.0) + "%");
-        }
-
-        /*if ((player.getItemInHand() != null && gearManager.getDurability(player.getItemInHand()) > -1.0) || (player.getInventory().getHelmet() != null && gearManager.getDurability(player.getInventory().getHelmet()) > -1.0) || (player.getInventory().getChestplate() != null && gearManager.getDurability(player.getInventory().getChestplate()) > -1.0) || (player.getInventory().getLeggings() != null && gearManager.getDurability(player.getInventory().getLeggings()) > -1.0) || (player.getInventory().getBoots() != null && gearManager.getDurability(player.getInventory().getBoots()) > -1.0)) {
-            lines.add(" ");
-            lines.add("&6Durability:");
-
-            if (player.getInventory().getHelmet() != null && gearManager.getDurability(player.getInventory().getHelmet()) > -1) {
-                lines.add(" &eHelmet&b: " + ((int) gearManager.getDurability(player.getInventory().getHelmet())));
-            }
-
-            if (player.getInventory().getChestplate() != null && gearManager.getDurability(player.getInventory().getChestplate()) > -1) {
-                lines.add(" &eChestplate&b: " + ((int) gearManager.getDurability(player.getInventory().getChestplate())));
-            }
-
-            if (player.getInventory().getLeggings() != null && gearManager.getDurability(player.getInventory().getLeggings()) > -1) {
-                lines.add(" &eLeggings&b: " + ((int) gearManager.getDurability(player.getInventory().getLeggings())));
-            }
-
-            if (player.getInventory().getBoots() != null && gearManager.getDurability(player.getInventory().getBoots()) > -1) {
-                lines.add(" &eBoots&b: " + ((int) gearManager.getDurability(player.getInventory().getBoots())));
-            }
-        }
-
-        if (player.getItemInHand() != null && gearManager.getDurability(player.getItemInHand()) > -1) {
-            lines.add(" &eHand&b: " + ((int) gearManager.getDurability(player.getItemInHand())));
-        }*/
+//        if (!CombatTagListeners.isInCombat(player.getUniqueId())) {
+//            if (Account.getAccount(player.getName()) != null) {
+//                lines.add("&aBalance&7: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
+//            }
+//
+//            if (main.getMissionsManager().getUuidMissions().containsKey(player.getUniqueId())) {
+//                ArrayList<Mission> activeMissions = new ArrayList<>();
+//                Mission[] missions = main.getMissionsManager().getUuidMissions().get(player.getUniqueId()).getCurrentMissions();
+//
+//                for (Mission mission : missions) {
+//                    if (mission != null && !mission.isActive())
+//                        continue;
+//
+//                    activeMissions.add(mission);
+//                }
+//
+//                if (activeMissions.size() > 0) {
+//                    lines.add(" ");
+//                    lines.add("&aActive Missions&7: " + activeMissions.size());
+//                }
+//            }
+//
+//            if (profileManager.getProfile(player.getUniqueId()).getProfession() != null) {
+//                Profile profile = profileManager.getProfile(player.getUniqueId());
+//                lines.add(" ");
+//                lines.add("&aProfession&7: " + profile.getProfession().getName());
+//                lines.add("  &aLevel&7: " + profile.getProfessionLevel());
+//                lines.add("  &aProgress&7: " + profile.getProfessionProgress());
+//            }
+//        }
+//
+//        if (gearManager.getDamageReduction(player) > 0.0 || gearManager.getProtectionReduction(player) > 0.0) {
+//            lines.add(" ");
+//            lines.add("&aDamage Reduction&7: " + doubleFormat((gearManager.getDamageReduction(player) + gearManager.getProtectionReduction(player)) * 100.0) + "%");
+//        }
 
         if (squadManager.getSquad(player.getUniqueId()) != null) {
             Squad squad = squadManager.getSquad(player.getUniqueId());
@@ -134,48 +103,42 @@ public class CarbyneBoardAdapter implements BoardAdapter {
                 lines.add(" ");
                 lines.add("&dSquad [&7" + (squad.getType() == SquadType.PUBLIC ? "&7" : "&c") + squad.getType().toString().toLowerCase().substring(0, 1).toUpperCase() + squad.getType().toString().toLowerCase().substring(1) + "&d]:");
 
-                for (UUID member : squad.getAllPlayers()) {
-                    if (!member.equals(player.getUniqueId())) {
+                for (UUID member : squad.getAllPlayers())
+                    if (!member.equals(player.getUniqueId()))
                         lines.add(" &7" + (squad.getLeader() == member ? "&l" : "") + (Bukkit.getPlayer(member).getName().length() > 7 ? Bukkit.getPlayer(member).getName().substring(0, 8) : Bukkit.getPlayer(member).getName()) + "    " + formatHealth(Bukkit.getPlayer(member).getHealth()));
-                    }
-                }
             }
         }
 
-        Collection<ConquerPoint> conquerPoints = Collections2.filter(main.getConquerPointManager().getConquerPoints(),
-                conquerPoint -> (conquerPoint != null && conquerPoint.getState() == ConquerPointState.CAPTURING));
+        /*Collection<DropPoint> conquerPoints = Collections2.filter(main.getConquerPointManager().getConquerPoints(),
+                conquerPoint -> (conquerPoint != null && conquerPoint.getState() == DropPointState.CAPTURING));
 
         if (conquerPoints.size() > 0) {
             lines.add(" ");
             lines.add("&4Conquer Points:");
 
-            for (ConquerPoint conquerPoint : conquerPoints)
+            for (DropPoint conquerPoint : conquerPoints)
                 lines.add("&b- &5" + conquerPoint.getId().replace("_", " ").substring(0, Math.min(conquerPoint.getId().replace("_", "").length(), 5)) + "   &c[" + "&4" + MessageManager.convertSecondsToMinutes(conquerPoint.getCaptureTime()) + "&c]");
-        }
-
-        if (profileManager.getProfile(player.getUniqueId()) != null) {
-            Profile profile = profileManager.getProfile(player.getUniqueId());
-
-            if (profile.isPvpTimePaused() && profile.getRemainingPvPTime() > 1) {
-                lines.add("         ");
-                lines.add("&cPvPTimer&7: " + formatTime(profile.getRemainingPvPTime()));
-            } else if (profile.getRemainingPvPTime() > 1) {
-                lines.add("         ");
-                lines.add("&cPvPTimer&7: " + formatTime(profile.getRemainingPvPTime()));
-            }
-        }
+        }*/
 
         if (board.getCooldown("target") == null) {
             if (squadManager.getSquad(player.getUniqueId()) != null) {
                 Squad squad = squadManager.getSquad(player.getUniqueId());
 
-                if (squad.getTargetUUID() != null) {
+                if (squad.getTargetUUID() != null)
                     squad.setTargetUUID(null);
-                }
 
-                if (squad.getTargetSquad() != null) {
+                if (squad.getTargetSquad() != null)
                     squad.setTargetSquad(null);
-                }
+            }
+        }
+
+        ItemStack hand = player.getInventory().getItemInHand();
+        if (hand != null) {
+            CarbyneWeapon carbyneWeapon = main.getGearManager().getCarbyneWeapon(hand);
+
+            if (carbyneWeapon != null && carbyneWeapon.getSpecial() != null) {
+                lines.add("    ");
+                lines.add("&dCharge&7: " + formatCharge(carbyneWeapon.getSpecialCharge(hand), carbyneWeapon.getSpecial().getRequiredCharge()));
             }
         }
 
@@ -185,7 +148,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
                 if (cooldown.getId().equals("logout")) {
                     lines.add("       ");
-                    lines.add("&cLogout&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&dLogout&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("target")) {
@@ -194,7 +157,7 @@ public class CarbyneBoardAdapter implements BoardAdapter {
 
                         if (squad.getTargetUUID() != null || squad.getTargetSquad() != null) {
                             lines.add("     ");
-                            lines.add("&cTarget&7: " + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
+                            lines.add("&dTarget&7: " + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
                         }
                     }
                 }
@@ -202,23 +165,23 @@ public class CarbyneBoardAdapter implements BoardAdapter {
                 if (cooldown.getId().equals("combattag")) {
                     if (CombatTagListeners.isInCombat(player.getUniqueId())) {
                         lines.add("  ");
-                        lines.add("&cCombat Timer&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                        lines.add("&dCombat Timer&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                     }
                 }
 
                 if (cooldown.getId().equals("special")) {
                     lines.add("   ");
-                    lines.add("&cSpecial&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&dSpecial&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("enderpearl")) {
                     lines.add("   ");
-                    lines.add("&cEnderpearl&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&dEnderpearl&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("godapple")) {
                     lines.add("   ");
-                    lines.add("&cGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
+                    lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
                 }
             }
         } catch (Exception e) {
@@ -226,8 +189,8 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         }
 
         if (lines.size() >= 1) {
-            lines.add(0, "&7&m---------------------");
-            lines.add("&7&m---------------------");
+            lines.add(0, "&7&m-------------------");
+            lines.add("&7&m-------------------");
         }
 
         return lines;
@@ -246,36 +209,60 @@ public class CarbyneBoardAdapter implements BoardAdapter {
         lines.add("&7Flying: " + (player.isFlying() ? "&atrue" : "&cfalse"));
 
         if (lines.size() >= 1) {
-            lines.add(0, "&7&m---------------------");
-            lines.add("&7&m---------------------");
+            lines.add(0, "&7&m-------------------");
+            lines.add("&7&m-------------------");
         }
 
         return lines;
+    }
+
+    String formatCharge(int charge, int required) {
+        double part = required / 10;
+        double at = part;
+        StringBuilder s = new StringBuilder();
+
+        while (at <= charge) {
+            s.append("\u2758");
+            at += part;
+        }
+
+        int length = 10 - s.length();
+
+        if (length <= 0) {
+            s.insert(0, "&a");
+            return s.toString();
+        } else if (length <= 4)
+            s.insert(0, "&a");
+        else if (length <= 7)
+            s.insert(0, "&e");
+        else
+            s.insert(0, "&c");
+
+        s.append("&7");
+
+        for (int i = 0; i < length; i++)
+            s.append("\u2758");
+
+        return s.toString();
     }
 
     String formatHealth(double health) {
         double hearts = (health / 2) / 5;
         DecimalFormat format = new DecimalFormat("#");
 
-        if (hearts <= 10 && hearts >= 7.5) {
+        if (hearts <= 10 && hearts >= 7.5)
             return String.format(" &a%s \u2764", format.format(hearts));
-        } else if (hearts <= 7.5 && hearts >= 5) {
+        else if (hearts <= 7.5 && hearts >= 5)
             return String.format(" &e%s \u2764", format.format(hearts));
-        } else if (hearts <= 5 && hearts >= 2.5) {
+        else if (hearts <= 5 && hearts >= 2.5)
             return String.format(" &6%s \u2764", format.format(hearts));
-        } else {
+        else
             return String.format(" &c%s \u2764", format.format(hearts));
-        }
     }
 
     String formatTime(long millis) {
         return String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));
-    }
-
-    String doubleFormat(double number) {
-        DecimalFormat df = new DecimalFormat("0.00");
-        return df.format(number).replaceAll("\\.00$", "");
     }
 }

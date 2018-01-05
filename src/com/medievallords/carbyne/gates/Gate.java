@@ -82,7 +82,7 @@ public class Gate implements HeartbeatTask {
         }
 
         if (activePressurePlates >= pressurePlateMap.keySet().size()) {
-            MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
+            //MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
 
             JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
                     .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));

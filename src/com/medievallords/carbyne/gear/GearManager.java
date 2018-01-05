@@ -67,12 +67,12 @@ public class GearManager {
 
     public void load(FileConfiguration configuration) {
         specials.add(new FireStorm());
-        specials.add(new WitherStorm());
         specials.add(new LightningStorm());
         specials.add(new BastionOfHealth());
         specials.add(new HinderingShot());
         specials.add(new Frostbite());
-        specials.add(new WallSpecial());
+        specials.add(new ShootingStar());
+        specials.add(new WitherStorm());
         specials.add(new InfernalExplosion());
 
         carbyneGear.clear();

@@ -55,7 +55,7 @@ public class Package {
 
         lore.add(HiddenStringUtils.encodeString(packageCode));
         lore.add(ChatColor.YELLOW + "Use " + ChatColor.RED + "/pack open" + ChatColor.YELLOW + " to open this package");
-        lore.add(ChatColor.YELLOW + "Use " + ChatColor.RED + "/pack preview" + ChatColor.YELLOW + " to preview this package");
+        //lore.add(ChatColor.YELLOW + "Use " + ChatColor.RED + "/pack preview" + ChatColor.YELLOW + " to preview this package");
         lore.add("");
 
         lore.addAll(addLore);

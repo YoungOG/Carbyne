@@ -1,10 +1,10 @@
 package com.medievallords.carbyne.profiles;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.professions.Profession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import lombok.Getter;
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,15 +16,22 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+//import com.medievallords.carbyne.utils.EntityHider;
+
 public class ProfileManager {
 
     private Carbyne main = Carbyne.getInstance();
+    @Getter
     private HashSet<Profile> loadedProfiles = new HashSet<>();
     private MongoCollection<Document> profileCollection = main.getMongoDatabase().getCollection("profiles");
+    //@Getter
+    //private EntityHider entityHider;
 
     public ProfileManager() {
+        //this.entityHider = new EntityHider(Carbyne.getInstance(), EntityHider.Policy.BLACKLIST);
+
         loadProfiles();
-        startResetting();
+        //startResetting();
 
         new BukkitRunnable() {
             @Override
@@ -43,31 +50,26 @@ public class ProfileManager {
             for (Document document : profileCollection.find()) {
                 UUID uniqueId = UUID.fromString(document.getString("uniqueId"));
                 String username = document.getString("username");
-                int kills = document.getInteger("kills");
-                int carbyneKills = document.getInteger("carbynekills");
-                int deaths = document.getInteger("deaths");
-                int carbyneDeaths = document.getInteger("carbynedeaths");
-                int killstreak = document.getInteger("killstreak");
-                boolean showEffects = document.getBoolean("showeffects");
+                int kills = document.getInteger("kills"),
+                        carbyneKills = document.getInteger("carbyneKills"),
+                        deaths = document.getInteger("deaths"),
+                        carbyneDeaths = document.getInteger("carbyneDeaths"),
+                        killstreak = document.getInteger("killStreak"),
+                        professionLevel = 1;
+                boolean showEffects = document.getBoolean("showEffects"),
+                        playSounds = document.getBoolean("playSounds");
                 boolean safelyLogged = document.getBoolean("safelyLogged");
                 List<UUID> ignoredPlayers = new ArrayList<>();
-                Profession profession = null;
                 long professionResetCooldown = 0;
-                int professionLevel = 1;
-                double professionProgress = 0;
-                double requiredProfessionProgress = 1;
+                double professionProgress = 0,
+                        requiredProfessionProgress = 1;
 
                 if (document.containsKey("ignoredPlayers")) {
                     List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredPlayers");
 
-                    for (String s : uuidNameIgnoredPlayers) {
+                    for (String s : uuidNameIgnoredPlayers)
                         ignoredPlayers.add(UUID.fromString(s));
-                    }
                 }
-
-                if (document.containsKey("profession"))
-                    if (main.getProfessionManager().getProfession(document.getString("profession")) != null)
-                        profession = main.getProfessionManager().getProfession(document.getString("profession"));
 
                 if (document.containsKey("professionLevel"))
                     professionLevel = document.getInteger("professionLevel");
@@ -89,31 +91,60 @@ public class ProfileManager {
                 profile.setCarbyneDeaths(carbyneDeaths);
                 profile.setKillStreak(killstreak);
                 profile.setShowEffects(showEffects);
+                profile.setPlaySounds(playSounds);
                 profile.setSafelyLogged(safelyLogged);
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
-                profile.setPreviousInventoryContentString(document.getString("previous-inventory") != null ? document.getString("previous-inventory") : "");
+                profile.setPreviousInventoryContentString(document.getString("previousInventory") != null ? document.getString("previousInventory") : "");
                 profile.setProfileChatChannel(Profile.ProfileChatChannel.GLOBAL);
                 profile.setIgnoredPlayers(ignoredPlayers);
-                profile.setProfession(profession);
                 profile.setProfessionLevel(professionLevel);
                 profile.setProfessionProgress(professionProgress);
                 profile.setRequiredProfessionProgress(requiredProfessionProgress);
                 profile.setProfessionResetCooldown(professionResetCooldown);
 
-                if (document.containsKey("pvptime"))
-                    profile.setPvpTime(document.getLong("pvptime"));
+                profile.setDailyRewardsSetup(document.getBoolean("dailyRewardSetup"));
+                if (profile.isDailyRewardsSetup()) {
+                    profile.setDailyRewardDay(document.getInteger("dailyRewardDay"));
+                    profile.setDailyRewardDayTime(document.getLong("dailyRewardDayTime"));
+                    profile.setHasClaimedDailyReward(document.getBoolean("hasClaimedDailyReward"));
+                    profile.setHasCompletedDailyChallenge(document.getBoolean("hasCompletedDailyChallenge"));
 
-                if (document.containsKey("pvptimepaused"))
-                    profile.setPvpTimePaused(document.getBoolean("pvptimepaused"));
+                    int[] dailyRewardsIndex = new int[8];
+                    Document dailyRewardsIndexDocument = (Document) document.get("dailyRewardsIndex");
+                    if (dailyRewardsIndexDocument != null && dailyRewardsIndexDocument.keySet().size() > 0)
+                        for (String rewardId : dailyRewardsIndexDocument.keySet())
+                            dailyRewardsIndex[Integer.parseInt(rewardId)] = dailyRewardsIndexDocument.getInteger(rewardId);
+                    profile.setDailyRewardsIndex(dailyRewardsIndex);
 
-                if (document.containsKey("timeleft"))
-                    profile.setTimeLeft(document.getLong("timeleft"));
+                    Document dailyRewardsDocument = (Document) document.get("dailyRewards");
+                    if (dailyRewardsDocument != null && dailyRewardsDocument.keySet().size() > 0)
+                        for (String rewardId : dailyRewardsDocument.keySet())
+                            profile.getDailyRewards().put(Integer.parseInt(rewardId), dailyRewardsDocument.getBoolean(rewardId));
+                }
+
+                if (document.containsKey("crateProgression")) {
+                    Document crateProgression = (Document) document.get("crateProgression");
+
+                    if (crateProgression != null && crateProgression.keySet().size() > 0)
+                        for (String crateName : crateProgression.keySet())
+                            profile.getCrateProgression().put(crateName, crateProgression.getDouble(crateName));
+                }
+
+                if (document.containsKey("pvpTime"))
+                    profile.setPvpTime(document.getLong("pvpTime"));
+
+                if (document.containsKey("pvpTimePaused"))
+                    profile.setPvpTimePaused(document.getBoolean("pvpTimePaused"));
+
+                if (document.containsKey("timeLeft"))
+                    profile.setTimeLeft(document.getLong("timeLeft"));
 
                 loadedProfiles.add(profile);
             }
 
             main.getLogger().log(Level.INFO, "Successfully loaded " + profileCollection.count() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }
+
         System.gc();
     }
 
@@ -123,93 +154,78 @@ public class ProfileManager {
 
             long startTime = System.currentTimeMillis();
 
-            if (async) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        for (Profile profile : getLoadedProfiles()) {
-                            Document document = new Document("uniqueId", profile.getUniqueId().toString());
-                            document.append("username", profile.getUsername());
-                            document.append("kills", profile.getKills());
-                            document.append("carbynekills", profile.getCarbyneKills());
-                            document.append("deaths", profile.getDeaths());
-                            document.append("carbynedeaths", profile.getCarbyneDeaths());
-                            document.append("killstreak", profile.getKillStreak());
-                            document.append("pvptime", profile.getPvpTime());
-                            document.append("pvptimepaused", profile.isPvpTimePaused());
-                            document.append("showeffects", profile.hasEffectsToggled());
-                            document.append("safelyLogged", profile.isSafelyLogged());
-                            document.append("pin", profile.getPin());
-                            document.append("previous-inventory", profile.getPreviousInventoryContentString());
+            for (Profile profile : getLoadedProfiles()) {
+                Document document = new Document("uniqueId", profile.getUniqueId().toString());
+                document.append("username", profile.getUsername());
+                document.append("kills", profile.getKills());
+                document.append("carbyneKills", profile.getCarbyneKills());
+                document.append("deaths", profile.getDeaths());
+                document.append("carbyneDeaths", profile.getCarbyneDeaths());
+                document.append("killStreak", profile.getKillStreak());
+                document.append("pvpTime", profile.getPvpTime());
+                document.append("pvpTimePaused", profile.isPvpTimePaused());
+                document.append("showEffects", profile.hasEffectsToggled());
+                document.append("playSounds", profile.hasSoundsToggled());
+                document.append("safelyLogged", profile.isSafelyLogged());
+                document.append("pin", profile.getPin());
+                document.append("previousInventory", profile.getPreviousInventoryContentString());
+                document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
 
-                            if (!profile.getIgnoredPlayers().isEmpty()) {
-                                List<String> uuids = new ArrayList<>();
+                if (profile.isDailyRewardsSetup()) {
+                    document.append("dailyRewardDay", profile.getDailyRewardDay());
+                    document.append("dailyRewardDayTime", profile.getDailyRewardDayTime());
+                    document.append("hasClaimedDailyReward", profile.hasClaimedDailyReward());
+                    document.append("hasCompletedDailyChallenge", profile.hasCompletedDailyChallenge());
 
-                                for (UUID id : profile.getIgnoredPlayers())
-                                    uuids.add(id.toString());
+                    Document dailyRewardsIndexDocument = new Document();
+                    for (int i = 0; i < 8; i++)
+                        dailyRewardsIndexDocument.put("" + i, profile.getDailyRewardsIndex()[i]);
+                    document.append("dailyRewardsIndex", dailyRewardsIndexDocument);
 
-                                document.append("ignoredPlayers", uuids);
-                            }
-
-                            if (profile.getProfession() != null)
-                                document.append("profession", profile.getProfession().getName());
-
-                            document.append("professionLevel", profile.getProfessionLevel());
-                            document.append("professionProgress", profile.getProfessionProgress());
-                            document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
-                            document.append("professionResetCooldown", profile.getProfessionResetCooldown());
-
-                            if (profile.getTimeLeft() > 1)
-                                document.append("timeleft", profile.getTimeLeft());
-
-                            profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
-                        }
-
-                        main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
-                    }
-                }.runTaskAsynchronously(main);
-            } else {
-                for (Profile profile : getLoadedProfiles()) {
-                    Document document = new Document("uniqueId", profile.getUniqueId().toString());
-                    document.append("username", profile.getUsername());
-                    document.append("kills", profile.getKills());
-                    document.append("carbynekills", profile.getCarbyneKills());
-                    document.append("deaths", profile.getDeaths());
-                    document.append("carbynedeaths", profile.getCarbyneDeaths());
-                    document.append("killstreak", profile.getKillStreak());
-                    document.append("pvptime", profile.getPvpTime());
-                    document.append("pvptimepaused", profile.isPvpTimePaused());
-                    document.append("showeffects", profile.hasEffectsToggled());
-                    document.append("safelyLogged", profile.isSafelyLogged());
-                    document.append("pin", profile.getPin());
-                    document.append("previous-inventory", profile.getPreviousInventoryContentString());
-
-                    if (profile.getTimeLeft() > 1)
-                        document.append("timeleft", profile.getTimeLeft());
-
-
-                    if (!profile.getIgnoredPlayers().isEmpty()) {
-                        List<String> uuids = new ArrayList<>();
-
-                        for (UUID id : profile.getIgnoredPlayers())
-                            uuids.add(id.toString());
-
-                        document.append("ignoredPlayers", uuids);
-                    }
-
-                    if (profile.getProfession() != null)
-                        document.append("profession", profile.getProfession().getName());
-
-                    document.append("professionLevel", profile.getProfessionLevel());
-                    document.append("professionProgress", profile.getProfessionProgress());
-                    document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
-                    document.append("professionResetCooldown", profile.getProfessionResetCooldown());
-
-                    profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
+                    Document dailyRewardsDocument = new Document();
+                    for (int rewardId : profile.getDailyRewards().keySet())
+                        dailyRewardsDocument.put("" + rewardId, profile.getDailyRewards().get(rewardId));
+                    document.append("dailyRewards", dailyRewardsDocument);
                 }
 
-                main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
+                if (profile.getCrateProgression().keySet().size() > 0) {
+                    Document crate = new Document();
+
+                    for (String crateName : profile.getCrateProgression().keySet())
+                        crate.put(crateName, profile.getCrateProgression().get(crateName));
+
+                    document.append("crateProgression", crate);
+                }
+
+                if (!profile.getIgnoredPlayers().isEmpty()) {
+                    List<String> uuids = new ArrayList<>();
+
+                    for (UUID id : profile.getIgnoredPlayers())
+                        uuids.add(id.toString());
+
+                    document.append("ignoredPlayers", uuids);
+                }
+
+                document.append("professionLevel", profile.getProfessionLevel());
+                document.append("professionProgress", profile.getProfessionProgress());
+                document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
+                document.append("professionResetCooldown", profile.getProfessionResetCooldown());
+
+                if (profile.getTimeLeft() > 1)
+                    document.append("timeLeft", profile.getTimeLeft());
+
+                if (!async)
+                    profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
+                else
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
+                        }
+                    }.runTaskAsynchronously(main);
             }
+
+            main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }
     }
 
@@ -223,26 +239,31 @@ public class ProfileManager {
             profile.setCarbyneDeaths(0);
             profile.setKillStreak(0);
             profile.setShowEffects(true);
+            profile.setPlaySounds(true);
             profile.setSafelyLogged(false);
             profile.setProfileChatChannel(Profile.ProfileChatChannel.GLOBAL);
             profile.setPvpTime(System.currentTimeMillis() + ((60 * 30) * 1000));
+            profile.setTimeLeft(60 * 30 * 1000);
             profile.setPvpTimePaused(true);
             profile.setPin("");
             profile.setPreviousInventoryContentString("");
+            profile.setDailyRewardsSetup(false);
 
             Document document = new Document("uniqueId", profile.getUniqueId().toString());
             document.append("username", profile.getUsername());
             document.append("kills", profile.getKills());
-            document.append("carbynekills", profile.getCarbyneKills());
+            document.append("carbyneKills", profile.getCarbyneKills());
             document.append("deaths", profile.getDeaths());
-            document.append("carbynedeaths", profile.getCarbyneDeaths());
-            document.append("killstreak", profile.getKillStreak());
-            document.append("pvptime", profile.getPvpTime());
-            document.append("pvptimepaused", profile.isPvpTimePaused());
-            document.append("showeffects", profile.hasEffectsToggled());
+            document.append("carbyneDeaths", profile.getCarbyneDeaths());
+            document.append("killStreak", profile.getKillStreak());
+            document.append("pvpTime", profile.getPvpTime());
+            document.append("pvpTimePaused", profile.isPvpTimePaused());
+            document.append("showEffects", profile.hasEffectsToggled());
+            document.append("playSounds", profile.hasSoundsToggled());
             document.append("safelyLogged", profile.isSafelyLogged());
             document.append("pin", profile.getPin());
-            document.append("previous-inventory", profile.getPreviousInventoryContentString());
+            document.append("previousInventory", profile.getPreviousInventoryContentString());
+            document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
 
             if (!profile.getIgnoredPlayers().isEmpty()) {
                 List<String> uuids = new ArrayList<>();
@@ -252,9 +273,6 @@ public class ProfileManager {
 
                 document.append("ignoredPlayers", uuids);
             }
-
-            if (profile.getProfession() != null)
-                document.append("profession", profile.getProfession().getName());
 
             document.append("professionLevel", profile.getProfessionLevel());
             document.append("professionProgress", profile.getProfessionProgress());
@@ -274,48 +292,40 @@ public class ProfileManager {
     }
 
     public Boolean hasProfile(UUID uniqueId) {
-        for (Profile profile : getLoadedProfiles()) {
-            if (profile.getUniqueId().equals(uniqueId)) {
+        for (Profile profile : getLoadedProfiles())
+            if (profile.getUniqueId().equals(uniqueId))
                 return true;
-            }
-        }
+
         return false;
     }
 
     public Profile getProfile(UUID uniqueId) {
-        for (Profile profile : getLoadedProfiles()) {
-            if (profile.getUniqueId().equals(uniqueId)) {
+        for (Profile profile : getLoadedProfiles())
+            if (profile.getUniqueId().equals(uniqueId))
                 return profile;
-            }
-        }
+
         return null;
     }
 
     public Profile getProfile(String username) {
-        for (Profile profile : getLoadedProfiles()) {
-            if (profile.getUsername().equals(username)) {
+        for (Profile profile : getLoadedProfiles())
+            if (profile.getUsername().equals(username))
                 return profile;
-            }
-        }
-        return null;
-    }
 
-    public HashSet<Profile> getLoadedProfiles() {
-        return loadedProfiles;
+        return null;
     }
 
     public void startResetting() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Profile profile : loadedProfiles) {
+                for (Profile profile : loadedProfiles)
                     if (profile.isPvpTimePaused() && (profile.getPvpTime() > 0 && profile.getRemainingPvPTime() > 0)) {
                         long timeLeft = profile.getTimeLeft();
-                        if (timeLeft > 1) {
+
+                        if (timeLeft > 1)
                             profile.setPvpTime(System.currentTimeMillis() + timeLeft);
-                        }
                     }
-                }
             }
         }.runTaskTimerAsynchronously(main, 0, 5);
     }

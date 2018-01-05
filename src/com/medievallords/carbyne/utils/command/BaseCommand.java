@@ -1,11 +1,11 @@
 package com.medievallords.carbyne.utils.command;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.conquerpoints.ConquerPointManager;
 import com.medievallords.carbyne.crates.CrateManager;
+import com.medievallords.carbyne.dailybonus.DailyBonusManager;
 import com.medievallords.carbyne.donator.GamemodeManager;
 import com.medievallords.carbyne.duels.duel.DuelManager;
-import com.medievallords.carbyne.economy.MarketManager;
+import com.medievallords.carbyne.economy.EconomyManager;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.leaderboards.LeaderboardManager;
@@ -26,7 +26,7 @@ public class BaseCommand {
     private GearManager gearManager = carbyne.getGearManager();
     private GateManager gateManager = carbyne.getGateManager();
     private LeaderboardManager leaderboardManager = carbyne.getLeaderboardManager();
-    private MarketManager marketManager = carbyne.getMarketManager();
+    private EconomyManager economyManager = carbyne.getEconomyManager();
     private SquadManager squadManager = carbyne.getSquadManager();
     private RegenerationHandler regenerationHandler = carbyne.getRegenerationHandler();
     private CrateManager crateManager = carbyne.getCrateManager();
@@ -34,9 +34,10 @@ public class BaseCommand {
     private ProfileManager profileManager = carbyne.getProfileManager();
     private LootChestManager lootChestManager = carbyne.getLootChestManager();
     private GamemodeManager gamemodeManager = carbyne.getGamemodeManager();
-    private ConquerPointManager conquerPointManager = carbyne.getConquerPointManager();
+    //private DropPointManager conquerPointManager = carbyne.getConquerPointManager();
     private PackageManager packageManager = carbyne.getPackageManager();
     private SpellMenuManager spellMenuManager = carbyne.getSpellMenuManager();
+    private DailyBonusManager dailyBonusManager = carbyne.getDailyBonusManager();
 
     public BaseCommand() {
         carbyne.getCommandFramework().registerCommands(this);

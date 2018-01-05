@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.missions.object;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.missions.MissionsManager;
 import com.medievallords.carbyne.missions.enums.Difficulty;
 import com.medievallords.carbyne.utils.DateUtil;

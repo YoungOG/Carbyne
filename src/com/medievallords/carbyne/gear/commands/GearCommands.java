@@ -9,6 +9,7 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -27,7 +28,9 @@ public class GearCommands extends BaseCommand {
             MessageManager.sendMessage(sender, "&cUsage: /carbyne store");
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("store")) {
-                ((Player) sender).openInventory(getGearManager().getGearGuiManager().getStoreGui());
+                Player player = (Player) sender;
+                player.openInventory(getGearManager().getGearGuiManager().getStoreGui());
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
             } else if (args[0].equalsIgnoreCase("polish")) {
                 Player player = (Player) sender;
                 ItemStack itemStackInHand = player.getItemInHand();

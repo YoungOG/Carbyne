@@ -4,13 +4,14 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.duels.duel.DuelStage;
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -48,6 +49,8 @@ public class SquadDuel extends Duel {
                 continue;
             }
 
+            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&cGO!")).stay(7).build());
             player.teleport(arena.getSpawnPointLocations()[0].clone().add(0.0, 0.5, 0.0));
 
             player.setHealth(player.getMaxHealth());
@@ -63,6 +66,8 @@ public class SquadDuel extends Duel {
                 continue;
             }
 
+            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&cGO!")).stay(7).build());
             player.teleport(arena.getSpawnPointLocations()[1].clone().add(0.0, 0.5, 0.0));
 
             player.setHealth(player.getMaxHealth());
@@ -83,26 +88,29 @@ public class SquadDuel extends Duel {
 
             @Override
             public void run() {
-                for (UUID uuid : squadOne.getAllPlayers()) {
-                    Player player = Bukkit.getServer().getPlayer(uuid);
-
-                    if (player != null) {
-                        player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());                    }
-                }
-
-                for (UUID uuid : squadTwo.getAllPlayers()) {
-                    Player player = Bukkit.getServer().getPlayer(uuid);
-
-                    if (player != null) {
-                        player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
-                    }
-                }
-                countdown--;
-
                 if (countdown <= 0) {
                     this.cancel();
                     start();
                     setDuelStage(DuelStage.FIGHTING);
+                } else {
+                    for (UUID uuid : squadOne.getAllPlayers()) {
+                        Player player = Bukkit.getServer().getPlayer(uuid);
+
+                        if (player != null) {
+                            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+                            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
+                        }
+                    }
+
+                    for (UUID uuid : squadTwo.getAllPlayers()) {
+                        Player player = Bukkit.getServer().getPlayer(uuid);
+
+                        if (player != null) {
+                            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+                            player.sendTitle(new Title.Builder().title(ChatColor.translateAlternateColorCodes('&', "&c" + countdown)).stay(20).build());
+                        }
+                    }
+                    countdown--;
                 }
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 20);

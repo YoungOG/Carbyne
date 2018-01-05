@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gear.effects;
 
 import com.medievallords.carbyne.heartbeat.Heartbeat;
 import com.medievallords.carbyne.heartbeat.HeartbeatTask;
+import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import org.bukkit.Location;
@@ -22,7 +23,6 @@ public class GearEffects implements HeartbeatTask {
     private Random random = new Random();
 
     public GearEffects(){
-
         if (this.heartbeat == null) {
             this.heartbeat = new Heartbeat(this, 250L);
             heartbeat.start();
@@ -34,14 +34,15 @@ public class GearEffects implements HeartbeatTask {
     public void effectsTick() {
         for (Player all : PlayerUtility.getOnlinePlayers()) {
             if (all.getFireTicks() > 1) {
-                ParticleEffect.FLAME.display(0.35f, 0.35f, 0.35f, (float) 0.02, 10, all.getLocation().add(0, 1, 0), 50, false);
+                ParticleEffect.FLAME.display(0.35f, 0.35f, 0.35f, (float) 0.02, 5, all.getLocation().add(0, 1, 0), 50, false);
             }
 
             if (all.getItemInHand().containsEnchantment(Enchantment.DAMAGE_ALL) || all.getItemInHand().containsEnchantment(Enchantment.ARROW_DAMAGE)) {
-                effectSharpnessPlayers(all);
+                if (!CombatTagListeners.isInCombat(all.getUniqueId()))
+                    effectSharpnessPlayers(all);
             }
 
-            if (all.isSprinting()){
+            if (all.isSprinting() && all.isOnGround()) {
                 ParticleEffect.FOOTSTEP.display(0.2f, 0f, 0.2f, (float) 0.15, 1, all.getLocation().add(0, 0.02, 0), 50, false);
             }
 
@@ -52,22 +53,22 @@ public class GearEffects implements HeartbeatTask {
             for (PotionEffect effects : all.getActivePotionEffects()) {
                 switch (effects.getType().getName()) {
                     case "WITHER":
-                        ParticleEffect.TOWN_AURA.display(0.5f, 0.5f, 0.5f, (float) 0.02, 40, all.getLocation().add(0, 1, 0), 50, false);
+                        ParticleEffect.TOWN_AURA.display(0.5f, 0.5f, 0.5f, (float) 0.02, 15, all.getLocation().add(0, 1, 0), 50, false);
                         break;
                     case "POISON":
-                        ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.LONG_GRASS, (byte) 0), 0.2f, 0.2f, 0.2f, (float) 0.02, 60, all.getLocation().add(0, 0.2, 0), 50, false);
+                        ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.LONG_GRASS, (byte) 0), 0.2f, 0.2f, 0.2f, (float) 0.02, 20, all.getLocation().clone().add(0, 0.2, 0), 50, false);
                         break;
                     case "BLINDNESS":
-                        ParticleEffect.TOWN_AURA.display(0.1f, 0.1f, 0.1f, (float) 0.01, 60, all.getLocation().add(0, 2, 0), 50, false);
+                        ParticleEffect.TOWN_AURA.display(0.1f, 0.1f, 0.1f, (float) 0.01, 20, all.getLocation().add(0, 2, 0), 50, false);
                         break;
                     case "SPEED":
-                        ParticleEffect.SMOKE_NORMAL.display(0.2f, 0.1f, 0.2f, (float) 0.03, 30, all.getLocation(), 50, false);
+                        ParticleEffect.SMOKE_NORMAL.display(0.2f, 0.1f, 0.2f, (float) 0.03, 12, all.getLocation(), 50, false);
                         break;
                     case "SLOW":
-                        ParticleEffect.CLOUD.display(0.2f, -0.2f, 0.2f, (float) 0.0001, 35, all.getLocation().subtract(0, 0.1, 0), 50, false);
+                        ParticleEffect.CLOUD.display(0.2f, -0.2f, 0.2f, (float) 0.0001, 15, all.getLocation().subtract(0, 0.1, 0), 50, false);
                         break;
                     case "REGENERATION":
-                        ParticleEffect.HEART.display((float) random.nextDouble(), (float) random.nextDouble(), (float)random.nextDouble(), 0.3F, 3, all.getLocation(), 50, false);
+                        ParticleEffect.HEART.display((float) random.nextDouble(), (float) random.nextDouble(), (float) random.nextDouble(), 0.3F, 2, all.getLocation(), 50, false);
                         break;
                 }
             }

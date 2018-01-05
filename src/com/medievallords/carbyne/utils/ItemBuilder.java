@@ -29,6 +29,11 @@ public class ItemBuilder {
         item = itemstack;
     }
 
+    public ItemBuilder type(Material material) {
+        item.setType(material);
+        return this;
+    }
+
     public ItemBuilder name(String name) {
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
@@ -130,20 +135,28 @@ public class ItemBuilder {
 
     public ItemBuilder clearLore() {
         ItemMeta meta = item.getItemMeta();
-        meta.setLore(new ArrayList<String>());
+        meta.setLore(new ArrayList<>());
         item.setItemMeta(meta);
         return this;
     }
 
-    public ItemBuilder removeOne() {
+    public ItemBuilder removeLore(int amount) {
         ItemMeta meta = item.getItemMeta();
         List<String> lore = meta.getLore();
-        if (lore.isEmpty()) {
+
+        if (lore.isEmpty() && lore.size() < amount)
             return this;
+
+        for (int i = 0; i < amount; i++) {
+            if (lore.isEmpty())
+                break;
+
+            lore.remove(lore.size() - 1);
         }
-        lore.remove(lore.size() - 1);
+
         meta.setLore(lore);
         item.setItemMeta(meta);
+
         return this;
     }
 
@@ -217,6 +230,10 @@ public class ItemBuilder {
         item = CraftItemStack.asCraftMirror(nmsStack);
 
         return this;
+    }
+
+    public ItemBuilder glow(boolean glow) {
+        return (glow ? addGlow() : hideGlow());
     }
 
     public ItemStack build() {

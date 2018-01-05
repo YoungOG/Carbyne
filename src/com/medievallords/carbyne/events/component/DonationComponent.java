@@ -1,6 +1,6 @@
 package com.medievallords.carbyne.events.component;
 
-import com.medievallords.carbyne.economy.account.Account;
+import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.events.Event;
 import com.medievallords.carbyne.events.EventComponent;
 import com.medievallords.carbyne.events.SingleWinnerEvent;

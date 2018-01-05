@@ -1,7 +1,0 @@
-Gates:
-  ExampleGate:
-    ActiveLength: 1
-    Delay: 3
-    PressurePlateLocations: []
-    ButtonLocations: []
-    RedstoneBlockLocations: []

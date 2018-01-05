@@ -1,7 +1,5 @@
 package com.medievallords.carbyne.commands;
 
-import com.bizarrealex.aether.scoreboard.Board;
-import com.bizarrealex.aether.scoreboard.cooldown.BoardCooldown;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.profiles.Profile;
@@ -9,6 +7,8 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;

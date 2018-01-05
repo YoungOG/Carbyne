@@ -34,12 +34,12 @@ public class Frostbite implements Special {
     }
 
     @Override
-    public void callSpecial(Player caster) {
-        for (Location loc : getBlocksInRadius(caster.getLocation())) {
-            double random = Math.random();
-            for (Entity entity : caster.getWorld().getNearbyEntities(caster.getLocation(), 30, 30, 30)) {
+    public final void callSpecial(final Player caster) {
+        for (final Location loc : getBlocksInRadius(caster.getLocation())) {
+            final double random = Math.random();
+            for (final Entity entity : caster.getWorld().getNearbyEntities(caster.getLocation(), 30, 30, 30)) {
                 if (entity instanceof Player) {
-                    Player player = (Player) entity;
+                    final Player player = (Player) entity;
                     if (loc.getBlock().getType() == Material.LONG_GRASS || loc.getBlock().getType() == Material.DEAD_BUSH || loc.getBlock().getType() == Material.YELLOW_FLOWER || loc.getBlock().getType() == Material.RED_ROSE || loc.getBlock().getType() == Material.DOUBLE_PLANT) {
                         if (random < 0.5) {
                             player.sendBlockChange(loc, Material.SNOW, (byte) 0);
@@ -78,13 +78,13 @@ public class Frostbite implements Special {
             }.runTaskTimer(Carbyne.getInstance(), 0, 5);
         }
         new BukkitRunnable() {
-            Location loc = caster.getLocation();
+            final Location loc = caster.getLocation();
             double times = 0;
             public void run() {
-                for (Entity entity : caster.getWorld().getNearbyEntities(loc, radius, 5, radius)) {
+                for (final Entity entity : caster.getWorld().getNearbyEntities(loc, radius, 5, radius)) {
                     if (entity instanceof LivingEntity && !entity.equals(caster)) {
                         if (entity instanceof Player) {
-                            Player hit = (Player) entity;
+                            final Player hit = (Player) entity;
                             if (isOnSameTeam(caster, hit)) {
                                 return;
                             }
@@ -105,7 +105,7 @@ public class Frostbite implements Special {
     }
 
 
-    private List<Location> getBlocksInRadius(final Location l) {
+    private final List<Location> getBlocksInRadius(final Location l) {
         final List<Location> blocks = new ArrayList<>();
         for (int x = -this.radius; x <= this.radius; ++x) {
             for (int y = -this.radius; y <= this.radius; ++y) {
@@ -123,7 +123,7 @@ public class Frostbite implements Special {
         return blocks;
     }
 
-    public void damageEntity(LivingEntity entity) {
+    private final void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             entity.damage(1);
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 0));

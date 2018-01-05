@@ -65,11 +65,9 @@ public class RewardGenerator {
                 if (item == null || prev().equals(item)) {
                     inventory.setItem(slot, get());
 
-                    if (main.getCrateManager().getSounds().size() > 0) {
-                        for (Sound s : main.getCrateManager().getSounds().keySet()) {
+                    if (main.getCrateManager().getSounds().size() > 0)
+                        for (Sound s : main.getCrateManager().getSounds().keySet())
                             player.playSound(player.getLocation(), s, main.getCrateManager().getSounds().get(s)[0].floatValue(), main.getCrateManager().getSounds().get(s)[1].floatValue());
-                        }
-                    }
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, main.getConfig().getInt("crates.crate-opening-speed")));
@@ -120,25 +118,20 @@ public class RewardGenerator {
 
                             return;
                         }
-                    } else {
-                        if (chosenReward.getCommands().size() > 0) {
-                            for (String cmd : chosenReward.getCommands()) {
+                    } else if (chosenReward.getCommands().size() > 0)
+                        for (String cmd : chosenReward.getCommands())
                                 main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()));
-                            }
-                        }
-                    }
 
-                    if (crate.getCrateOpeners().keySet().contains(player.getUniqueId())) {
-                        if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId())) {
-                            if (crate.getCrateOpenersAmount().get(player.getUniqueId()) > 0) {
+
+                    if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
+                        if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
+                            if (crate.getCrateOpenersAmount().get(player.getUniqueId()) > 0)
                                 crate.getCrateOpenersAmount().put(player.getUniqueId(), crate.getCrateOpenersAmount().get(player.getUniqueId()) - 1);
-                            } else {
+                            else {
                                 crate.getCrateOpeners().remove(player.getUniqueId());
                                 crate.getCrateOpenersAmount().remove(player.getUniqueId());
                                 player.closeInventory();
                             }
-                        }
-                    }
                 }
             }.runTaskLater(main, 3 * 20L);
         } else {
@@ -161,20 +154,16 @@ public class RewardGenerator {
 
                     player.updateInventory();
                 } else {
-                    if (chosenReward.getCommands().size() > 0) {
-                        for (String cmd : chosenReward.getCommands()) {
+                    if (chosenReward.getCommands().size() > 0)
+                        for (String cmd : chosenReward.getCommands())
                             main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()));
-                        }
-                    }
                 }
 
-                if (crate.getCrateOpeners().keySet().contains(player.getUniqueId())) {
+                if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
                     crate.getCrateOpeners().remove(player.getUniqueId());
-                }
 
-                if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId())) {
+                if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
                     crate.getCrateOpenersAmount().remove(player.getUniqueId());
-                }
             }
         }
     }

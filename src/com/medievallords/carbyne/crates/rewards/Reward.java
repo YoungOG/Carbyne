@@ -29,14 +29,14 @@ public class Reward {
     private int id;
     private int itemId;
     private int itemData;
-    private int amount;
+    private int amount, slot;
     private String displayName;
     private String gearCode;
     private List<String> lore = new ArrayList<>();
     private HashMap<Enchantment, Integer> enchantments = new HashMap<>();
     private List<String> commands = new ArrayList<>();
     private boolean displayItemOnly;
-    private double chance;
+    private double chance, progress;
 
     public Reward(int id, int itemId, int itemData, int amount, String gearCode) {
         this.id = id;
@@ -49,20 +49,21 @@ public class Reward {
     public ItemStack getItem(boolean displayItem) {
         if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData()) {
             return new ItemBuilder(gearManager.getTokenItem()).amount(amount).build();
+
         } else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData()) {
             return new ItemBuilder(gearManager.getPolishItem()).amount(amount).build();
+
         } else if (gearCode.contains("randomgear") && !displayItem) {
             return new ItemBuilder(gearManager.getRandomCarbyneGear(Boolean.valueOf(gearCode.split(":")[1])).getItem(false)).amount(amount).build();
+
         } else if (gearManager.getCarbyneGear(gearCode) != null) {
-            if (gearManager.getCarbyneGear(gearCode).getItem(false) != null) {
+            if (gearManager.getCarbyneGear(gearCode).getItem(false) != null)
                 return new ItemBuilder(gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();
-            }
         } else if (Package.getPackage(displayName) != null) {
             return Package.getPackage(displayName).getItem(amount);
         } else {
             return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).amount(amount).name(displayName).setLore(lore).addEnchantments(enchantments).build();
         }
-
         return null;
     }
 

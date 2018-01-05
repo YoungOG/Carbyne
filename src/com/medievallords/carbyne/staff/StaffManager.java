@@ -2,54 +2,62 @@ package com.medievallords.carbyne.staff;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.*;
+import com.mongodb.client.MongoCollection;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.inventivetalent.mapmanager.controller.MapController;
+import org.inventivetalent.mapmanager.wrapper.MapWrapper;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by Calvin on 6/11/2017
  * for the Carbyne project.
  */
+@Getter
 public class StaffManager {
 
+    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, wand;
     private Carbyne main = Carbyne.getInstance();
-    @Getter
     private HashSet<UUID> vanish = new HashSet<>(), frozen = new HashSet<>(), frozenStaff = new HashSet<>();
-    @Getter
+    private HashSet<ServerPicture> serverPictures = new HashSet<>();
     private List<UUID> staffModePlayers = new ArrayList<>(), staffChatPlayers = new ArrayList<>();
-    @Getter
+    private Set<UUID> staff = new HashSet<>();
     @Setter
     private boolean chatMuted = false;
-    @Getter
     @Setter
     private int slowChatTime = 0;
-    @Getter
     @Setter
-    private int serverSlots = 175;
-
+    private int serverSlots = 60;
     private Map<String, Boolean> falsePerms = new HashMap<>(), truePerms = new HashMap<>();
-    @Getter
-    private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, wand;
 
-    @Getter
     private File staffWhitelistCommandsFile;
-    @Getter
     private FileConfiguration staffWhitelistCommandConfiguration;
 
-    @Getter
     private List<String> staffmodeCommandWhitelist;
 
     public StaffManager() {
@@ -97,6 +105,70 @@ public class StaffManager {
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3 * 25L);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                loadPictureMap();
+            }
+        }.runTaskLater(main, 100);
+    }
+
+    public void reloadImages(CommandSender sender) {
+        saveServeImagesFile();
+        for (ServerPicture picture : serverPictures) {
+            picture.cancel();
+        }
+        loadPictureMap();
+        MessageManager.sendMessage(sender, "&cImages have been reloaded.");
+    }
+
+    public void loadPictureMap() {
+        ConfigurationSection cs = main.getServerImagesFileConfiguration().getConfigurationSection("Images");
+        if (cs == null) {
+            cs = main.getServerImagesFileConfiguration().createSection("Images");
+            saveServeImagesFile();
+            return;
+        }
+
+        serverPictures.clear();
+
+        for (String key : cs.getKeys(false)) {
+            String url = cs.getString(key + ".URL");
+            ConfigurationSection frameSection = cs.getConfigurationSection(key + ".Frames");
+            int x = cs.getInt(key + ".X");
+            int y = cs.getInt(key + ".Y");
+            ItemFrame[][] frames = new ItemFrame[x][y];
+            int i = 0, l = 0;
+            for (String secOne : frameSection.getKeys(false)) {
+                Location ser = deserializeLocation(frameSection.getString(secOne + ".main"));
+                for (Entity entity : ser.getWorld().getNearbyEntities(ser, .1, .1, .1)) {
+                    if (entity instanceof ItemFrame) {
+                        frames[i][l++] = (ItemFrame) entity;
+                        break;
+                    }
+                }
+                for (String loca : frameSection.getStringList(secOne + ".list")) {
+                    Location location = deserializeLocation(loca);
+                    for (Entity entity : location.getWorld().getNearbyEntities(location, .1, .1, .1)) {
+                        if (entity instanceof ItemFrame) {
+                            frames[i][l++] = (ItemFrame) entity;
+                            break;
+                        }
+                    }
+                }
+                i++;
+                l = 0;
+            }
+
+            ServerPicture picture = new ServerPicture(key, url, frames, x, y);
+            serverPictures.add(picture);
+        }
+    }
+
+    private void saveServeImagesFile() {
+        main.setServerImagesFile(new File(main.getDataFolder(), "serverimages.yml"));
+        main.setServerImagesFileConfiguration(YamlConfiguration.loadConfiguration(main.getServerImagesFile()));
     }
 
     /**
@@ -115,7 +187,7 @@ public class StaffManager {
             PermissionUtils.setPermissions(player.addAttachment(main), falsePerms, true);
             MessageManager.sendMessage(player, "&cYou have disabled staff mode and are visible!");
         } else {
-            if (PlayerUtility.isInventoryEmpty(player)) {
+            if (PlayerUtility.isInventoryEmpty(player.getInventory())) {
                 toggleGamemode(player, true);
                 staffModePlayers.add(pUUID);
                 player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, toggleVanishTool, randomTeleportTool});
@@ -222,8 +294,43 @@ public class StaffManager {
             }
         }
 
+        staff.remove(player.getUniqueId());
         if (!vanish.contains(player.getUniqueId()))
             vanish.add(player.getUniqueId());
+    }
+
+    public static Location deserializeLocation(String s) {
+        Location l = new Location(Bukkit.getWorlds().get(0), 0.0D, 0.0D, 0.0D);
+        String[] att = s.split("a");
+
+        for (String attribute : att) {
+            String[] split = attribute.split("b");
+            if (split[0].equalsIgnoreCase("w")) {
+                l.setWorld(Bukkit.getWorld(split[1]));
+            }
+
+            if (split[0].equalsIgnoreCase("x")) {
+                l.setX(Double.parseDouble(split[1]));
+            }
+
+            if (split[0].equalsIgnoreCase("y")) {
+                l.setY(Double.parseDouble(split[1]));
+            }
+
+            if (split[0].equalsIgnoreCase("z")) {
+                l.setZ(Double.parseDouble(split[1]));
+            }
+
+            if (split[0].equalsIgnoreCase("p")) {
+                l.setPitch(Float.parseFloat(split[1]));
+            }
+
+            if (split[0].equalsIgnoreCase("yl")) {
+                l.setYaw(Float.parseFloat(split[1]));
+            }
+        }
+
+        return l;
     }
 
     public void showPlayer(Player player) {
@@ -235,6 +342,7 @@ public class StaffManager {
             }
         }
 
+        staff.add(player.getUniqueId());
         vanish.remove(player.getUniqueId());
     }
 
@@ -273,14 +381,6 @@ public class StaffManager {
         return vanish.contains(player.getUniqueId());
     }
 
-    public static void messageStaff(String... message) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.hasPermission("carbyne.staff")) {
-                MessageManager.sendMessage(player, message);
-            }
-        }
-    }
-
     public void logToFile(String message) {
         try {
             File saveTo = new File(Carbyne.getInstance().getDataFolder(), "playersLog.txt");
@@ -298,5 +398,107 @@ public class StaffManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Getter
+    @Setter
+    public static class ServerPicture {
+
+        private Carbyne main = Carbyne.getInstance();
+        private MongoCollection<Document> serverPictureCollection = main.getMongoDatabase().getCollection("serverpictures");
+
+        private String id, imageUrl;
+        private int x, y;
+        private ItemFrame[][] frames;
+        private BukkitTask checkRunnable;
+        private BufferedImage[][] image;
+        private Image[] splitImages;
+
+        public ServerPicture(String id, String imageUrl, ItemFrame[][] frames, int x, int y) {
+            this.x = x;
+            this.y = y;
+            this.id = id;
+            this.imageUrl = imageUrl;
+            this.frames = frames;
+
+            establishPicture();
+
+            checkRunnable = new BukkitRunnable() {
+                public void run() {
+                    int c = 0, r = 0;
+                    for (ItemFrame[] frame1 : frames) {
+                        for (ItemFrame itemFrame : frame1) {
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                MapWrapper mapWrapper = main.getMapManager().wrapImage(image[c][r]);
+                                MapController mapController = mapWrapper.getController();
+
+                                mapController.addViewer(player);
+                                mapController.sendContent(player);
+
+                                mapController.showInFrame(player, itemFrame);
+                                mapController.showInHand(player);
+                            }
+
+                            r++;
+                        }
+
+                        r = 0;
+                        c++;
+                    }
+                }
+            }.runTaskTimerAsynchronously(Carbyne.getInstance(), 20L, 100L);
+        }
+
+        public void establishPicture() {
+            if (frames == null) {
+                return;
+            }
+
+            BufferedImage image;
+            try {
+                image = ImageIO.read(new URL(imageUrl).openStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            this.image = new BufferedImage[x][y];
+
+            int dWidth = image.getWidth() / x, dHeight = image.getHeight() / y;
+
+            int c = 0, r = 0;
+            for (ItemFrame[] frame1 : frames) {
+                for (ItemFrame itemFrame : frame1) {
+                    this.image[c][r] = makeSubImage(image, dWidth, dHeight, (dWidth * c), (dHeight * r));
+                    r++;
+                }
+                r = 0;
+                c++;
+            }
+        }
+
+        private BufferedImage makeSubImage(BufferedImage originalImage, int width, int height, int x, int y) {
+            return originalImage.getSubimage(x, y, width, height);
+            /*BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D graphics = (Graphics2D) newImage.getGraphics();
+            AffineTransform at = new AffineTransform();
+            at.setToRotation(Math.PI);
+            graphics.drawImage(originalImage.getSubimage(-x, -y, width, height), at, null);
+            //graphics.drawImage(originalImage, at,-x, -y, null);
+            //graphics.drawImage(newImage, at, 1, 1, 1, 1, 1);
+            graphics.dispose();
+
+            return newImage;*/
+        }
+
+        public void cancel() {
+            checkRunnable.cancel();
+        }
+    }
+
+
+    public enum PictureType {
+        SERVER, INDIVIDUAL
     }
 }
