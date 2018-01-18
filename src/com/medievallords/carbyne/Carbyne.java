@@ -425,7 +425,7 @@ public class Carbyne extends JavaPlugin {
         new SquadKickCommand();
         new SquadChatCommand();
         new SquadListCommand();
-        new FocusCommand();
+        new SquadFocusCommand();
 
         //Spawner Commands
         new SpawnerCreateCommand();

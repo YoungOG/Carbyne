@@ -17,7 +17,7 @@ import java.util.UUID;
  * Created by Calvin on 6/4/2017
  * for the Carbyne project.
  */
-public class FocusCommand extends BaseCommand {
+public class SquadFocusCommand extends BaseCommand {
 
     @Command(name = "focus", inGameOnly = true, aliases = {"target", "f"})
     public void onCommand(CommandArgs commandArgs) {

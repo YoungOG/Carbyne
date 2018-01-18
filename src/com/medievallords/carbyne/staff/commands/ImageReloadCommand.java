@@ -11,6 +11,6 @@ public class ImageReloadCommand extends BaseCommand {
     public void a(CommandArgs commandArgs) {
         CommandSender sender = commandArgs.getSender();
 
-        getStaffManager().reloadImages(sender);
+//        getStaffManager().reloadImages(sender);
     }
 }

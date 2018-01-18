@@ -10,11 +10,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -31,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -83,7 +81,7 @@ public class StaffManager {
             @Override
             public void run() {
                 int amount = PlayerUtility.getOnlinePlayers().size();
-                logToFile("[Players] Online: " + amount + " ------ Time: " + new Date().toString());
+                logToFile(new SimpleDateFormat("MM/dd/yyyy hh:mm a").format(new Date()) + " CST - Online: " + amount);
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 20 * 60 * 30);
 
@@ -106,70 +104,70 @@ public class StaffManager {
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3 * 25L);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                loadPictureMap();
-            }
-        }.runTaskLater(main, 100);
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                loadPictureMap();
+//            }
+//        }.runTaskLater(main, 100);
     }
 
-    public void reloadImages(CommandSender sender) {
-        saveServeImagesFile();
-        for (ServerPicture picture : serverPictures) {
-            picture.cancel();
-        }
-        loadPictureMap();
-        MessageManager.sendMessage(sender, "&cImages have been reloaded.");
-    }
-
-    public void loadPictureMap() {
-        ConfigurationSection cs = main.getServerImagesFileConfiguration().getConfigurationSection("Images");
-        if (cs == null) {
-            cs = main.getServerImagesFileConfiguration().createSection("Images");
-            saveServeImagesFile();
-            return;
-        }
-
-        serverPictures.clear();
-
-        for (String key : cs.getKeys(false)) {
-            String url = cs.getString(key + ".URL");
-            ConfigurationSection frameSection = cs.getConfigurationSection(key + ".Frames");
-            int x = cs.getInt(key + ".X");
-            int y = cs.getInt(key + ".Y");
-            ItemFrame[][] frames = new ItemFrame[x][y];
-            int i = 0, l = 0;
-            for (String secOne : frameSection.getKeys(false)) {
-                Location ser = deserializeLocation(frameSection.getString(secOne + ".main"));
-                for (Entity entity : ser.getWorld().getNearbyEntities(ser, .1, .1, .1)) {
-                    if (entity instanceof ItemFrame) {
-                        frames[i][l++] = (ItemFrame) entity;
-                        break;
-                    }
-                }
-                for (String loca : frameSection.getStringList(secOne + ".list")) {
-                    Location location = deserializeLocation(loca);
-                    for (Entity entity : location.getWorld().getNearbyEntities(location, .1, .1, .1)) {
-                        if (entity instanceof ItemFrame) {
-                            frames[i][l++] = (ItemFrame) entity;
-                            break;
-                        }
-                    }
-                }
-                i++;
-                l = 0;
-            }
-
-            ServerPicture picture = new ServerPicture(key, url, frames, x, y);
-            serverPictures.add(picture);
-        }
-    }
-
-    private void saveServeImagesFile() {
-        main.setServerImagesFile(new File(main.getDataFolder(), "serverimages.yml"));
-        main.setServerImagesFileConfiguration(YamlConfiguration.loadConfiguration(main.getServerImagesFile()));
-    }
+//    public void reloadImages(CommandSender sender) {
+//        saveServeImagesFile();
+//        for (ServerPicture picture : serverPictures) {
+//            picture.cancel();
+//        }
+//        loadPictureMap();
+//        MessageManager.sendMessage(sender, "&cImages have been reloaded.");
+//    }
+//
+//    public void loadPictureMap() {
+//        ConfigurationSection cs = main.getServerImagesFileConfiguration().getConfigurationSection("Images");
+//        if (cs == null) {
+//            cs = main.getServerImagesFileConfiguration().createSection("Images");
+//            saveServeImagesFile();
+//            return;
+//        }
+//
+//        serverPictures.clear();
+//
+//        for (String key : cs.getKeys(false)) {
+//            String url = cs.getString(key + ".URL");
+//            ConfigurationSection frameSection = cs.getConfigurationSection(key + ".Frames");
+//            int x = cs.getInt(key + ".X");
+//            int y = cs.getInt(key + ".Y");
+//            ItemFrame[][] frames = new ItemFrame[x][y];
+//            int i = 0, l = 0;
+//            for (String secOne : frameSection.getKeys(false)) {
+//                Location ser = deserializeLocation(frameSection.getString(secOne + ".main"));
+//                for (Entity entity : ser.getWorld().getNearbyEntities(ser, .1, .1, .1)) {
+//                    if (entity instanceof ItemFrame) {
+//                        frames[i][l++] = (ItemFrame) entity;
+//                        break;
+//                    }
+//                }
+//                for (String loca : frameSection.getStringList(secOne + ".list")) {
+//                    Location location = deserializeLocation(loca);
+//                    for (Entity entity : location.getWorld().getNearbyEntities(location, .1, .1, .1)) {
+//                        if (entity instanceof ItemFrame) {
+//                            frames[i][l++] = (ItemFrame) entity;
+//                            break;
+//                        }
+//                    }
+//                }
+//                i++;
+//                l = 0;
+//            }
+//
+//            ServerPicture picture = new ServerPicture(key, url, frames, x, y);
+//            serverPictures.add(picture);
+//        }
+//    }
+//
+//    private void saveServeImagesFile() {
+//        main.setServerImagesFile(new File(main.getDataFolder(), "serverimages.yml"));
+//        main.setServerImagesFileConfiguration(YamlConfiguration.loadConfiguration(main.getServerImagesFile()));
+//    }
 
     /**
      * PRECONDITION: Player has permission carbyne.staff.staffmode
