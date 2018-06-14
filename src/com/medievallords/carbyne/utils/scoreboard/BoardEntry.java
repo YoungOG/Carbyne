@@ -50,7 +50,7 @@ public class BoardEntry {
             if (suffix.length() > 16) {
                 if (suffix.length() - 2 <= 16) {
                     suffix = this.text.substring(16, this.text.length());
-                    this.team.setSuffix(suffix.substring(0, suffix.length()));
+                    this.team.setSuffix(suffix);
                 } else {
                     this.team.setSuffix(suffix.substring(0, 16));
                 }

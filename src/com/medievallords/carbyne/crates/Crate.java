@@ -3,10 +3,8 @@ package com.medievallords.carbyne.crates;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.crates.rewards.RewardGenerator;
-import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.LocationSerialization;
-import com.medievallords.carbyne.utils.Maths;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +37,7 @@ public class Crate {
     private HashMap<UUID, Inventory> crateOpeners = new HashMap<>();
     private HashMap<UUID, Integer> crateOpenersAmount = new HashMap<>();
     private ArrayList<UUID> editors = new ArrayList<>();
-    private int rewardsAmount, progressIncreaseP, progressIncreaseM;
+    private int rewardsAmount;
 
     public Crate(String name) {
         this.name = name;
@@ -65,12 +63,6 @@ public class Crate {
 
         if (rewardsAmount > 0)
             configurationSection.set(name + ".RewardsAmount", rewardsAmount);
-
-        if (!configurationSection.isSet(name + ".ProgressIncreaseP"))
-            configurationSection.set(name + ".ProgressIncreaseP", progressIncreaseP);
-
-        if (!configurationSection.isSet(name + ".ProgressIncreaseM"))
-            configurationSection.set(name + ".ProgressIncreaseM", progressIncreaseM);
 
         try {
             crateFileConfiguration.save(main.getCrateFile());
@@ -172,42 +164,41 @@ public class Crate {
                     return;
                 }
 
-                if (rewardsAmount == 1) {
+                if (rewardsAmount == 1)
                     for (int i = 0; i < inventory.getSize(); i++) {
                         if (i == 13)
                             continue;
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
-                } else if (rewardsAmount == 2) {
+                else if (rewardsAmount == 2)
                     for (int i = 0; i < inventory.getSize(); i++) {
                         if (i == 12 || i == 14)
                             continue;
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
-                } else if (rewardsAmount == 3) {
+                else if (rewardsAmount == 3)
                     for (int i = 0; i < inventory.getSize(); i++) {
                         if (i >= 12 && i <= 14)
                             continue;
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
-                } else if (rewardsAmount == 5) {
+                else if (rewardsAmount == 5)
                     for (int i = 0; i < inventory.getSize(); i++) {
                         if (i >= 11 && i <= 15)
                             continue;
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
-                } else {
+                else
                     for (int i = 0; i < inventory.getSize(); i++) {
                         if (i == 13)
                             continue;
 
                         inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
                     }
-                }
             }
         }.runTaskTimerAsynchronously(main, 0L, fillerPeriod);
 
@@ -230,8 +221,8 @@ public class Crate {
         for (Reward reward : rewards)
             rewardItems.add(reward.getItem(false));
 
-        Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
-        List<Reward> chosenRewards = getRewards(rewardsAmount, profile);
+
+        List<Reward> chosenRewards = getRewards(rewardsAmount);
 
         if (rewardsAmount == 1)
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
@@ -250,15 +241,6 @@ public class Crate {
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 15, 40, openTime, rewardItems, chosenRewards.get(4)));
         } else
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
-
-        if (!profile.getCrateProgression().containsKey(name))
-            profile.getCrateProgression().put(name, 0.0);
-
-        double random = (double) Maths.randomNumberBetween(progressIncreaseP, progressIncreaseM);
-        profile.getCrateProgression().put(name, profile.getCrateProgression().get(name) + random);
-        Bukkit.broadcastMessage("Before: " + profile.getCrateProgression().get(name));
-        Bukkit.broadcastMessage("Random: " + random);
-        Bukkit.broadcastMessage("After: " + profile.getCrateProgression().get(name));
         player.openInventory(inventory);
     }
 
@@ -275,13 +257,8 @@ public class Crate {
         player.setVelocity(nv2);
     }
 
-    public Reward getReward(Profile profile) {
+    public Reward getReward() {
         double totalPercentage = 0;
-
-        if (!profile.getCrateProgression().containsKey(name)) {
-            profile.getCrateProgression().put(name, 0.0);
-        }
-        double progress = profile.getCrateProgression().get(name);
 
         for (Reward reward : getRewards())
             totalPercentage += reward.getChance();
@@ -291,57 +268,27 @@ public class Crate {
 
         for (int i = 0; i < rewards.size(); i++) {
             Reward reward = getRewards().get(i);
-            random -= ((reward.getChance()) + (reward.getProgress() * progress));
+            random -= reward.getChance();
 
             if (random <= 0) {
                 index = i;
                 break;
             }
         }
-
-        if (progress >= 100) {
-            profile.getCrateProgression().put(name, 0.0);
-        }
-
         return rewards.get(index);
     }
 
-    public ArrayList<Reward> getRewards(int amount, Profile profile) {
+    public ArrayList<Reward> getRewards(int amount) {
         ArrayList<Reward> rewards = new ArrayList<>();
 
-        if (!profile.getCrateProgression().containsKey(name)) {
-            profile.getCrateProgression().put(name, .0);
-        }
-        double progress = profile.getCrateProgression().get(name);
-
         for (int a = 0; a < amount; a++) {
-            double totalPercentage = 0;
-
+            double prob = Math.random();
             for (Reward reward : getRewards()) {
-                Bukkit.broadcastMessage(reward.getDisplayName() + " : " + (reward.getProgress() * progress));
-                totalPercentage += (reward.getChance() + (reward.getProgress() * progress));
-            }
-
-            int index = -1;
-            double random = Math.random() * totalPercentage;
-
-            for (int i = 0; i < getRewards().size(); i++) {
-                Reward reward = getRewards().get(i);
-
-                random -= ((reward.getChance()) + (reward.getProgress() * progress));
-
-                if (random <= 0) {
-                    index = i;
-                    break;
+                double chance = reward.getChance();
+                if (chance >= prob) {
+                    rewards.add(reward);
                 }
             }
-
-            rewards.add(getRewards().get(index));
-        }
-
-        Bukkit.broadcastMessage("Progress : " + progress);
-        if (progress >= 100) {
-            profile.getCrateProgression().put(name, 0.0);
         }
 
         return rewards;

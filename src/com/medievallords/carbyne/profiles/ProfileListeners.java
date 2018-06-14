@@ -2,14 +2,14 @@ package com.medievallords.carbyne.profiles;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
-import com.keenant.tabbed.item.TextTabItem;
-import com.keenant.tabbed.tablist.TableTabList;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.ProfileCreatedEvent;
 import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.nametag.NametagManager;
 import com.medievallords.carbyne.utils.serialization.InventorySerialization;
+import com.medievallords.carbyne.utils.tabbed.item.TextTabItem;
+import com.medievallords.carbyne.utils.tabbed.tablist.TableTabList;
 import com.palmergames.bukkit.towny.event.PlayerChangePlotEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
@@ -27,6 +27,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -47,6 +48,25 @@ public class ProfileListeners implements Listener {
             tablistHeader = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistHeader"));
         if (main.getConfig().getString("TablistFooter") != null)
             tablistFooter = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistFooter"));
+
+        handleSkills();
+    }
+
+    private void handleSkills() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+                        profile.runTickGeneral();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error profiles warzone-------------");
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskTimerAsynchronously(main, 20, 20);
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -55,6 +75,9 @@ public class ProfileListeners implements Listener {
 
         if (player == null)
             return;
+
+        player.setAllowFlight(true);
+        player.setFlying(false);
 
         Account account = Account.getAccount(player.getUniqueId());
         if (account != null)
@@ -102,25 +125,27 @@ public class ProfileListeners implements Listener {
         else
             profile.setPvpTimePaused(false);
 
-        TableTabList tab = main.getTabbed().newTableTabList(event.getPlayer());
-        tab.setHeader(tablistHeader);
-        tab.setFooter(tablistFooter);
-        for (int i = 0; i < 4; i++) {
-            for (int l = 0; l < 20; l++) {
-                tab.set(i, l, new TextTabItem("", 1));
+        if (profile.isShowTab()) {
+            TableTabList tab = main.getTabbed().newTableTabList(event.getPlayer());
+            tab.setHeader(tablistHeader);
+            tab.setFooter(tablistFooter);
+            for (int i = 0; i < 4; i++) {
+                for (int l = 0; l < 20; l++) {
+                    tab.set(i, l, new TextTabItem("", 1));
+                }
             }
+            tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1));
+            tab.set(0, 2, new TextTabItem(" §d§lBalance§7: 0", 1));
+            tab.set(0, 3, new TextTabItem(" §d§lPing§7: 0", 1));
+            tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1));
+            tab.set(0, 8, new TextTabItem(" §d§lPlayers Online§7: 0", 1));
+            tab.set(0, 9, new TextTabItem(" §d§lStaff Online§7: 0", 1));
+
+            Profile.PlayerTabRunnable runnable = new Profile.PlayerTabRunnable(event.getPlayer(), profile, Account.getAccount(event.getPlayer().getUniqueId()), tab);
+            runnable.runTaskTimerAsynchronously(main, 5L, 20);
+
+            playerTabs.put(event.getPlayer().getUniqueId(), runnable);
         }
-        tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1));
-        tab.set(0, 2, new TextTabItem(" §d§lBalance§7: 0", 1));
-        tab.set(0, 3, new TextTabItem(" §d§lPing§7: 0", 1));
-        tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1));
-        tab.set(0, 8, new TextTabItem(" §d§lPlayers Online§7: 0", 1));
-        tab.set(0, 9, new TextTabItem(" §d§lStaff Online§7: 0", 1));
-
-        Profile.PlayerTabRunnable runnable = new Profile.PlayerTabRunnable(event.getPlayer(), profile, Account.getAccount(event.getPlayer().getUniqueId()), tab);
-        runnable.runTaskTimerAsynchronously(main, 5L, 20);
-
-        playerTabs.put(event.getPlayer().getUniqueId(), runnable);
         Hologram holo = HologramsAPI.createHologram(main, new Location(Bukkit.getWorld("world"), -716.5, 108, 307.5));
         holo.getVisibilityManager().showTo(player);
         holo.getVisibilityManager().setVisibleByDefault(false);
@@ -190,7 +215,6 @@ public class ProfileListeners implements Listener {
     public void plotChange(PlayerChangePlotEvent event) {
         Player player = event.getPlayer();
         Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
-
         try {
             if (!event.getTo().getTownBlock().getPermissions().pvp)
                 profile.setPvpTimePaused(true);

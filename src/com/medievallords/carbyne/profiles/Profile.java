@@ -1,17 +1,24 @@
 package com.medievallords.carbyne.profiles;
 
-import com.keenant.tabbed.item.TextTabItem;
-import com.keenant.tabbed.tablist.TableTabList;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.events.Event;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.staff.StaffManager;
+import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
+import com.medievallords.carbyne.utils.tabbed.item.TextTabItem;
+import com.medievallords.carbyne.utils.tabbed.tablist.TableTabList;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
+import com.palmergames.bukkit.towny.object.Resident;
+import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -28,15 +35,15 @@ public class Profile {
 
     private UUID uniqueId;
     private String username, pin, previousInventoryContentString;
-    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak, professionLevel = 1, dailyRewardDay;
+    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak, professionLevel = 1, dailyRewardDay, stamina = 100, piledriveReady = 0;
     private double professionProgress = 0, requiredProfessionProgress = 100;
-    private long pvpTime, timeLeft, professionResetCooldown, dailyRewardDayTime = -1, dailyRewardChallengeTime = -1;
-    private boolean pvpTimePaused, showEffects, playSounds, safelyLogged, hasClaimedDailyReward, hasCompletedDailyChallenge, dailyRewardsSetup;
+    private long pvpTime, timeLeft, professionResetCooldown, dailyRewardDayTime = -1, dailyRewardChallengeTime = -1, piledriveCombo = 0, sprintCombo = 0;
+    private boolean pvpTimePaused, showTab, showEffects, playSounds, safelyLogged, hasClaimedDailyReward, hasCompletedDailyChallenge, dailyRewardsSetup,
+            skillsToggled = true, piledriveBoolReady = false, sprintToggled = false, blocking = false;
     private Event activeEvent;
     private ProfileChatChannel profileChatChannel;
     private HashMap<Integer, Boolean> dailyRewards = new HashMap<>();
     private int[] dailyRewardsIndex = new int[8];
-    private HashMap<String, Double> crateProgression = new HashMap<>();
     private List<UUID> ignoredPlayers = new ArrayList<>();
 
     public Profile(UUID uniqueId) {
@@ -48,18 +55,6 @@ public class Profile {
                 if (isANewDay())
                     if (dailyRewardsSetup)
                         prepareNewDay();
-                    else {
-                        if (dailyRewardDay >= 7) {
-                            boolean hasClaimedRewards = false;
-
-                            for (int i = 0; i < dailyRewards.keySet().size(); i++)
-                                if (dailyRewards.get(i))
-                                    hasClaimedRewards = true;
-
-                            if (!hasClaimedRewards)
-                                dailyRewardsSetup = false;
-                        }
-                    }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 20L);
 
@@ -68,28 +63,87 @@ public class Profile {
 //            public void run() {
 //                if (dailyRewardsSetup) {
 //                    if (Bukkit.getPlayer(uniqueId) != null && Bukkit.getPlayer(uniqueId).isOnline()) {
-////                        Bukkit.broadcastMessage("DailyRewardDay: " + dailyRewardDay);
-////                        Bukkit.broadcastMessage("DailyRewardDayTime: " + dailyRewardDayTime);
-////                        Bukkit.broadcastMessage("DailyRewardDayTimeFormatted: " + DateUtil.readableTime(dailyRewardDayTime - System.currentTimeMillis(), true));
-////                        Bukkit.broadcastMessage("RemainingDailyRewardDayTime: " + getRemainingDailyDayTime());
-////                        Bukkit.broadcastMessage("RemainingDailyRewardDayTimeFormatted: " + DateUtil.readableTime(getRemainingDailyDayTime(), true));
-////                        Bukkit.broadcastMessage("HasClaimedDailyReward: " + hasClaimedDailyReward);
-////                        Bukkit.broadcastMessage("HasCompletedDailyChallenge: " + hasCompletedDailyChallenge);
-////                        Bukkit.broadcastMessage("DailyRewards: ");
+//                        Bukkit.broadcastMessage("DailyRewardDay: " + dailyRewardDay);
+//                        Bukkit.broadcastMessage("DailyRewardDayTime: " + dailyRewardDayTime);
+//                        Bukkit.broadcastMessage("DailyRewardDayTimeFormatted: " + DateUtil.readableTime(dailyRewardDayTime - System.currentTimeMillis(), true));
+//                        Bukkit.broadcastMessage("RemainingDailyRewardDayTime: " + getRemainingDailyDayTime());
+//                        Bukkit.broadcastMessage("RemainingDailyRewardDayTimeFormatted: " + DateUtil.readableTime(getRemainingDailyDayTime(), true));
+//                        Bukkit.broadcastMessage("HasClaimedDailyReward: " + hasClaimedDailyReward);
+//                        Bukkit.broadcastMessage("HasCompletedDailyChallenge: " + hasCompletedDailyChallenge);
+//                        Bukkit.broadcastMessage("DailyRewards: ");
+//
 //                        for (int i = 0; i < dailyRewards.keySet().size(); i++) {
 //                            Bukkit.broadcastMessage(" - " + i + ": " + dailyRewards.get(i));
 //                            Bukkit.broadcastMessage(" - " + i + ": Can Claim Today: " + (i == dailyRewardDay && !dailyRewards.get(i)));
+//
 //                            if (!(i == dailyRewardDay && !dailyRewards.get(i)) && (i == (dailyRewardDay + 1)) && i + 1 < dailyRewards.keySet().size())
 //                                Bukkit.broadcastMessage(" - " + i + ": Can Claim Tomorrow: " + (i == (dailyRewardDay + 1) && !dailyRewards.get(i + 1)));
 //                        }
-//                        Bukkit.broadcastMessage("DailyRewardIndex: ");
-//                        for (int i = 0; i < dailyRewardsIndex.length; i++)
-//                            Bukkit.broadcastMessage(" - " + i + ": " + dailyRewardsIndex[i]);
-//
+////
+////                        Bukkit.broadcastMessage("DailyRewardIndex: ");
+////
+////                        for (int i = 0; i < dailyRewardsIndex.length; i++)
+////                            Bukkit.broadcastMessage(" - " + i + ": " + dailyRewardsIndex[i]);
 //                    }
 //                }
 //            }
 //        }.runTaskTimer(Carbyne.getInstance(), 0L, 10 * 20L);
+    }
+
+    public void runTickGeneral() {
+        Player player = Bukkit.getPlayer(uniqueId);
+        if (sprintToggled) {
+            stamina -= 7;
+
+            if (stamina < 7) {
+                sprintToggled = false;
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        player.setWalkSpeed(0.2f);
+                    }
+                }.runTask(Carbyne.getInstance());
+
+                MessageManager.sendMessage(player, "&cSuper Sprint has been disabled!");
+            }
+        } else if (blocking) {
+            stamina -= 15;
+
+            if (stamina < 15) {
+                blocking = false;
+                MessageManager.sendMessage(player, "&cSuper Block has been disabled!");
+            }
+        } else if (stamina < 100)
+            stamina++;
+
+        if (piledriveReady > 0)
+            piledriveReady--;
+        else {
+            if (piledriveBoolReady) {
+                MessageManager.sendMessage(uniqueId, "&cYou are no longer able to piledrive!");
+                piledriveBoolReady = false;
+            }
+        }
+
+        if (player != null) {
+            Board board = Board.getByPlayer(player);
+
+            if (board != null) {
+                BoardCooldown skillCooldown = board.getCooldown("skill");
+
+                if (skillCooldown == null)
+                    if (skillsToggled)
+                        if (!player.getAllowFlight())
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    player.setAllowFlight(true);
+                                }
+                            }.runTask(Carbyne.getInstance());
+            }
+        }
+
     }
 
     public boolean hasClaimedDailyReward() {
@@ -147,9 +201,9 @@ public class Profile {
     }
 
     public long getRemainingPvPTime() {
-        if (pvpTimePaused) {
+        if (pvpTimePaused)
             return timeLeft;
-        } else {
+        else {
             timeLeft = pvpTime - System.currentTimeMillis();
             return timeLeft;
         }
@@ -175,8 +229,6 @@ public class Profile {
 
         try {
             dailyRewardDayTime = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
-
-            //
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -197,6 +249,13 @@ public class Profile {
         dailyRewards.clear();
         for (int i = 0; i < 8; i++)
             dailyRewards.put(i, false);
+
+        Player player = Bukkit.getPlayer(uniqueId);
+        if (player != null)
+            if (ChatColor.stripColor(player.getOpenInventory().getTopInventory().getTitle()).contains("Daily Bonus")) {
+                player.closeInventory();
+                Carbyne.getInstance().getDailyBonusManager().openDailyBonusGui(player);
+            }
     }
 
     public void prepareNewDay() {
@@ -210,12 +269,20 @@ public class Profile {
 
         hasCompletedDailyChallenge = false;
 
-        if (dailyRewardDay > 7) {
-            assignNewWeeklyRewards();
-            return;
-        }
-
         dailyRewardDay++;
+
+        if (dailyRewardDay >= 7) {
+            boolean hasClaimedRewards = false;
+
+            for (int i = 0; i < dailyRewards.keySet().size(); i++)
+                if (dailyRewards.get(i))
+                    hasClaimedRewards = true;
+
+            if (!hasClaimedRewards)
+                dailyRewardsSetup = false;
+            else
+                assignNewWeeklyRewards();
+        }
     }
 
     public boolean isANewDay() {
@@ -255,24 +322,64 @@ public class Profile {
             tab.set(0, 8, new TextTabItem(" §d§lPlayers Online§7: " + (Bukkit.getOnlinePlayers().size() - staffManager.getVanish().size()), 1));
             tab.set(0, 9, new TextTabItem(" §d§lStaff Online§7: " + staffManager.getStaff().size(), 1));
 
-            tab.set(1, 7, new TextTabItem("§b§lObjectives:", 1));
+            tab.set(0, 14, new TextTabItem("§b§lFriends:", 1));
+            Resident resident = null;
+            try {
+                resident = TownyUniverse.getDataSource().getResident(player.getName());
+            } catch (NotRegisteredException e) {
+                e.printStackTrace();
+            }
+
+            // 14 to 19
+
+            if (resident != null) {
+                int c = 15;
+                int r = 0;
+                for (Resident friend : resident.getFriends()) {
+                    Player friendPlayer = Bukkit.getPlayer(friend.getName());
+                    if (friendPlayer != null) {
+                        tab.set(r, c++, new TextTabItem(" §7§l- §a" + friendPlayer.getName(), ((CraftPlayer) friendPlayer).getHandle().ping));
+                    }
+
+                    if (c > 19) {
+                        c = 14;
+                        r++;
+                    }
+
+                    if (r > 3) {
+                        break;
+                    }
+                }
+            }
+
+            tab.set(1, 1, new TextTabItem("§b§lStats:", 1));
+            tab.set(1, 2, new TextTabItem(" §d§lKills§7: " + profile.getKills(), 1));
+            tab.set(1, 3, new TextTabItem(" §d§lDeaths§7: " + profile.getDeaths(), 1));
+            tab.set(1, 4, new TextTabItem(" §d§lStreak§7: " + profile.getKillStreak(), 1));
+
+            tab.set(1, 7, new TextTabItem("§b§lChallenge:", 1));
 
             Squad squad = squadManager.getSquad(player.getUniqueId());
             tab.set(2, 1, new TextTabItem("§b§lSquad Info:", 1));
             if (squad != null) {
                 tab.set(2, 2, new TextTabItem(" §d§lLeader§7:", 1));
-                tab.set(2, 3, new TextTabItem(" §7§l- §a" + Bukkit.getPlayer(squad.getLeader()).getName(), 1));
+                Player leader = Bukkit.getPlayer(squad.getLeader());
+                tab.set(2, 3, new TextTabItem(" §7§l- §a" + leader.getName(), ((CraftPlayer) leader).getHandle().ping));
                 tab.set(2, 4, new TextTabItem(" §d§lMembers§7:", 1));
                 for (int i = 5; i < 11; i++)
-                    tab.set(2, i, new TextTabItem(""));
+                    tab.set(2, i, new TextTabItem(" §7§l- ", 1));
 
                 int x = 5;
                 for (int i = 0; i < squad.getMembers().size(); i++) {
                     Player other = Bukkit.getPlayer(squad.getMembers().get(i));
-                    tab.set(2, x, new TextTabItem(" §7§l- §a" + other.getName(), 1));
+                    tab.set(2, x, new TextTabItem(" §7§l- §a" + other.getName(), ((CraftPlayer) other).getHandle().ping));
                     x++;
                 }
             }
+
+            tab.set(3, 7, new TextTabItem("§b§lDaily Bonus:", 1));
+            tab.set(3, 8, new TextTabItem(" §d§lStatus§7: " + (profile.hasClaimedDailyReward ? "Claimed" : "Claimable"), 1));
+
 
             tab.set(3, 1, new TextTabItem("§b§lDrop Points:", 1));
             /*int index = 2;

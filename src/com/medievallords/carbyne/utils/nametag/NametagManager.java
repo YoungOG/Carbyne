@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.utils.nametag;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
@@ -52,13 +51,9 @@ public class NametagManager {
             nametag = refreshForTag.getPlayerNametag(toRefreshTag);
         }
 
-        if (CombatTagListeners.isInCombat(toRefresh.getUniqueId())) {
-            int health = (int) toRefresh.getHealth() / 5;
-            String suffix = formatHealthBar(health);
-            nametag.setSuffix(" " + suffix);
-        } else {
-            nametag.setSuffix("");
-        }
+        int health = (int) toRefresh.getHealth() / 5;
+        String suffix = formatHealthBar(health);
+        nametag.setSuffix(" " + suffix);
 
         //Duel
         /*Squad squad1 = squadManager.getSquad(refreshFor.getUniqueId());

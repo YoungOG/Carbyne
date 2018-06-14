@@ -1,10 +1,7 @@
 package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.utils.Cooldowns;
-import com.medievallords.carbyne.utils.JSONMessage;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
 import com.medievallords.carbyne.utils.signgui.SignGUIUpdateEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
@@ -24,6 +21,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
@@ -65,7 +63,7 @@ public class OptimizationListeners implements Listener {
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
         if (event.getEntity().getWorld().getName().equalsIgnoreCase("world")) {
-            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem)) {
+            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem) && !(event.getEntity() instanceof Chicken)) {
                 event.setCancelled(true);
             }
         }
@@ -605,6 +603,12 @@ public class OptimizationListeners implements Listener {
         if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F) {
             event.getPlayer().setFallDistance(0.0F);
         }
+    }
+
+    @EventHandler
+    public void onSmelt(FurnaceSmeltEvent event) {
+        if (event.getSource().getType() == Material.SANDSTONE)
+            event.setResult(new ItemBuilder(Material.GLASS).amount(4).build());
     }
 
     public Location getCoords(Location loc, int min, int max) {

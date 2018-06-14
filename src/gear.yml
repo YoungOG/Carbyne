@@ -26,6 +26,8 @@
 # For Armour:
 # Armour Rating: Percent of damage blocked by this piece.
 # With armour rating keep in mind diamond blocks 0.80 or 80% damage in a full set.
+Regions:
+  Carbyne: {}
 TokenItem:
   ItemId: 399
   ItemData: 0

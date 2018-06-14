@@ -28,13 +28,14 @@ public class SetHitDelayCommand extends BaseCommand implements Listener {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();
 
-        if (args.length >= 1) {
+        if (args.length > 1) {
             MessageManager.sendMessage(sender, "&cUsage: /sethitdelay <delay-in-ticks/reload>");
             return;
         }
 
-        if (args.length == 0) {
+        if (args.length < 1) {
             MessageManager.sendMessage(sender, "&aThe current HitDelay is set to &b" + hitDelayTicks + " ticks&a.");
+            return;
         }
 
         if (!sender.hasPermission("carbyne.commands.setdelay")) {
@@ -43,11 +44,11 @@ public class SetHitDelayCommand extends BaseCommand implements Listener {
         }
 
         if (args[0].equalsIgnoreCase("reload")) {
+            Carbyne.getInstance().reloadConfig();
             hitDelayTicks = Carbyne.getInstance().getConfig().getInt("HitDelay");
 
-            for (Player all : PlayerUtility.getOnlinePlayers()) {
+            for (Player all : PlayerUtility.getOnlinePlayers())
                 all.setMaximumNoDamageTicks(hitDelayTicks);
-            }
 
             MessageManager.sendMessage(sender, "&aYou have reloaded the config.");
 
@@ -56,9 +57,12 @@ public class SetHitDelayCommand extends BaseCommand implements Listener {
 
         try {
             hitDelayTicks = Integer.parseInt(args[0]);
-            for (Player all : PlayerUtility.getOnlinePlayers()) {
+
+            for (Player all : PlayerUtility.getOnlinePlayers())
                 all.setMaximumNoDamageTicks(hitDelayTicks);
-            }
+
+            getCarbyne().getConfig().set("HitDelay", hitDelayTicks);
+            getCarbyne().saveConfig();
 
             MessageManager.sendMessage(sender, "&aYou have set the HitDelay to &b" + hitDelayTicks + " ticks&a.");
         } catch (NumberFormatException ignored) {

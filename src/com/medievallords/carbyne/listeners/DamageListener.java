@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.listeners;
 
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
@@ -188,6 +189,9 @@ public class DamageListener implements Listener {
         if (!(event.getEntity() instanceof LivingEntity)) {
             return;
         }
+
+        if (HologramsAPI.isHologramEntity(event.getEntity()))
+            return;
 
         LivingEntity livingEntity = (LivingEntity) event.getEntity();
 

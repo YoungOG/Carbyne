@@ -60,6 +60,9 @@ public class CarbyneBoardAdapter {
             lines.add("&dProtection&7: " + formatTime(profile.getRemainingPvPTime()));
         }
 
+        lines.add(" ");
+        lines.add("&aStamina&7: " + profile.getStamina());
+
 //        if (!CombatTagListeners.isInCombat(player.getUniqueId())) {
 //            if (Account.getAccount(player.getName()) != null) {
 //                lines.add("&aBalance&7: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
@@ -169,9 +172,9 @@ public class CarbyneBoardAdapter {
                     }
                 }
 
-                if (cooldown.getId().equals("special")) {
+                if (cooldown.getId().equals("potion")) {
                     lines.add("   ");
-                    lines.add("&dSpecial&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                    lines.add("&dPotion&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("enderpearl")) {
@@ -182,6 +185,16 @@ public class CarbyneBoardAdapter {
                 if (cooldown.getId().equals("godapple")) {
                     lines.add("   ");
                     lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
+                }
+
+                if (cooldown.getId().equals("skill")) {
+                    lines.add("   ");
+                    lines.add("&dSkill&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                }
+
+                if (cooldown.getId().equals("special")) {
+                    lines.add("   ");
+                    lines.add("&dSpecial&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
             }
         } catch (Exception e) {

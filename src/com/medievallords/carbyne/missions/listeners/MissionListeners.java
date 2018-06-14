@@ -85,7 +85,8 @@ public class MissionListeners implements Listener {
             public void run() {
                 PlayerMissionData playerMissionData = missionsManager.getUuidMissions().get(killer.getUniqueId());
                 Mission[] missions = playerMissionData.getCurrentMissions();
-                for (Mission mission : missions) {
+                for (int i = 0; i < missions.length; i++) {
+                    Mission mission = missions[i];
                     if (!mission.isActive()) continue;
                     if (mission instanceof KillPlayerMission) {
                         if (!(((KillPlayerMission) mission).getKilledPlayers().contains(dead))) {
@@ -117,7 +118,8 @@ public class MissionListeners implements Listener {
             public void run() {
                 PlayerMissionData playerMissionData = missionsManager.getUuidMissions().get(player.getUniqueId()); // Should never be null
                 Mission[] missions = playerMissionData.getCurrentMissions();
-                for (Mission mission : missions) {
+                for (int i = 0; i < missions.length; i++) {
+                    Mission mission = missions[i];
                     if (!mission.isActive()) continue;
                     if (mission instanceof BlockBreakingMission) {
                         if (((BlockBreakingMission) mission).getGoalMaterials().length == 0 || Arrays.asList(((BlockBreakingMission) mission).getGoalMaterials()).contains(typeBroken)) {

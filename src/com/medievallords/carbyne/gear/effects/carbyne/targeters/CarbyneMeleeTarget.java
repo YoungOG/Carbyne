@@ -6,6 +6,5 @@ import org.bukkit.entity.Player;
 public interface CarbyneMeleeTarget {
 
     void cast(Player caster, LivingEntity target);
-
     boolean canActivate(Player caster);
 }

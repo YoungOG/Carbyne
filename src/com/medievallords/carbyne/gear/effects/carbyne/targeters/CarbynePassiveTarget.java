@@ -7,9 +7,7 @@ import org.bukkit.entity.Player;
 public interface CarbynePassiveTarget {
 
     void cast(Player caster, Location target);
-
     void cast(Player caster, LivingEntity target);
-
     void cast(Player caster);
 
     boolean canActivate(Player caster);

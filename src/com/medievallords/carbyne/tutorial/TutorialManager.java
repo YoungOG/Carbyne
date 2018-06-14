@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.tutorial;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.customevents.ProfileCreatedEvent;
 import com.medievallords.carbyne.tutorial.tasks.BoatExplodeTask;
 import com.medievallords.carbyne.tutorial.tasks.CollapseTask;
 import com.medievallords.carbyne.tutorial.tasks.RockFallTask;
@@ -34,10 +33,10 @@ public class TutorialManager implements Listener {
         }
     }
 
-    @EventHandler
-    public void onProfileCreation(ProfileCreatedEvent event) {
-        startTutorial(event.getPlayer());
-    }
+//    @EventHandler
+//    public void onProfileCreation(ProfileCreatedEvent event) {
+//        startTutorial(event.getPlayer());
+//    }
 
     public void startTutorial(Player player) {
         doingTutorial.add(player);

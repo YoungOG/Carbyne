@@ -140,7 +140,6 @@ public class CrateManager {
                             reward.setCommands(commands);
                             reward.setDisplayItemOnly(displayItemOnly);
                             reward.setChance(chance);
-                            reward.setProgress(progress);
                             reward.setSlot(slot);
 
                             rewards.add(reward);
@@ -154,8 +153,6 @@ public class CrateManager {
                     crate.setLocation(location);
 
                 crate.setRewardsAmount(rewardsAmount);
-                crate.setProgressIncreaseP(progressInscreaseP);
-                crate.setProgressIncreaseM(progressInscreaseM);
 
                 if (rewards.size() > 0)
                     for (Reward reward : rewards)

@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -118,7 +117,7 @@ public class DailyBonusManager {
                 if (inventory.getViewers().size() == 0)
                     cancel();
                 else {
-                    PlayerUtility.updateChestInventoryTitle(player, ChatColor.translateAlternateColorCodes('&', "&bDaily Bonus&7: &c" + DateUtil.readableTime((getRemainingWeekFromMillis(profile.getRemainingDailyDayTime())), true)));
+                    PlayerUtility.updateChestInventoryTitle(player, ChatColor.translateAlternateColorCodes('&', "&bDaily Bonus&7: &c" + DateUtil.readableTime((getRemainingWeekFromMillis(profile.getRemainingDailyDayTime(), profile.getDailyRewardDay())), true)));
 
                     for (int i = 0; i < inventory.getSize(); i++)
                         switch (i) {
@@ -217,14 +216,8 @@ public class DailyBonusManager {
         player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
     }
 
-    public long getRemainingWeekFromMillis(long time) {
-        Date date = new Date();
-        int d = 7 - date.getDay();
-
-        if (d < 7) {
-            return TimeUnit.DAYS.toMillis(d) + time;
-        } else {
-            return time;
-        }
+    public long getRemainingWeekFromMillis(long time, int day) {
+        int d = 7 - (day + 1);
+        return TimeUnit.DAYS.toMillis(d) + time;
     }
 }

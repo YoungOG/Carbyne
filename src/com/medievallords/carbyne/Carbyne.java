@@ -5,7 +5,6 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.keenant.tabbed.Tabbed;
 import com.medievallords.carbyne.commands.*;
 import com.medievallords.carbyne.crates.CrateManager;
 import com.medievallords.carbyne.crates.commands.*;
@@ -68,6 +67,7 @@ import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.regeneration.RegenerationHandler;
 import com.medievallords.carbyne.regeneration.RegenerationListeners;
 import com.medievallords.carbyne.regeneration.commands.RegenerationBypassCommand;
+import com.medievallords.carbyne.region.Region;
 import com.medievallords.carbyne.spawners.commands.SpawnerCommand;
 import com.medievallords.carbyne.spawners.commands.SpawnerCreateCommand;
 import com.medievallords.carbyne.spawners.listeners.SpawnerListeners;
@@ -88,6 +88,7 @@ import com.medievallords.carbyne.utils.command.CommandFramework;
 import com.medievallords.carbyne.utils.nametag.NametagManager;
 import com.medievallords.carbyne.utils.scoreboard.CarbyneScoreboard;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
+import com.medievallords.carbyne.utils.tabbed.Tabbed;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
@@ -106,18 +107,16 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.inventivetalent.mapmanager.MapManagerPlugin;
-import org.inventivetalent.mapmanager.manager.MapManager;
 import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-
 
 @Getter
 @Setter
@@ -178,7 +177,6 @@ public class Carbyne extends JavaPlugin {
     private SignGUI signGUI;
 
     private EntityHider entityHider;
-    private MapManager mapManager;
     private ProfileManager profileManager;
     private StaffManager staffManager;
     private RegenerationHandler regenerationHandler;
@@ -270,7 +268,7 @@ public class Carbyne extends JavaPlugin {
         spellMenuManager = new SpellMenuManager();
         dailyBonusManager = new DailyBonusManager();
         tabbed = new Tabbed(this);
-        mapManager = ((MapManagerPlugin) Bukkit.getPluginManager().getPlugin("MapManager")).getMapManager();
+//        mapManager = ((MapManagerPlugin) Bukkit.getPluginManager().getPlugin("MapManager")).getMapManager();
         gearListeners = new GearListeners();
 
         carbyneBoardAdapter = new CarbyneBoardAdapter(this);
@@ -286,6 +284,7 @@ public class Carbyne extends JavaPlugin {
         registerPackets();
 
         CombatTagListeners.ForceFieldTask.run(this);
+        GearListeners.ForceFieldTask.run(this);
 
         new BukkitRunnable() {
             @Override
@@ -297,6 +296,8 @@ public class Carbyne extends JavaPlugin {
         }.runTaskTimerAsynchronously(this, 0L, 10L);
 
         clearVillagers();
+
+        Region.loadAll();
     }
 
     public void onDisable() {
@@ -425,7 +426,7 @@ public class Carbyne extends JavaPlugin {
         new SquadKickCommand();
         new SquadChatCommand();
         new SquadListCommand();
-        new SquadFocusCommand();
+        new FocusCommand();
 
         //Spawner Commands
         new SpawnerCreateCommand();
@@ -647,5 +648,16 @@ public class Carbyne extends JavaPlugin {
                 }
             });
         }
+    }
+
+    private WorldGuardPlugin getWorldGuard() {
+        Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+
+        // WorldGuard may not be loaded
+        if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
+            return null; // Maybe you want throw an exception instead
+        }
+
+        return (WorldGuardPlugin) plugin;
     }
 }

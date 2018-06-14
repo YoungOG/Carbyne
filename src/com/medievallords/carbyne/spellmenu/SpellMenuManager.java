@@ -170,7 +170,8 @@ public class SpellMenuManager {
                 .addLore("&7Click to bind or unbind the &5" + spellName + " &7spell to an item")
                 .addLore("&7in your inventory.")
                 .addLore("")
-                .addLore("&c&lPlease note that you can only have a max of &4&l5 &c&lspells at any given time.")
+                .addLore("&c&lPlease note that you can only have a max of &4&l5")
+                .addLore("&c&lspells at any given time.")
                 .build());
 
         inventory.setItem(4, new ItemBuilder(Material.REDSTONE)
@@ -221,7 +222,8 @@ public class SpellMenuManager {
                             .addLore("")
                             .addLore("&bThe &5" + spell.getName() + " &bspell is not bound to this item.")
                             .addLore("")
-                            .addLore("&7&lClick this item to &c&lunbind &7&lthe &5&l" + spell.getName() + " &7&lspell from this item.");
+                            .addLore("&7&lClick this item to &c&lunbind &7&lthe &5&l" + spell.getName() + " &7&lspell")
+                            .addLore("&7&lfrom this item.");
 
                     inventory.setItem(i, new ItemBuilder(itemBuilder.build()).hideGlow().build());
                 } else {
@@ -232,7 +234,8 @@ public class SpellMenuManager {
                             .addLore("")
                             .addLore("&bThe &5" + spell.getName() + " &bspell is bound to this item.")
                             .addLore("")
-                            .addLore("&7&lClick this item to &a&lbind &7&lthe &5&l" + spell.getName() + " &7&lspell from this item.");
+                            .addLore("&7&lClick this item to &a&lbind &7&lthe &5&l" + spell.getName() + " &7&lspell")
+                            .addLore("&7&lfrom this item.");
 
                     inventory.setItem(i, new ItemBuilder(itemBuilder.build()).addGlow().build());
                 }

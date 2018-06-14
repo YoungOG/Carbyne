@@ -63,6 +63,7 @@ public class ProfileManager {
                 long professionResetCooldown = 0;
                 double professionProgress = 0,
                         requiredProfessionProgress = 1;
+                boolean showTab = true;
 
                 if (document.containsKey("ignoredPlayers")) {
                     List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredPlayers");
@@ -73,6 +74,9 @@ public class ProfileManager {
 
                 if (document.containsKey("professionLevel"))
                     professionLevel = document.getInteger("professionLevel");
+
+                if (document.containsKey("showTab"))
+                    showTab = document.getBoolean("showTab");
 
                 if (document.containsKey("professionProgress"))
                     professionProgress = document.getDouble("professionProgress");
@@ -91,6 +95,7 @@ public class ProfileManager {
                 profile.setCarbyneDeaths(carbyneDeaths);
                 profile.setKillStreak(killstreak);
                 profile.setShowEffects(showEffects);
+                profile.setShowTab(showTab);
                 profile.setPlaySounds(playSounds);
                 profile.setSafelyLogged(safelyLogged);
                 profile.setPin(document.getString("pin") != null ? document.getString("pin") : "");
@@ -120,14 +125,6 @@ public class ProfileManager {
                     if (dailyRewardsDocument != null && dailyRewardsDocument.keySet().size() > 0)
                         for (String rewardId : dailyRewardsDocument.keySet())
                             profile.getDailyRewards().put(Integer.parseInt(rewardId), dailyRewardsDocument.getBoolean(rewardId));
-                }
-
-                if (document.containsKey("crateProgression")) {
-                    Document crateProgression = (Document) document.get("crateProgression");
-
-                    if (crateProgression != null && crateProgression.keySet().size() > 0)
-                        for (String crateName : crateProgression.keySet())
-                            profile.getCrateProgression().put(crateName, crateProgression.getDouble(crateName));
                 }
 
                 if (document.containsKey("pvpTime"))
@@ -165,6 +162,7 @@ public class ProfileManager {
                 document.append("pvpTime", profile.getPvpTime());
                 document.append("pvpTimePaused", profile.isPvpTimePaused());
                 document.append("showEffects", profile.hasEffectsToggled());
+                document.append("showTab", profile.isShowTab());
                 document.append("playSounds", profile.hasSoundsToggled());
                 document.append("safelyLogged", profile.isSafelyLogged());
                 document.append("pin", profile.getPin());
@@ -186,15 +184,6 @@ public class ProfileManager {
                     for (int rewardId : profile.getDailyRewards().keySet())
                         dailyRewardsDocument.put("" + rewardId, profile.getDailyRewards().get(rewardId));
                     document.append("dailyRewards", dailyRewardsDocument);
-                }
-
-                if (profile.getCrateProgression().keySet().size() > 0) {
-                    Document crate = new Document();
-
-                    for (String crateName : profile.getCrateProgression().keySet())
-                        crate.put(crateName, profile.getCrateProgression().get(crateName));
-
-                    document.append("crateProgression", crate);
                 }
 
                 if (!profile.getIgnoredPlayers().isEmpty()) {
@@ -239,6 +228,7 @@ public class ProfileManager {
             profile.setCarbyneDeaths(0);
             profile.setKillStreak(0);
             profile.setShowEffects(true);
+            profile.setShowTab(true);
             profile.setPlaySounds(true);
             profile.setSafelyLogged(false);
             profile.setProfileChatChannel(Profile.ProfileChatChannel.GLOBAL);

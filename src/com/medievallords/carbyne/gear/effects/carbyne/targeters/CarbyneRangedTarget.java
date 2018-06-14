@@ -6,6 +6,5 @@ import org.bukkit.entity.Player;
 public interface CarbyneRangedTarget {
 
     void cast(Player shooter, LivingEntity target);
-
     boolean canActivate(Player caster);
 }

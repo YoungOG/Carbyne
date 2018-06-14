@@ -10,6 +10,7 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
+import com.medievallords.carbyne.region.Region;
 import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.Namer;
@@ -45,6 +46,7 @@ public class GearManager {
     private List<Special> specials = new ArrayList<>();
     private List<Item> repairItems = new ArrayList<>();
 
+    private List<Region> nerfedRegions = new ArrayList<>();
     private HashMap<UUID, BukkitTask> playerGearFadeSchedulers = new HashMap<>();
 
     private int tokenId, polishId;
@@ -180,6 +182,24 @@ public class GearManager {
         polishDisplayName = cs.getString("PolishItem.DisplayName");
         polishLore = cs.getStringList("PolishItem.Lore");
         polishLore.add(0, HiddenStringUtils.encodeString(polishCode));
+    }
+
+    public boolean isWearingCarbyne(Player player) {
+        boolean wearing = false;
+
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (isCarbyneArmor(item) || isCarbyneWeapon(item)) {
+                wearing = true;
+            }
+        }
+
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            if (isCarbyneArmor(item) || isCarbyneWeapon(item)) {
+                wearing = true;
+            }
+        }
+
+        return wearing;
     }
 
     public CarbyneGear getCarbyneGear(String gearCode) {

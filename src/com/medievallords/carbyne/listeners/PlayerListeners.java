@@ -2,26 +2,35 @@ package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.*;
+import com.medievallords.carbyne.utils.scoreboard.Board;
+import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyUniverse;
 import com.vexsoftware.votifier.model.VotifierEvent;
 import lombok.Getter;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.github.paperspigot.Title;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -137,16 +146,7 @@ public class PlayerListeners implements Listener {
 
             ItemStack reward;
 
-            if (random <= 0.02)
-                reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
-            else if (random <= 0.028)
-                reward = main.getCrateManager().getKey("EmeraldKey").getItem().clone();
-            else if (random <= 0.15)
-                reward = main.getCrateManager().getKey("DiamondKey").getItem().clone();
-            else if (random <= 0.25)
-                reward = main.getCrateManager().getKey("GoldKey").getItem().clone();
-            else
-                reward = main.getCrateManager().getKey("IronKey").getItem().clone();
+            reward = main.getCrateManager().getKey("MysticalKey").getItem().clone();
 
             Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(player.getInventory(), reward);
 
@@ -273,5 +273,225 @@ public class PlayerListeners implements Listener {
         if (event.getFrom().getWorld().equals(event.getTo().getWorld()) && event.getFrom().distance(event.getTo()) > 10) {
             event.getPlayer().playSound(event.getTo(), Sound.ENDERMAN_TELEPORT, .6f, 1);
         }
+    }
+
+    @EventHandler
+    public void onDoubleJump(PlayerToggleFlightEvent event) {
+        Player player = event.getPlayer();
+
+        if (player.getGameMode() == GameMode.CREATIVE)
+            return;
+
+        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        if (profile.getStamina() >= 15 && profile.isSkillsToggled()) {
+            Board board = Board.getByPlayer(player);
+
+            if (board != null) {
+                BoardCooldown skillCooldown = board.getCooldown("skill");
+
+                if (skillCooldown == null) {
+                    profile.setStamina(profile.getStamina() - 15);
+                    event.setCancelled(true);
+                    player.setAllowFlight(false);
+
+                    float hForce = 15 / 10.0F;
+                    float vForce = 12 / 10.0F;
+
+                    Vector direction = player.getLocation().getDirection();
+                    Vector forward = direction.multiply(3);
+
+                    if (profile.isSprintToggled())
+                        forward.multiply(2.5);
+
+                    Vector vector = player.getLocation().toVector().subtract(player.getLocation().add(0, 3, 0).toVector());
+                    vector.add(forward);
+                    vector.setY(5);
+                    vector.normalize();
+                    vector.multiply(hForce * 0.9);
+                    vector.setY(vForce * 0.9);
+                    player.setVelocity(vector);
+
+                    new BoardCooldown(board, "skill", 10.0D);
+
+                    ParticleEffect.CLOUD.display(0.0F, 0.0F, 0.0F, 0.004F, 100, player.getLocation().subtract(0.0, 0.1, 0.0), 15, false);
+
+                    for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 15))
+                        all.playSound(all.getLocation(), Sound.HORSE_JUMP, 3.0F, 0.533F);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSprintToggle(PlayerToggleSneakEvent event) {
+        if (!event.isSneaking()) {
+            Profile profile = main.getProfileManager().getProfile(event.getPlayer().getUniqueId());
+            if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000) {
+                if (profile.getStamina() > 6 && !profile.isSprintToggled()) {
+                    profile.setSprintToggled(true);
+                    event.getPlayer().setWalkSpeed(0.33f);
+                    profile.setSprintCombo(0);
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if (!event.getPlayer().isOnline())
+                                cancel();
+
+                            if (profile.isSprintToggled())
+                                ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, 0.0F, 0.03F, 2, event.getPlayer().getLocation().subtract(0.0, 0.1, 0.0), 30, false);
+                            else
+                                cancel();
+                        }
+                    }.runTaskTimerAsynchronously(main, 0, 1);
+
+                    MessageManager.sendMessage(event.getPlayer(), "&aSuper Sprint has been enabled!");
+                } else if (profile.isSprintToggled()) {
+                    profile.setSprintToggled(false);
+                    event.getPlayer().setWalkSpeed(0.2f);
+                    profile.setSprintCombo(0);
+                    MessageManager.sendMessage(event.getPlayer(), "&cSuper Sprint has been disabled!");
+                }
+            } else {
+                profile.setSprintCombo(System.currentTimeMillis());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPiledriveCombo(PlayerInteractEvent event) {
+        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Player player = event.getPlayer();
+
+            if (player.getItemInHand().getType().toString().contains("SWORD") || player.getItemInHand().getType().toString().contains("AXE") || player.getItemInHand().getType().toString().contains("HOE")) {
+                Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+
+                if (profile.getStamina() >= 60 && profile.isSkillsToggled()) {
+                    Board board = Board.getByPlayer(player);
+
+                    if (board != null) {
+                        BoardCooldown skillCooldown = board.getCooldown("skill");
+
+                        if (skillCooldown == null) {
+                            if (!profile.isPiledriveBoolReady()) {
+                                if (System.currentTimeMillis() - profile.getPiledriveCombo() <= 1000) {
+                                    profile.setPiledriveReady(3);
+                                    profile.setPiledriveCombo(0);
+                                    profile.setPiledriveBoolReady(true);
+                                    MessageManager.sendMessage(player, "&aReady to piledrive! Damage an enemy to initiate!");
+                                } else {
+                                    profile.setPiledriveCombo(System.currentTimeMillis());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPiledriver(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
+            Player damaged = (Player) event.getEntity();
+            Player damager = (Player) event.getDamager();
+            Profile profile = main.getProfileManager().getProfile(damager.getUniqueId());
+
+            if (main.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) != null) {
+                if (profile.isPiledriveBoolReady() && profile.getStamina() >= 60)
+                    pileDrive(damaged, damager);
+            } else {
+                TownBlock townBlock = TownyUniverse.getTownBlock(damaged.getLocation());
+
+                if (townBlock != null)
+                    if (townBlock.getPermissions().pvp)
+                        if (profile.isPiledriveBoolReady() && profile.getStamina() >= 60)
+                            pileDrive(damaged, damager);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDismount(EntityDismountEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+
+            if (event.getDismounted() instanceof Chicken) {
+                player.sendTitle(new Title.Builder()
+                        .title("").stay(1)
+                        .subtitle("").stay(1)
+                        .build());
+            }
+        }
+    }
+
+    public void pileDrive(Player damaged, Player damager) {
+        MessageManager.sendMessage(damager, "&aYou have piledrived &5" + damaged.getName() + "&a!");
+        Profile damagerProfile = main.getProfileManager().getProfile(damager.getUniqueId());
+        PotionEffect potionEffect = new PotionEffect(PotionEffectType.CONFUSION, 140, 2);
+        PotionEffect potionEffect2 = new PotionEffect(PotionEffectType.BLINDNESS, 80, 2);
+        PotionEffect potionEffect3 = new PotionEffect(PotionEffectType.SLOW, 100, 2);
+        damaged.addPotionEffect(potionEffect);
+        damaged.addPotionEffect(potionEffect2);
+        damaged.addPotionEffect(potionEffect3);
+        damagerProfile.setPiledriveReady(0);
+        damagerProfile.setPiledriveBoolReady(false);
+        damagerProfile.setStamina(damagerProfile.getStamina() - 60);
+        FireworkEffect effect = FireworkEffect.builder().withColor(Color.RED).with(FireworkEffect.Type.BURST).build();
+        FireworkEffect effect2 = FireworkEffect.builder().withColor(Color.ORANGE).trail(true).withFade(Color.YELLOW).with(FireworkEffect.Type.BURST).build();
+        InstantFirework.spawn(damaged.getLocation(), effect);
+        InstantFirework.spawn(damaged.getLocation(), effect2, effect);
+        damaged.damage(10D);
+
+        new BoardCooldown(Board.getByPlayer(damager), "skill", 10.0D);
+
+        damaged.sendTitle(new Title.Builder()
+                .title(ChatColor.translateAlternateColorCodes('&', "&cYou have been piledriven!")).stay(200)
+                .subtitle(ChatColor.translateAlternateColorCodes('&', "&4Press SHIFT to counter!")).stay(200)
+                .build());
+
+        if (clear(damaged)) {
+            Chicken chicken = damaged.getWorld().spawn(damaged.getLocation(), Chicken.class);
+            chicken.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 100000, 100000));
+            chicken.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100000, 100000));
+            chicken.setPassenger(damaged);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (!chicken.isDead()) {
+                        chicken.eject();
+                        chicken.setHealth(0);
+                    }
+                }
+            }.runTaskLater(main, 200L);
+        }
+    }
+
+    public boolean clear(Player damaged) {
+        int check = 0;
+
+        if (!correctType(damaged.getLocation().clone().add(1, 0, 0).getBlock()))
+            check += 1;
+        if (!correctType(damaged.getLocation().clone().subtract(1, 0, 0).getBlock()))
+            check += 1;
+        if (!correctType(damaged.getLocation().clone().add(0, 0, 1).getBlock()))
+            check += 1;
+        if (!correctType(damaged.getLocation().clone().subtract(0, 0, 1).getBlock()))
+            check += 1;
+        if (!correctType(damaged.getLocation().clone().add(1, 0, 0).subtract(0, 0, 1).getBlock()))
+            check += 10;
+        if (!correctType(damaged.getLocation().clone().add(1, 0, 1).getBlock()))
+            check += 10;
+        if (!correctType(damaged.getLocation().clone().subtract(1, 0, 0).add(0, 0, 1).getBlock()))
+            check += 1;
+        if (!correctType(damaged.getLocation().clone().subtract(1, 0, 1).getBlock()))
+            check += 10;
+
+        return check == 0;
+    }
+
+    private boolean correctType(Block check) {
+        return check.getType() == Material.AIR || check.getType() == Material.LONG_GRASS || check.getType() == Material.RED_ROSE || check.getType() == Material.YELLOW_FLOWER || check.getType() == Material.GRASS;
     }
 }

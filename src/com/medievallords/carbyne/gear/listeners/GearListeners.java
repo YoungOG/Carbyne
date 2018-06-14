@@ -2,6 +2,8 @@ package com.medievallords.carbyne.gear.listeners;
 
 
 import com.codingforcookies.armorequip.ArmorEquipEvent;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.CarbyneRepairedEvent;
 import com.medievallords.carbyne.duels.duel.Duel;
@@ -12,6 +14,9 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
+import com.medievallords.carbyne.region.Region;
+import com.medievallords.carbyne.region.RegionUser;
+import com.medievallords.carbyne.region.Selection;
 import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
@@ -19,6 +24,7 @@ import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,6 +36,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -41,25 +48,32 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class GearListeners implements Listener {
 
+    private static final List<BlockFace> ALL_DIRECTIONS = ImmutableList.of(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST);
+    private final Map<UUID, Set<Location>> previousUpdates = new HashMap<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ForceField Thread").build());
     private Carbyne carbyne = Carbyne.getInstance();
     private GearManager gearManager = carbyne.getGearManager();
     private HashMap<UUID, ExhaustEffect> exhaustEffects = new HashMap<>();
 
     public void removeFromExhaust(Player player) {
-        if (exhaustEffects.containsKey(player.getUniqueId()))
-            exhaustEffects.remove(player.getUniqueId());
+        exhaustEffects.remove(player.getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+            if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                event.setCancelled(true);
+                return;
+            }
 
             if (player.getHealth() <= 32 && !exhaustEffects.containsKey(player.getUniqueId())) {
                 ExhaustEffect exhaustEffect = new ExhaustEffect(player);
@@ -110,9 +124,9 @@ public class GearListeners implements Listener {
                     case SUFFOCATION:
                         flatDamage = 0.5f;
                         break;
-                    case FALL:
-                        flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
-                        break;
+                    //case FALL:
+                    //    flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
+                    //    break;
                 }
 
                 flatDamage *= 5;
@@ -857,5 +871,218 @@ public class GearListeners implements Listener {
                 player.getWorld().playSound(location, Sound.ANVIL_USE, 10f, (float) Math.random() * 2.5f);
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 20);
+    }
+
+    @EventHandler
+    public void onWandInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+
+        if (event.getItem() != null && event.getItem().getType() == Material.BONE && event.getClickedBlock() != null && player.hasPermission("carbyne.wand") && player.getGameMode() == GameMode.CREATIVE) {
+            RegionUser user = RegionUser.getRegionUser(player);
+
+            if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+                event.setCancelled(true);
+                Selection selection = (user.getSelection() != null) ? user.getSelection() : new Selection(null, null);
+                Location location = event.getClickedBlock().getLocation();
+                location.setY(0.0);
+                selection.setLocation1(location);
+                user.setSelection(selection);
+                MessageManager.sendMessage(player, "&aSelection 1: &b" + location.getWorld().getName() + " &a- &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
+            } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                event.setCancelled(true);
+                Selection selection = (user.getSelection() != null) ? user.getSelection() : new Selection(null, null);
+                Location location = event.getClickedBlock().getLocation();
+                location.setY((double) location.getWorld().getMaxHeight());
+                selection.setLocation2(location);
+                user.setSelection(selection);
+                MessageManager.sendMessage(player, "&aSelection 2: &b" + location.getWorld().getName() + " &a- &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
+            }
+        }
+    }
+
+    @EventHandler
+    public void shutdown(PluginDisableEvent event) {
+        if (event.getPlugin() != carbyne)
+            return;
+
+        // Shutdown executor service and clean up threads
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException ignore) {
+        }
+
+        // Go through all previous updates and revert spoofed blocks
+        for (UUID uuid : previousUpdates.keySet()) {
+            Player player = Bukkit.getPlayer(uuid);
+
+            if (player == null)
+                continue;
+
+            for (Location location : previousUpdates.get(uuid)) {
+                Block block = location.getBlock();
+                player.sendBlockChange(location, block.getType(), block.getData());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+
+        if ((Region.get(event.getTo()) != null || Region.get(event.getFrom()) != null) && Region.get(event.getTo()) != null) {
+            if (gearManager.isWearingCarbyne(player)) {
+                RegionUser.getRegionUser(player).setExceptTeleportation(true);
+                event.setCancelled(true);
+                MessageManager.sendMessage(player, "&cYou cannot enter this area while using Carbyne Gear.");
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void updateViewedBlocks(PlayerMoveEvent event) {
+        // Do nothing if player hasn't moved over a whole block
+        Location t = event.getTo();
+        Location f = event.getFrom();
+
+        if (t.getBlockX() == f.getBlockX() && t.getBlockY() == f.getBlockY() && t.getBlockZ() == f.getBlockZ()) {
+            return;
+        }
+
+        final Player player = event.getPlayer();
+
+        if (gearManager.isWearingCarbyne(player))
+            if ((Region.get(event.getTo()) == null || Region.get(event.getFrom()) == null) && Region.get(event.getTo()) != null) {
+                RegionUser.getRegionUser(player).setExceptTeleportation(true);
+                Location from = new Location(event.getFrom().getWorld(), (double) event.getFrom().getBlockX(), (double) event.getFrom().getBlockY(), (double) event.getFrom().getBlockZ(), event.getFrom().getYaw(), event.getFrom().getPitch());
+                from.add(0.5, 0.0, 0.5);
+                player.teleport(from);
+                MessageManager.sendMessage(player, "&cYou cannot enter this area while using Carbyne Gear.");
+            }
+
+        // Asynchronously send block changes around player
+        executorService.submit(() -> {
+            // Stop processing if player has logged off
+            UUID uuid = player.getUniqueId();
+
+            if (Bukkit.getPlayer(uuid) == null) {
+                return;
+            }
+
+            // Update the players force field perspective and find all blocks to stop spoofing
+            Set<Location> changedBlocks = getChangedBlocks(player);
+
+            Set<Location> removeBlocks;
+            if (previousUpdates.containsKey(uuid)) {
+                removeBlocks = previousUpdates.get(uuid);
+            } else {
+                removeBlocks = new HashSet<>();
+            }
+
+            for (Location location : changedBlocks) {
+                player.sendBlockChange(location, Material.STAINED_GLASS, (byte) 9);
+                removeBlocks.remove(location);
+            }
+
+            // Remove no longer used spoofed blocks
+            for (Location location : removeBlocks) {
+                Block block = location.getBlock();
+                player.sendBlockChange(location, block.getType(), block.getData());
+            }
+
+            previousUpdates.put(uuid, changedBlocks);
+        });
+    }
+
+    private boolean isRegionSurrounding(Location loc) {
+        for (BlockFace direction : ALL_DIRECTIONS) {
+            Location location = loc.getBlock().getRelative(direction).getLocation();
+
+            for (Region region : gearManager.getNerfedRegions())
+                if (region.get(location) != null)
+                    return true;
+        }
+
+        return false;
+    }
+
+    private Set<Location> getChangedBlocks(Player player) {
+        Set<Location> locations = new HashSet<>();
+
+        // Do nothing if player is not tagged
+        if (!gearManager.isWearingCarbyne(player))
+            return locations;
+
+        // Find the radius around the player
+        int r = 7;
+        Location l = player.getLocation();
+        Location loc1 = l.clone().add(r, 0, r);
+        Location loc2 = l.clone().subtract(r, 0, r);
+        int topBlockX = loc1.getBlockX() < loc2.getBlockX() ? loc2.getBlockX() : loc1.getBlockX();
+        int bottomBlockX = loc1.getBlockX() > loc2.getBlockX() ? loc2.getBlockX() : loc1.getBlockX();
+        int topBlockZ = loc1.getBlockZ() < loc2.getBlockZ() ? loc2.getBlockZ() : loc1.getBlockZ();
+        int bottomBlockZ = loc1.getBlockZ() > loc2.getBlockZ() ? loc2.getBlockZ() : loc1.getBlockZ();
+
+        // Iterate through all blocks surrounding the player
+        for (int x = bottomBlockX; x <= topBlockX; x++) {
+            for (int z = bottomBlockZ; z <= topBlockZ; z++) {
+                // Location corresponding to current loop
+                Location location = new Location(l.getWorld(), (double) x, l.getY(), (double) z);
+
+                if (Region.get(location) == null) continue;
+
+                if (!isRegionSurrounding(location)) continue;
+
+                for (int i = -r; i < r; i++) {
+                    Location loc4 = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());
+
+                    loc4.setY(loc4.getY() + i);
+
+                    // Do nothing if the block at the location is not air
+                    if (!loc4.getBlock().getType().equals(Material.AIR)) continue;
+
+                    // Add this location to locations
+                    locations.add(new Location(loc4.getWorld(), loc4.getBlockX(), loc4.getBlockY(), loc4.getBlockZ()));
+                }
+            }
+        }
+
+        return locations;
+    }
+
+    public static class ForceFieldTask extends BukkitRunnable {
+
+        private final Carbyne plugin;
+
+        private final Map<UUID, Location> validLocations = new HashMap<>();
+
+        private ForceFieldTask(Carbyne plugin) {
+            this.plugin = plugin;
+        }
+
+        public static void run(Carbyne plugin) {
+            new GearListeners.ForceFieldTask(plugin).runTaskTimer(plugin, 1, 1);
+        }
+
+        @Override
+        public void run() {
+            for (Player player : PlayerUtility.getOnlinePlayers()) {
+                UUID playerId = player.getUniqueId();
+
+                // Do nothing if player isn't even tagged.
+                if (!plugin.getGearManager().isWearingCarbyne(player))
+                    continue;
+
+                Location loc = player.getLocation();
+
+                if (Region.get(loc) != null) {
+                    // Track the last PVP-enabled location that the player was in.
+                    validLocations.put(playerId, loc);
+                } else if (validLocations.containsKey(playerId)) {
+                    // Teleport the player to the last valid PVP-enabled location.
+                    player.teleport(validLocations.get(playerId));
+                }
+            }
+        }
     }
 }

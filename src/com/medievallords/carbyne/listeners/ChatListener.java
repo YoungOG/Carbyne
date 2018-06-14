@@ -70,7 +70,7 @@ public class ChatListener implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) && notMoved.contains(event.getPlayer().getUniqueId())) {
+        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ())) {
             notMoved.remove(event.getPlayer().getUniqueId());
         }
     }

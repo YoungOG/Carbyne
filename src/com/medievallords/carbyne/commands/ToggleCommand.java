@@ -49,6 +49,27 @@ public class ToggleCommand extends BaseCommand {
                     new Board(player, getCarbyne().getCarbyneBoardAdapter());
                     MessageManager.sendMessage(player, "&aYour scoreboard HUD have been enabled.");
                 }
+            } else if (args[0].equalsIgnoreCase("skills")) {
+                if (profile.isSkillsToggled()) {
+                    profile.setSkillsToggled(false);
+                    MessageManager.sendMessage(player, "&aSkills have been disabled.");
+                } else {
+                    profile.setSkillsToggled(true);
+                    MessageManager.sendMessage(player, "&aSkills have been enabled.");
+                }
+            } else if (args[0].equalsIgnoreCase("tab")) {
+                if (profile == null) {
+                    MessageManager.sendMessage(player, "&cCould not load your profiles. Please contact an administrator.");
+                    return;
+                }
+
+                if (!profile.isShowTab()) {
+                    profile.setShowTab(true);
+                    MessageManager.sendMessage(player, "&aCustom tablist has been enabled. Relog to apply changes.");
+                } else {
+                    profile.setShowTab(false);
+                    MessageManager.sendMessage(player, "&aCustom tablist has been disabled. Relog to apply changes.");
+                }
             } else {
                 MessageManager.sendMessage(player, "&cUsage: /toggle <effects/hud> [on/off]");
             }

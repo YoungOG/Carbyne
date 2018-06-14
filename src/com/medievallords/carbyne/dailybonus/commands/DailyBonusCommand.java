@@ -8,6 +8,8 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.entity.Player;
 
+import java.util.Date;
+
 /**
  * Created by Calvin on 11/18/2017
  * for the Carbyne project.
@@ -74,6 +76,17 @@ public class DailyBonusCommand extends BaseCommand {
                         MessageManager.sendMessage(player, "&aYour DailyBonus day has been set to &b" + (number + 1) + "&a.");
                     } catch (NumberFormatException e) {
                         MessageManager.sendMessage(player, "&cPlease enter a proper integer.");
+                    }
+                } else if (args[1].equalsIgnoreCase("daytime")) {
+                    try {
+                        Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                        long time = DateUtil.parseDateDiff(args[2], true);
+                        profile.setDailyRewardDayTime(time);
+                        Date date = new Date(time);
+
+                        MessageManager.sendMessage(player, "&aYour DailyBonus day time has been set to &b" + date.toString() + "&a.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 } else
                     MessageManager.sendMessage(player, "&cUsage: /dailybonus set day <day>");

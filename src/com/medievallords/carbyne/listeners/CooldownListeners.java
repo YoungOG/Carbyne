@@ -35,6 +35,21 @@ public class CooldownListeners implements Listener {
                         }
                     }
                 }
+            } else if (e.getItem().getType() == Material.POTION) {
+                if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    Board board = Board.getByPlayer(p);
+
+                    if (board != null) {
+                        BoardCooldown potionCooldown = board.getCooldown("potion");
+
+                        if (potionCooldown != null) {
+                            e.setCancelled(true);
+                            p.updateInventory();
+                            MessageManager.sendMessage(p, "&eYou cannot " + (e.getItem().getDurability() > 16385 ? "throw" : "drink") + " another Potion for &6" + potionCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
+                        } else if (e.getItem().getDurability() > 16385)
+                            new BoardCooldown(board, "potion", 15.0D);
+                    }
+                }
             }
         }
     }
@@ -53,9 +68,17 @@ public class CooldownListeners implements Listener {
                         e.setCancelled(true);
                         p.updateInventory();
                         MessageManager.sendMessage(p, "&eYou cannot eat another God Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.MINUTES) + " &eseconds!");
-                    } else {
+                    } else
                         new BoardCooldown(board, "godapple", 900.0D);
-                    }
+                }
+            } else if (e.getItem().getType() == Material.POTION) {
+                Board board = Board.getByPlayer(p);
+
+                if (board != null) {
+                    BoardCooldown potionCooldown = board.getCooldown("potion");
+
+                    if (potionCooldown == null)
+                        new BoardCooldown(board, "potion", 15.0D);
                 }
             }
         }
