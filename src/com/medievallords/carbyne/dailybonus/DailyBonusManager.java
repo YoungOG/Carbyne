@@ -40,18 +40,15 @@ public class DailyBonusManager {
                     String text;
 
                     if (profile.isDailyRewardsSetup()) {
-                        if (!profile.hasClaimedDailyReward()) {
-                            if (Cooldowns.getCooldown(profile.getUniqueId(), "DailyRewardWarmUp") > 0) {
+                        if (!profile.hasClaimedDailyReward())
+                            if (Cooldowns.getCooldown(profile.getUniqueId(), "DailyRewardWarmUp") > 0)
                                 text = ChatColor.translateAlternateColorCodes('&', "&dDaily Bonus &7[&c" + DateUtil.readableTime(Cooldowns.getCooldown(profile.getUniqueId(), "DailyRewardWarmUp"), true) + "&7]");
-                            } else {
+                            else
                                 text = ChatColor.translateAlternateColorCodes('&', "&dDaily Bonus &7[&aClaim Now&7]");
-                            }
-                        } else {
+                        else
                             text = ChatColor.translateAlternateColorCodes('&', "&dDaily Bonus &7[&6" + DateUtil.readableTime(profile.getRemainingDailyDayTime(), true) + "&7]");
-                        }
-                    } else {
+                    } else
                         text = ChatColor.translateAlternateColorCodes('&', "&dDaily Bonus &7[&aStart Here&7]");
-                    }
 
                     playerHolograms.get(id).clearLines();
                     playerHolograms.get(id).insertTextLine(0, text);
@@ -214,6 +211,15 @@ public class DailyBonusManager {
 
         player.openInventory(inventory);
         player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+    }
+
+    public boolean hasClaimedAllDays(Profile profile) {
+        for (int i = 0; i < profile.getDailyRewards().values().size(); i++) {
+            if (!profile.getDailyRewards().get(i))
+                return false;
+        }
+
+        return true;
     }
 
     public long getRemainingWeekFromMillis(long time, int day) {

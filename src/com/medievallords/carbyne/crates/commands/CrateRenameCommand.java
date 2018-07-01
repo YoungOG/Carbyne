@@ -43,9 +43,9 @@ public class CrateRenameCommand extends BaseCommand {
         currentName = crate.getName();
         crate.setName(newName);
 
-        getCarbyne().getCrateFileConfiguration().getConfigurationSection("Crates").set(currentName, newName);
+        getCarbyne().getCratesFileConfiguration().getConfigurationSection("Crates").set(currentName, newName);
 
-        crate.save(getCarbyne().getCrateFileConfiguration());
+        crate.save(getCarbyne().getCratesFileConfiguration());
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_RENAME.toString().replace("{CURRENT_NAME}", currentName).replace("{NEW_NAME}", newName));
     }

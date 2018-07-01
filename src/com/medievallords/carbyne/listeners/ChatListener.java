@@ -60,9 +60,8 @@ public class ChatListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        if (!event.getPlayer().hasPermission("carbyne.staff")) {
+        if (!event.getPlayer().hasPermission("carbyne.staff"))
             notMoved.add(event.getPlayer().getUniqueId());
-        }
     }
 
     @EventHandler
@@ -70,9 +69,8 @@ public class ChatListener implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
-        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ())) {
+        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()))
             notMoved.remove(event.getPlayer().getUniqueId());
-        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -83,13 +81,12 @@ public class ChatListener implements Listener {
             RegionManager regionManager = carbyne.getWorldGuardPlugin().getRegionManager(player.getWorld());
             ApplicableRegionSet regionSet = regionManager.getApplicableRegions(player.getLocation());
 
-            for (ProtectedRegion region : regionSet.getRegions()) {
+            for (ProtectedRegion region : regionSet.getRegions())
                 if (region.getId().equalsIgnoreCase("SpawnNoTalk")) {
                     MessageManager.sendMessage(player, "&cYou cannot talk in this region.");
                     event.setCancelled(true);
                     return;
                 }
-            }
         }
 
         event.setMessage(event.getMessage().replace("<love>", "\u2764"));
@@ -123,13 +120,12 @@ public class ChatListener implements Listener {
             return;
         }
 
-        if (carbyne.getStaffManager().getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff")) {
+        if (carbyne.getStaffManager().getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff"))
             if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD", carbyne.getStaffManager().getSlowChatTime() * 1000)) {
                 MessageManager.sendMessage(event.getPlayer(), "&cYou may speak again in " + (Cooldowns.getCooldown(event.getPlayer().getUniqueId(), "slowChatCD") / 1000) + " seconds");
                 event.setCancelled(true);
                 return;
             }
-        }
 
         if (player.hasPermission("carbyne.staff.pin")) {
             Profile profile = carbyne.getProfileManager().getProfile(player.getUniqueId());
@@ -254,19 +250,16 @@ public class ChatListener implements Listener {
                 StringBuilder toolTip;
 
                 toolTip = new StringBuilder((item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl) + "\n");
-                for (Enchantment enchantment : player.getItemInHand().getEnchantments().keySet()) {
+                for (Enchantment enchantment : player.getItemInHand().getEnchantments().keySet())
                     toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(item.getEnchantments().get(enchantment))).append("\n");
-                }
 
-                if (item.getItemMeta().hasLore()) {
-                    for (String l : item.getItemMeta().getLore()) {
+                if (item.getItemMeta().hasLore())
+                    for (String l : item.getItemMeta().getLore())
                         toolTip.append(l).append("\n");
-                    }
-                }
 
                 toolTip.append("\n" + "&7").append(sl);
 
-                newMessage.then(" ").then(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString())).then(" ");
+                newMessage.then("").then(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString())).then(" ");
             } else {
                 LinkSpan link = null;
 

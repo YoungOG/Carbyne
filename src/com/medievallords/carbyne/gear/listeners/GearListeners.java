@@ -8,7 +8,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.CarbyneRepairedEvent;
 import com.medievallords.carbyne.duels.duel.Duel;
 import com.medievallords.carbyne.gear.GearManager;
-import com.medievallords.carbyne.gear.effects.ExhaustEffect;
+import com.medievallords.carbyne.gear.effects.WeakenedEffect;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneArmor;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
@@ -30,6 +30,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.CraftItemEvent;
@@ -60,97 +61,39 @@ public class GearListeners implements Listener {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ForceField Thread").build());
     private Carbyne carbyne = Carbyne.getInstance();
     private GearManager gearManager = carbyne.getGearManager();
-    private HashMap<UUID, ExhaustEffect> exhaustEffects = new HashMap<>();
+    private HashMap<UUID, WeakenedEffect> weakEffects = new HashMap<>();
 
     public void removeFromExhaust(Player player) {
-        exhaustEffects.remove(player.getUniqueId());
+        weakEffects.remove(player.getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+
             if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
                 event.setCancelled(true);
                 return;
             }
 
-            if (player.getHealth() <= 32 && !exhaustEffects.containsKey(player.getUniqueId())) {
-                ExhaustEffect exhaustEffect = new ExhaustEffect(player);
-                exhaustEffect.runTaskTimerAsynchronously(carbyne, 0, 1);
-                exhaustEffects.put(player.getUniqueId(), exhaustEffect);
+            if (player.getHealth() <= 32 && !weakEffects.containsKey(player.getUniqueId())) {
+                WeakenedEffect weakenedEffect = new WeakenedEffect(player);
+                weakenedEffect.runTaskTimerAsynchronously(carbyne, 0, 1);
+                weakEffects.put(player.getUniqueId(), weakenedEffect);
             }
 
             if (carbyne.getDuelManager().getDuelFromUUID(player.getUniqueId()) != null)
                 return;
 
-            //Player dead?
             if (player.isDead()) {
                 event.setCancelled(true);
                 return;
             }
 
-            double armorReduction = gearManager.getDamageReduction(player);
+            float damage = gearManager.calculateDamage(player, event.getCause(), event.getDamage());
 
-            if (armorReduction > 0) {
-                float flatDamage = 0.0f;
-
-                //Calculation of certain DamageCauses for precise balancing.
-                switch (event.getCause()) {
-                    case FIRE_TICK:
-                        flatDamage = 0.5f;
-                        break;
-                    case LAVA:
-                        flatDamage = 1.0f;
-                        break;
-                    case LIGHTNING:
-                        flatDamage = 5.0f;
-                        break;
-                    case DROWNING:
-                        flatDamage = 2.0f;
-                        break;
-                    case STARVATION:
-                        flatDamage = 0.5f;
-                        break;
-                    case VOID:
-                        flatDamage = 4.0f;
-                        break;
-                    case POISON:
-                        flatDamage = 0.35f;
-                        break;
-                    case WITHER:
-                        flatDamage = 0.35f;
-                        break;
-                    case SUFFOCATION:
-                        flatDamage = 0.5f;
-                        break;
-                    //case FALL:
-                    //    flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
-                    //    break;
-                }
-
-                flatDamage *= 5;
-
-                float eventDamage = (float) event.getDamage() * 5;
-
-                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + gearManager.getProtectionReduction(player)))) : flatDamage);
-
-
-                //event.setDamage(damage);
-                event.setDamage(0);
-
-                damage = gearManager.calculatePotionEffects(damage, player);
-
-                if (player.getHealth() <= damage) {
-                    event.setCancelled(true);
-                    player.setHealth(0);
-                } else {
-                    player.setHealth(player.getHealth() - damage);
-                    player.playEffect(EntityEffect.HURT);
-                    //player.damage(damage);
-                }
-            } else
-                event.setDamage(event.getDamage() * 5);
+            event.setDamage(damage);
         }
     }
 
@@ -221,20 +164,6 @@ public class GearListeners implements Listener {
                         }
                     }
                 }
-
-                /*if (gearManager.isDefaultArmor(itemStack) || gearManager.isDefaultWeapon(itemStack)) {
-                    if (gearManager.isDefaultArmor(itemStack)) {
-                        MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(itemStack);
-
-                        minecraftArmor.damageItem(damaged, itemStack);
-                    }
-
-                    if (gearManager.isDefaultWeapon(itemStack)) {
-                        MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(itemStack);
-
-                        minecraftWeapon.damageItem(damaged, itemStack);
-                    }
-                }*/
             }
         }
 
@@ -256,12 +185,6 @@ public class GearListeners implements Listener {
                     carbyneWeapon.damageItem(damager, itemStack);
                 }
             }
-
-            /*if (gearManager.isDefaultWeapon(itemStack)) {
-                MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(itemStack);
-
-                minecraftWeapon.damageItem(damager, itemStack);
-            }*/
         }
     }
 
@@ -271,6 +194,26 @@ public class GearListeners implements Listener {
 
         if (gearManager.isCarbyneWeapon(item) || gearManager.isCarbyneArmor(item))
             event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack itemStack = player.getInventory().getItemInHand();
+
+        if (itemStack == null || itemStack.getType() == Material.AIR)
+            return;
+
+        CarbyneGear gear = gearManager.getCarbyneGear(itemStack);
+
+        if (gear == null)
+            return;
+
+        if (gear instanceof CarbyneWeapon) {
+            CarbyneWeapon carbyneWeapon = (CarbyneWeapon) gear;
+
+            carbyneWeapon.damageItem(player, itemStack);
+        }
     }
 
     @EventHandler
@@ -287,20 +230,16 @@ public class GearListeners implements Listener {
         if (itemStack == null)
             return;
 
-
         CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
         if (carbyneWeapon == null)
             return;
-
 
         Duel duel = Carbyne.getInstance().getDuelManager().getDuelFromUUID(event.getPlayer().getUniqueId());
         if (duel != null)
             return;
 
-
         if (TownyUniverse.getTownBlock(event.getPlayer().getLocation()) != null && !TownyUniverse.getTownBlock(event.getPlayer().getLocation()).getPermissions().pvp)
             return;
-
 
         if (carbyneWeapon.getSpecial() != null) {
             if (carbyneWeapon.getSpecialCharge(itemStack) >= carbyneWeapon.getSpecial().getRequiredCharge() || event.getPlayer().hasPermission("carbyne.specials.override")) {
@@ -347,35 +286,16 @@ public class GearListeners implements Listener {
                     return;
                 }
 
-                if (livingEntity instanceof Player)
+                if (livingEntity instanceof Player) {
                     if (Cooldowns.tryCooldown(livingEntity.getKiller().getUniqueId(), livingEntity.getUniqueId().toString() + ":charge", 300000))
                         specialCharge += 10;
-                    else if (livingEntity instanceof Monster)
-                        specialCharge += 5;
+                } else if (livingEntity instanceof Monster)
+                    specialCharge += 5;
 
                 carbyneWeapon.setSpecialCharge(itemStack, specialCharge);
             }
         }
     }
-
-    /*@EventHandler
-    public void onCraftItem(CraftItemEvent event) {
-        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
-            if (gearManager.isDefaultArmor(event.getCurrentItem())) {
-                MinecraftArmor minecraftArmor = gearManager.getDefaultArmor(event.getCurrentItem());
-
-                if (minecraftArmor != null) {
-                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
-                }
-            } else if (gearManager.isDefaultWeapon(event.getCurrentItem())) {
-                MinecraftWeapon minecraftWeapon = gearManager.getDefaultWeapon(event.getCurrentItem());
-
-                if (minecraftWeapon != null) {
-                    event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
-                }
-            }
-        }
-    }*/
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
@@ -399,9 +319,8 @@ public class GearListeners implements Listener {
                 if (minecraftWeapon != null)
                     event.setCurrentItem(gearManager.convertDefaultItem(event.getCurrentItem()));
 
-            } else if (event.getCurrentItem().getType() == Material.NETHER_STAR && !event.getInventory().getTitle().contains("Spell")) {
+            } else if (event.getCurrentItem().getType() == Material.NETHER_STAR && !event.getInventory().getTitle().contains("Spell"))
                 event.setCurrentItem(new ItemBuilder(gearManager.getTokenItem()).amount(event.getCurrentItem().getAmount()).build());
-            }
         }
     }
 
@@ -491,14 +410,11 @@ public class GearListeners implements Listener {
                 player.updateInventory();
                 int breakTime = 0;
 
-                if (Math.random() < 0.05) {
-                    if ((repairCost * repairCost) - 3 < 0)
-                        breakTime = 0;
-                    else {
+                if (Math.random() < 0.05)
+                    if ((repairCost * repairCost) - 3 > 0) {
                         Random random = new Random();
                         breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
                     }
-                }
 
                 repairItem(player, item, amountOfIngots, gear, block.getLocation().add(0.5, 1.12, 0.5), breakTime);
             } else {
@@ -515,14 +431,11 @@ public class GearListeners implements Listener {
                 player.updateInventory();
                 int breakTime = 0;
 
-                if (Math.random() < 0.05) {
-                    if ((repairCost * repairCost) - 3 < 0)
-                        breakTime = 0;
-                    else {
+                if (Math.random() < 0.05)
+                    if ((repairCost * repairCost) - 3 > 0) {
                         Random random = new Random();
                         breakTime = random.nextInt((repairCost * repairCost) - 3) + 3;
                     }
-                }
 
                 repairItem(player, item, repairCost, gear, block.getLocation().add(0.5, 1.12, 0.5), breakTime);
             }
@@ -624,11 +537,14 @@ public class GearListeners implements Listener {
                     for (ItemStack itemStack : player.getInventory().getArmorContents()) {
                         boolean isPrized;
 
-                        if (itemStack == null)
+                        if (itemStack == null || itemStack.getType() == Material.AIR)
                             continue;
 
                         if (gearManager.isCarbyneArmor(itemStack)) {
                             CarbyneArmor armor = gearManager.getCarbyneArmor(itemStack);
+
+                            if (armor == null)
+                                continue;
 
                             if (armor.isPolished(itemStack)) {
                                 isPrized = armor.getGearCode().equalsIgnoreCase("PH") || armor.getGearCode().equalsIgnoreCase("PC") || armor.getGearCode().equalsIgnoreCase("PL") || armor.getGearCode().equalsIgnoreCase("PB");
@@ -653,16 +569,14 @@ public class GearListeners implements Listener {
                                     r = HSLColor.toRGB(prizedHue, 100, 50).getRed();
                                     g = HSLColor.toRGB(prizedHue, 100, 50).getGreen();
                                     b = HSLColor.toRGB(prizedHue, 100, 50).getBlue();
+                                } else if (shouldFadeUp) {
+                                    r += armor.getTickFadeColor()[0];
+                                    g += armor.getTickFadeColor()[1];
+                                    b += armor.getTickFadeColor()[2];
                                 } else {
-                                    if (shouldFadeUp) {
-                                        r += armor.getTickFadeColor()[0];
-                                        g += armor.getTickFadeColor()[1];
-                                        b += armor.getTickFadeColor()[2];
-                                    } else {
-                                        r -= armor.getTickFadeColor()[0];
-                                        g -= armor.getTickFadeColor()[1];
-                                        b -= armor.getTickFadeColor()[2];
-                                    }
+                                    r -= armor.getTickFadeColor()[0];
+                                    g -= armor.getTickFadeColor()[1];
+                                    b -= armor.getTickFadeColor()[2];
                                 }
 
                                 if (r < 0)
@@ -743,18 +657,16 @@ public class GearListeners implements Listener {
     }
 
     public void removeItems(Inventory inventory, Material type, int data, int amount) {
-        if (amount <= 0) {
+        if (amount <= 0)
             return;
-        }
 
         int size = inventory.getSize();
 
         for (int slot = 0; slot < size; slot++) {
             ItemStack is = inventory.getItem(slot);
 
-            if (is == null) {
+            if (is == null)
                 continue;
-            }
 
             if (type == is.getType() && is.getDurability() == data) {
                 int newAmount = is.getAmount() - amount;
@@ -780,13 +692,11 @@ public class GearListeners implements Listener {
         for (int slot = 0; slot < size; slot++) {
             ItemStack is = inventory.getItem(slot);
 
-            if (is == null) {
+            if (is == null)
                 continue;
-            }
 
-            if (type == is.getType() && is.getDurability() == data) {
+            if (type == is.getType() && is.getDurability() == data)
                 amount += is.getAmount();
-            }
         }
         return amount;
     }
@@ -852,9 +762,8 @@ public class GearListeners implements Listener {
                             }
 
                             player.getInventory().addItem(itemStack);
-                        } else {
+                        } else
                             player.setItemInHand(itemStack);
-                        }
 
                         MessageManager.sendMessage(player, "&aYour item has been repaired.");
 
@@ -874,6 +783,15 @@ public class GearListeners implements Listener {
     }
 
     @EventHandler
+    public void onDraw(EntityShootBowEvent event) {
+        if (event.getEntity() instanceof Player)
+            if (event.getForce() < 0.5) {
+                event.setCancelled(true);
+                MessageManager.sendMessage(event.getEntity(), "&cYou must draw your bow back harder!");
+            }
+    }
+
+    @EventHandler
     public void onWandInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
@@ -887,7 +805,7 @@ public class GearListeners implements Listener {
                 location.setY(0.0);
                 selection.setLocation1(location);
                 user.setSelection(selection);
-                MessageManager.sendMessage(player, "&aSelection 1: &b" + location.getWorld().getName() + " &a- &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
+                MessageManager.sendMessage(player, "&aSelection 1: &b" + location.getWorld().getName() + "&a, &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
             } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 event.setCancelled(true);
                 Selection selection = (user.getSelection() != null) ? user.getSelection() : new Selection(null, null);
@@ -895,7 +813,7 @@ public class GearListeners implements Listener {
                 location.setY((double) location.getWorld().getMaxHeight());
                 selection.setLocation2(location);
                 user.setSelection(selection);
-                MessageManager.sendMessage(player, "&aSelection 2: &b" + location.getWorld().getName() + " &a- &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
+                MessageManager.sendMessage(player, "&aSelection 2: &b" + location.getWorld().getName() + "&a, &b" + location.getBlockX() + "&a, &b" + location.getBlockY() + "&a, &b" + location.getBlockZ() + "&a.");
             }
         }
     }
@@ -931,7 +849,7 @@ public class GearListeners implements Listener {
         Player player = event.getPlayer();
 
         if ((Region.get(event.getTo()) != null || Region.get(event.getFrom()) != null) && Region.get(event.getTo()) != null) {
-            if (gearManager.isWearingCarbyne(player)) {
+            if (gearManager.isWearingCarbyne(player, true)) {
                 RegionUser.getRegionUser(player).setExceptTeleportation(true);
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&cYou cannot enter this area while using Carbyne Gear.");
@@ -945,13 +863,12 @@ public class GearListeners implements Listener {
         Location t = event.getTo();
         Location f = event.getFrom();
 
-        if (t.getBlockX() == f.getBlockX() && t.getBlockY() == f.getBlockY() && t.getBlockZ() == f.getBlockZ()) {
+        if (t.getBlockX() == f.getBlockX() && t.getBlockY() == f.getBlockY() && t.getBlockZ() == f.getBlockZ())
             return;
-        }
 
-        final Player player = event.getPlayer();
+        Player player = event.getPlayer();
 
-        if (gearManager.isWearingCarbyne(player))
+        if (gearManager.isWearingCarbyne(player, true))
             if ((Region.get(event.getTo()) == null || Region.get(event.getFrom()) == null) && Region.get(event.getTo()) != null) {
                 RegionUser.getRegionUser(player).setExceptTeleportation(true);
                 Location from = new Location(event.getFrom().getWorld(), (double) event.getFrom().getBlockX(), (double) event.getFrom().getBlockY(), (double) event.getFrom().getBlockZ(), event.getFrom().getYaw(), event.getFrom().getPitch());
@@ -965,19 +882,18 @@ public class GearListeners implements Listener {
             // Stop processing if player has logged off
             UUID uuid = player.getUniqueId();
 
-            if (Bukkit.getPlayer(uuid) == null) {
+            if (Bukkit.getPlayer(uuid) == null)
                 return;
-            }
 
             // Update the players force field perspective and find all blocks to stop spoofing
             Set<Location> changedBlocks = getChangedBlocks(player);
 
             Set<Location> removeBlocks;
-            if (previousUpdates.containsKey(uuid)) {
+            if (previousUpdates.containsKey(uuid))
                 removeBlocks = previousUpdates.get(uuid);
-            } else {
+            else
                 removeBlocks = new HashSet<>();
-            }
+
 
             for (Location location : changedBlocks) {
                 player.sendBlockChange(location, Material.STAINED_GLASS, (byte) 9);
@@ -1010,7 +926,7 @@ public class GearListeners implements Listener {
         Set<Location> locations = new HashSet<>();
 
         // Do nothing if player is not tagged
-        if (!gearManager.isWearingCarbyne(player))
+        if (!gearManager.isWearingCarbyne(player, true))
             return locations;
 
         // Find the radius around the player
@@ -1070,18 +986,17 @@ public class GearListeners implements Listener {
                 UUID playerId = player.getUniqueId();
 
                 // Do nothing if player isn't even tagged.
-                if (!plugin.getGearManager().isWearingCarbyne(player))
+                if (!plugin.getGearManager().isWearingCarbyne(player, true))
                     continue;
 
                 Location loc = player.getLocation();
 
-                if (Region.get(loc) != null) {
+                if (Region.get(loc) != null)
                     // Track the last PVP-enabled location that the player was in.
                     validLocations.put(playerId, loc);
-                } else if (validLocations.containsKey(playerId)) {
+                else if (validLocations.containsKey(playerId))
                     // Teleport the player to the last valid PVP-enabled location.
                     player.teleport(validLocations.get(playerId));
-                }
             }
         }
     }

@@ -34,6 +34,7 @@ import com.medievallords.carbyne.events.UniversalEventListeners;
 import com.medievallords.carbyne.events.component.commands.EventDonationCommands;
 import com.medievallords.carbyne.events.implementations.LastAlive;
 import com.medievallords.carbyne.events.implementations.Race;
+import com.medievallords.carbyne.experimental.TempCommandNeat;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
@@ -52,15 +53,7 @@ import com.medievallords.carbyne.lootchests.LootChestListeners;
 import com.medievallords.carbyne.lootchests.LootChestManager;
 import com.medievallords.carbyne.lootchests.commands.LootChestCommand;
 import com.medievallords.carbyne.mechanics.MechanicListener;
-import com.medievallords.carbyne.missions.MissionsManager;
-import com.medievallords.carbyne.missions.commands.MissionAdminCommand;
-import com.medievallords.carbyne.missions.commands.MissionCommand;
 import com.medievallords.carbyne.missions.listeners.MissionListeners;
-import com.medievallords.carbyne.packages.PackageManager;
-import com.medievallords.carbyne.packages.commands.PackageGiveCommand;
-import com.medievallords.carbyne.packages.commands.PackageListCommand;
-import com.medievallords.carbyne.packages.commands.PackageOpenCommand;
-import com.medievallords.carbyne.packages.commands.PackageReloadCommand;
 import com.medievallords.carbyne.packages.listeners.PackageListener;
 import com.medievallords.carbyne.profiles.ProfileListeners;
 import com.medievallords.carbyne.profiles.ProfileManager;
@@ -89,6 +82,9 @@ import com.medievallords.carbyne.utils.nametag.NametagManager;
 import com.medievallords.carbyne.utils.scoreboard.CarbyneScoreboard;
 import com.medievallords.carbyne.utils.signgui.SignGUI;
 import com.medievallords.carbyne.utils.tabbed.Tabbed;
+import com.medievallords.carbyne.zones.ZoneListeners;
+import com.medievallords.carbyne.zones.ZoneManager;
+import com.medievallords.carbyne.zones.commands.ZoneCommands;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
@@ -139,32 +135,26 @@ public class Carbyne extends JavaPlugin {
 
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
-    private File duelFile;
-    private FileConfiguration duelFileConfiguration;
-    private File gateFile;
-    private FileConfiguration gateFileConfiguration;
-    private File crateFile;
-    private FileConfiguration crateFileConfiguration;
-    private File arenaFile;
-    private FileConfiguration arenaFileConfiguration;
+    private File gatesFile;
+    private FileConfiguration gatesFileConfiguration;
+    private File cratesFile;
+    private FileConfiguration cratesFileConfiguration;
+    private File arenasFile;
+    private FileConfiguration arenasFileConfiguration;
     private File leaderboardFile;
     private FileConfiguration leaderboardFileConfiguration;
-    private File lootChestFile;
-    private FileConfiguration lootChestFileConfiguration;
-    private File dropPointFile;
-    private FileConfiguration dropPointFileConfiguration;
-    private File gamemodeTownsFile;
-    private FileConfiguration gamemodeTownsConfiguration;
+    private File lootChestsFile;
+    private FileConfiguration lootChestsFileConfiguration;
+    private File dropPointsFile;
+    private FileConfiguration dropPointsFileConfiguration;
+    private File donatorTownsFile;
+    private FileConfiguration donatorTownsConfiguration;
     private File eventsFile;
     private FileConfiguration eventsFileConfiguration;
     private File rulesFile;
     private FileConfiguration rulesFileCongfiguration;
-    private File packageFile;
-    private FileConfiguration packageFileConfiguration;
-    private File missionFile;
-    private FileConfiguration missionFileConfiguration;
-    private File serverImagesFile;
-    private FileConfiguration serverImagesFileConfiguration;
+    private File zonesFile;
+    private FileConfiguration zonesFileConfiguration;
 
     private Permission permissions = null;
 
@@ -194,13 +184,12 @@ public class Carbyne extends JavaPlugin {
     private PacketManager packetManager;
     private TrailManager trailManager;
     private EventManager eventManager;
-    private MissionsManager missionsManager;
-    private PackageManager packageManager;
     private SpellMenuManager spellMenuManager;
     private DailyBonusManager dailyBonusManager;
     private Tabbed tabbed;
     private TutorialManager tutorialManager;
     private GearListeners gearListeners;
+    private ZoneManager zoneManager;
 
     public static Carbyne getInstance() {
         return instance;
@@ -241,6 +230,8 @@ public class Carbyne extends JavaPlugin {
         heartbeatRunnable = new HeartbeatRunnable();
         heartbeatRunnable.runTaskTimer(Carbyne.getInstance(), 0L, 2L);
 
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new LagTask(), 100L, 1L);
+
         itemDb = new ItemDb();
 
         for (Player all : PlayerUtility.getOnlinePlayers())
@@ -262,13 +253,11 @@ public class Carbyne extends JavaPlugin {
         lootChestManager = new LootChestManager();
         gamemodeManager = new GamemodeManager();
         trailManager = new TrailManager();
-        missionsManager = new MissionsManager();
         packetManager = new PacketManagerImpl(this);
-        packageManager = new PackageManager();
         spellMenuManager = new SpellMenuManager();
         dailyBonusManager = new DailyBonusManager();
         tabbed = new Tabbed(this);
-//        mapManager = ((MapManagerPlugin) Bukkit.getPluginManager().getPlugin("MapManager")).getMapManager();
+        zoneManager = new ZoneManager();
         gearListeners = new GearListeners();
 
         carbyneBoardAdapter = new CarbyneBoardAdapter(this);
@@ -284,14 +273,13 @@ public class Carbyne extends JavaPlugin {
         registerPackets();
 
         CombatTagListeners.ForceFieldTask.run(this);
-        GearListeners.ForceFieldTask.run(this);
+//        GearListeners.ForceFieldTask.run(this);
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Player player : PlayerUtility.getOnlinePlayers()) {
+                for (Player player : PlayerUtility.getOnlinePlayers())
                     NametagManager.updateNametag(player);
-                }
             }
         }.runTaskTimerAsynchronously(this, 0L, 10L);
 
@@ -306,7 +294,7 @@ public class Carbyne extends JavaPlugin {
         staffManager.shutdown();
         gateManager.saveGates();
         effectManager.dispose();
-        crateManager.save(crateFileConfiguration);
+        crateManager.save(cratesFileConfiguration);
         leaderboardManager.stopAllLeaderboardTasks();
         mongoClient.close();
         staffManager.shutdown();
@@ -360,6 +348,8 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new IronBoatListener(), this);
         pm.registerEvents(new StaffListeners(), this);
         pm.registerEvents(new DailyBonusListeners(), this);
+        pm.registerEvents(new ZoneListeners(), this);
+        pm.registerEvents(new ArrowListeners(), this);
         pm.registerEvents(tutorialManager, this);
 
         if (mythicMobsEnabled)
@@ -390,6 +380,7 @@ public class Carbyne extends JavaPlugin {
         new WithdrawCommand();
         new DepositCommand();
         new DailyBonusCommand();
+        new LagCommand();
 
         //Gate Commands
         new GearCommands();
@@ -509,21 +500,11 @@ public class Carbyne extends JavaPlugin {
         new EventDonationCommands();
         new UniversalEventCommand(new Race(eventManager), new LastAlive(eventManager));
 
-        //Package Commands
-        new PackageListCommand();
-        new PackageGiveCommand();
-        new PackageReloadCommand();
-        new PackageOpenCommand();
-
-
-        //Mission Commands
-        new MissionCommand();
-        new MissionAdminCommand();
-
-        new ImageReloadCommand();
+        new ZoneCommands();
 
         //TEMPRARY
         new TempCommando();
+        new TempCommandNeat();
     }
 
     private void registerPackets() {
@@ -556,7 +537,6 @@ public class Carbyne extends JavaPlugin {
 
     public void registerConfigurations() {
         saveResource("gear.yml", false);
-        saveResource("duel.yml", false);
         saveResource("gates.yml", false);
         saveResource("item.csv", false);
         saveResource("crates.yml", false);
@@ -565,39 +545,36 @@ public class Carbyne extends JavaPlugin {
         saveResource("lang.yml", false);
         saveResource("lootchests.yml", false);
         saveResource("droppoints.yml", false);
-        saveResource("gamemodetowns.yml", false);
+        saveResource("donatortowns.yml", false);
         saveResource("events.yml", false);
         saveResource("rules.yml", false);
         saveResource("packages.yml", false);
         saveResource("missions.yml", false);
-        saveResource("serverimages.yml", false);
+        saveResource("zones.yml", false);
 
         gearFile = new File(getDataFolder(), "gear.yml");
         gearFileConfiguration = YamlConfiguration.loadConfiguration(gearFile);
 
-        duelFile = new File(getDataFolder(), "duel.yml");
-        duelFileConfiguration = YamlConfiguration.loadConfiguration(duelFile);
+        gatesFile = new File(getDataFolder(), "gates.yml");
+        gatesFileConfiguration = YamlConfiguration.loadConfiguration(gatesFile);
 
-        gateFile = new File(getDataFolder(), "gates.yml");
-        gateFileConfiguration = YamlConfiguration.loadConfiguration(gateFile);
+        cratesFile = new File(getDataFolder(), "crates.yml");
+        cratesFileConfiguration = YamlConfiguration.loadConfiguration(cratesFile);
 
-        crateFile = new File(getDataFolder(), "crates.yml");
-        crateFileConfiguration = YamlConfiguration.loadConfiguration(crateFile);
-
-        arenaFile = new File(getDataFolder(), "arenas.yml");
-        arenaFileConfiguration = YamlConfiguration.loadConfiguration(arenaFile);
+        arenasFile = new File(getDataFolder(), "arenas.yml");
+        arenasFileConfiguration = YamlConfiguration.loadConfiguration(arenasFile);
 
         leaderboardFile = new File(getDataFolder(), "leaderboards.yml");
         leaderboardFileConfiguration = YamlConfiguration.loadConfiguration(leaderboardFile);
 
-        lootChestFile = new File(getDataFolder(), "lootchests.yml");
-        lootChestFileConfiguration = YamlConfiguration.loadConfiguration(lootChestFile);
+        lootChestsFile = new File(getDataFolder(), "lootchests.yml");
+        lootChestsFileConfiguration = YamlConfiguration.loadConfiguration(lootChestsFile);
 
-        dropPointFile = new File(getDataFolder(), "droppoints.yml");
-        dropPointFileConfiguration = YamlConfiguration.loadConfiguration(dropPointFile);
+        dropPointsFile = new File(getDataFolder(), "droppoints.yml");
+        dropPointsFileConfiguration = YamlConfiguration.loadConfiguration(dropPointsFile);
 
-        gamemodeTownsFile = new File(getDataFolder(), "gamemodetowns.yml");
-        gamemodeTownsConfiguration = YamlConfiguration.loadConfiguration(gamemodeTownsFile);
+        donatorTownsFile = new File(getDataFolder(), "donatortowns.yml");
+        donatorTownsConfiguration = YamlConfiguration.loadConfiguration(donatorTownsFile);
 
         eventsFile = new File(getDataFolder(), "events.yml");
         eventsFileConfiguration = YamlConfiguration.loadConfiguration(eventsFile);
@@ -605,27 +582,18 @@ public class Carbyne extends JavaPlugin {
         rulesFile = new File(getDataFolder(), "rules.yml");
         rulesFileCongfiguration = YamlConfiguration.loadConfiguration(rulesFile);
 
-        packageFile = new File(getDataFolder(), "packages.yml");
-        packageFileConfiguration = YamlConfiguration.loadConfiguration(packageFile);
-
-        missionFile = new File(getDataFolder(), "missions.yml");
-        missionFileConfiguration = YamlConfiguration.loadConfiguration(missionFile);
-
-        serverImagesFile = new File(getDataFolder(), "serverimages.yml");
-        serverImagesFileConfiguration = YamlConfiguration.loadConfiguration(serverImagesFile);
+        zonesFile = new File(getDataFolder(), "zones.yml");
+        zonesFileConfiguration = YamlConfiguration.loadConfiguration(zonesFile);
 
         File langFile = new File(getDataFolder(), "lang.yml");
         FileConfiguration langFileConfiguration = YamlConfiguration.loadConfiguration(langFile);
 
-        for (Lang item : Lang.values()) {
-            if (langFileConfiguration.getString(item.getPath()) == null) {
-                if (item.getAllMessages().length > 1) {
+        for (Lang item : Lang.values())
+            if (langFileConfiguration.getString(item.getPath()) == null)
+                if (item.getAllMessages().length > 1)
                     langFileConfiguration.set(item.getPath(), item.getAllMessages());
-                } else {
+                else
                     langFileConfiguration.set(item.getPath(), item.getFirstMessage());
-                }
-            }
-        }
 
         Lang.setFile(langFileConfiguration);
 
@@ -639,24 +607,21 @@ public class Carbyne extends JavaPlugin {
     }
 
     public void clearVillagers() {
-        for (World w : Bukkit.getWorlds()) {
+        for (World w : Bukkit.getWorlds())
             w.getEntities().stream().filter(ent -> ent instanceof Villager).forEach(ent -> {
                 Villager villager = (Villager) ent;
 
-                if (villager.getMetadata("logger") != null && villager.hasMetadata("logger")) {
+                if (villager.getMetadata("logger") != null && villager.hasMetadata("logger"))
                     villager.remove();
-                }
             });
-        }
     }
 
     private WorldGuardPlugin getWorldGuard() {
         Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
 
         // WorldGuard may not be loaded
-        if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
+        if (plugin == null || !(plugin instanceof WorldGuardPlugin))
             return null; // Maybe you want throw an exception instead
-        }
 
         return (WorldGuardPlugin) plugin;
     }

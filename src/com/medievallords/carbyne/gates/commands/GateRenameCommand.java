@@ -41,7 +41,7 @@ public class GateRenameCommand extends BaseCommand {
         currentGateId = gate.getGateId();
         gate.setGateId(newGateId);
 
-        getCarbyne().getGateFileConfiguration().getConfigurationSection("Gates").set(currentGateId, newGateId);
+        getCarbyne().getGatesFileConfiguration().getConfigurationSection("Gates").set(currentGateId, newGateId);
 
         gate.saveGate();
 

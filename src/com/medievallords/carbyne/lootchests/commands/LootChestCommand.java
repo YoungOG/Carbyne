@@ -80,12 +80,12 @@ public class LootChestCommand extends BaseCommand {
                     getLootChestManager().getLootChests().put(location, new LootChest(getLootChestManager(), uniqueName, lootTableName, location, respawnString, maxItems, blockFace));
 
                     String cp = "LootChests." + uniqueName;
-                    main.getLootChestFileConfiguration().set(cp + ".LootTable", lootTableName);
-                    main.getLootChestFileConfiguration().set(cp + ".Location", LocationSerialization.serializeLocation(location));
-                    main.getLootChestFileConfiguration().set(cp + ".RespawnTime", respawnString);
-                    main.getLootChestFileConfiguration().set(cp + ".MaxItems", maxItems);
-                    main.getLootChestFileConfiguration().set(cp + ".Face", blockFace.name());
-                    main.getLootChestFileConfiguration().save(main.getLootChestFile());
+                    main.getLootChestsFileConfiguration().set(cp + ".LootTable", lootTableName);
+                    main.getLootChestsFileConfiguration().set(cp + ".Location", LocationSerialization.serializeLocation(location));
+                    main.getLootChestsFileConfiguration().set(cp + ".RespawnTime", respawnString);
+                    main.getLootChestsFileConfiguration().set(cp + ".MaxItems", maxItems);
+                    main.getLootChestsFileConfiguration().set(cp + ".Face", blockFace.name());
+                    main.getLootChestsFileConfiguration().save(main.getLootChestsFile());
                     MessageManager.sendMessage(sender, "&2Created Loot Chest!");
                 } catch (Exception e) {
                     MessageManager.sendMessage(sender, "&cFailed to create loot chest!");
@@ -106,12 +106,12 @@ public class LootChestCommand extends BaseCommand {
                 getLootChestManager().getLootChests().remove(chest.getLocation());
 
                 try {
-                    main.getLootChestFileConfiguration().set("LootChests." + args[1] + ".LootTable", null);
-                    main.getLootChestFileConfiguration().set("LootChests." + args[1] + ".RespawnTime", null);
-                    main.getLootChestFileConfiguration().set("LootChests." + args[1] + ".Location", null);
-                    main.getLootChestFileConfiguration().set("LootChests." + args[1] + ".Face", null);
-                    main.getLootChestFileConfiguration().set("LootChests." + args[1], null);
-                    main.getLootChestFileConfiguration().save(main.getLootChestFile());
+                    main.getLootChestsFileConfiguration().set("LootChests." + args[1] + ".LootTable", null);
+                    main.getLootChestsFileConfiguration().set("LootChests." + args[1] + ".RespawnTime", null);
+                    main.getLootChestsFileConfiguration().set("LootChests." + args[1] + ".Location", null);
+                    main.getLootChestsFileConfiguration().set("LootChests." + args[1] + ".Face", null);
+                    main.getLootChestsFileConfiguration().set("LootChests." + args[1], null);
+                    main.getLootChestsFileConfiguration().save(main.getLootChestsFile());
                     MessageManager.sendMessage(sender, "&2Successfully removed loot chest!");
                 } catch (IOException ex) {
                     MessageManager.sendMessage(sender, "&cFailed to remove loot chest from file!");
@@ -130,9 +130,9 @@ public class LootChestCommand extends BaseCommand {
                         if (getLootChestManager().getLootChests().containsKey(location)) {
                             LootChest lootChest = getLootChestManager().getLootChests().get(location);
                             lootChest.setFace(face);
-                            main.getLootChestFileConfiguration().set("LootChests." + "DOWN" + ".Face", face.name());
+                            main.getLootChestsFileConfiguration().set("LootChests." + "DOWN" + ".Face", face.name());
                             try {
-                                main.getLootChestFileConfiguration().save(main.getLootChestFile());
+                                main.getLootChestsFileConfiguration().save(main.getLootChestsFile());
                             } catch (IOException ex) {
                             }
                         } else MessageManager.sendMessage(sender, "&cLocation does not contain a valid loot chest!");

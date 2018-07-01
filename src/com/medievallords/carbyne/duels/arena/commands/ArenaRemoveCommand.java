@@ -34,11 +34,11 @@ public class ArenaRemoveCommand extends BaseCommand {
 
         getDuelManager().getArenas().remove(arena);
 
-        if (getCarbyne().getArenaFileConfiguration().getConfigurationSection("Arenas").contains(arena.getArenaId())) {
-            getCarbyne().getArenaFileConfiguration().getConfigurationSection("Arenas").set(arena.getArenaId(), null);
+        if (getCarbyne().getArenasFileConfiguration().getConfigurationSection("Arenas").contains(arena.getArenaId())) {
+            getCarbyne().getArenasFileConfiguration().getConfigurationSection("Arenas").set(arena.getArenaId(), null);
             
             try {
-                getCarbyne().getArenaFileConfiguration().save(getCarbyne().getArenaFile());
+                getCarbyne().getArenasFileConfiguration().save(getCarbyne().getArenasFile());
             } catch (IOException e) {
                 MessageManager.sendMessage(player, "&cFailed to save the arenas.yml");
                 e.printStackTrace();

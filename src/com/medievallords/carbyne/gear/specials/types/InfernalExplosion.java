@@ -24,7 +24,7 @@ public class InfernalExplosion implements Special {
 
     @Override
     public int getRequiredCharge() {
-        return 60;
+        return 20;
     }
 
     @Override

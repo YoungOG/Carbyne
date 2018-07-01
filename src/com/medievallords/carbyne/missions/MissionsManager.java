@@ -17,14 +17,11 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.DateFormat;
@@ -70,110 +67,110 @@ public class MissionsManager {
     }
 
     private void loadMissions() {
-        FileConfiguration fc = Carbyne.getInstance().getMissionFileConfiguration();
-
-        for (String itemName : fc.getConfigurationSection("Items").getKeys(false)) {
-            String materialName;
-            String displayName;
-            List<String> lore;
-            List<String> enchants;
-            int data;
-            int amount;
-            double chanceToSpawn;
-
-            Material material;
-
-            boolean raw = false;
-            if ((materialName = fc.getString("Items." + itemName + ".Material")) == null) continue;
-            if ((material = Material.valueOf(materialName)) == null) continue;
-
-            if (material == Material.NETHER_STAR) {
-                if ((amount = fc.getInt("Items." + itemName + ".Amount")) == -1) amount = 1;
-                if ((chanceToSpawn = fc.getDouble("Items." + itemName + ".ChanceToSpawn")) == -1) chanceToSpawn = 0.01;
-                ItemStack is = Carbyne.getInstance().getGearManager().getTokenItem();
-                is.setAmount(amount);
-                lootItems.put(itemName.toLowerCase(), is);
-                chance.put(itemName.toLowerCase(), chanceToSpawn);
-                continue;
-            }
-
-            if ((displayName = fc.getString("Items." + itemName + ".DisplayName")) == null) raw = true;
-            lore = fc.getStringList("Items." + itemName + ".Lore");
-            if ((enchants = fc.getStringList("Items." + itemName + ".Enchantments")) == null)
-                enchants = new ArrayList<String>();
-            if ((data = fc.getInt("Items." + itemName + ".Data")) == -1) data = 0;
-            if ((amount = fc.getInt("Items." + itemName + ".Amount")) == -1) amount = 1;
-            if ((chanceToSpawn = fc.getDouble("Items." + itemName + ".ChanceToSpawn")) == -1) chanceToSpawn = 0.01;
-            HashMap<Enchantment, Integer> enchantments = new HashMap<>();
-            for (String enchantString : enchants) {
-                String[] split = enchantString.split(",");
-                Enchantment e = Enchantment.getByName(split[0].toUpperCase());
-                Integer i = new Integer(split[1]);
-                enchantments.put(e, i);
-            }
-
-            if (raw) {
-                ItemStack is = new ItemStack(material);
-                is.setAmount(amount);
-                lootItems.put(itemName.toLowerCase(), is);
-                chance.put(itemName.toLowerCase(), chanceToSpawn);
-            } else {
-                lootItems.put(itemName.toLowerCase(), new ItemBuilder(material).name(displayName).setLore(lore).durability(data).amount(amount).addEnchantments(enchantments).build());
-                chance.put(itemName.toLowerCase(), chanceToSpawn);
-            }
-        }
-
-        for (String numeral : fc.getConfigurationSection("Missions").getKeys(false)) {
-            String missionType;
-            String missionName, timeLimit;
-            String[] missionDescription;
-            int objectiveGoal;
-            double reward;
-
-            if ((missionType = fc.getString("Missions." + numeral + ".MissionType")) == null) continue;
-            if ((missionName = fc.getString("Missions." + numeral + ".Name")) == null) continue;
-            if ((timeLimit = fc.getString("Missions." + numeral + ".TimeLimit")) == null) continue;
-            if ((missionDescription = fc.getStringList("Missions." + numeral + ".Description").toArray(new String[0])).length == 0)
-                continue;
-            if ((objectiveGoal = fc.getInt("Missions." + numeral + ".ObjectiveGoal")) == -1) continue;
-            if ((reward = fc.getDouble("Missions." + numeral + ".CashReward")) == -1) continue;
-
-            List<String> lootData;
-            lootData = fc.getStringList("Missions." + numeral + ".LootTable");
-            for (int i = 0; i < lootData.size(); i++)
-                lootData.set(i, lootData.get(i).toLowerCase());
-
-            Class clazz = MissionData.getMissionType(missionType);
-
-            if (MissionData.materialDataClass.contains(clazz)) {
-                try {
-                    List<String> objectiveRawData = fc.getStringList("Missions." + numeral + ".ObjectiveData");
-                    MaterialData[] materialData = new MaterialData[objectiveRawData.size()];
-                    for (int i = 0; i < objectiveRawData.size(); i++) {
-                        String[] parse = objectiveRawData.get(i).split(":");
-                        materialData[i] = new MaterialData(Material.valueOf(parse[0].toUpperCase()), new Integer(parse[1]).byteValue());
-                    }
-                    missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, materialData));
-                } catch (Exception e) {
-                    Carbyne.getInstance().getLogger().log(Level.WARNING, "Failed to load ObjectiveData for Mission " + missionName + "!");
-                }
-            } else if (MissionData.itemStackClass.contains(clazz)) {
-                List<String> solutionData = fc.getStringList("Missions." + numeral + ".SolutionLootTable");
-
-                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, solutionData));
-            } else if (MissionData.bossClasses.contains(clazz)) {
-                List<String> bossNames = fc.getStringList("Missions." + numeral + ".BossNames");
-
-                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, bossNames));
-            } else if (MissionData.entityDataClass.contains(clazz)) {
-                List<String> types = fc.getStringList("Missions." + numeral + ".EntityTypes");
-
-                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, types));
-            } else {
-                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData));
-            }
-
-        }
+//        FileConfiguration fc = Carbyne.getInstance().getMissionFileConfiguration();
+//
+//        for (String itemName : fc.getConfigurationSection("Items").getKeys(false)) {
+//            String materialName;
+//            String displayName;
+//            List<String> lore;
+//            List<String> enchants;
+//            int data;
+//            int amount;
+//            double chanceToSpawn;
+//
+//            Material material;
+//
+//            boolean raw = false;
+//            if ((materialName = fc.getString("Items." + itemName + ".Material")) == null) continue;
+//            if ((material = Material.valueOf(materialName)) == null) continue;
+//
+//            if (material == Material.NETHER_STAR) {
+//                if ((amount = fc.getInt("Items." + itemName + ".Amount")) == -1) amount = 1;
+//                if ((chanceToSpawn = fc.getDouble("Items." + itemName + ".ChanceToSpawn")) == -1) chanceToSpawn = 0.01;
+//                ItemStack is = Carbyne.getInstance().getGearManager().getTokenItem();
+//                is.setAmount(amount);
+//                lootItems.put(itemName.toLowerCase(), is);
+//                chance.put(itemName.toLowerCase(), chanceToSpawn);
+//                continue;
+//            }
+//
+//            if ((displayName = fc.getString("Items." + itemName + ".DisplayName")) == null) raw = true;
+//            lore = fc.getStringList("Items." + itemName + ".Lore");
+//            if ((enchants = fc.getStringList("Items." + itemName + ".Enchantments")) == null)
+//                enchants = new ArrayList<String>();
+//            if ((data = fc.getInt("Items." + itemName + ".Data")) == -1) data = 0;
+//            if ((amount = fc.getInt("Items." + itemName + ".Amount")) == -1) amount = 1;
+//            if ((chanceToSpawn = fc.getDouble("Items." + itemName + ".ChanceToSpawn")) == -1) chanceToSpawn = 0.01;
+//            HashMap<Enchantment, Integer> enchantments = new HashMap<>();
+//            for (String enchantString : enchants) {
+//                String[] split = enchantString.split(",");
+//                Enchantment e = Enchantment.getByName(split[0].toUpperCase());
+//                Integer i = new Integer(split[1]);
+//                enchantments.put(e, i);
+//            }
+//
+//            if (raw) {
+//                ItemStack is = new ItemStack(material);
+//                is.setAmount(amount);
+//                lootItems.put(itemName.toLowerCase(), is);
+//                chance.put(itemName.toLowerCase(), chanceToSpawn);
+//            } else {
+//                lootItems.put(itemName.toLowerCase(), new ItemBuilder(material).name(displayName).setLore(lore).durability(data).amount(amount).addEnchantments(enchantments).build());
+//                chance.put(itemName.toLowerCase(), chanceToSpawn);
+//            }
+//        }
+//
+//        for (String numeral : fc.getConfigurationSection("Missions").getKeys(false)) {
+//            String missionType;
+//            String missionName, timeLimit;
+//            String[] missionDescription;
+//            int objectiveGoal;
+//            double reward;
+//
+//            if ((missionType = fc.getString("Missions." + numeral + ".MissionType")) == null) continue;
+//            if ((missionName = fc.getString("Missions." + numeral + ".Name")) == null) continue;
+//            if ((timeLimit = fc.getString("Missions." + numeral + ".TimeLimit")) == null) continue;
+//            if ((missionDescription = fc.getStringList("Missions." + numeral + ".Description").toArray(new String[0])).length == 0)
+//                continue;
+//            if ((objectiveGoal = fc.getInt("Missions." + numeral + ".ObjectiveGoal")) == -1) continue;
+//            if ((reward = fc.getDouble("Missions." + numeral + ".CashReward")) == -1) continue;
+//
+//            List<String> lootData;
+//            lootData = fc.getStringList("Missions." + numeral + ".LootTable");
+//            for (int i = 0; i < lootData.size(); i++)
+//                lootData.set(i, lootData.get(i).toLowerCase());
+//
+//            Class clazz = MissionData.getMissionType(missionType);
+//
+//            if (MissionData.materialDataClass.contains(clazz)) {
+//                try {
+//                    List<String> objectiveRawData = fc.getStringList("Missions." + numeral + ".ObjectiveData");
+//                    MaterialData[] materialData = new MaterialData[objectiveRawData.size()];
+//                    for (int i = 0; i < objectiveRawData.size(); i++) {
+//                        String[] parse = objectiveRawData.get(i).split(":");
+//                        materialData[i] = new MaterialData(Material.valueOf(parse[0].toUpperCase()), new Integer(parse[1]).byteValue());
+//                    }
+//                    missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, materialData));
+//                } catch (Exception e) {
+//                    Carbyne.getInstance().getLogger().log(Level.WARNING, "Failed to load ObjectiveData for Mission " + missionName + "!");
+//                }
+//            } else if (MissionData.itemStackClass.contains(clazz)) {
+//                List<String> solutionData = fc.getStringList("Missions." + numeral + ".SolutionLootTable");
+//
+//                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, solutionData));
+//            } else if (MissionData.bossClasses.contains(clazz)) {
+//                List<String> bossNames = fc.getStringList("Missions." + numeral + ".BossNames");
+//
+//                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, bossNames));
+//            } else if (MissionData.entityDataClass.contains(clazz)) {
+//                List<String> types = fc.getStringList("Missions." + numeral + ".EntityTypes");
+//
+//                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData, types));
+//            } else {
+//                missionData.add(new MissionData(clazz, missionName, missionDescription, timeLimit, objectiveGoal, reward, lootData));
+//            }
+//
+//        }
     }
 
     private void isItANewDay() {

@@ -30,13 +30,13 @@ public class CrateReloadCommand extends BaseCommand {
         getCarbyne().reloadConfig();
         Lang.setFile(YamlConfiguration.loadConfiguration(new File(getCarbyne().getDataFolder(), "lang.yml")));
 
-        if (getCarbyne().getCrateFile() == null) {
-            getCarbyne().setCrateFile(new File(getCarbyne().getDataFolder(), "crates.yml"));
+        if (getCarbyne().getCratesFile() == null) {
+            getCarbyne().setCratesFile(new File(getCarbyne().getDataFolder(), "crates.yml"));
         }
 
-        getCarbyne().setCrateFileConfiguration(YamlConfiguration.loadConfiguration(getCarbyne().getCrateFile()));
+        getCarbyne().setCratesFileConfiguration(YamlConfiguration.loadConfiguration(getCarbyne().getCratesFile()));
 
-        getCrateManager().load(YamlConfiguration.loadConfiguration(getCarbyne().getCrateFile()));
+        getCrateManager().load(YamlConfiguration.loadConfiguration(getCarbyne().getCratesFile()));
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_RELOAD.toString());
     }

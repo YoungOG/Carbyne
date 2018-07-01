@@ -35,12 +35,11 @@ public class GateStatusCommand extends BaseCommand {
         Gate gate = getGateManager().getGate(gateId);
 
         MessageManager.sendMessage(sender, "&aGate Id: &b" + gate.getGateId());
-        MessageManager.sendMessage(sender, " &aHeartbeat Alive: &b" + (gate.getHeartbeat() != null ? gate.getHeartbeat().isAlive() : "False"));
+        MessageManager.sendMessage(sender, " &aRunnable Active: &b" + (gate.getBukkitTask() != null ? "true" : "False"));
         MessageManager.sendMessage(sender, " &aActive Length: &b" + gate.getActiveLength());
         MessageManager.sendMessage(sender, " &aCurrent Length: &b" + gate.getCurrentLength());
         MessageManager.sendMessage(sender, " &aIs Open: &b" + gate.isOpen());
         MessageManager.sendMessage(sender, " &aKeeping Open: &b" + gate.isKeepOpen());
-        MessageManager.sendMessage(sender, " &aKeeping Closed: &b" + gate.isKeepClosed());
 
         MessageManager.sendMessage(sender, " &aPressure Plates(&b" + gate.getPressurePlateMap().keySet().size() + "&a):");
 

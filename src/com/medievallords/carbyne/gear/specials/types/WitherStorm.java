@@ -7,22 +7,18 @@ import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Williams on 2017-03-12.
  */
 public class WitherStorm implements Special {
 
-    private double damagePerRound = 6;
+    private double damage = 6;
     private final FireworkEffect[] effects;
 
     public WitherStorm() {
@@ -42,9 +38,15 @@ public class WitherStorm implements Special {
     @Override
     public void callSpecial(final Player caster) {
         final Location centerLocation = caster.getLocation();
+        for (final Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation, 8, 8, 8)) {
+            if (entity instanceof LivingEntity && !entity.equals(caster)) {
+                damageEntity((LivingEntity) entity);
+            }
+        }
+
         new BukkitRunnable() {
             private double t = 0;
-            private double times = 0;
+            private int times = 0;
             private double radius = 8;
 
             @Override
@@ -53,28 +55,11 @@ public class WitherStorm implements Special {
                 final double x = Math.sin(t) + Math.sin(t) * radius;
                 final double y = t - t + 1;
                 final double z = Math.cos(t) + Math.cos(t) * radius;
-                final List<Player> players = new ArrayList<>();
-                if (times == 20 || times == 40 || times == 60) {
-                    for (final Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation, radius, radius, radius)) {
-                        if (entity instanceof LivingEntity && !entity.equals(caster)) {
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    damageEntity((LivingEntity) entity);
-                                }
-                            }.runTask(Carbyne.getInstance());
-                        }
-
-                        if (entity.getType() == EntityType.PLAYER) {
-                            players.add((Player) entity);
-                        }
-                    }
-                }
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         centerLocation.add(x, y, z);
-                        InstantFirework.spawn(centerLocation, players, effects);
+                        InstantFirework.spawn(centerLocation, effects);
                         centerLocation.subtract(x, y, z);
                     }
                 }.runTask(Carbyne.getInstance());
@@ -93,16 +78,14 @@ public class WitherStorm implements Special {
     private void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                double health = entity.getHealth();
-                double damage = health - (health * 0.67);
-                entity.damage(damage);
+                entity.damage(entity.getHealth() * 0.5);
                 entity.setFireTicks(20 * 5);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
                 return;
             }
 
             entity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
-            entity.damage(damagePerRound);
+            entity.damage(damage);
             entity.setFireTicks(20 * 5);
         }
     }

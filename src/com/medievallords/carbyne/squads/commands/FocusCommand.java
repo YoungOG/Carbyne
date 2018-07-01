@@ -64,9 +64,8 @@ public class FocusCommand extends BaseCommand {
                         if (memberBoard != null) {
                             BoardCooldown memberTargetCooldown = memberBoard.getCooldown("target");
 
-                            if (memberTargetCooldown == null) {
+                            if (memberTargetCooldown == null)
                                 new BoardCooldown(memberBoard, "target", 30.0D);
-                            }
                         }
                     }
 
@@ -85,9 +84,9 @@ public class FocusCommand extends BaseCommand {
             if (board != null) {
                 BoardCooldown targetCooldown = board.getCooldown("target");
 
-                if (targetCooldown != null) {
+                if (targetCooldown != null)
                     MessageManager.sendMessage(player, "&eYou cannot target for another &6" + targetCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
-                } else {
+                else {
                     new BoardCooldown(board, "target", 30.0D);
 
                     for (UUID id : squad.getMembers()) {
@@ -96,9 +95,8 @@ public class FocusCommand extends BaseCommand {
                         if (memberBoard != null) {
                             BoardCooldown memberTargetCooldown = memberBoard.getCooldown("target");
 
-                            if (memberTargetCooldown == null) {
+                            if (memberTargetCooldown == null)
                                 new BoardCooldown(memberBoard, "target", 30.0D);
-                            }
                         }
                     }
 

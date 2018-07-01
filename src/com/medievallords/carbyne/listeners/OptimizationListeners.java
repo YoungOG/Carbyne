@@ -30,6 +30,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -62,9 +63,22 @@ public class OptimizationListeners implements Listener {
 
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
-        if (event.getEntity().getWorld().getName().equalsIgnoreCase("world")) {
-            if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem) && !(event.getEntity() instanceof Chicken)) {
+        if (event.getEntity().getWorld().getName().equalsIgnoreCase("world"))
+            if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM)
+                if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem) && !(event.getEntity() instanceof Chicken))
+                    event.setCancelled(true);
+
+
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || event.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
+            Material material = event.getTo().getBlock().getType();
+
+            if (material == Material.FENCE || material == Material.IRON_FENCE || material == Material.NETHER_FENCE) {
                 event.setCancelled(true);
+                MessageManager.sendMessage(event.getPlayer(), "&cYou cannot teleport while next to a fence.");
             }
         }
     }
@@ -73,9 +87,8 @@ public class OptimizationListeners implements Listener {
     public void onHungerLoss(FoodLevelChangeEvent event) {
         Player player = (Player) event.getEntity();
 
-        if ((event.getFoodLevel() < player.getFoodLevel()) && (new Random().nextInt(100) > 8)) {
+        if ((event.getFoodLevel() < player.getFoodLevel()) && (new Random().nextInt(100) > 8))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler
@@ -92,17 +105,14 @@ public class OptimizationListeners implements Listener {
     public void onSignEdit(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (!player.hasPermission("carbyne.caneditsigns")) {
+        if (!player.hasPermission("carbyne.caneditsigns"))
             return;
-        }
 
-        if (player.getGameMode() == GameMode.CREATIVE && !player.hasPermission("carbyne.caneditsigns")) {
+        if (player.getGameMode() == GameMode.CREATIVE && !player.hasPermission("carbyne.caneditsigns"))
             return;
-        }
 
-        if (!player.isSneaking()) {
+        if (!player.isSneaking())
             return;
-        }
 
         if (event.getClickedBlock() != null && event.getClickedBlock().getType() != Material.AIR) {
             if (event.getClickedBlock().getType() == Material.SIGN || event.getClickedBlock().getType() == Material.SIGN_POST || event.getClickedBlock().getType() == Material.WALL_SIGN) {
@@ -123,9 +133,8 @@ public class OptimizationListeners implements Listener {
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
 
-                for (int i = 0; i <= 3; i++) {
+                for (int i = 0; i <= 3; i++)
                     sign.setLine(i, ChatColor.translateAlternateColorCodes('&', event.getSignText()[i]));
-                }
 
                 sign.update(true);
             }
@@ -162,9 +171,8 @@ public class OptimizationListeners implements Listener {
         Player player = event.getEntity();
 
         if (player.getLastDamageCause() != null && player.getLastDamageCause().getCause() != null) {
-            if (!Cooldowns.tryCooldown(player.getUniqueId(), player.getUniqueId().toString() + ":killmessagecooldown", 30 * 1000)) {
+            if (!Cooldowns.tryCooldown(player.getUniqueId(), player.getUniqueId().toString() + ":killmessagecooldown", 30 * 1000))
                 return;
-            }
 
             switch (player.getLastDamageCause().getCause()) {
                 case FALL:
@@ -203,20 +211,43 @@ public class OptimizationListeners implements Listener {
                     if (player.getKiller() != null) {
                         Player killer = player.getKiller();
 
-                        if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
+                        if (killer.getItemInHand().getType() == Material.BOW) {
+                            boolean wasSniped = killer.getLocation().distance(player.getLocation()) > 50;
+
+                            if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
+                                JSONMessage message = JSONMessage.create();
+                                message.then(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was " + (wasSniped ? "sniped" : "shot down") + " by &c" + killer.getName() + "&e using "));
+                                StringBuilder toolTip;
+
+                                toolTip = new StringBuilder(killer.getItemInHand().getItemMeta().getDisplayName() + "\n");
+                                for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet())
+                                    toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment))).append("\n");
+
+                                for (String s : killer.getItemInHand().getItemMeta().getLore())
+                                    toolTip.append(s).append("\n");
+
+                                String type = killer.getItemInHand().getType().name().substring(0, 1).toUpperCase();
+                                toolTip.append("\n" + "&7").append(type).append(killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " "));
+
+                                message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString()));
+
+                                PlayerUtility.getOnlinePlayers().forEach(message::send);
+                                event.setDeathMessage("");
+                            } else
+                                event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was " + (wasSniped ? "sniped" : "shot down") + " by &c" + killer.getName()));
+                        } else if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
                             JSONMessage message = JSONMessage.create();
                             message.then(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using "));
                             StringBuilder toolTip;
 
                             toolTip = new StringBuilder(killer.getItemInHand().getItemMeta().getDisplayName() + "\n");
-                            for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet()) {
+                            for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet())
                                 toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment))).append("\n");
-                            }
 
-                            for (String s : killer.getItemInHand().getItemMeta().getLore()) {
+                            for (String s : killer.getItemInHand().getItemMeta().getLore())
                                 toolTip.append(s).append("\n");
-                            }
-                            String type = killer.getItemInHand().getType().name().substring(0,1).toUpperCase();
+
+                            String type = killer.getItemInHand().getType().name().substring(0, 1).toUpperCase();
                             toolTip.append("\n" + "&7").append(type).append(killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " "));
 
                             message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString()));
@@ -224,35 +255,48 @@ public class OptimizationListeners implements Listener {
                             PlayerUtility.getOnlinePlayers().forEach(message::send);
                             event.setDeathMessage("");
                             //event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName() + "&e using &c" + killer.getItemInHand().getItemMeta().getDisplayName()));
-                        } else {
+                        } else
                             event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was killed by &c" + killer.getName()));
-                        }
                     }
                     break;
                 case PROJECTILE:
-                    if (player.getKiller() instanceof Arrow) {
-                        Arrow arrow = (Arrow) player.getKiller();
+                    if (player.getKiller() != null) {
+                        Player killer = player.getKiller();
 
-                        if (arrow.getShooter() instanceof Player) {
-                            Player shooter = (Player) arrow.getShooter();
+                        if (killer.getItemInHand().getType() == Material.BOW) {
+                            boolean wasSniped = killer.getLocation().distance(player.getLocation()) > 50;
 
-                            if (shooter.getLocation().distance(player.getLocation()) > 50) {
-                                event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was sniped by &c" + shooter.getName()));
-                            } else {
-                                event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was shot down by &c" + shooter.getName()));
-                            }
-                        } else {
+                            if (killer.getItemInHand().hasItemMeta() && killer.getItemInHand().getItemMeta() != null && killer.getItemInHand().getItemMeta().hasDisplayName()) {
+                                JSONMessage message = JSONMessage.create();
+                                message.then(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was " + (wasSniped ? "sniped" : "shot down") + " by &c" + killer.getName() + "&e using "));
+                                StringBuilder toolTip;
+
+                                toolTip = new StringBuilder(killer.getItemInHand().getItemMeta().getDisplayName() + "\n");
+                                for (Enchantment enchantment : killer.getItemInHand().getEnchantments().keySet())
+                                    toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(killer.getItemInHand().getEnchantments().get(enchantment))).append("\n");
+
+                                for (String s : killer.getItemInHand().getItemMeta().getLore())
+                                    toolTip.append(s).append("\n");
+
+                                String type = killer.getItemInHand().getType().name().substring(0, 1).toUpperCase();
+                                toolTip.append("\n" + "&7").append(type).append(killer.getItemInHand().getType().name().substring(1).toLowerCase().replace("_", " "));
+
+                                message.then(killer.getItemInHand().getItemMeta().getDisplayName()).tooltip(ChatColor.translateAlternateColorCodes('&', toolTip.toString()));
+
+                                PlayerUtility.getOnlinePlayers().forEach(message::send);
+                                event.setDeathMessage("");
+                            } else
+                                event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was " + (wasSniped ? "sniped" : "shot down") + " by &c" + killer.getName()));
+                        } else
                             event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e was shot down"));
-                        }
                     }
                     break;
                 default:
                     event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e died"));
                     break;
             }
-        } else {
+        } else
             event.setDeathMessage(ChatColor.translateAlternateColorCodes('&', "&c" + player.getName() + "&e died"));
-        }
     }
 
     @EventHandler
@@ -488,13 +532,11 @@ public class OptimizationListeners implements Listener {
     public void onPortalTpLeave(PlayerTeleportEvent event) {
         Player p = event.getPlayer();
 
-        if (event.getCause() != PlayerTeleportEvent.TeleportCause.END_PORTAL || event.getCause() != PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
+        if (event.getCause() != PlayerTeleportEvent.TeleportCause.END_PORTAL || event.getCause() != PlayerTeleportEvent.TeleportCause.NETHER_PORTAL)
             return;
-        }
 
-        if (!portalLocations.containsKey(p)) {
+        if (!portalLocations.containsKey(p))
             return;
-        }
 
         HashMap<String, ArrayList<Double>> coordloc = portalLocations.get(p);
         ArrayList<Double> xloc = coordloc.get("x: ");
@@ -514,9 +556,8 @@ public class OptimizationListeners implements Listener {
     public void onPortalLeave(PlayerMoveEvent event) {
         Player p = event.getPlayer();
 
-        if (!portalLocations.containsKey(p)) {
+        if (!portalLocations.containsKey(p))
             return;
-        }
 
         HashMap<String, ArrayList<Double>> coordloc = portalLocations.get(p);
         ArrayList<Double> xloc = coordloc.get("x: ");
@@ -561,26 +602,9 @@ public class OptimizationListeners implements Listener {
     }
 
     @EventHandler
-    private void onProjectileLaunch(ProjectileLaunchEvent event) {
-        if (!(event.getEntity() instanceof ThrownPotion) || !(event.getEntity().getShooter() instanceof Player))
-            return;
-
-        Player player = (Player) event.getEntity().getShooter();
-        ThrownPotion potion = (ThrownPotion) event.getEntity();
-
-        if (!player.isDead() && player.isSprinting())
-            for (PotionEffect potionEffect : potion.getEffects())
-                if (potionEffect.getType().equals(PotionEffectType.HEAL)) {
-                    player.setHealth((player.getHealth() + 3.0 > player.getMaxHealth()) ? player.getMaxHealth() : (player.getHealth() + 3.0));
-                    potion.setVelocity(potion.getVelocity().setY(-2));
-                }
-    }
-
-    @EventHandler
     public void onEnterInTheMinecart(VehicleEnterEvent event) {
-        if (!(event.getVehicle() instanceof Minecart) || !(event.getEntered() instanceof Player)) {
+        if (!(event.getVehicle() instanceof Minecart) || !(event.getEntered() instanceof Player))
             return;
-        }
 
         Player player = (Player) event.getEntered();
         Location minecartLoc = event.getVehicle().getLocation();
@@ -600,9 +624,8 @@ public class OptimizationListeners implements Listener {
 
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
-        if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F) {
+        if (event.getPlayer().isFlying() && event.getPlayer().getFallDistance() > 0.0F)
             event.getPlayer().setFallDistance(0.0F);
-        }
     }
 
     @EventHandler
@@ -611,14 +634,39 @@ public class OptimizationListeners implements Listener {
             event.setResult(new ItemBuilder(Material.GLASS).amount(4).build());
     }
 
+    @EventHandler
+    void onProjectileLaunch(final ProjectileLaunchEvent event) {
+        if (event.getEntityType() == EntityType.SPLASH_POTION) {
+            Projectile projectile = event.getEntity();
+
+            if (projectile.getShooter() instanceof Player && ((Player) projectile.getShooter()).isSprinting()) {
+                Vector velocity = projectile.getVelocity();
+
+                velocity.setY(velocity.getY() - 1.0);
+                projectile.setVelocity(velocity);
+            }
+        }
+    }
+
+//    @EventHandler
+//    void onPotionSplash(PotionSplashEvent event) {
+//        if (event.getEntity().getShooter() instanceof Player) {
+////            Player shooter = (Player) event.getEntity().getShooter();
+//
+//            if (shooter.isSprinting() && event.getIntensity(shooter) > 0.5D) {
+//                event.setIntensity(shooter, 1.0D);
+//                event.
+//            }
+//        }
+//    }
+
     public Location getCoords(Location loc, int min, int max) {
         for (int tp = min; tp < max; ++tp) {
             Material material1 = new Location(loc.getWorld(), (double) loc.getBlockX(), (double) tp, (double) loc.getBlockZ()).getBlock().getType();
             Material material2 = new Location(loc.getWorld(), (double) loc.getBlockX(), (double) (tp + 1), (double) loc.getBlockZ()).getBlock().getType();
 
-            if (material1 == Material.AIR && material2 == Material.AIR) {
+            if (material1 == Material.AIR && material2 == Material.AIR)
                 return new Location(loc.getWorld(), (double) loc.getBlockX(), (double) tp, (double) loc.getBlockZ());
-            }
         }
 
         return new Location(loc.getWorld(), (double) loc.getBlockX(), (double) loc.getWorld().getHighestBlockYAt(loc.getBlockX(), loc.getBlockZ()), (double) loc.getBlockZ());

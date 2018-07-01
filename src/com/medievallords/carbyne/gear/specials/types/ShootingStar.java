@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -22,7 +24,6 @@ import java.util.List;
  */
 public class ShootingStar implements Special, Listener {
 
-    private final int interval = 9;
     private final List<Entity> entities = new ArrayList<>();
     private final FireworkEffect[] effects;
 
@@ -45,56 +46,53 @@ public class ShootingStar implements Special, Listener {
     public void callSpecial(Player caster) {
         final Location loc = caster.getLocation();
         InstantFirework.spawn(loc, effects);
-        run(loc.clone().add(0, 18, 0));
+        run(loc.clone().add(0, 18, 0), caster);
 
         broadcastMessage("&7[&aCarbyne&7]: &5" + caster.getName() + " &ahas casted the &c" + getSpecialName().replace("_", " ") + " &aspecial!", caster.getLocation(), 50);
     }
 
-    private void run(final Location centerLocation) {
+    private void run(final Location centerLocation, final Player caster) {
         new BukkitRunnable() {
-            private double t = 0;
-            private double times = 0;
-            private double radius = 2;
-            private int tir = 0;
-
             @Override
             public void run() {
-                t += 0.25;
-                final double x = Math.sin(t) + Math.sin(t) * radius;
-                final double z = Math.cos(t) + Math.cos(t) * radius;
-                final List<Player> players = new ArrayList<>();
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (tir >= interval) {
+                for (Entity entity : centerLocation.getWorld().getNearbyEntities(centerLocation.clone().subtract(0, 18, 0), 10, 10, 10)) {
+                    if (entity.getType() == EntityType.PLAYER) {
+                        Player player = (Player) entity;
+                        if (!player.equals(caster)) {
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 1));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 200, 1));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1));
+                        }
+                    }
+                }
+            }
+        }.runTaskLater(Carbyne.getInstance(), 60);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (double t = 0; t <= (Math.PI); t += Math.PI / 10) {
+                    final double x = Math.sin(t) * 7.0;
+                    final double z = Math.cos(t) * 7.0;
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
                             centerLocation.add(x, 0, z);
-                            InstantFirework.spawn(centerLocation, players, effects);
+                            InstantFirework.spawn(centerLocation, effects);
                             entities.add(centerLocation.getWorld().spawnFallingBlock(centerLocation, Material.SNOW_BLOCK, (byte) 0));
                             centerLocation.subtract(x, 0, z);
                             centerLocation.subtract(x, 0, z);
-                            InstantFirework.spawn(centerLocation, players, effects);
+                            InstantFirework.spawn(centerLocation, effects);
                             entities.add(centerLocation.getWorld().spawnFallingBlock(centerLocation, Material.CLAY, (byte) 0));
                             centerLocation.add(x, 0, z);
-                            tir = 0;
-                        } else {
-                            centerLocation.add(x, 0, z);
-                            InstantFirework.spawn(centerLocation, players, effects);
-                            centerLocation.subtract(x, 0, z);
-                            centerLocation.subtract(x, 0, z);
-                            InstantFirework.spawn(centerLocation, players, effects);
-                            centerLocation.add(x, 0, z);
                         }
-                    }
-                }.runTask(Carbyne.getInstance());
-
-                tir++;
-                radius += .1;
-                times++;
-                if (times > 60) {
-                    this.cancel();
+                    }.runTask(Carbyne.getInstance());
                 }
             }
-        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 27, 1);
+        }.runTaskAsynchronously(Carbyne.getInstance());
     }
 
     @EventHandler
@@ -107,13 +105,7 @@ public class ShootingStar implements Special, Listener {
     }
 
     private void makeExplosion(final Location loc) {
-        ParticleEffect.EXPLOSION_HUGE.display(0, 0, 0, 0, 1, loc, 50, false);
-        for (Entity entity : loc.getWorld().getNearbyEntities(loc, 3, 3, 3)) {
-            if (entity.getType() == EntityType.PLAYER) {
-                ((Player) entity).damage(4);
-            }
-        }
-
+        ParticleEffect.EXPLOSION_LARGE.display(0, 0, 0, 0, 1, loc, 50, false);
         loc.getWorld().playSound(loc, Sound.EXPLODE, 2, 1.3f);
     }
 

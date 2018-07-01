@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadKickCommand extends BaseCommand {
 
-    @Command(name = "squad.kick", inGameOnly = true, aliases = {"squad.k"})
+    @Command(name = "squad.kick", inGameOnly = true, aliases = {"squad.k", "party.kick", "p.kick"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
@@ -70,9 +70,8 @@ public class SquadKickCommand extends BaseCommand {
         if (board != null) {
             BoardCooldown targetCooldown = board.getCooldown("target");
 
-            if (targetCooldown != null) {
+            if (targetCooldown != null)
                 targetCooldown.cancel();
-            }
         }
     }
 }

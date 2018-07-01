@@ -129,12 +129,6 @@ public class SquadDuel extends Duel {
                 player.setFireTicks(0);
 
                 Account.getAccount(winnerId).setBalance(Account.getAccount(winnerId).getBalance() + getBets());
-
-                if (squadTwo.getAllPlayers().contains(winnerId)) {
-                    MessageManager.broadcastMessage("&b" + player.getName() + "'s squad &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(squadOne.getLeader()).getName() + "'s squad");
-                } else {
-                    MessageManager.broadcastMessage("&b" + player.getName() + "'s squad &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(squadTwo.getLeader()).getName() + "'s squad");
-                }
             }
         }
 
@@ -218,6 +212,15 @@ public class SquadDuel extends Duel {
                         p.setHealth(p.getMaxHealth());
                     }
 
+                    if (uuid != null) {
+                        Player player = Bukkit.getServer().getPlayer(uuid);
+                        if (squadTwo.getAllPlayers().contains(uuid)) {
+                            MessageManager.broadcastMessage("&d" + player.getName() + "'s squad &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(squadOne.getLeader()).getName() + "'s squad");
+                        } else {
+                            MessageManager.broadcastMessage("&d" + player.getName() + "'s squad &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(squadTwo.getLeader()).getName() + "'s squad");
+                        }
+                    }
+
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -239,6 +242,15 @@ public class SquadDuel extends Duel {
                         Player p = Bukkit.getPlayer(u);
                         p.setFireTicks(0);
                         p.setHealth(p.getMaxHealth());
+                    }
+
+                    if (uuid != null) {
+                        Player player = Bukkit.getServer().getPlayer(uuid);
+                        if (squadTwo.getAllPlayers().contains(uuid)) {
+                            MessageManager.broadcastMessage("&d" + player.getName() + "'s squad &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(squadOne.getLeader()).getName() + "'s squad");
+                        } else {
+                            MessageManager.broadcastMessage("&d" + player.getName() + "'s squad &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(squadTwo.getLeader()).getName() + "'s squad");
+                        }
                     }
 
                     new BukkitRunnable() {

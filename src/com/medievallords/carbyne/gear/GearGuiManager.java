@@ -41,7 +41,7 @@ public class GearGuiManager {
 
     public void setupStoreGui() {
         List<CarbyneArmor> carbyneArmorList = new ArrayList<>();
-        for (CarbyneGear carbyneGear : gearManager.getCarbyneGear()) {
+        for (CarbyneGear carbyneGear : gearManager.getCarbyneGear())
             if (carbyneGear instanceof CarbyneArmor) {
                 CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
@@ -49,7 +49,6 @@ public class GearGuiManager {
                     carbyneArmorList.add(carbyneArmor);
                 }
             }
-        }
 
         storeGui.setItem(1, new ItemBuilder(Material.DIAMOND_SWORD).amount(1).name("&4&lWeapons").addLore("&ePurchase Carbyne weapons.").build());
         storeGui.setItem(3, new ItemBuilder(Material.LEATHER_CHESTPLATE).amount(1).color(Color.fromRGB(51, 0, 0)).name("&5&lArmor").clearLore().addLore("&ePurchase Carbyne armor.").build());
@@ -59,9 +58,8 @@ public class GearGuiManager {
 
             @Override
             public void run() {
-                if (i >= carbyneArmorList.size()) {
+                if (i >= carbyneArmorList.size())
                     i = 0;
-                }
 
                 i++;
             }
@@ -69,10 +67,9 @@ public class GearGuiManager {
     }
 
     public void setupWeaponsGui() {
-        for (CarbyneWeapon carbyneWeapon : gearManager.getCarbyneWeapon()) {
+        for (CarbyneWeapon carbyneWeapon : gearManager.getCarbyneWeapon())
             if (!carbyneWeapon.isHidden())
                 weaponsGui.addItem(new ItemBuilder(carbyneWeapon.getItem(true)).addLore(" ").addLore((!carbyneWeapon.isHidden() ? "&eCost: " + carbyneWeapon.getCost() : "&cThis is not a purchasable weapon.")).build());
-        }
 
         weaponsGui.setItem(26, new ItemBuilder(Material.BARRIER).name("&c&lGo Back").build());
     }
@@ -81,9 +78,8 @@ public class GearGuiManager {
         for (CarbyneArmor carbyneArmor : gearManager.getCarbyneArmor()) {
             double ar = 0.0;
 
-            for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor())) {
+            for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor()))
                 ar += set.getArmorRating();
-            }
 
             List<String> loreCopy = new ArrayList<>();
 
@@ -114,15 +110,12 @@ public class GearGuiManager {
                 for (CarbyneArmor set : gearManager.getCarbyneArmorByColor(carbyneArmor.getBaseColor())) {
                     int slot = 0;
 
-                    if (set.getItem(true).getType().equals(Material.LEATHER_HELMET)) {
-                        slot = 0;
-                    } else if (set.getItem(true).getType().equals(Material.LEATHER_CHESTPLATE)) {
+                    if (set.getItem(true).getType().equals(Material.LEATHER_CHESTPLATE))
                         slot = 1;
-                    } else if (set.getItem(true).getType().equals(Material.LEATHER_LEGGINGS)) {
+                    else if (set.getItem(true).getType().equals(Material.LEATHER_LEGGINGS))
                         slot = 2;
-                    } else if (set.getItem(true).getType().equals(Material.LEATHER_BOOTS)) {
+                    else if (set.getItem(true).getType().equals(Material.LEATHER_BOOTS))
                         slot = 3;
-                    }
 
                     inventory.setItem(slot, new ItemBuilder(set.getItem(true)).addLore(" ").addLore((!set.isHidden() ? "&eCost: " + set.getCost() : "&cThis is not a purchasable armor set.")).build());
                 }
@@ -133,14 +126,12 @@ public class GearGuiManager {
     }
 
     public void reloadStoreGuis() {
-        for (Player player : PlayerUtility.getOnlinePlayers()) {
-            if (player.getOpenInventory() != null) {
+        for (Player player : PlayerUtility.getOnlinePlayers())
+            if (player.getOpenInventory() != null)
                 if (isCustomInventory(player.getOpenInventory().getTopInventory())) {
                     player.closeInventory();
                     MessageManager.sendMessage(player, "&cThe Carbyne store has been reloaded.");
                 }
-            }
-        }
 
         storeGui.clear();
         armorGui.clear();
@@ -156,15 +147,12 @@ public class GearGuiManager {
     public boolean isCustomInventory(Inventory inventory) {
         boolean custom = false;
 
-        if (inventory.getTitle().equalsIgnoreCase(storeGui.getTitle()) || inventory.getTitle().equalsIgnoreCase(weaponsGui.getTitle()) || inventory.getTitle().equalsIgnoreCase(armorGui.getTitle())) {
+        if (inventory.getTitle().equalsIgnoreCase(storeGui.getTitle()) || inventory.getTitle().equalsIgnoreCase(weaponsGui.getTitle()) || inventory.getTitle().equalsIgnoreCase(armorGui.getTitle()))
             custom = true;
-        }
 
-        for (Inventory key : armorGuiList.values()) {
-            if (key.getTitle().equalsIgnoreCase(inventory.getTitle())) {
+        for (Inventory key : armorGuiList.values())
+            if (key.getTitle().equalsIgnoreCase(inventory.getTitle()))
                 custom = true;
-            }
-        }
 
         return custom;
     }

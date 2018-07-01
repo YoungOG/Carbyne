@@ -31,11 +31,10 @@ public class DuelManager {
     }
 
     public void loadArenas() {
-        if (!arenas.isEmpty()) {
+        if (!arenas.isEmpty())
             arenas.clear();
-        }
 
-        ConfigurationSection section = main.getArenaFileConfiguration().getConfigurationSection("Arenas");
+        ConfigurationSection section = main.getArenasFileConfiguration().getConfigurationSection("Arenas");
 
         if (section.getKeys(false).size() > 0) {
             main.getLogger().log(Level.INFO, "Preparing to load " + section.getKeys(false).size() + " arenas.");
@@ -45,17 +44,14 @@ public class DuelManager {
                 ArrayList<Location> spawnPointLocations = new ArrayList<>();
                 ArrayList<Location> pedastoolLocations = new ArrayList<>();
 
-                if (section.getString(id + ".LobbyLocation") != null && !section.getString(id + ".LobbyLocation").isEmpty()) {
+                if (section.getString(id + ".LobbyLocation") != null && !section.getString(id + ".LobbyLocation").isEmpty())
                     lobbyLocation = LocationSerialization.deserializeLocation(section.getString(id + ".LobbyLocation"));
-                }
 
-                for (String s : section.getStringList(id + ".SpawnPointLocations")) {
+                for (String s : section.getStringList(id + ".SpawnPointLocations"))
                     spawnPointLocations.add(LocationSerialization.deserializeLocation(s));
-                }
 
-                for (String s : section.getStringList(id + ".PedastoolLocations")) {
+                for (String s : section.getStringList(id + ".PedastoolLocations"))
                     pedastoolLocations.add(LocationSerialization.deserializeLocation(s));
-                }
 
                 Arena arena = new Arena(id);
                 arena.setLobbyLocation(lobbyLocation);
@@ -70,16 +66,14 @@ public class DuelManager {
 
     public Duel getDuel(String arenaName) {
         Arena arena = null;
-        for (Arena arenas : arenas) {
-            if (arenas.getArenaId().equalsIgnoreCase(arenaName)) {
+
+        for (Arena arenas : arenas)
+            if (arenas.getArenaId().equalsIgnoreCase(arenaName))
                 arena = arenas;
-            }
-        }
-        for (Duel duel : duels) {
-            if (duel.getArena().equals(arena)) {
+
+        for (Duel duel : duels)
+            if (duel.getArena().equals(arena))
                 return duel;
-            }
-        }
 
         return null;
     }
@@ -89,36 +83,30 @@ public class DuelManager {
             if (duel instanceof RegularDuel) {
                 RegularDuel regularDuel = (RegularDuel) duel;
 
-                if (Arrays.asList(regularDuel.getParticipants()).contains(uuid)) {
+                if (Arrays.asList(regularDuel.getParticipants()).contains(uuid))
                     return duel;
-                }
             } else if (duel instanceof SquadDuel) {
                 SquadDuel squadDuel = (SquadDuel) duel;
 
-                if (squadDuel.getSquadOne().getAllPlayers().contains(uuid) || squadDuel.getSquadTwo().getAllPlayers().contains(uuid)) {
+                if (squadDuel.getSquadOne().getAllPlayers().contains(uuid) || squadDuel.getSquadTwo().getAllPlayers().contains(uuid))
                     return duel;
-                }
             }
         }
         return null;
     }
 
     public Arena getArena(String arenaId) {
-        for (Arena arena : arenas) {
-            if (arena.getArenaId().equalsIgnoreCase(arenaId)) {
+        for (Arena arena : arenas)
+            if (arena.getArenaId().equalsIgnoreCase(arenaId))
                 return arena;
-            }
-        }
 
         return null;
     }
 
     public Arena getArena(Location location) {
-        for (Arena arena : arenas) {
-            if (arena.getLobbyLocation().equals(location) || Arrays.asList(arena.getSpawnPointLocations()).contains(location) || Arrays.asList(arena.getPedastoolLocations()).contains(location)) {
+        for (Arena arena : arenas)
+            if (arena.getLobbyLocation().equals(location) || Arrays.asList(arena.getSpawnPointLocations()).contains(location) || Arrays.asList(arena.getPedastoolLocations()).contains(location))
                 return arena;
-            }
-        }
 
         return null;
     }
@@ -138,14 +126,18 @@ public class DuelManager {
 
     public void cancelDuels() {
         for (Duel duel : duels) {
-            if (duel == null) continue;
+            if (duel == null)
+                continue;
+
             duel.end(null);
         }
     }
 
     public void cancelRequests() {
         for (DuelRequest request : DuelRequest.requests) {
-            if (request == null) continue;
+            if (request == null)
+                continue;
+
             request.cancel();
         }
     }

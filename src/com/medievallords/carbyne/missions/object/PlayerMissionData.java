@@ -1,8 +1,5 @@
 package com.medievallords.carbyne.missions.object;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.missions.MissionsManager;
-import com.medievallords.carbyne.missions.enums.Difficulty;
 import lombok.Getter;
 
 /**
@@ -10,7 +7,7 @@ import lombok.Getter;
  */
 public class PlayerMissionData {
 
-    private static final MissionsManager missionsManager = Carbyne.getInstance().getMissionsManager();
+//    private static final MissionsManager missionsManager = Carbyne.getInstance().getMissionsManager();
 
     @Getter
     private Mission[] currentMissions;
@@ -19,7 +16,7 @@ public class PlayerMissionData {
 
     public PlayerMissionData(Mission[] currentMissions) {
         this.currentMissions = currentMissions;
-        dailyChallenge = generateDailyChallenge();
+//        dailyChallenge = generateDailyChallenge();
     }
 
     /**
@@ -42,13 +39,13 @@ public class PlayerMissionData {
         }
     }
 
-    private Mission generateDailyChallenge() {
-        return missionsManager.chooseRandomMission(Difficulty.CRAZY);
-    }
+//    private Mission generateDailyChallenge() {
+//        return missionsManager.chooseRandomMission(Difficulty.CRAZY);
+//    }
 
-    public void setRandomDailyChallenge() {
-        dailyChallenge = generateDailyChallenge();
-    }
+//    public void setRandomDailyChallenge() {
+//        dailyChallenge = generateDailyChallenge();
+//    }
 
     @Override
     public int hashCode() {

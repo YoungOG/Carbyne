@@ -26,7 +26,7 @@ public class CrateManager {
     private HashMap<Sound, Double[]> sounds = new HashMap<>();
 
     public CrateManager() {
-        load(main.getCrateFileConfiguration());
+        load(main.getCratesFileConfiguration());
     }
 
     public void load(FileConfiguration crateFileConfiguration) {
@@ -88,8 +88,6 @@ public class CrateManager {
                 Location location = null;
                 int rewardsAmount = 1;
                 List<Reward> rewards = new ArrayList<>();
-                int progressInscreaseP = crateConfigurationSection.getInt(name + ".ProgressIncreaseP");
-                int progressInscreaseM = crateConfigurationSection.getInt(name + ".ProgressIncreaseM");
 
                 if (crateConfigurationSection.get(name + ".Location") != null)
                     location = LocationSerialization.deserializeLocation(crateConfigurationSection.getString(name + ".Location"));
@@ -112,7 +110,6 @@ public class CrateManager {
                             List<String> commands = rewardsSection.getStringList(rewardId + ".Commands");
                             boolean displayItemOnly = rewardsSection.getBoolean(rewardId + ".DisplayItem");
                             double chance = rewardsSection.getDouble(rewardId + ".Chance");
-                            double progress = rewardsSection.getDouble(rewardId + ".Progress");
                             int slot = rewardsSection.getInt(rewardId + ".Slot");
 
                             if (displayName != null) {

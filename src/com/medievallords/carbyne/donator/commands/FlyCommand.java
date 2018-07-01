@@ -62,12 +62,11 @@ public class FlyCommand extends BaseCommand {
             } else if (player.hasPermission("carbyne.commands.fly")) {
                 getGamemodeManager().toggleFlight(player);
                 return;
-            } else {
+            } else
                 MessageManager.sendMessage(player, "&cYou cannot do this!");
-            }
         } else {
-
             Nation nation = null;
+
             try {
                 nation = check.getNation();
             } catch (NotRegisteredException ignore) {
@@ -94,5 +93,4 @@ public class FlyCommand extends BaseCommand {
 
         MessageManager.sendMessage(player, "&cYou cannot do this!");
     }
-
 }

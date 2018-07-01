@@ -32,7 +32,7 @@ public class GateRemoveCommand extends BaseCommand {
 
         Gate gate = getGateManager().getGate(gateId);
         getGateManager().getGates().remove(gate);
-        getCarbyne().getGateFileConfiguration().getConfigurationSection("Gates").set(gate.getGateId(), null);
+        getCarbyne().getGatesFileConfiguration().getConfigurationSection("Gates").set(gate.getGateId(), null);
 
         MessageManager.sendMessage(sender, "&aYou have removed a gate named \"&b" + gateId + "&a\".");
     }

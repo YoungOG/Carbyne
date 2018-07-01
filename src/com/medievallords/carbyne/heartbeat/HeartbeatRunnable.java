@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.heartbeat;
 
-import com.medievallords.carbyne.heartbeat.blockqueue.HeartbeatBlockQueue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -15,7 +14,6 @@ public class HeartbeatRunnable extends BukkitRunnable {
     public void run() {
         switch (++current) {
             case 1:
-                HeartbeatBlockQueue.handleBlocks();
                 break;
             case 2:
                 break;

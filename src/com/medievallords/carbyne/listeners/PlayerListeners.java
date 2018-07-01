@@ -14,6 +14,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Chicken;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,6 +25,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -67,44 +69,20 @@ public class PlayerListeners implements Listener {
 
         if (!player.hasPlayedBefore())
             player.sendTitle(new Title.Builder().title(joinMessage).subtitle(subtitles[Maths.randomNumberBetween(subtitles.length, 0)]).stay(55).build());
-
-
-//        try {
-//            //Get the MapManager instance
-//            MapManager mapManager = ((MapManagerPlugin) Bukkit.getPluginManager().getPlugin("MapManager")).getMapManager();
-//
-//            //Wrap the local file "myImage.png"
-//            MapWrapper mapWrapper = mapManager.wrapImage(ImageIO.read(new URL("https://res.cloudinary.com/teepublic/image/private/s--s51yUeiA--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1463091852/production/designs/510568_1.jpg")));
-//            MapController mapController = mapWrapper.getController();
-//
-//            //Add "inventivetalent" as a viewer and send the content
-//            mapController.addViewer(player);
-//            mapController.sendContent(player);
-//
-//            //At this point, the player is able to see the image
-//            //So we can show we can show it in ItemFrames
-//            mapController.showInFrame(player, PlayerUtility.getFrame(new Location(Bukkit.getWorld("world"), -763.5, 105, 308.5)));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
-        for (ItemStack itemStack : event.getInventory().getContents()) {
-            if (itemStack != null && itemStack.getMaxStackSize() == 1 && itemStack.getAmount() > 1) {
+        for (ItemStack itemStack : event.getInventory().getContents())
+            if (itemStack != null && itemStack.getMaxStackSize() == 1 && itemStack.getAmount() > 1)
                 itemStack.setAmount(1);
-            }
-        }
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        for (ItemStack itemStack : event.getInventory().getContents()) {
-            if (itemStack != null && itemStack.getMaxStackSize() == 1 && itemStack.getAmount() > 1) {
+        for (ItemStack itemStack : event.getInventory().getContents())
+            if (itemStack != null && itemStack.getMaxStackSize() == 1 && itemStack.getAmount() > 1)
                 itemStack.setAmount(1);
-            }
-        }
     }
 
     @EventHandler
@@ -142,8 +120,6 @@ public class PlayerListeners implements Listener {
             if (voteCount % 15 == 0 && voteCount < 100)
                 MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l" + voteCount + " &aconsecutive votes has been reached! Vote using &3/vote&a!");
 
-            double random = Math.random();
-
             ItemStack reward;
 
             reward = main.getCrateManager().getKey("MysticalKey").getItem().clone();
@@ -157,8 +133,6 @@ public class PlayerListeners implements Listener {
                     Item item = player.getWorld().dropItem(player.getEyeLocation(), itemStack);
                     item.setVelocity(player.getEyeLocation().getDirection().normalize().multiply(1));
                 }
-
-                return;
             }
 
             double anotherRandom = Math.random();
@@ -182,7 +156,7 @@ public class PlayerListeners implements Listener {
         if (voteCount >= 100) {
             voteCount = 0;
 
-            ItemStack reward = main.getCrateManager().getKey("ObsidianKey").getItem().clone();
+            ItemStack reward = main.getCrateManager().getKey("MysticalKey").getItem().clone();
 
             double anotherRandom = Math.random();
             int amount;
@@ -206,8 +180,6 @@ public class PlayerListeners implements Listener {
                         Item item = online.getWorld().dropItem(online.getEyeLocation(), itemStack);
                         item.setVelocity(online.getEyeLocation().getDirection().normalize().multiply(1));
                     }
-
-                    return;
                 }
 
                 Account.getAccount(online.getUniqueId()).setBalance(Account.getAccount(online.getUniqueId()).getBalance() + amount);
@@ -270,9 +242,16 @@ public class PlayerListeners implements Listener {
 
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
-        if (event.getFrom().getWorld().equals(event.getTo().getWorld()) && event.getFrom().distance(event.getTo()) > 10) {
-            event.getPlayer().playSound(event.getTo(), Sound.ENDERMAN_TELEPORT, .6f, 1);
+        if (!event.getTo().getChunk().isLoaded()) {
+            event.getTo().getChunk().load();
+            event.getTo().getWorld().refreshChunk(event.getTo().getChunk().getX(), event.getTo().getChunk().getZ());
         }
+
+        if (!main.getStaffManager().isVanished(event.getPlayer()))
+            if (event.getFrom().getWorld().equals(event.getTo().getWorld()) && event.getFrom().distance(event.getTo()) > 10) {
+                event.getPlayer().playSound(event.getTo(), Sound.ENDERMAN_TELEPORT, .6f, 1);
+                event.getPlayer().playSound(event.getFrom(), Sound.ENDERMAN_TELEPORT, .6f, 1);
+            }
     }
 
     @EventHandler
@@ -280,6 +259,9 @@ public class PlayerListeners implements Listener {
         Player player = event.getPlayer();
 
         if (player.getGameMode() == GameMode.CREATIVE)
+            return;
+
+        if (main.getGamemodeManager().getFlyPlayers().contains(player) || main.getGamemodeManager().getGmPlayers().contains(player))
             return;
 
         Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
@@ -301,7 +283,7 @@ public class PlayerListeners implements Listener {
                     Vector forward = direction.multiply(3);
 
                     if (profile.isSprintToggled())
-                        forward.multiply(2.5);
+                        forward.multiply(4.5);
 
                     Vector vector = player.getLocation().toVector().subtract(player.getLocation().add(0, 3, 0).toVector());
                     vector.add(forward);
@@ -318,42 +300,53 @@ public class PlayerListeners implements Listener {
                     for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 15))
                         all.playSound(all.getLocation(), Sound.HORSE_JUMP, 3.0F, 0.533F);
                 }
-            }
-        }
+            } else
+                event.setCancelled(true);
+        } else
+            event.setCancelled(true);
     }
 
     @EventHandler
     public void onSprintToggle(PlayerToggleSneakEvent event) {
         if (!event.isSneaking()) {
             Profile profile = main.getProfileManager().getProfile(event.getPlayer().getUniqueId());
-            if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000) {
-                if (profile.getStamina() > 6 && !profile.isSprintToggled()) {
-                    profile.setSprintToggled(true);
-                    event.getPlayer().setWalkSpeed(0.33f);
-                    profile.setSprintCombo(0);
+            if (event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
+                if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000) {
 
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if (!event.getPlayer().isOnline())
-                                cancel();
+                    if (profile.getStamina() > 6 && !profile.isSprintToggled()) {
+                        if (!event.getPlayer().hasPotionEffect(PotionEffectType.SPEED)) {
+                            profile.setSprintToggled(true);
+                            event.getPlayer().setWalkSpeed(0.4f);
+                            profile.setSprintCombo(0);
 
-                            if (profile.isSprintToggled())
-                                ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, 0.0F, 0.03F, 2, event.getPlayer().getLocation().subtract(0.0, 0.1, 0.0), 30, false);
-                            else
-                                cancel();
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (!event.getPlayer().isOnline()) {
+                                        cancel();
+                                    }
+                                    if (profile.isSprintToggled()) {
+                                        ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, 0.0F, 0.03F, 2, event.getPlayer().getLocation().subtract(0.0, 0.1, 0.0), 30, false);
+                                    } else {
+                                        cancel();
+                                    }
+                                }
+                            }.runTaskTimerAsynchronously(main, 0, 1);
+
+                            MessageManager.sendMessage(event.getPlayer(), "&aSuper Sprint has been enabled!");
+
+                        } else {
+                            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use Super Sprint while you have speed.");
                         }
-                    }.runTaskTimerAsynchronously(main, 0, 1);
-
-                    MessageManager.sendMessage(event.getPlayer(), "&aSuper Sprint has been enabled!");
-                } else if (profile.isSprintToggled()) {
-                    profile.setSprintToggled(false);
-                    event.getPlayer().setWalkSpeed(0.2f);
-                    profile.setSprintCombo(0);
-                    MessageManager.sendMessage(event.getPlayer(), "&cSuper Sprint has been disabled!");
+                    } else if (profile.isSprintToggled()) {
+                        profile.setSprintToggled(false);
+                        event.getPlayer().setWalkSpeed(0.2f);
+                        profile.setSprintCombo(0);
+                        MessageManager.sendMessage(event.getPlayer(), "&cSuper Sprint has been disabled!");
+                    }
+                } else {
+                    profile.setSprintCombo(System.currentTimeMillis());
                 }
-            } else {
-                profile.setSprintCombo(System.currentTimeMillis());
             }
         }
     }
@@ -379,9 +372,8 @@ public class PlayerListeners implements Listener {
                                     profile.setPiledriveCombo(0);
                                     profile.setPiledriveBoolReady(true);
                                     MessageManager.sendMessage(player, "&aReady to piledrive! Damage an enemy to initiate!");
-                                } else {
+                                } else
                                     profile.setPiledriveCombo(System.currentTimeMillis());
-                                }
                             }
                         }
                     }
@@ -428,9 +420,9 @@ public class PlayerListeners implements Listener {
     public void pileDrive(Player damaged, Player damager) {
         MessageManager.sendMessage(damager, "&aYou have piledrived &5" + damaged.getName() + "&a!");
         Profile damagerProfile = main.getProfileManager().getProfile(damager.getUniqueId());
-        PotionEffect potionEffect = new PotionEffect(PotionEffectType.CONFUSION, 140, 2);
-        PotionEffect potionEffect2 = new PotionEffect(PotionEffectType.BLINDNESS, 80, 2);
-        PotionEffect potionEffect3 = new PotionEffect(PotionEffectType.SLOW, 100, 2);
+        PotionEffect potionEffect = new PotionEffect(PotionEffectType.CONFUSION, 100, 2);
+        PotionEffect potionEffect2 = new PotionEffect(PotionEffectType.BLINDNESS, 60, 2);
+        PotionEffect potionEffect3 = new PotionEffect(PotionEffectType.SLOW, 80, 2);
         damaged.addPotionEffect(potionEffect);
         damaged.addPotionEffect(potionEffect2);
         damaged.addPotionEffect(potionEffect3);
@@ -441,7 +433,7 @@ public class PlayerListeners implements Listener {
         FireworkEffect effect2 = FireworkEffect.builder().withColor(Color.ORANGE).trail(true).withFade(Color.YELLOW).with(FireworkEffect.Type.BURST).build();
         InstantFirework.spawn(damaged.getLocation(), effect);
         InstantFirework.spawn(damaged.getLocation(), effect2, effect);
-        damaged.damage(10D);
+        damaged.damage(6D);
 
         new BoardCooldown(Board.getByPlayer(damager), "skill", 10.0D);
 
@@ -455,6 +447,8 @@ public class PlayerListeners implements Listener {
             chicken.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 100000, 100000));
             chicken.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100000, 100000));
             chicken.setPassenger(damaged);
+            chicken.setMaxHealth(1000.0);
+            chicken.setHealth(1000.0);
 
             new BukkitRunnable() {
                 @Override
@@ -466,6 +460,12 @@ public class PlayerListeners implements Listener {
                 }
             }.runTaskLater(main, 200L);
         }
+    }
+
+    @EventHandler
+    public void vehicleDismountEvent(VehicleExitEvent event) {
+        if (event.getExited().getType().equals(EntityType.CHICKEN))
+            event.getExited().remove();
     }
 
     public boolean clear(Player damaged) {

@@ -73,9 +73,7 @@ public class HinderingShot implements Special {
     public void damageEntity(final LivingEntity entity, final double damage) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                final double health = entity.getHealth();
-                final double damageToDeal = health - (health * 0.31);
-                entity.damage(damageToDeal);
+                entity.damage(entity.getHealth() * 0.7);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
                 entity.setFireTicks(20 * 5);
                 return;
@@ -86,5 +84,4 @@ public class HinderingShot implements Special {
             entity.setFireTicks(20 * 5);
         }
     }
-
 }

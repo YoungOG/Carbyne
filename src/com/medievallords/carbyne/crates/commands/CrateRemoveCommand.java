@@ -34,7 +34,7 @@ public class CrateRemoveCommand extends BaseCommand {
 
         Crate crate = getCrateManager().getCrate(name);
         getCrateManager().getCrates().remove(crate);
-        getCarbyne().getCrateFileConfiguration().getConfigurationSection("Crates").set(crate.getName(), null);
+        getCarbyne().getCratesFileConfiguration().getConfigurationSection("Crates").set(crate.getName(), null);
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_REMOVE.toString().replace("{CRATE_NAME}", crate.getName()));
     }

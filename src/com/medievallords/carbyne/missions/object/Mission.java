@@ -34,7 +34,7 @@ import java.util.UUID;
 @Setter
 public abstract class Mission {
 
-    private static MissionsManager missionsManager = Carbyne.getInstance().getMissionsManager();
+//    private static MissionsManager missionsManager = Carbyne.getInstance().getMissionsManager();
 
     private boolean active, passed, failed;
 
@@ -94,34 +94,34 @@ public abstract class Mission {
      * @param slot    The slot in the inventory clicked.
      */
     public void clickMission(Player clicker, Inventory inv, int slot) {
-        UUID uuid = clicker.getUniqueId();
-        if (this.difficulty.equals(Difficulty.CRAZY)) {
-            Mission[] missions = missionsManager.getUuidMissions().get(clicker.getUniqueId()).getCurrentMissions();
-            if (slot == 10 && missions[0].passed && missions[1].passed && missions[2].passed) {
-                if (!active) {
-                    activateMission(inv, slot, uuid);
-                    MessageManager.sendMessage(clicker, "&bThe daily challenge " + name + "&b has been activated! Good luck!");
-                } else if (active && failed) {
-                    MessageManager.sendMessage(clicker, name + "&b has been &4&lFAILED&r&b!");
-                } else if (active && passed) {
-                    MessageManager.sendMessage(clicker, name + "&b has been &l&2COMPLETED&r&b!");
-                }
-                return;
-            } else {
-                MessageManager.sendMessage(clicker, "&bYou must complete the three daily missions to unlock the daily challenge!");
-                return;
-            }
-
-        }
-
-        if (!active && !passed && !failed) {
-            activateMission(inv, slot, uuid);
-            MessageManager.sendMessage(clicker, "&bThe mission " + name + "&b has been activated!");
-        } else if (active && failed) {
-            MessageManager.sendMessage(clicker, name + "&b has been &4&lFAILED&r&b!");
-        } else if (active && passed) {
-            MessageManager.sendMessage(clicker, name + "&b has been &l&2COMPLETED&r&b!");
-        }
+//        UUID uuid = clicker.getUniqueId();
+//        if (this.difficulty.equals(Difficulty.CRAZY)) {
+//            Mission[] missions = missionsManager.getUuidMissions().get(clicker.getUniqueId()).getCurrentMissions();
+//            if (slot == 10 && missions[0].passed && missions[1].passed && missions[2].passed) {
+//                if (!active) {
+//                    activateMission(inv, slot, uuid);
+//                    MessageManager.sendMessage(clicker, "&bThe daily challenge " + name + "&b has been activated! Good luck!");
+//                } else if (active && failed) {
+//                    MessageManager.sendMessage(clicker, name + "&b has been &4&lFAILED&r&b!");
+//                } else if (active && passed) {
+//                    MessageManager.sendMessage(clicker, name + "&b has been &l&2COMPLETED&r&b!");
+//                }
+//                return;
+//            } else {
+//                MessageManager.sendMessage(clicker, "&bYou must complete the three daily missions to unlock the daily challenge!");
+//                return;
+//            }
+//
+//        }
+//
+//        if (!active && !passed && !failed) {
+//            activateMission(inv, slot, uuid);
+//            MessageManager.sendMessage(clicker, "&bThe mission " + name + "&b has been activated!");
+//        } else if (active && failed) {
+//            MessageManager.sendMessage(clicker, name + "&b has been &4&lFAILED&r&b!");
+//        } else if (active && passed) {
+//            MessageManager.sendMessage(clicker, name + "&b has been &l&2COMPLETED&r&b!");
+//        }
     }
 
     /**

@@ -33,27 +33,23 @@ public class GearEffects implements HeartbeatTask {
 
     public void effectsTick() {
         for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (all.getFireTicks() > 1) {
+            if (all.getFireTicks() > 1)
                 ParticleEffect.FLAME.display(0.35f, 0.35f, 0.35f, (float) 0.02, 5, all.getLocation().add(0, 1, 0), 50, false);
-            }
 
-            if (all.getItemInHand().containsEnchantment(Enchantment.DAMAGE_ALL) || all.getItemInHand().containsEnchantment(Enchantment.ARROW_DAMAGE)) {
+            if (all.getItemInHand().containsEnchantment(Enchantment.DAMAGE_ALL) || all.getItemInHand().containsEnchantment(Enchantment.ARROW_DAMAGE))
                 if (!CombatTagListeners.isInCombat(all.getUniqueId()))
                     effectSharpnessPlayers(all);
-            }
 
-            if (all.isSprinting() && all.isOnGround()) {
+            if (all.isSprinting() && all.isOnGround())
                 ParticleEffect.FOOTSTEP.display(0.2f, 0f, 0.2f, (float) 0.15, 1, all.getLocation().add(0, 0.02, 0), 50, false);
-            }
 
-            if (all.getHealth() < 9){
+            if (all.getHealth() < 9)
                 bleed(all);
-            }
 
             for (PotionEffect effects : all.getActivePotionEffects()) {
                 switch (effects.getType().getName()) {
                     case "WITHER":
-                        ParticleEffect.TOWN_AURA.display(0.5f, 0.5f, 0.5f, (float) 0.02, 15, all.getLocation().add(0, 1, 0), 50, false);
+                        ParticleEffect.VILLAGER_ANGRY.display(0.2f, -0.2f, 0.2f, (float) 0.06, 2, all.getLocation(), 50, false);
                         break;
                     case "POISON":
                         ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.LONG_GRASS, (byte) 0), 0.2f, 0.2f, 0.2f, (float) 0.02, 20, all.getLocation().clone().add(0, 0.2, 0), 50, false);
@@ -69,6 +65,9 @@ public class GearEffects implements HeartbeatTask {
                         break;
                     case "REGENERATION":
                         ParticleEffect.HEART.display((float) random.nextDouble(), (float) random.nextDouble(), (float) random.nextDouble(), 0.3F, 2, all.getLocation(), 50, false);
+                        break;
+                    case "INCREASE_DAMAGE":
+                        ParticleEffect.LAVA.display(0.2F, -0.2F, 0.2F, (float) 00.5, 2, all.getLocation().subtract(0.0, 0.3, 0.0), 50, false);
                         break;
                 }
             }
@@ -90,15 +89,15 @@ public class GearEffects implements HeartbeatTask {
     public void effectTeleport(Player player, Location location) {
         List<Player> playerList = new ArrayList<>();
         playerList.add(player);
-        for (Entity entity : location.getWorld().getNearbyEntities(location, 30, 30, 30)) {
+
+        for (Entity entity : location.getWorld().getNearbyEntities(location, 30, 30, 30))
             if (entity instanceof Player) {
                 Player all = (Player) entity;
 
-                if (all.canSee(player)) {
+                if (all.canSee(player))
                     playerList.add(all);
-                }
             }
-        }
+
         ParticleEffect.VILLAGER_HAPPY.display(getRandomNegPosOne( -.5f), 2.0f, getRandomNegPosOne(-.5f), 1.15f, 5, location, playerList, false);
         ParticleEffect.VILLAGER_HAPPY.display(getRandomNegPosOne(-.4f), 1.5f, getRandomNegPosOne(-.4f), 2.15f, 5, location, playerList, false);
         ParticleEffect.VILLAGER_HAPPY.display(getRandomNegPosOne(-.3f), 1f, getRandomNegPosOne(-.3f), 3.15f, 5, location, playerList, false);
@@ -162,7 +161,7 @@ public class GearEffects implements HeartbeatTask {
     public float getRandomNegPosOne(float modifier){
         float rand1 = (float)random.nextDouble();
         float rand2 = (float)random.nextDouble() + modifier;
-        if(rand1 > 0.5f) rand2 = rand2 * -1;
+        if (rand1 > 0.5f) rand2 = rand2 * -1;
         return rand2;
     }
     @Override
@@ -170,11 +169,4 @@ public class GearEffects implements HeartbeatTask {
         this.effectsTick();
         return true;
     }
-
-//    public static void superSaien(Player player) {
-//        ParticleEffect.FLAME.display(0.3f, 0.3f, 0.3f, (float) 0.025, 70, player.getLocation());
-//    }
-//    public static void administrator(Player player) {
-//        ParticleEffect.SPELL_WITCH.display(0.35f, 0.35f, 0.35f, (float) 0.02, 100, player.getLocation());
-//    }
 }

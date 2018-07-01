@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadJoinCommand extends BaseCommand {
 
-    @Command(name = "squad.join", inGameOnly = true, aliases = {"squad.j", "squad.accept", "squad.a"})
+    @Command(name = "squad.join", inGameOnly = true, aliases = {"squad.j", "squad.accept", "squad.a", "party.join", "party.j", "party.accept", "party.a", "p.join", "p.j", "p.accept", "p.a"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
@@ -28,12 +28,11 @@ public class SquadJoinCommand extends BaseCommand {
         if (args.length == 0) {
             Squad squad = null;
 
-            for (Squad parties : getSquadManager().getSquads()) {
+            for (Squad parties : getSquadManager().getSquads())
                 if (parties.getInvitedPlayers().contains(player.getUniqueId())) {
                     squad = parties;
                     break;
                 }
-            }
 
             if (squad == null) {
                 MessageManager.sendMessage(player, "&cYou have not been invited to any squads.");
@@ -92,8 +91,7 @@ public class SquadJoinCommand extends BaseCommand {
 
                 MessageManager.sendMessage(player, "&aYou have joined the squad.");
             }
-        } else {
+        } else
             MessageManager.sendMessage(player, "&cUsage: /squad");
-        }
     }
 }

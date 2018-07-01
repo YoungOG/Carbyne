@@ -27,41 +27,36 @@ public class GateMobListeners implements Listener {
             @Override
             public void run() {
                 ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
-                if (mob != null) {
-                    if (mob.getSpawner() != null) {
-                        for (Gate gate : gateManager.getGates()) {
-                            for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
-                                if (spawner != null) {
+                if (mob != null)
+                    if (mob.getSpawner() != null)
+                        for (Gate gate : gateManager.getGates())
+                            for (MythicSpawner spawner : gate.getMythicSpawners().values())
+                                if (spawner != null)
                                     if (spawner.getInternalName().equalsIgnoreCase(mob.getSpawner().getInternalName())) {
                                         gate.addMob();
                                         return;
                                     }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }.runTaskLater(carbyne, 5L);
     }
 
     @EventHandler
     public void onEntityDeath(MythicMobDeathEvent event) {
-        ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
 
-        if (mob != null) {
-            if (mob.getSpawner() != null) {
-                for (Gate gate : gateManager.getGates()) {
-                    for (MythicSpawner spawner : gate.getMythicSpawners().values()) {
-                        if (spawner != null) {
-                            if (spawner == mob.getSpawner()) {
-                                gate.killMob();
-                                return;
-                            }
-                        }
-                    }
-                }
+                if (mob != null)
+                    if (mob.getSpawner() != null)
+                        for (Gate gate : gateManager.getGates())
+                            for (MythicSpawner spawner : gate.getMythicSpawners().values())
+                                if (spawner != null)
+                                    if (spawner == mob.getSpawner()) {
+                                        gate.killMob();
+                                        return;
+                                    }
             }
-        }
+        }.runTaskLater(carbyne, 5L);
     }
 }

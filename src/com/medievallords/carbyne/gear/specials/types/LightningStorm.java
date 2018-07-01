@@ -67,9 +67,7 @@ public class LightningStorm implements Special {
     private void damageEntity(LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                double health = entity.getHealth();
-                double damage = health - (health * 0.31);
-                entity.damage(damage);
+                entity.damage(entity.getHealth() * 0.5);
                 entity.setFireTicks(20 * 5);
                 return;
             }

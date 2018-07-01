@@ -1,10 +1,6 @@
 package com.medievallords.carbyne.gates;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.heartbeat.Heartbeat;
-import com.medievallords.carbyne.heartbeat.HeartbeatTask;
-import com.medievallords.carbyne.heartbeat.blockqueue.BlockType;
-import com.medievallords.carbyne.heartbeat.blockqueue.HeartbeatBlockQueue;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
@@ -18,6 +14,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import java.util.logging.Level;
 
 @Getter
 @Setter
-public class Gate implements HeartbeatTask {
+public class Gate {
 
     private Carbyne main = Carbyne.getInstance();
 
@@ -42,10 +40,9 @@ public class Gate implements HeartbeatTask {
     private ArrayList<Location> buttonLocations = new ArrayList<>();
     private ArrayList<Location> redstoneBlockLocations = new ArrayList<>();
     private HashMap<String, MythicSpawner> mythicSpawners = new HashMap<>();
-    private Heartbeat heartbeat;
     private boolean open = false;
-    private boolean keepOpen = false;
-    private boolean keepClosed = false;
+    private boolean keepOpen = false, buttonActivatedB = false;
+    private BukkitTask bukkitTask;
 
     public Gate(String gateId) {
         this.gateId = gateId;
@@ -64,69 +61,111 @@ public class Gate implements HeartbeatTask {
     }
 
     public void pressurePlateActivated(Location location, boolean active) {
+        int totalPressurePlates = pressurePlateMap.size();
+        int activatedPreviously = getActivatedPressurePlates();
+
         pressurePlateMap.put(location, active);
 
-        int activePressurePlates = 0;
+        int activatedCurrently = getActivatedPressurePlates();
 
-        for (Location locations : pressurePlateMap.keySet()) {
-            if (pressurePlateMap.get(locations)) {
-                activePressurePlates++;
+        if (activatedCurrently == totalPressurePlates) {
+            if (!open) {
+                MessageManager.sendMessage(getLocaton(), 20, "&aThe gate has been opened.");
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
+                        .actionbar(PlayerUtility.getPlayersInRadius(location, 20).toArray(new Player[0]));
+
+                openGate();
             }
-        }
+        } else if (activatedPreviously == totalPressurePlates) {
+            if (open && getMobs() != 0) {
+                this.currentLength = this.activeLength;
+                bukkitTask = new BukkitRunnable() {
+                    private int cooldown = activeLength;
 
-        if (activePressurePlates < pressurePlateMap.keySet().size()) {
-            MessageManager.sendMessage(location, 10, "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aPressure Plates needed to open the gate");
+                    @Override
+                    public void run() {
+                        int activatedCurrently = getActivatedPressurePlates();
+                        if (activatedCurrently == totalPressurePlates) {
+                            this.cancel();
+                            return;
+                        }
 
-            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activePressurePlates + "/" + pressurePlateMap.keySet().size() + " &aplayers needed to open the gate"))
-                    .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
-        }
+                        if (buttonActivatedB) {
+                            this.cancel();
+                            return;
+                        }
 
-        if (activePressurePlates >= pressurePlateMap.keySet().size()) {
-            //MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
+                        if (cooldown-- == 0) {
+                            closeGate();
+                            this.cancel();
+                        }
 
-            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
-                    .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+                    }
+                }.runTaskTimer(main, 0, 20L);
 
-            openGate();
+                MessageManager.sendMessage(getLocaton(), 20, "&aThere are &e" + activatedCurrently + "/" + totalPressurePlates + " &aplayers needed to open the gate");
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activatedCurrently + "/" + totalPressurePlates + " &aplayers needed to open the gate"))
+                        .actionbar(PlayerUtility.getPlayersInRadius(location, 20).toArray(new Player[0]));
+            }
+        } else {
+            MessageManager.sendMessage(getLocaton(), 20, "&aThere are &e" + activatedCurrently + "/" + totalPressurePlates + " &aplayers needed to open the gate");
+            JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThere are &e" + activatedCurrently + "/" + totalPressurePlates + " &aplayers needed to open the gate"))
+                    .actionbar(PlayerUtility.getPlayersInRadius(location, 20).toArray(new Player[0]));
         }
     }
 
-    public void buttonActivated(Location location) {
-        MessageManager.sendMessage(location, 10, "&aThe gate has been opened.");
+    public void buttonActivated(Location location, boolean active) {
+        buttonActivatedB = active;
+        if (active) {
+            if (!open) {
+                MessageManager.sendMessage(location, 20, "&aThe gate has been opened.");
+                JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
+                        .actionbar(PlayerUtility.getPlayersInRadius(location, 20).toArray(new Player[0]));
 
-        JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
-                .subtitle(PlayerUtility.getPlayersInRadius(location, 10).toArray(new Player[PlayerUtility.getPlayersInRadius(location, 10).size()]));
+                openGate();
+            }
+        } else {
+            this.currentLength = this.activeLength;
+            bukkitTask = new BukkitRunnable() {
+                private int cooldown = activeLength;
 
-        openGate();
+                @Override
+                public void run() {
+                    int activatedCurrently = getActivatedPressurePlates();
+                    if (activatedCurrently == pressurePlateMap.size()) {
+                        this.cancel();
+                        return;
+                    }
+
+                    if (buttonActivatedB) {
+                        this.cancel();
+                        return;
+                    }
+
+                    if (cooldown-- == 0) {
+                        closeGate();
+                        this.cancel();
+                    }
+
+                }
+            }.runTaskTimer(main, 0, 20L);
+        }
     }
 
     public synchronized void openGate() {
-        if (keepClosed) {
-            return;
-        }
-
+//        Bukkit.broadcastMessage(gateId + " - Open: " + open);
+//        Bukkit.broadcastMessage(gateId + " - KeepingOpen: " + keepOpen);
         open = true;
 
-        this.currentLength = this.activeLength;
-
-        if (redstoneBlockLocations.size() > 0) {
-            for (Location location : redstoneBlockLocations) {
+        if (redstoneBlockLocations.size() > 0)
+            for (Location location : redstoneBlockLocations)
                 if (location != null && location.getChunk().isLoaded()) {
                     Block block = location.getBlock();
 
-                    if (block != null) {
-                        if (block.getType() != Material.REDSTONE_BLOCK) {
-                            HeartbeatBlockQueue.types.add(new BlockType(Material.REDSTONE_BLOCK, block.getLocation()));
-                        }
-                    }
+                    if (block != null)
+                        if (block.getType() != Material.REDSTONE_BLOCK)
+                            location.getBlock().setType(Material.REDSTONE_BLOCK);
                 }
-            }
-        }
-
-        if (this.heartbeat == null) {
-            this.heartbeat = new Heartbeat(this, 1000L);
-            heartbeat.start();
-        }
     }
 
     public synchronized void closeGate() {
@@ -135,32 +174,29 @@ public class Gate implements HeartbeatTask {
         currentLength = 0;
 
         try {
-            for (Location location : redstoneBlockLocations) {
+            for (Location location : redstoneBlockLocations)
                 if (location != null && location.getChunk().isLoaded()) {
                     Block block = location.getBlock();
 
-                    if (block.getType() == Material.REDSTONE_BLOCK) {
-                        HeartbeatBlockQueue.types.add(new BlockType(Material.AIR, block.getLocation()));
-                    }
+                    if (block.getType() == Material.REDSTONE_BLOCK)
+                        location.getBlock().setType(Material.AIR);
                 }
-            }
-        } catch (Exception ignored) {}
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
     }
 
     public void saveGate() {
-        ConfigurationSection section = main.getGateFileConfiguration().getConfigurationSection("Gates");
+        ConfigurationSection section = main.getGatesFileConfiguration().getConfigurationSection("Gates");
 
-        if (!section.isSet(gateId)) {
+        if (!section.isSet(gateId))
             section.createSection(gateId);
-        }
 
-        if (!section.isSet(gateId + ".ActiveLength")) {
+        if (!section.isSet(gateId + ".ActiveLength"))
             section.createSection(gateId + ".ActiveLength");
-        }
 
-        if (!section.isSet(gateId + ".MythicSpawnerNames")) {
+        if (!section.isSet(gateId + ".MythicSpawnerNames"))
             section.createSection(gateId + ".MythicSpawnerNames");
-        }
 
         if (!section.isSet(gateId + ".PressurePlateLocations")) {
             section.createSection(gateId + ".PressurePlateLocations");
@@ -179,20 +215,14 @@ public class Gate implements HeartbeatTask {
 
         section.set(gateId + ".ActiveLength", activeLength);
 
-        if (mythicSpawners.keySet().size() > 0) {
-            ArrayList<String> spawnerNames = new ArrayList<>();
-
-            spawnerNames.addAll(mythicSpawners.keySet());
-
-            section.set(gateId + ".MythicSpawnerNames", spawnerNames);
-        }
+        if (mythicSpawners.keySet().size() > 0)
+            section.set(gateId + ".MythicSpawnerNames", new ArrayList<>(mythicSpawners.keySet()));
 
         if (pressurePlateMap.keySet().size() > 0) {
             ArrayList<String> locationStrings = new ArrayList<>();
 
-            for (Location location : pressurePlateMap.keySet()) {
+            for (Location location : pressurePlateMap.keySet())
                 locationStrings.add(LocationSerialization.serializeLocation(location));
-            }
 
             section.set(gateId + ".PressurePlateLocations", locationStrings);
         }
@@ -200,9 +230,8 @@ public class Gate implements HeartbeatTask {
         if (buttonLocations.size() > 0) {
             ArrayList<String> locationStrings = new ArrayList<>();
 
-            for (Location location : buttonLocations) {
+            for (Location location : buttonLocations)
                 locationStrings.add(LocationSerialization.serializeLocation(location));
-            }
 
             section.set(gateId + ".ButtonLocations", locationStrings);
         }
@@ -210,72 +239,68 @@ public class Gate implements HeartbeatTask {
         if (redstoneBlockLocations.size() > 0) {
             ArrayList<String> locationStrings = new ArrayList<>();
 
-            for (Location location : redstoneBlockLocations) {
+            for (Location location : redstoneBlockLocations)
                 locationStrings.add(LocationSerialization.serializeLocation(location));
-            }
 
             section.set(gateId + ".RedstoneBlockLocations", locationStrings);
         }
 
         try {
-            main.getGateFileConfiguration().save(main.getGateFile());
+            main.getGatesFileConfiguration().save(main.getGatesFile());
         } catch (IOException e) {
             e.printStackTrace();
             main.getLogger().log(Level.WARNING, "Failed to save gate " + gateId + "!");
         }
     }
 
-    @Override
-    public boolean heartbeat() {
-        int pressedPressurePlates = 0;
-
-        if (keepOpen) {
-            currentLength = activeLength;
-        }
-
-        for (Location location : pressurePlateMap.keySet()) {
-            if (pressurePlateMap.get(location)) {
-                pressedPressurePlates++;
-            }
-        }
-
-        if (pressedPressurePlates >= pressurePlateMap.keySet().size()) {
-            openGate();
-        }
-
-        if (currentLength-- > 0) {
-            return true;
-        } else {
-            closeGate();
-            heartbeat = null;
-            return false;
-        }
-    }
-
     public void killMob() {
-        int totalMobs = 0;
+        int mobs = getMobs();
 
-        for (MythicSpawner spawner : mythicSpawners.values()) {
-            totalMobs += spawner.getNumberOfMobs();
-        }
+        if (mobs == -1)
+            return;
 
-        if (!open) {
-            if (totalMobs - 1 <= 0) {
+        if (!open)
+            if (mobs == 0) {
                 keepOpen = true;
                 openGate();
 
                 MessageManager.sendMessage(getLocaton(), 20, "&aThe gate has been opened.");
 
                 JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&aThe gate has been opened."))
-                        .actionbar(PlayerUtility.getPlayersInRadius(getLocaton(), 20).toArray(new Player[PlayerUtility.getPlayersInRadius(getLocaton(), 20).size()]));
-
-                openGate();
+                        .actionbar(PlayerUtility.getPlayersInRadius(getLocaton(), 20).toArray(new Player[0]));
             }
-        }
     }
 
     public void addMob() {
-        closeGate();
+        if (pressurePlateMap.isEmpty()) {
+            closeGate();
+        } else {
+            if (getActivatedPressurePlates() < pressurePlateMap.size())
+                closeGate();
+        }
+    }
+
+    private int getActivatedPressurePlates() {
+        int activePressurePlates = 0;
+
+        for (Location locations : pressurePlateMap.keySet())
+            if (pressurePlateMap.get(locations))
+                activePressurePlates++;
+
+        return activePressurePlates;
+    }
+
+    private int getMobs() {
+        if (mythicSpawners.isEmpty())
+            return -1;
+        else {
+            int totalMobs = 0;
+
+            for (MythicSpawner spawner : mythicSpawners.values())
+                totalMobs += spawner.getNumberOfMobs();
+
+            return totalMobs;
+        }
     }
 
     public Location getLocaton() {

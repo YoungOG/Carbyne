@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -30,7 +29,6 @@ public class StaffManager {
     private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, wand;
     private Carbyne main = Carbyne.getInstance();
     private HashSet<UUID> vanish = new HashSet<>(), frozen = new HashSet<>(), frozenStaff = new HashSet<>();
-    //    private HashSet<ServerPicture> serverPictures = new HashSet<>();
     private List<UUID> staffModePlayers = new ArrayList<>(), staffChatPlayers = new ArrayList<>();
     private Set<UUID> staff = new HashSet<>();
     @Setter
@@ -52,18 +50,18 @@ public class StaffManager {
 
         staffmodeCommandWhitelist = staffWhitelistCommandConfiguration.getStringList("Commands");
 
-        falsePerms.put(new String("mv.bypass.gamemode.*"), false);
-        falsePerms.put(new String("CreativeControl.*"), false);
-        truePerms.put(new String("mv.bypass.gamemode.*"), true);
-        truePerms.put(new String("CreativeControl.*"), true);
+        falsePerms.put("mv.bypass.gamemode.*", false);
+        falsePerms.put("CreativeControl.*", false);
+        truePerms.put("mv.bypass.gamemode.*", true);
+        truePerms.put("CreativeControl.*", true);
 
-        randomTeleportTool = new ItemBuilder(Material.WATCH).name("&5Random Teleport").addLore("&fRight click to teleport to a random player").addLore("&fLeft click to teleport to a random player underground").build();
-        toggleVanishTool = new ItemBuilder(Material.INK_SACK).durability(10).name("&5Vanish").addLore("&fToggle vanish").build();
-        freezeTool = new ItemBuilder(Material.ICE).name("&1Freeze").addLore("&fFreeze a player").build();
-        inspectInventoryTool = new ItemBuilder(Material.BOOK).name("&2Inspect Inventory").addLore("&fView the contents of a player\'s inventory").build();
-        thruTool = new ItemBuilder(Material.COMPASS).name("&4Thru Tool").addLore("&fWarp through walls and doors").build();
-        air = new ItemBuilder(Material.AIR).build();
+        randomTeleportTool = new ItemBuilder(Material.WATCH).name("&5Random Teleport").addLore("&7Right click to teleport to a random player").addLore("&7Left click to teleport to a random player underground").build();
+        toggleVanishTool = new ItemBuilder(Material.INK_SACK).durability(10).name("&5Vanish").addLore("&7Toggle vanish").build();
+        freezeTool = new ItemBuilder(Material.ICE).name("&1Freeze").addLore("&7Freeze a player").build();
+        inspectInventoryTool = new ItemBuilder(Material.BOOK).name("&2Inspect Inventory").addLore("&7View the contents of a player\'s inventory").build();
+        thruTool = new ItemBuilder(Material.COMPASS).name("&4Thru Tool").addLore("&7Warp through walls and doors").build();
         wand = new ItemBuilder(Material.WOOD_AXE).name("&6World Edit").build();
+        air = new ItemBuilder(Material.AIR).build();
 
         new BukkitRunnable() {
             @Override
@@ -91,104 +89,6 @@ public class StaffManager {
                 }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3 * 25L);
-
-//        new BukkitRunnable() {
-//            @Override
-//            public void run() {
-//                loadPictureMap();
-//            }
-//        }.runTaskLater(main, 100);
-    }
-
-//    public void reloadImages(CommandSender sender) {
-//        saveServeImagesFile();
-//        for (ServerPicture picture : serverPictures) {
-//            picture.cancel();
-//        }
-//        loadPictureMap();
-//        MessageManager.sendMessage(sender, "&cImages have been reloaded.");
-//    }
-//
-//    public void loadPictureMap() {
-//        ConfigurationSection cs = main.getServerImagesFileConfiguration().getConfigurationSection("Images");
-//        if (cs == null) {
-//            cs = main.getServerImagesFileConfiguration().createSection("Images");
-//            saveServeImagesFile();
-//            return;
-//        }
-//
-//        serverPictures.clear();
-//
-//        for (String key : cs.getKeys(false)) {
-//            String url = cs.getString(key + ".URL");
-//            ConfigurationSection frameSection = cs.getConfigurationSection(key + ".Frames");
-//            int x = cs.getInt(key + ".X");
-//            int y = cs.getInt(key + ".Y");
-//            ItemFrame[][] frames = new ItemFrame[x][y];
-//            int i = 0, l = 0;
-//            for (String secOne : frameSection.getKeys(false)) {
-//                Location ser = deserializeLocation(frameSection.getString(secOne + ".main"));
-//                for (Entity entity : ser.getWorld().getNearbyEntities(ser, .1, .1, .1)) {
-//                    if (entity instanceof ItemFrame) {
-//                        frames[i][l++] = (ItemFrame) entity;
-//                        break;
-//                    }
-//                }
-//                for (String loca : frameSection.getStringList(secOne + ".list")) {
-//                    Location location = deserializeLocation(loca);
-//                    for (Entity entity : location.getWorld().getNearbyEntities(location, .1, .1, .1)) {
-//                        if (entity instanceof ItemFrame) {
-//                            frames[i][l++] = (ItemFrame) entity;
-//                            break;
-//                        }
-//                    }
-//                }
-//                i++;
-//                l = 0;
-//            }
-//
-//            ServerPicture picture = new ServerPicture(key, url, frames, x, y);
-//            serverPictures.add(picture);
-//        }
-//    }
-//
-//    private void saveServeImagesFile() {
-//        main.setServerImagesFile(new File(main.getDataFolder(), "serverimages.yml"));
-//        main.setServerImagesFileConfiguration(YamlConfiguration.loadConfiguration(main.getServerImagesFile()));
-//    }
-
-    public static Location deserializeLocation(String s) {
-        Location l = new Location(Bukkit.getWorlds().get(0), 0.0D, 0.0D, 0.0D);
-        String[] att = s.split("a");
-
-        for (String attribute : att) {
-            String[] split = attribute.split("b");
-            if (split[0].equalsIgnoreCase("w")) {
-                l.setWorld(Bukkit.getWorld(split[1]));
-            }
-
-            if (split[0].equalsIgnoreCase("x")) {
-                l.setX(Double.parseDouble(split[1]));
-            }
-
-            if (split[0].equalsIgnoreCase("y")) {
-                l.setY(Double.parseDouble(split[1]));
-            }
-
-            if (split[0].equalsIgnoreCase("z")) {
-                l.setZ(Double.parseDouble(split[1]));
-            }
-
-            if (split[0].equalsIgnoreCase("p")) {
-                l.setPitch(Float.parseFloat(split[1]));
-            }
-
-            if (split[0].equalsIgnoreCase("yl")) {
-                l.setYaw(Float.parseFloat(split[1]));
-            }
-        }
-
-        return l;
     }
 
     /**
@@ -197,30 +97,34 @@ public class StaffManager {
      * @param player Player to toggle staff mode for
      */
     public void toggleStaffMode(Player player) {
-        UUID pUUID = player.getUniqueId();
-        if (staffModePlayers.contains(pUUID)) {
+        UUID id = player.getUniqueId();
+
+        if (staffModePlayers.contains(id)) {
             toggleGamemode(player, false);
-            staffModePlayers.remove(pUUID);
+            staffModePlayers.remove(id);
             player.getInventory().clear();
             showPlayer(player);
-            //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + player.getName() + " remove mv.bypass.gamemode.*");
-            PermissionUtils.setPermissions(player.addAttachment(main), falsePerms, true);
-            MessageManager.sendMessage(player, "&cYou have disabled staff mode and are visible!");
-        } else {
+
+            for (String permissionNode : falsePerms.keySet())
+                Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " false");
+
+            MessageManager.sendMessage(player, "&cYou have disabled staff mode and are now visible!");
+        } else
             if (PlayerUtility.isInventoryEmpty(player.getInventory())) {
                 toggleGamemode(player, true);
-                staffModePlayers.add(pUUID);
-                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, toggleVanishTool, randomTeleportTool});
+                staffModePlayers.add(id);
+                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, air, toggleVanishTool, randomTeleportTool});
                 vanishPlayer(player);
-                //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + player.getName() + " add mv.bypass.gamemode.*");
-                PermissionUtils.setPermissions(player.addAttachment(main), truePerms, true);
+
+                for (String permissionNode : truePerms.keySet())
+                    Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " true");
+
                 MessageManager.sendMessage(player, "&cYou have enabled staff mode and have vanished!");
                 main.getTrailManager().getAdvancedEffects().remove(player.getUniqueId());
-
                 main.getTrailManager().getActivePlayerEffects().remove(player.getUniqueId());
 
-            } else MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
-        }
+            } else
+                MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
     }
 
     /**
@@ -232,14 +136,17 @@ public class StaffManager {
         List<Player> players = new ArrayList<>();
 
         for (Player p : Bukkit.getOnlinePlayers())
-
-            if (p.getLocation().getY() <= 30 && !player.equals(p))
+            if (p.getWorld().getName().equalsIgnoreCase("player_world") && p.getLocation().getY() <= 30 && !player.equals(p) && (!p.hasPermission("carbyne.staff") || !p.isOp()))
                 players.add(p);
 
-        if (players.size() == 0)
+        if (players.size() == 0) {
+            MessageManager.sendMessage(player, "&cThere are no available players to teleport to.");
             return;
+        }
 
-        player.teleport(players.get(Maths.randomNumberBetween(players.size(), 0)));
+        Player target = players.get(Maths.randomNumberBetween(players.size(), 0));
+        player.teleport(target);
+        MessageManager.sendMessage(player, "&aYou have teleported to &5" + target.getName() + "&a.");
     }
 
     /**
@@ -250,18 +157,18 @@ public class StaffManager {
     public void teleportToRandomPlayer(Player player) {
         List<Player> players = new ArrayList<>();
 
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.getUniqueId().equals(player.getUniqueId()) && (!p.hasPermission("carbyne.staff") || !p.isOp())) {
+        for (Player p : Bukkit.getOnlinePlayers())
+            if (!p.getUniqueId().equals(player.getUniqueId()) && (!p.hasPermission("carbyne.staff") || !p.isOp()))
                 players.add(p);
-            }
-        }
 
         if (players.size() == 0) {
             MessageManager.sendMessage(player, "&cThere are no available players to teleport to.");
             return;
         }
 
-        player.teleport(players.get(Maths.randomNumberBetween(players.size(), 0)));
+        Player target = players.get(Maths.randomNumberBetween(players.size(), 0));
+        player.teleport(target);
+        MessageManager.sendMessage(player, "&aYou have teleported to &5" + target.getName() + "&a.");
     }
 
     /**
@@ -302,26 +209,19 @@ public class StaffManager {
     }
 
     public void vanishPlayer(Player player) {
-        for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (!all.getUniqueId().equals(player.getUniqueId())) {
-                if (!all.hasPermission("carbyne.staff.canseevanished")) {
+        for (Player all : PlayerUtility.getOnlinePlayers())
+            if (!all.getUniqueId().equals(player.getUniqueId()))
+                if (!all.hasPermission("carbyne.staff.canseevanished"))
                     all.hidePlayer(player);
-                }
-            }
-        }
 
         staff.remove(player.getUniqueId());
         vanish.add(player.getUniqueId());
     }
 
     public void showPlayer(Player player) {
-        for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (!all.getUniqueId().equals(player.getUniqueId())) {
-                //if (!all.canSee(player)) {
+        for (Player all : PlayerUtility.getOnlinePlayers())
+            if (!all.getUniqueId().equals(player.getUniqueId()))
                 all.showPlayer(player);
-                //}
-            }
-        }
 
         staff.add(player.getUniqueId());
         vanish.remove(player.getUniqueId());
@@ -340,9 +240,9 @@ public class StaffManager {
     }
 
     public void shutdown() {
-        for (UUID id : frozen) {
+        for (UUID id : frozen)
             unfreezePlayer(Bukkit.getPlayer(id));
-        }
+
         for (UUID id : staffModePlayers) {
             Bukkit.getPlayer(id).getInventory().clear();
             //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + Bukkit.getPlayer(id).getName() + " remove mv.bypass.gamemode.*");
@@ -351,10 +251,12 @@ public class StaffManager {
     }
 
     private void toggleGamemode(Player player, boolean flag) {
-        if (flag) {
+        if (flag)
             player.setGameMode(GameMode.CREATIVE);
-        } else {
+        else {
             player.setGameMode(GameMode.SURVIVAL);
+            player.setMaxHealth(100.0);
+            player.setHealth(player.getMaxHealth());
         }
     }
 
@@ -380,105 +282,4 @@ public class StaffManager {
             e.printStackTrace();
         }
     }
-
-    public enum PictureType {
-        SERVER, INDIVIDUAL
-    }
-
-//    @Getter
-//    @Setter
-//    public static class ServerPicture {
-//
-//        private Carbyne main = Carbyne.getInstance();
-//        private MongoCollection<Document> serverPictureCollection = main.getMongoDatabase().getCollection("serverpictures");
-//
-//        private String id, imageUrl;
-//        private int x, y;
-//        private ItemFrame[][] frames;
-//        private BukkitTask checkRunnable;
-//        private BufferedImage[][] image;
-//        private Image[] splitImages;
-//
-//        public ServerPicture(String id, String imageUrl, ItemFrame[][] frames, int x, int y) {
-//            this.x = x;
-//            this.y = y;
-//            this.id = id;
-//            this.imageUrl = imageUrl;
-//            this.frames = frames;
-//
-//            establishPicture();
-//
-//            checkRunnable = new BukkitRunnable() {
-//                public void run() {
-//                    int c = 0, r = 0;
-//                    for (ItemFrame[] frame1 : frames) {
-//                        for (ItemFrame itemFrame : frame1) {
-//                            for (Player player : Bukkit.getOnlinePlayers()) {
-//                                MapWrapper mapWrapper = main.getMapManager().wrapImage(image[c][r]);
-//                                MapController mapController = mapWrapper.getController();
-//
-//                                mapController.addViewer(player);
-//                                mapController.sendContent(player);
-//
-//                                mapController.showInFrame(player, itemFrame);
-//                                mapController.showInHand(player);
-//                            }
-//
-//                            r++;
-//                        }
-//
-//                        r = 0;
-//                        c++;
-//                    }
-//                }
-//            }.runTaskTimerAsynchronously(Carbyne.getInstance(), 20L, 100L);
-//        }
-//
-//        public void establishPicture() {
-//            if (frames == null) {
-//                return;
-//            }
-//
-//            BufferedImage image;
-//            try {
-//                image = ImageIO.read(new URL(imageUrl).openStream());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                return;
-//            }
-//
-//            this.image = new BufferedImage[x][y];
-//
-//            int dWidth = image.getWidth() / x, dHeight = image.getHeight() / y;
-//
-//            int c = 0, r = 0;
-//            for (ItemFrame[] frame1 : frames) {
-//                for (ItemFrame itemFrame : frame1) {
-//                    this.image[c][r] = makeSubImage(image, dWidth, dHeight, (dWidth * c), (dHeight * r));
-//                    r++;
-//                }
-//                r = 0;
-//                c++;
-//            }
-//        }
-//
-//        private BufferedImage makeSubImage(BufferedImage originalImage, int width, int height, int x, int y) {
-//            return originalImage.getSubimage(x, y, width, height);
-//            /*BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-//
-//            Graphics2D graphics = (Graphics2D) newImage.getGraphics();
-//            AffineTransform at = new AffineTransform();
-//            at.setToRotation(Math.PI);
-//            graphics.drawImage(originalImage.getSubimage(-x, -y, width, height), at, null);
-//            //graphics.drawImage(originalImage, at,-x, -y, null);
-//            //graphics.drawImage(newImage, at, 1, 1, 1, 1, 1);
-//            graphics.dispose();
-//
-//            return newImage;*/
-//        }
-//
-//        public void cancel() {
-//            checkRunnable.cancel();
-//        }
-//    }
 }

@@ -42,6 +42,13 @@ public class PlayerUtility {
         }
     }
 
+    public static void teleport(Player player, Location location, boolean isNearFence) {
+        if (!isNearFence)
+            player.teleport(location);
+        else
+            MessageManager.sendMessage(player, "&cYou cannot teleport while near fences.");
+    }
+
     public static boolean hasClickedTop(InventoryClickEvent event) {
         return event.getRawSlot() == event.getSlot();
     }

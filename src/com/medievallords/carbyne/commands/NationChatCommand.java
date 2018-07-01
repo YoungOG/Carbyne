@@ -24,8 +24,8 @@ public class NationChatCommand extends BaseCommand {
             return;
         }
 
-        profile.setProfileChatChannel((profile.getProfileChatChannel() != Profile.ProfileChatChannel.LOCAL ? Profile.ProfileChatChannel.LOCAL : Profile.ProfileChatChannel.GLOBAL));
-        MessageManager.sendMessage(player, "&bNation chat toggled " + (profile.getProfileChatChannel() == Profile.ProfileChatChannel.LOCAL ? "&aon" : "&coff"));
+        profile.setProfileChatChannel((profile.getProfileChatChannel() != Profile.ProfileChatChannel.NATION ? Profile.ProfileChatChannel.NATION : Profile.ProfileChatChannel.GLOBAL));
+        MessageManager.sendMessage(player, "&bNation chat toggled " + (profile.getProfileChatChannel() == Profile.ProfileChatChannel.NATION ? "&aon" : "&coff"));
     }
 
 }

@@ -24,8 +24,8 @@ public class TownChatCommand extends BaseCommand {
             return;
         }
 
-        profile.setProfileChatChannel((profile.getProfileChatChannel() != Profile.ProfileChatChannel.LOCAL ? Profile.ProfileChatChannel.LOCAL : Profile.ProfileChatChannel.GLOBAL));
-        MessageManager.sendMessage(player, "&bTown chat toggled " + (profile.getProfileChatChannel() == Profile.ProfileChatChannel.LOCAL ? "&aon" : "&coff"));
+        profile.setProfileChatChannel((profile.getProfileChatChannel() != Profile.ProfileChatChannel.TOWN ? Profile.ProfileChatChannel.TOWN : Profile.ProfileChatChannel.GLOBAL));
+        MessageManager.sendMessage(player, "&bTown chat toggled " + (profile.getProfileChatChannel() == Profile.ProfileChatChannel.TOWN ? "&aon" : "&coff"));
     }
 
 }

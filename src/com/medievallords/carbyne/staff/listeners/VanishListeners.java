@@ -43,54 +43,49 @@ public class VanishListeners implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        if (staffManager.getStaffChatPlayers().contains(player.getUniqueId()))
-            staffManager.getStaffChatPlayers().remove(player.getUniqueId());
+        staffManager.getStaffChatPlayers().remove(player.getUniqueId());
 
         if (player.hasPermission("carbyne.staff.staffmode"))
             staffManager.vanishPlayer(player);
         else if (staffManager.isVanished(player))
             staffManager.showPlayer(player);
 
-        if (!player.hasPermission("carbyne.staff.canseevanished")) {
-            for (Player all : PlayerUtility.getOnlinePlayers()) {
-                if (staffManager.isVanished(all)) {
+        if (!player.hasPermission("carbyne.staff.canseevanished"))
+            for (Player all : PlayerUtility.getOnlinePlayers())
+                if (staffManager.isVanished(all))
                     player.hidePlayer(all);
-                }
-            }
-        }
     }
 
     @EventHandler
     public void onPickup(PlayerPickupItemEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player))
             return;
-        }
 
-        if (staffManager.getVanish().contains((event.getEntity()).getUniqueId())) {
+        if (staffManager.getVanish().contains((event.getEntity()).getUniqueId()))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()) && !event.getPlayer().hasPermission("carbyne.staff.admin")) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()) && !event.getPlayer().hasPermission("carbyne.staff.admin") && !staffManager.getStaffModePlayers().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in vanish");
+        } else if (staffManager.getStaffModePlayers().contains(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in staff mode.");
         }
     }
 
     @EventHandler
     public void onDrop(PlayerPickupItemEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId()))
             event.setCancelled(true);
-        }
     }
 
     @EventHandler
@@ -111,11 +106,9 @@ public class VanishListeners implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player) {
-            if (staffManager.getVanish().contains(event.getDamager().getUniqueId()) && !event.getDamager().hasPermission("carbyne.staff.admin")) {
+        if (event.getDamager() instanceof Player)
+            if (staffManager.getVanish().contains(event.getDamager().getUniqueId()) && !event.getDamager().hasPermission("carbyne.staff.admin"))
                 event.setCancelled(true);
-            }
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -136,11 +129,9 @@ public class VanishListeners implements Listener {
             }
         }
 
-        if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType() == Material.SOIL) {
-            if (staffManager.isVanished(p) && !e.getPlayer().hasPermission("carbyne.staff.admin")) {
+        if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType() == Material.SOIL)
+            if (staffManager.isVanished(p) && !e.getPlayer().hasPermission("carbyne.staff.admin"))
                 e.setCancelled(true);
-            }
-        }
     }
 
     private void openCustomInventory(Inventory inventory, EntityPlayer player, String windowType) {
@@ -162,10 +153,8 @@ public class VanishListeners implements Listener {
 
     @EventHandler
     public void onTarget(EntityTargetEvent e) {
-        if (e.getTarget() instanceof Player) {
-            if (staffManager.isVanished(((Player) e.getTarget()))) {
+        if (e.getTarget() instanceof Player)
+            if (staffManager.isVanished(((Player) e.getTarget())))
                 e.setCancelled(true);
-            }
-        }
     }
 }

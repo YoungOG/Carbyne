@@ -36,7 +36,7 @@ public class GamemodeManager {
     }
 
     private void load() {
-        FileConfiguration gamemodeFileConfiguration = main.getGamemodeTownsConfiguration();
+        FileConfiguration gamemodeFileConfiguration = main.getDonatorTownsConfiguration();
 
         List<String> temp = gamemodeFileConfiguration.getStringList("FlightTowns");
         if (temp.size() > 0)
@@ -100,7 +100,7 @@ public class GamemodeManager {
         if (creativeTowns.containsKey(town)) {
             creativeTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown creative is disabled!");
-            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("CreativeTowns");
+            List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
             for (String entry : temp) {
                 String[] entrySplit = entry.split(",");
                 if (entrySplit[0].equalsIgnoreCase(town.getName())) {
@@ -109,11 +109,11 @@ public class GamemodeManager {
                 }
             }
 
-            main.getGamemodeTownsConfiguration().set("CreativeTowns", temp);
+            main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
 
             try {
-                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
-                main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
+                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException e) {}
         } else {
             Resident res = null;
@@ -133,13 +133,13 @@ public class GamemodeManager {
 
             creativeTowns.put(town2, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown creative enabled!");
-            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("CreativeTowns");
+            List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
             temp.add(town.getName() + "," + player.getUniqueId().toString());
 
-            main.getGamemodeTownsConfiguration().set("CreativeTowns", temp);
+            main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
             try {
-                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
-                main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
+                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException e) {
             }
         }
@@ -178,7 +178,7 @@ public class GamemodeManager {
             flightTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown flight has been disabled!");
 
-            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("FlightTowns");
+            List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
             for (String entry : temp) {
                 String[] splitEntry = entry.split(",");
                 if (splitEntry[0].equalsIgnoreCase(town.getName())) {
@@ -187,23 +187,23 @@ public class GamemodeManager {
                 }
             }
 
-            main.getGamemodeTownsConfiguration().set("FlightTowns", temp);
+            main.getDonatorTownsConfiguration().set("FlightTowns", temp);
             try {
-                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
-                main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
+                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException e) {}
         } else {
 
             flightTowns.put(town, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown flight enabled!");
 
-            List<String> temp = main.getGamemodeTownsConfiguration().getStringList("FlightTowns");
+            List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
             temp.add(town.getName() + "," + player.getUniqueId().toString());
 
-            main.getGamemodeTownsConfiguration().set("FlightTowns", temp);
+            main.getDonatorTownsConfiguration().set("FlightTowns", temp);
             try {
-                main.setGamemodeTownsConfiguration(YamlConfiguration.loadConfiguration(main.getGamemodeTownsFile()));
-                main.getGamemodeTownsConfiguration().save(main.getGamemodeTownsFile());
+                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
+                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException e) {}
         }
     }

@@ -1,6 +1,8 @@
 package com.medievallords.carbyne.mechanics;
 
+import com.medievallords.carbyne.mechanics.targeters.RandomPlayerInRadius;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMechanicLoadEvent;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicTargeterLoadEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -23,8 +25,22 @@ public class MechanicListener implements Listener {
                 break;
             /*case "dropchest":
                 event.register(new DropChestMechanic(event.getMechanicName(), event.getConfig(), 1));
+                break;*/
+            case "shadowstep":
+                event.register(new ShadowStepMechanic(event.getMechanicName(), event.getConfig(), 1));
                 break;
-*/
+            case "playsound":
+                event.register(new PlaySoundMechanic(event.getMechanicName(), event.getConfig(), 1));
+                break;
+        }
+    }
+
+    @EventHandler
+    public void onLoadTargeter(MythicTargeterLoadEvent event) {
+        switch (event.getTargeterName().toLowerCase()) {
+            case "RPIR":
+                event.register(new RandomPlayerInRadius(event.getConfig()));
+                break;
         }
     }
 }

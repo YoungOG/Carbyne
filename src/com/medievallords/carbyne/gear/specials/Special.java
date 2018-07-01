@@ -33,18 +33,15 @@ public interface Special {
 
         if (squadHit == null || squadCaster == null) {
             return false;
-        } else if (squadCaster.getUniqueId().equals(squadHit.getUniqueId())) {
-            return true;
-        }
+        } else return squadCaster.getUniqueId().equals(squadHit.getUniqueId());
 
-        return false;
     }
 
     default boolean isInSafeZone(LivingEntity entity) {
-        if (TownyUniverse.getTownBlock(entity.getLocation()) != null && !TownyUniverse.getTownBlock(entity.getLocation()).getPermissions().pvp) {
-            return true;
-        } else {
-            return false;
-        }
+        return TownyUniverse.getTownBlock(entity.getLocation()) != null && !TownyUniverse.getTownBlock(entity.getLocation()).getPermissions().pvp;
+    }
+
+    default boolean isInSafeZone(Location location) {
+        return TownyUniverse.getTownBlock(location) != null && !TownyUniverse.getTownBlock(location).getPermissions().pvp;
     }
 }

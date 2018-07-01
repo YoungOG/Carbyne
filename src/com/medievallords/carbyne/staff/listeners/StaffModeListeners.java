@@ -10,6 +10,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
@@ -37,7 +39,7 @@ public class StaffModeListeners implements Listener {
                 switch (tool.getType()) {
                     case BOOK: {
                         e.setCancelled(true);
-                        e.getPlayer().performCommand("inv " + e.getRightClicked().getName());
+                        e.getPlayer().performCommand("invsee " + e.getRightClicked().getName());
                         break;
                     }
                     case ICE: {
@@ -62,31 +64,31 @@ public class StaffModeListeners implements Listener {
             if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 Material tool = e.getItem().getType();
                 switch (tool) {
-                    case INK_SACK: {
+                    case INK_SACK:
                         switch (e.getItem().getDurability()) {
-                            case 10: {
+                            case 10:
                                 staffManager.toggleVanish(staff);
                                 break;
-                            }
                             default:
                                 break;
                         }
                         return;
-                    }
-                    case WATCH: {
+                    case WATCH:
                         staffManager.teleportToRandomPlayer(staff);
                         break;
-                    }
+                    case COMPASS:
+                        e.getPlayer().performCommand("thru");
                     default:
                         break;
                 }
             } else if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
                 Material tool = e.getItem().getType();
                 switch (tool) {
-                    case WATCH: {
+                    case WATCH:
                         staffManager.teleportToPlayerUnderY30(staff);
                         break;
-                    }
+                    case COMPASS:
+                        e.getPlayer().performCommand("thru");
                     default:
                         break;
                 }
@@ -111,6 +113,7 @@ public class StaffModeListeners implements Listener {
                 e.setCancelled(true);
         } else if (e.getDamager() instanceof Projectile && ((Projectile) e.getDamager()).getShooter() != null && ((Projectile) e.getDamager()).getShooter() instanceof Player) {
             Player damager = (Player) (((Projectile) e.getDamager()).getShooter());
+
             if (staffManager.getStaffModePlayers().contains(damager.getUniqueId()))
                 e.setCancelled(true);
         }
@@ -121,7 +124,7 @@ public class StaffModeListeners implements Listener {
      *
      * @param e
      */
-    /*@EventHandler
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
@@ -132,11 +135,12 @@ public class StaffModeListeners implements Listener {
      *
      * @param e
      */
-    /*@EventHandler
+    @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
-    }*/
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {

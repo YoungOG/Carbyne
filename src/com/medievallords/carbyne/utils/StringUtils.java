@@ -2,6 +2,7 @@ package com.medievallords.carbyne.utils;
 
 import org.bukkit.ChatColor;
 
+import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.util.*;
@@ -173,6 +174,62 @@ public class StringUtils {
             list.add(str.substring(i, endindex));
         }
         return list;
+    }
+
+    public static String formatDouble(double d) {
+        if (d == (long) d)
+            return String.format("%d", (long) d);
+        else
+            return String.format("%s", d);
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
+    public static String formatHealth(double health) {
+        double hearts = health / 5;
+        DecimalFormat format = new DecimalFormat("#");
+
+        if (hearts <= 10 && hearts >= 7.5)
+            return String.format(" &a%s \u2764", format.format(hearts));
+        else if (hearts <= 7.5 && hearts >= 5)
+            return String.format(" &e%s \u2764", format.format(hearts));
+        else if (hearts <= 5 && hearts >= 2.5)
+            return String.format(" &6%s \u2764", format.format(hearts));
+        else
+            return String.format(" &c%s \u2764", format.format(hearts));
+    }
+
+    public static String formatHealthBar(int health) {
+        StringBuilder s = new StringBuilder();
+
+        if (health >= 13)
+            s.append("§a");
+        else if (health >= 7)
+            s.append("§e");
+        else
+            s.append("§c");
+
+        health /= 2;
+
+        int req = (10 - health);
+        int oReq = health;
+
+        for (int i = 0; i < oReq; i++)
+            s.append("\u2758");
+
+        s.append("§7");
+
+        for (int i = 0; i < req; i++)
+            s.append("\u2758");
+
+        return s.toString();
     }
 
     public enum Alignment {

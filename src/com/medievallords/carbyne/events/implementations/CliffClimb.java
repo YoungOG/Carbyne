@@ -86,7 +86,6 @@ public class CliffClimb extends Event implements SingleWinnerEvent
                 if(time > startTime)
                 {
                     afterCountdown = true;
-                    eventGate.setKeepClosed(false);
                     eventGate.setKeepOpen(true);
                     eventGate.openGate();
                     for(Player p : participants)
@@ -136,7 +135,6 @@ public class CliffClimb extends Event implements SingleWinnerEvent
         HandlerList.unregisterAll(cliffClimbListeners);
         afterCountdown = false;
         winner = null;
-        eventGate.setKeepClosed(true);
         eventGate.setKeepOpen(false);
         eventGate.closeGate();
         super.stop();

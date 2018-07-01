@@ -62,12 +62,11 @@ public class GamemodeCommand extends BaseCommand {
             } else if (player.hasPermission("carbyne.commands.tgm")) {
                 getGamemodeManager().toggleGamemode(player);
                 return;
-            } else {
+            } else
                 MessageManager.sendMessage(player, "&cYou cannot do this!");
-            }
         } else {
-
             Nation nation = null;
+
             try {
                 nation = check.getNation();
             } catch (NotRegisteredException ignore) {

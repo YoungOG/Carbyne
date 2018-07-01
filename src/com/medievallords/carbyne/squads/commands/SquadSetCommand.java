@@ -20,7 +20,7 @@ public class SquadSetCommand extends BaseCommand{
         Player player = commandArgs.getPlayer();
         Squad squad = getSquadManager().getSquad(player.getUniqueId());
 
-        if (args.length < 0 || args.length > 1) {
+        if (args.length > 1) {
             MessageManager.sendMessage(player, "&cUsage: /squad");
             return;
         }

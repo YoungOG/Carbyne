@@ -10,7 +10,6 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.nisovin.magicspells.events.SpellTargetEvent;
-import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -31,7 +30,6 @@ import static com.medievallords.carbyne.duels.duel.DuelStage.FIGHTING;
 
 /**
  * Created by xwiena22 on 2017-03-14.
- *
  */
 public class DuelListeners implements Listener {
 
@@ -43,12 +41,12 @@ public class DuelListeners implements Listener {
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
+            Double originalDamage = event.getDamage();
 
             Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
 
-            if (duel == null) {
+            if (duel == null)
                 return;
-            }
 
             if (duel.getDuelStage() != FIGHTING) {
                 event.setCancelled(true);
@@ -67,69 +65,9 @@ public class DuelListeners implements Listener {
                 return;
             }
 
-            double armorReduction = gearManager.getDamageReduction(player);
+            float damage = gearManager.calculateDamage(player, event.getCause(), originalDamage);
 
-            if (armorReduction > 0) {
-                float flatDamage = 0.0f;
-
-                //Calculation of certain DamageCauses for precise balancing.
-                switch (event.getCause()) {
-                    case FIRE_TICK:
-                        flatDamage = 0.5f;
-                        break;
-                    case LAVA:
-                        flatDamage = 1.0f;
-                        break;
-                    case LIGHTNING:
-                        flatDamage = 5.0f;
-                        break;
-                    case DROWNING:
-                        flatDamage = 2.0f;
-                        break;
-                    case STARVATION:
-                        flatDamage = 0.5f;
-                        break;
-                    case VOID:
-                        flatDamage = 4.0f;
-                        break;
-                    case POISON:
-                        flatDamage = 0.35f;
-                        break;
-                    case WITHER:
-                        flatDamage = 0.35f;
-                        break;
-                    case SUFFOCATION:
-                        flatDamage = 0.5f;
-                        break;
-                    case FALL:
-                        flatDamage = ((float) (event.getDamage() - event.getDamage() * (armorReduction - 0.10f))) * gearManager.getFeatherFallingCalculation(player);
-                        break;
-                }
-
-                flatDamage *= 5;
-
-                float eventDamage = (float) event.getDamage() * 5;
-
-                float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + gearManager.getProtectionReduction(player)))) : flatDamage);
-
-
-                //event.setDamage(damage);
-                event.setDamage(0);
-
-                damage = gearManager.calculatePotionEffects(damage, player);
-
-                if (player.getHealth() <= damage) {
-                    event.setCancelled(true);
-                    player.setHealth(0);
-                } else {
-                    System.out.print("Damage: " + (player.getHealth() - damage));
-                    player.setHealth(player.getHealth() - damage);
-                    player.playEffect(EntityEffect.HURT);
-                    //player.damage(damage);
-                }
-            } else {
-                event.setDamage(event.getDamage() * 5);
-            }
+            event.setDamage(damage);
         }
     }
 
@@ -138,9 +76,8 @@ public class DuelListeners implements Listener {
         if (event.getEntity() instanceof Player) {
 
             Player damaged = (Player) event.getEntity();
-            if (duelManager.getDuelFromUUID(damaged.getUniqueId()) == null) {
+            if (duelManager.getDuelFromUUID(damaged.getUniqueId()) == null)
                 return;
-            }
 
             for (ItemStack itemStack : damaged.getInventory().getArmorContents()) {
                 if (gearManager.isCarbyneArmor(itemStack) || gearManager.isCarbyneWeapon(itemStack)) {
@@ -151,15 +88,12 @@ public class DuelListeners implements Listener {
                             CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
                             //if (itemStack.getType().equals(Material.LEATHER_CHESTPLATE) || itemStack.getType().equals(Material.LEATHER_LEGGINGS)) {
-                            if (carbyneArmor.getDefensivePotionEffects().size() > 0) {
+                            if (carbyneArmor.getDefensivePotionEffects().size() > 0)
                                 carbyneArmor.applyDefensiveEffect(damaged);
-                            }
 
-                            if (carbyneArmor.getOffensivePotionEffects().size() > 0) {
-                                if (event.getDamager() != null && event.getDamager() instanceof Player) {
+                            if (carbyneArmor.getOffensivePotionEffects().size() > 0)
+                                if (event.getDamager() != null && event.getDamager() instanceof Player)
                                     carbyneArmor.applyOffensiveEffect((Player) event.getDamager());
-                                }
-                            }
 
                             carbyneArmor.damageItem(damaged, itemStack);
                         }
@@ -196,15 +130,12 @@ public class DuelListeners implements Listener {
                 CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(itemStack);
 
                 if (carbyneWeapon != null) {
-                    if (event.getEntity() != null && event.getEntity() instanceof Player) {
-                        if (carbyneWeapon.getOffensivePotionEffects().size() > 0) {
+                    if (event.getEntity() != null && event.getEntity() instanceof Player)
+                        if (carbyneWeapon.getOffensivePotionEffects().size() > 0)
                             carbyneWeapon.applyOffensiveEffect((Player) event.getEntity());
-                        }
-                    }
 
-                    if (carbyneWeapon.getDefensivePotionEffects().size() > 0) {
+                    if (carbyneWeapon.getDefensivePotionEffects().size() > 0)
                         carbyneWeapon.applyDefensiveEffect(damager);
-                    }
 
                     carbyneWeapon.damageItem(damager, itemStack);
                 }
@@ -223,9 +154,8 @@ public class DuelListeners implements Listener {
         Player player = event.getEntity();
 
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
-        if (duel == null) {
+        if (duel == null)
             return;
-        }
 
         for (ItemStack itemStack : event.getDrops()) {
             Item item = event.getEntity().getWorld().dropItemNaturally(event.getEntity().getLocation(), itemStack);
@@ -253,9 +183,8 @@ public class DuelListeners implements Listener {
         Player player = event.getPlayer();
 
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
-        if (duel == null) {
+        if (duel == null)
             return;
-        }
 
         duel.getDrops().add(event.getItemDrop());
 
@@ -269,14 +198,13 @@ public class DuelListeners implements Listener {
             Squad casterS = Carbyne.getInstance().getSquadManager().getSquad(event.getCaster().getUniqueId());
             Squad targetS = Carbyne.getInstance().getSquadManager().getSquad(target.getUniqueId());
 
-            if (casterS != null && targetS != null && casterS.equals(targetS)) {
+            if (casterS != null && casterS.equals(targetS)) {
                 event.setCancelled(true);
                 return;
             }
 
-            if (duelManager.getDuelFromUUID(target.getUniqueId()) != null) {
+            if (duelManager.getDuelFromUUID(target.getUniqueId()) != null)
                 event.setCancelled(false);
-            }
         }
     }
 
@@ -285,9 +213,8 @@ public class DuelListeners implements Listener {
         Player player = event.getPlayer();
 
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
-        if (duel == null) {
+        if (duel == null)
             return;
-        }
 
         duel.getDrops().remove(event.getItem());
     }
@@ -299,11 +226,10 @@ public class DuelListeners implements Listener {
         DuelRequest request = DuelRequest.getRequest(player.getUniqueId());
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
 
-        if (request != null) {
+        if (request != null)
             request.cancel();
-        } else if (duel != null) {
+        else if (duel != null)
             player.setHealth(0);
-        }
     }
 
     @EventHandler
@@ -312,15 +238,13 @@ public class DuelListeners implements Listener {
         Player player = event.getPlayer();
         List<String> commands = Carbyne.getInstance().getConfig().getStringList("duel-disabled-commands");
 
-        for (Arena arena : duelManager.getArenas()) {
-            if (arena.getDuelists().contains(event.getPlayer().getUniqueId())) {
+        for (Arena arena : duelManager.getArenas())
+            if (arena.getDuelists().contains(event.getPlayer().getUniqueId()))
                 if (commands.contains(args[0])) {
                     event.setCancelled(true);
                     MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
                     return;
                 }
-            }
-        }
 
         if (event.getMessage().toLowerCase().startsWith("/aac") && !event.getPlayer().hasPermission("carbyne.aac")) {
             event.setCancelled(true);
@@ -330,36 +254,10 @@ public class DuelListeners implements Listener {
         DuelRequest request = DuelRequest.getRequest(player.getUniqueId());
         Duel duel = duelManager.getDuelFromUUID(player.getUniqueId());
 
-        if (duel != null || request != null) {
+        if (duel != null || request != null)
             if (commands.contains(args[0])) {
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
             }
-        }
-
-        /*Squad squad = Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId());
-
-        if (squad == null) {
-            return;
-        }
-
-        boolean squadInDuel = false;
-
-        for (UUID uuid : squad.getAllPlayers()) {
-            DuelRequest requestTo = DuelRequest.getRequest(uuid);
-            Duel duelTo = duelManager.getDuelFromUUID(uuid);
-
-            if (duelTo != null || requestTo != null) {
-                squadInDuel = true;
-                break;
-            }
-        }
-
-        if (squadInDuel) {
-            if (commands.contains(args[0])) {
-                event.setCancelled(true);
-                MessageManager.sendMessage(player, "&cYou can not use this command whilst in the duel");
-            }
-        }*/
     }
 }

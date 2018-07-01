@@ -4,10 +4,10 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,12 +47,11 @@ public class NametagManager {
         if (refreshForTag.getPlayerNametag(toRefreshTag) == null) {
             nametag = new Nametag(toRefresh.getName(), "", "");
             refreshForTag.setPlayerNametag(toRefreshTag, nametag);
-        } else {
+        } else
             nametag = refreshForTag.getPlayerNametag(toRefreshTag);
-        }
 
         int health = (int) toRefresh.getHealth() / 5;
-        String suffix = formatHealthBar(health);
+        String suffix = StringUtils.formatHealthBar(health);
         nametag.setSuffix(" " + suffix);
 
         //Duel
@@ -101,33 +100,27 @@ public class NametagManager {
 
         if (toRefreshSquad != null && refreshForSquad != null) {
             if (toRefreshSquad.getUniqueId().equals(refreshForSquad.getUniqueId())) {
-                if (toRefreshSquad.getLeader().equals(toRefresh.getUniqueId())) {
+                if (toRefreshSquad.getLeader().equals(toRefresh.getUniqueId()))
                     nametag.setPrefix(ChatColor.AQUA + "" + ChatColor.BOLD);
-                } else {
+                else
                     nametag.setPrefix(ChatColor.AQUA + "");
-                }
 
                 refreshForTag.update(toRefreshTag, nametag);
                 return;
-            } else {
-                if (refreshForSquad.getTargetSquad() != null) {
+            } else if (refreshForSquad.getTargetSquad() != null)
                     if (refreshForSquad.getTargetSquad().equals(toRefreshSquad)) {
                         nametag.setPrefix(ChatColor.RED + "");
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
                     }
-                }
-            }
         } else {
-            if (refreshForSquad != null) {
-                if (refreshForSquad.getTargetUUID() != null) {
+            if (refreshForSquad != null)
+                if (refreshForSquad.getTargetUUID() != null)
                     if (refreshForSquad.getTargetUUID().equals(toRefresh.getUniqueId())) {
                         nametag.setPrefix(ChatColor.RED + "");
                         refreshForTag.update(toRefreshTag, nametag);
                         return;
                     }
-                }
-            }
         }
 
         //ZPermissionsService service = Carbyne.getInstance().getService();
@@ -142,55 +135,12 @@ public class NametagManager {
     }
 
     public static void updateNametag(Player player) {
-        for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (!all.getUniqueId().equals(player.getUniqueId())) {
+        for (Player all : PlayerUtility.getOnlinePlayers())
+            if (!all.getUniqueId().equals(player.getUniqueId()))
                 updateNametag(player, all);
-            }
-        }
     }
 
     public static void clear() {
         players.clear();
-    }
-
-    static String formatHealth(double health) {
-        double hearts = health / 5;
-        DecimalFormat format = new DecimalFormat("#");
-
-        if (hearts <= 10 && hearts >= 7.5) {
-            return String.format(" &a%s \u2764", format.format(hearts));
-        } else if (hearts <= 7.5 && hearts >= 5) {
-            return String.format(" &e%s \u2764", format.format(hearts));
-        } else if (hearts <= 5 && hearts >= 2.5) {
-            return String.format(" &6%s \u2764", format.format(hearts));
-        } else {
-            return String.format(" &c%s \u2764", format.format(hearts));
-        }
-    }
-
-    static String formatHealthBar(int health) {
-        StringBuilder s = new StringBuilder();
-
-        if (health >= 13)
-            s.append("§a");
-        else if (health >= 7)
-            s.append("§e");
-        else
-            s.append("§c");
-
-        health /= 2;
-
-        int req = (10 - health);
-        int oReq = health;
-
-        for (int i = 0; i < oReq; i++)
-            s.append("\u2758");
-
-        s.append("§7");
-
-        for (int i = 0; i < req; i++)
-            s.append("\u2758");
-
-        return s.toString();
     }
 }

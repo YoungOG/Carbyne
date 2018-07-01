@@ -27,7 +27,7 @@ public class LootChestManager {
     private HashMap<Location, LootChest> lootChests = new HashMap<>();
 
     public LootChestManager() {
-        load(main.getLootChestFileConfiguration());
+        load(main.getLootChestsFileConfiguration());
 
         new BukkitRunnable() {
             public void run() {
@@ -48,13 +48,12 @@ public class LootChestManager {
         lootTables.clear();
         lootChests.clear();
 
-        if (main.getLootChestFile() == null) {
-            main.setLootChestFile(new File(main.getDataFolder(), "lootchests.yml"));
-        }
+        if (main.getLootChestsFile() == null)
+            main.setLootChestsFile(new File(main.getDataFolder(), "lootchests.yml"));
 
-        main.setLootChestFileConfiguration(YamlConfiguration.loadConfiguration(main.getLootChestFile()));
+        main.setLootChestsFileConfiguration(YamlConfiguration.loadConfiguration(main.getLootChestsFile()));
 
-        load(YamlConfiguration.loadConfiguration(main.getLootChestFile()));
+        load(YamlConfiguration.loadConfiguration(main.getLootChestsFile()));
     }
 
     public void load(FileConfiguration fc) {

@@ -26,27 +26,23 @@ public class GateManager {
     }
 
     public Gate getGate(String gateId) {
-        for (Gate gate : gates) {
-            if (gate.getGateId().equalsIgnoreCase(gateId)) {
+        for (Gate gate : gates)
+            if (gate.getGateId().equalsIgnoreCase(gateId))
                 return gate;
-            }
-        }
 
         return null;
     }
 
     public Gate getGate(Location location) {
-        for (Gate gate : gates) {
-            if (gate.getButtonLocations().contains(location) || gate.getPressurePlateMap().containsKey(location) || gate.getRedstoneBlockLocations().contains(location)) {
+        for (Gate gate : gates)
+            if (gate.getButtonLocations().contains(location) || gate.getPressurePlateMap().containsKey(location) || gate.getRedstoneBlockLocations().contains(location))
                 return gate;
-            }
-        }
 
         return null;
     }
 
     public void loadGates() {
-        ConfigurationSection section = main.getGateFileConfiguration().getConfigurationSection("Gates");
+        ConfigurationSection section = main.getGatesFileConfiguration().getConfigurationSection("Gates");
 
         if (section.getKeys(false).size() > 0) {
             main.getLogger().log(Level.INFO, "Preparing to load " + section.getKeys(false).size() + " gates.");
@@ -58,24 +54,20 @@ public class GateManager {
                 ArrayList<Location> redstoneBlockLocations = new ArrayList<>();
                 HashMap<String, MythicSpawner> mythicSpawners = new HashMap<>();
 
-                for (String s : section.getStringList(id + ".MythicSpawnerNames")) {
+                for (String s : section.getStringList(id + ".MythicSpawnerNames"))
                     mythicSpawners.put(s, null);
-                }
 
-                for (String s : section.getStringList(id + ".PressurePlateLocations")) {
+                for (String s : section.getStringList(id + ".PressurePlateLocations"))
                     pressurePlateLocations.put(LocationSerialization.deserializeLocation(s), false);
-                }
 
-                for (String s : section.getStringList(id + ".ButtonLocations")) {
+                for (String s : section.getStringList(id + ".ButtonLocations"))
                     buttonLocations.add(LocationSerialization.deserializeLocation(s));
-                }
 
                 for (String s : section.getStringList(id + ".RedstoneBlockLocations")) {
                     redstoneBlockLocations.add(LocationSerialization.deserializeLocation(s));
 
-                    if (LocationSerialization.deserializeLocation(s).getBlock().getType() == Material.REDSTONE_BLOCK) {
+                    if (LocationSerialization.deserializeLocation(s).getBlock().getType() == Material.REDSTONE_BLOCK)
                         LocationSerialization.deserializeLocation(s).getBlock().setType(Material.AIR);
-                    }
                 }
 
                 Gate gate = new Gate(id);
@@ -85,13 +77,10 @@ public class GateManager {
                 gate.setPressurePlateMap(pressurePlateLocations);
                 gate.setRedstoneBlockLocations(redstoneBlockLocations);
 
-                for (MythicSpawner mythicSpawner : MythicMobs.inst().getSpawnerManager().listSpawners) {
-                    for (String spawnerName : mythicSpawners.keySet()) {
-                        if (mythicSpawner.getInternalName().equalsIgnoreCase(spawnerName)) {
+                for (MythicSpawner mythicSpawner : MythicMobs.inst().getSpawnerManager().listSpawners)
+                    for (String spawnerName : mythicSpawners.keySet())
+                        if (mythicSpawner.getInternalName().equalsIgnoreCase(spawnerName))
                             mythicSpawners.put(spawnerName, mythicSpawner);
-                        }
-                    }
-                }
 
                 gate.setMythicSpawners(mythicSpawners);
 
@@ -105,9 +94,8 @@ public class GateManager {
     }
 
     public void saveGates() {
-        for (Gate gate : gates) {
+        for (Gate gate : gates)
             gate.saveGate();
-        }
     }
 
     public ArrayList<Gate> getGates() {

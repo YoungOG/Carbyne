@@ -111,10 +111,9 @@ public class Frostbite implements Special {
             for (int y = -this.radius; y <= this.radius; ++y) {
                 for (int z = -this.radius; z <= this.radius; ++z) {
                     final Location newloc = new Location(l.getWorld(), l.getX() + x, l.getY() + y, l.getZ() + z);
-                    if (newloc.getBlock().getType().isOccluding() && newloc.distance(l) <= radius) {
+                    if (newloc.getBlock().getType().isOccluding() && newloc.distance(l) <= radius && !isInSafeZone(newloc)) {
                         blocks.add(newloc);
-                    }
-                    else if ((newloc.getBlock().getType() == Material.CACTUS || newloc.getBlock().getType() == Material.LONG_GRASS || newloc.getBlock().getType() == Material.DEAD_BUSH || newloc.getBlock().getType() == Material.YELLOW_FLOWER || newloc.getBlock().getType() == Material.RED_ROSE || newloc.getBlock().getType() == Material.DOUBLE_PLANT) && newloc.distance(l) <= radius) {
+                    } else if (!isInSafeZone(newloc) && (newloc.getBlock().getType() == Material.CACTUS || newloc.getBlock().getType() == Material.LONG_GRASS || newloc.getBlock().getType() == Material.DEAD_BUSH || newloc.getBlock().getType() == Material.YELLOW_FLOWER || newloc.getBlock().getType() == Material.RED_ROSE || newloc.getBlock().getType() == Material.DOUBLE_PLANT) && newloc.distance(l) <= radius) {
                         blocks.add(newloc);
                     }
                 }
@@ -125,8 +124,13 @@ public class Frostbite implements Special {
 
     private final void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
-            entity.damage(1);
-            entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 0));
+            if (entity instanceof Player) {
+                entity.damage(entity.getHealth() * 0.1);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
+            } else {
+                entity.damage(1);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 60, 0));
+            }
         }
     }
 }

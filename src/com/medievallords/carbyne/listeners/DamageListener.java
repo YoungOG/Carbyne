@@ -38,13 +38,11 @@ public class DamageListener implements Listener {
     private ArrayList<String> warzoneCmds = new ArrayList<>(), safezoneCmds = new ArrayList<>();
 
     public DamageListener() {
-        if (main.getConfig().getStringList("blocked-cmds.warzone").size() > 0) {
+        if (main.getConfig().getStringList("blocked-cmds.warzone").size() > 0)
             warzoneCmds.addAll(main.getConfig().getStringList("blocked-cmds.warzone"));
-        }
 
-        if (main.getConfig().getStringList("blocked-cmds.safezone").size() > 0) {
+        if (main.getConfig().getStringList("blocked-cmds.safezone").size() > 0)
             safezoneCmds.addAll(main.getConfig().getStringList("blocked-cmds.safezone"));
-        }
     }
 
     @EventHandler
@@ -186,37 +184,33 @@ public class DamageListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamageIndicator(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity)) {
+        if (!(event.getEntity() instanceof LivingEntity))
             return;
-        }
 
         if (HologramsAPI.isHologramEntity(event.getEntity()))
             return;
 
         LivingEntity livingEntity = (LivingEntity) event.getEntity();
 
-        if (livingEntity.getNoDamageTicks() > livingEntity.getMaximumNoDamageTicks() / 2.0f) {
+        if (livingEntity.getNoDamageTicks() > livingEntity.getMaximumNoDamageTicks() / 2.0f)
             return;
-        }
 
-        if (event.getDamage() <= 0.0) {
+        if (event.getDamage() <= 0.0)
             return;
-        }
 
         if (main.getConfig().getBoolean("Damage-Indicators.Calculate-Armor")) {
             double previousHealth = (livingEntity).getHealth();
 
             Bukkit.getScheduler().scheduleSyncDelayedTask(main, () -> {
                 double actualDamage = livingEntity.isDead() ? previousHealth : (previousHealth - (livingEntity).getHealth());
-                if (actualDamage <= 0.0) {
+
+                if (actualDamage <= 0.0)
                     return;
-                }
 
                 showDamageIndicator(livingEntity, actualDamage);
             });
-        } else {
+        } else
             showDamageIndicator(livingEntity, event.getDamage());
-        }
     }
 
     private void showDamageIndicator(final LivingEntity entity, final double damage) {
@@ -224,9 +218,9 @@ public class DamageListener implements Listener {
     }
 
     public String formatDamage(double damage) {
-        if (main.getConfig().getBoolean("Damage-Indicators.Decimal-Places")) {
+        if (main.getConfig().getBoolean("Damage-Indicators.Decimal-Places"))
             return new DecimalFormat("0.0").format(damage).replace(",", ".");
-        }
+
         return Integer.toString(roundDownMinimumOne(damage));
     }
 

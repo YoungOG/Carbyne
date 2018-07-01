@@ -47,23 +47,20 @@ public class Reward {
     }
 
     public ItemStack getItem(boolean displayItem) {
-        if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData()) {
+        if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData())
             return new ItemBuilder(gearManager.getTokenItem()).amount(amount).build();
 
-        } else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData()) {
+        else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData())
             return new ItemBuilder(gearManager.getPolishItem()).amount(amount).build();
-
-        } else if (gearCode.contains("randomgear") && !displayItem) {
+        else if (gearCode.contains("randomgear") && !displayItem)
             return new ItemBuilder(gearManager.getRandomCarbyneGear(Boolean.valueOf(gearCode.split(":")[1])).getItem(false)).amount(amount).build();
-
-        } else if (gearManager.getCarbyneGear(gearCode) != null) {
+        else if (gearManager.getCarbyneGear(gearCode) != null) {
             if (gearManager.getCarbyneGear(gearCode).getItem(false) != null)
                 return new ItemBuilder(gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();
-        } else if (Package.getPackage(displayName) != null) {
+        } else if (Package.getPackage(displayName) != null)
             return Package.getPackage(displayName).getItem(amount);
-        } else {
+        else
             return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).amount(amount).name(displayName).setLore(lore).addEnchantments(enchantments).build();
-        }
         return null;
     }
 

@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadInviteCommand extends BaseCommand{
 
-    @Command(name = "squad.invite", inGameOnly = true)
+    @Command(name = "squad.invite", aliases = {"party.invite"}, inGameOnly = true)
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

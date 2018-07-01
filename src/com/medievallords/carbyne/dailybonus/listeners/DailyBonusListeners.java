@@ -57,17 +57,25 @@ public class DailyBonusListeners implements Listener {
                         profile.getDailyRewards().put(index, true);
                         profile.setHasClaimedDailyReward(true);
 
-                        if (crateManager.getCrates().get(0) != null) {
-                            player.closeInventory();
+                        player.closeInventory();
 
+                        if (!dailyBonusManager.hasClaimedAllDays(profile)) {
+                            if (crateManager.getCrates().get(0) != null)
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        crateManager.getCrates().get(0).generateRewards(player, true);
+                                        crateOpeners.add(player.getUniqueId());
+                                    }
+                                }.runTaskLater(main, 2L);
+                        } else if (crateManager.getCrates().get(1) != null)
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    crateManager.getCrates().get(0).generateRewards(player);
+                                    crateManager.getCrates().get(1).generateRewards(player, true);
                                     crateOpeners.add(player.getUniqueId());
                                 }
-                            }.runTaskLaterAsynchronously(main, 2L);
-                        }
+                            }.runTaskLater(main, 2L);
                     }
                 }
             }
@@ -116,10 +124,14 @@ public class DailyBonusListeners implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Profile profile = profileManager.getProfile(player.getUniqueId());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Profile profile = profileManager.getProfile(player.getUniqueId());
 
-        if (!profile.hasClaimedDailyReward()) {
-            Cooldowns.setCooldown(player.getUniqueId(), "DailyRewardWarmUp", 300000);
-        }
+                if (!profile.hasClaimedDailyReward())
+                    Cooldowns.setCooldown(player.getUniqueId(), "DailyRewardWarmUp", 300000);
+            }
+        }.runTaskLaterAsynchronously(main, 10L);
     }
 }

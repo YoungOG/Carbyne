@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadLeaveCommand extends BaseCommand {
 
-    @Command(name = "squad.leave", inGameOnly = true, aliases = {"squad.l"})
+    @Command(name = "squad.leave", inGameOnly = true, aliases = {"squad.l", "party.leave", "party.l"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

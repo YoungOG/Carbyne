@@ -125,16 +125,6 @@ public class RegularDuel extends Duel {
             player.getActivePotionEffects().clear();
 
             Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + getBets());
-
-            if (participants[0].equals(winnerId)) {
-                for (Player player1 : PlayerUtility.getOnlinePlayers()) {
-                    MessageManager.sendMessage(player1, "&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[1]).getName());
-                }
-            } else {
-                for (Player player1 : PlayerUtility.getOnlinePlayers()) {
-                    MessageManager.sendMessage(player1, "&b" + player.getName() + " &6has won a duel against &b" + Bukkit.getServer().getOfflinePlayer(participants[0]).getName());
-                }
-            }
         } else {
             for (UUID uuid : getPlayersAlive()) {
                 Player player = Bukkit.getServer().getPlayer(uuid);
@@ -206,10 +196,26 @@ public class RegularDuel extends Duel {
             p.setFireTicks(0);
             p.setHealth(p.getMaxHealth());
 
+            UUID winnerId = getPlayersAlive().get(0);
+            if (winnerId != null) {
+                Player player = Bukkit.getServer().getPlayer(winnerId);
+
+                //Send win message
+                if (participants[0].equals(winnerId)) {
+                    for (Player player1 : PlayerUtility.getOnlinePlayers()) {
+                        MessageManager.sendMessage(player1, "&d" + player.getName() + " &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(participants[1]).getName());
+                    }
+                } else {
+                    for (Player player1 : PlayerUtility.getOnlinePlayers()) {
+                        MessageManager.sendMessage(player1, "&d" + player.getName() + " &7has won a duel against &d" + Bukkit.getServer().getOfflinePlayer(participants[0]).getName());
+                    }
+                }
+            }
+
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    end(getPlayersAlive().get(0));
+                    end(winnerId);
                 }
             }.runTaskLater(Carbyne.getInstance(), 300);
         } else if (getPlayersAlive().isEmpty()) {

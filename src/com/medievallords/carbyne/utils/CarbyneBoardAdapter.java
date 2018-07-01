@@ -46,13 +46,11 @@ public class CarbyneBoardAdapter {
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
-        if (main.getStaffManager().getStaffModePlayers().contains(player.getUniqueId())) {
+        if (main.getStaffManager().getStaffModePlayers().contains(player.getUniqueId()))
             return staffScoreboard(player);
-        }
 
-        if (player.hasPermission("carbyne.staff.staffmode")) {
+        if (player.hasPermission("carbyne.staff.staffmode"))
             lines.add("&7Vanished&c: " + main.getStaffManager().isVanished(player));
-        }
 
         Profile profile = profileManager.getProfile(player.getUniqueId());
         if (profile.getRemainingPvPTime() > 1) {
@@ -93,11 +91,6 @@ public class CarbyneBoardAdapter {
 //                lines.add("  &aProgress&7: " + profile.getProfessionProgress());
 //            }
 //        }
-//
-//        if (gearManager.getDamageReduction(player) > 0.0 || gearManager.getProtectionReduction(player) > 0.0) {
-//            lines.add(" ");
-//            lines.add("&aDamage Reduction&7: " + doubleFormat((gearManager.getDamageReduction(player) + gearManager.getProtectionReduction(player)) * 100.0) + "%");
-//        }
 
         if (squadManager.getSquad(player.getUniqueId()) != null) {
             Squad squad = squadManager.getSquad(player.getUniqueId());
@@ -111,17 +104,6 @@ public class CarbyneBoardAdapter {
                         lines.add(" &7" + (squad.getLeader() == member ? "&l" : "") + (Bukkit.getPlayer(member).getName().length() > 7 ? Bukkit.getPlayer(member).getName().substring(0, 8) : Bukkit.getPlayer(member).getName()) + "    " + formatHealth(Bukkit.getPlayer(member).getHealth()));
             }
         }
-
-        /*Collection<DropPoint> conquerPoints = Collections2.filter(main.getConquerPointManager().getConquerPoints(),
-                conquerPoint -> (conquerPoint != null && conquerPoint.getState() == DropPointState.CAPTURING));
-
-        if (conquerPoints.size() > 0) {
-            lines.add(" ");
-            lines.add("&4Conquer Points:");
-
-            for (DropPoint conquerPoint : conquerPoints)
-                lines.add("&b- &5" + conquerPoint.getId().replace("_", " ").substring(0, Math.min(conquerPoint.getId().replace("_", "").length(), 5)) + "   &c[" + "&4" + MessageManager.convertSecondsToMinutes(conquerPoint.getCaptureTime()) + "&c]");
-        }*/
 
         if (board.getCooldown("target") == null) {
             if (squadManager.getSquad(player.getUniqueId()) != null) {
@@ -185,6 +167,11 @@ public class CarbyneBoardAdapter {
                 if (cooldown.getId().equals("godapple")) {
                     lines.add("   ");
                     lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
+                }
+
+                if (cooldown.getId().equals("goldenapple")) {
+                    lines.add("   ");
+                    lines.add("&dGolden Apple&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
                 if (cooldown.getId().equals("skill")) {

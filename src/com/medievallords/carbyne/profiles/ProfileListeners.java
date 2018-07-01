@@ -78,6 +78,8 @@ public class ProfileListeners implements Listener {
 
         player.setAllowFlight(true);
         player.setFlying(false);
+        player.setMaxHealth(100.0);
+        player.setHealth(player.getMaxHealth());
 
         Account account = Account.getAccount(player.getUniqueId());
         if (account != null)
@@ -129,23 +131,17 @@ public class ProfileListeners implements Listener {
             TableTabList tab = main.getTabbed().newTableTabList(event.getPlayer());
             tab.setHeader(tablistHeader);
             tab.setFooter(tablistFooter);
-            for (int i = 0; i < 4; i++) {
-                for (int l = 0; l < 20; l++) {
+
+            for (int i = 0; i < 4; i++)
+                for (int l = 0; l < 20; l++)
                     tab.set(i, l, new TextTabItem("", 1));
-                }
-            }
-            tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1));
-            tab.set(0, 2, new TextTabItem(" §d§lBalance§7: 0", 1));
-            tab.set(0, 3, new TextTabItem(" §d§lPing§7: 0", 1));
-            tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1));
-            tab.set(0, 8, new TextTabItem(" §d§lPlayers Online§7: 0", 1));
-            tab.set(0, 9, new TextTabItem(" §d§lStaff Online§7: 0", 1));
 
             Profile.PlayerTabRunnable runnable = new Profile.PlayerTabRunnable(event.getPlayer(), profile, Account.getAccount(event.getPlayer().getUniqueId()), tab);
             runnable.runTaskTimerAsynchronously(main, 5L, 20);
 
             playerTabs.put(event.getPlayer().getUniqueId(), runnable);
         }
+
         Hologram holo = HologramsAPI.createHologram(main, new Location(Bukkit.getWorld("world"), -716.5, 108, 307.5));
         holo.getVisibilityManager().showTo(player);
         holo.getVisibilityManager().setVisibleByDefault(false);
@@ -180,33 +176,38 @@ public class ProfileListeners implements Listener {
 
         profile.setPreviousInventoryContentString(InventorySerialization.serializePlayerInventoryAsString(player.getInventory()));
 
-        if (main.getGearManager().isInFullCarbyne(player))
-            if (player.getKiller() != null)
-                if (Cooldowns.tryCooldown(player.getUniqueId(), player.getKiller().getUniqueId().toString() + ":carbynedeath", 300000))
-                    profile.setCarbyneDeaths(profile.getCarbyneDeaths() + 1);
-                else
-                    profile.setCarbyneDeaths(profile.getCarbyneDeaths() + 1);
-            else {
-                if (player.getKiller() != null)
-                    if (Cooldowns.tryCooldown(player.getUniqueId(), player.getKiller().getUniqueId().toString() + ":death", 300000))
-                        profile.setDeaths(profile.getDeaths() + 1);
-                    else
-                        profile.setDeaths(profile.getDeaths() + 1);
-            }
-
         profile.setKillStreak(0);
 
-        if (player.getKiller() != null) {
-            Player killer = player.getKiller();
-            Profile killerProfile = main.getProfileManager().getProfile(killer.getUniqueId());
+        if (main.getGearManager().isInFullCarbyne(player)) {
+            if (player.getKiller() != null) {
+                Player killer = player.getKiller();
+                Profile killerProfile = main.getProfileManager().getProfile(killer.getUniqueId());
 
-            if (Cooldowns.tryCooldown(killerProfile.getUniqueId(), player.getUniqueId().toString() + ":kill", 300000))
-                if (main.getGearManager().isInFullCarbyne(player))
+                if (Cooldowns.tryCooldown(player.getUniqueId(), killer.getUniqueId().toString() + ":carbynedeath", 300000))
+                    profile.setCarbyneDeaths(profile.getCarbyneDeaths() + 1);
+
+                if (Cooldowns.tryCooldown(killer.getUniqueId(), player.getUniqueId().toString() + ":carbynekill", 300000))
                     killerProfile.setCarbyneKills(killerProfile.getCarbyneKills() + 1);
-                else
-                    killerProfile.setKills(killerProfile.getKills() + 1);
+            } else
+                profile.setCarbyneDeaths(profile.getCarbyneDeaths() + 1);
+        } else {
+            if (player.getKiller() != null) {
+                Player killer = player.getKiller();
+                Profile killerProfile = main.getProfileManager().getProfile(killer.getUniqueId());
 
-            if (Cooldowns.tryCooldown(killerProfile.getUniqueId(), player.getUniqueId().toString() + ":killstreak", 300000))
+                if (Cooldowns.tryCooldown(player.getUniqueId(), killer.getUniqueId().toString() + ":death", 300000))
+                    profile.setDeaths(profile.getDeaths() + 1);
+
+                if (Cooldowns.tryCooldown(killer.getUniqueId(), player.getUniqueId().toString() + ":kill", 300000))
+                    killerProfile.setKills(killerProfile.getKills() + 1);
+            } else
+                profile.setDeaths(profile.getDeaths() + 1);
+        }
+
+        if (player.getKiller() != null) {
+            Profile killerProfile = main.getProfileManager().getProfile(player.getKiller().getUniqueId());
+
+            if (Cooldowns.tryCooldown(player.getKiller().getUniqueId(), player.getUniqueId().toString() + ":killstreak", 300000))
                 killerProfile.setKillStreak(killerProfile.getKillStreak() + 1);
         }
     }
@@ -215,6 +216,7 @@ public class ProfileListeners implements Listener {
     public void plotChange(PlayerChangePlotEvent event) {
         Player player = event.getPlayer();
         Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+
         try {
             if (!event.getTo().getTownBlock().getPermissions().pvp)
                 profile.setPvpTimePaused(true);

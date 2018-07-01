@@ -37,7 +37,7 @@ public class CrateSetLocationCommand extends BaseCommand {
 
         Crate crate = getCrateManager().getCrate(name);
         crate.setLocation(Bukkit.getPlayer(sender.getName()).getTargetBlock((HashSet<Byte>) null, 50).getLocation());
-        crate.save(getCarbyne().getCrateFileConfiguration());
+        crate.save(getCarbyne().getCratesFileConfiguration());
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_SET_LOCATION.toString().replace("{CRATE_NAME}", crate.getName()).replace("{WORLD}", crate.getLocation().getWorld().getName()).replace("{X}", "" + crate.getLocation().getBlockX()).replace("{Y}", "" + crate.getLocation().getBlockY()).replace("{Z}", "" + crate.getLocation().getBlockZ()));
     }

@@ -112,14 +112,6 @@ public class ProfileManager {
                     profile.setDailyRewardDay(document.getInteger("dailyRewardDay"));
                     profile.setDailyRewardDayTime(document.getLong("dailyRewardDayTime"));
                     profile.setHasClaimedDailyReward(document.getBoolean("hasClaimedDailyReward"));
-                    profile.setHasCompletedDailyChallenge(document.getBoolean("hasCompletedDailyChallenge"));
-
-                    int[] dailyRewardsIndex = new int[8];
-                    Document dailyRewardsIndexDocument = (Document) document.get("dailyRewardsIndex");
-                    if (dailyRewardsIndexDocument != null && dailyRewardsIndexDocument.keySet().size() > 0)
-                        for (String rewardId : dailyRewardsIndexDocument.keySet())
-                            dailyRewardsIndex[Integer.parseInt(rewardId)] = dailyRewardsIndexDocument.getInteger(rewardId);
-                    profile.setDailyRewardsIndex(dailyRewardsIndex);
 
                     Document dailyRewardsDocument = (Document) document.get("dailyRewards");
                     if (dailyRewardsDocument != null && dailyRewardsDocument.keySet().size() > 0)
@@ -173,12 +165,6 @@ public class ProfileManager {
                     document.append("dailyRewardDay", profile.getDailyRewardDay());
                     document.append("dailyRewardDayTime", profile.getDailyRewardDayTime());
                     document.append("hasClaimedDailyReward", profile.hasClaimedDailyReward());
-                    document.append("hasCompletedDailyChallenge", profile.hasCompletedDailyChallenge());
-
-                    Document dailyRewardsIndexDocument = new Document();
-                    for (int i = 0; i < 8; i++)
-                        dailyRewardsIndexDocument.put("" + i, profile.getDailyRewardsIndex()[i]);
-                    document.append("dailyRewardsIndex", dailyRewardsIndexDocument);
 
                     Document dailyRewardsDocument = new Document();
                     for (int rewardId : profile.getDailyRewards().keySet())

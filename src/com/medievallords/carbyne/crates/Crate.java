@@ -3,15 +3,10 @@ package com.medievallords.carbyne.crates;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.crates.rewards.RewardGenerator;
-import com.medievallords.carbyne.utils.ItemBuilder;
-import com.medievallords.carbyne.utils.LocationSerialization;
-import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -56,7 +51,7 @@ public class Crate {
             configurationSection.createSection(name + ".Rewards");
 
         if (!configurationSection.isSet(name + ".RewardsAmount"))
-            configurationSection.createSection(".RewardsAmount");
+            configurationSection.createSection(name + ".RewardsAmount");
 
         if (location != null)
             configurationSection.set(name + ".Location", LocationSerialization.serializeLocation(location));
@@ -65,7 +60,7 @@ public class Crate {
             configurationSection.set(name + ".RewardsAmount", rewardsAmount);
 
         try {
-            crateFileConfiguration.save(main.getCrateFile());
+            crateFileConfiguration.save(main.getCratesFile());
         } catch (IOException e) {
             e.printStackTrace();
             main.getLogger().log(Level.WARNING, "Failed to save the crate " + name + "!");
@@ -105,7 +100,7 @@ public class Crate {
         List<Integer> randomGear = new ArrayList<>();
 
         for (Reward reward : rewards) {
-            inventory.setItem(reward.getSlot(), new ItemBuilder(reward.getItem(true)).addLore("").build());
+            inventory.setItem(reward.getSlot(), new ItemBuilder(reward.getItem(true)).addLore("").addLore("&aChance: &c" + reward.getChance() + "%").build());
             if (reward.getGearCode().startsWith("randomgear"))
                 randomGear.add(reward.getSlot());
         }
@@ -125,10 +120,6 @@ public class Crate {
 
                 for (int p : randomGear) {
                     ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(true).getItem(false);
-                    //ItemMeta meta = randomCarbyne.getItemMeta();
-                    //meta.setLore(inventory.getItem(p).getItemMeta().getLore());
-                    //meta.setDisplayName(ChatColor.GOLD + "Randomly Selected Gear");
-                    //randomCarbyne.setItemMeta(meta);
 
                     inventory.setItem(p, randomCarbyne);
                 }
@@ -136,18 +127,21 @@ public class Crate {
         }.runTaskTimer(main, 0, 10);
     }
 
-    public void generateRewards(Player player) {
+    public void generateRewards(Player player, boolean dailyBonus) {
         int openTime = main.getConfig().getInt("crates.crate-opening-time");
         int fillerId = main.getConfig().getInt("crates.filler-itemid");
         int fillerPeriod = main.getConfig().getInt("crates.filler-period");
 
         Inventory inventory = Bukkit.createInventory(player, 27, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
 
-        if (player.getItemInHand().getAmount() > 1) {
-            player.getItemInHand().setAmount(player.getItemInHand().getAmount() - 1);
-            player.setItemInHand(player.getItemInHand());
-        } else
-            player.setItemInHand(new ItemStack(Material.AIR));
+        if (!dailyBonus)
+            if (player.getItemInHand().getAmount() > 1) {
+                player.getItemInHand().setAmount(player.getItemInHand().getAmount() - 1);
+                player.setItemInHand(player.getItemInHand());
+            } else
+                player.setItemInHand(new ItemStack(Material.AIR));
+
+        InstantFirework.spawn(player.getLocation(), FireworkEffect.builder().withColor(Color.BLUE).withColor(Color.RED).withColor(Color.GREEN).withColor(Color.YELLOW).withColor(Color.PURPLE).withFade(Color.TEAL).build());
 
         crateOpeners.put(player.getUniqueId(), inventory);
         crateOpenersAmount.put(player.getUniqueId(), rewardsAmount - 1);
@@ -264,15 +258,18 @@ public class Crate {
             totalPercentage += reward.getChance();
 
         int index = -1;
-        double random = Math.random() * totalPercentage;
+        double random = Maths.randomNumberBetween((int) totalPercentage, 0);
 
+        double last = 0;
         for (int i = 0; i < rewards.size(); i++) {
             Reward reward = getRewards().get(i);
-            random -= reward.getChance();
+            double value = reward.getChance();
 
-            if (random <= 0) {
+            if (random > last && random < value + last) {
                 index = i;
                 break;
+            } else {
+                last = value;
             }
         }
         return rewards.get(index);
@@ -281,12 +278,24 @@ public class Crate {
     public ArrayList<Reward> getRewards(int amount) {
         ArrayList<Reward> rewards = new ArrayList<>();
 
+        double totalPercentage = 0;
+
+        for (Reward reward : getRewards()) {
+            totalPercentage += reward.getChance();
+        }
+
+        double random = Maths.randomNumberBetween((int) totalPercentage, 0);
+        double last = 0;
         for (int a = 0; a < amount; a++) {
-            double prob = Math.random();
-            for (Reward reward : getRewards()) {
-                double chance = reward.getChance();
-                if (chance >= prob) {
+            for (int i = 0; i < getRewards().size(); i++) {
+                Reward reward = getRewards().get(i);
+                double value = reward.getChance();
+
+                if (random >= last && random < value + last) {
                     rewards.add(reward);
+                    break;
+                } else {
+                    last = value + last;
                 }
             }
         }

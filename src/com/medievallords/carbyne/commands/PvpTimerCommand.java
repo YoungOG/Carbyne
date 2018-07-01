@@ -107,8 +107,10 @@ public class PvpTimerCommand extends BaseCommand {
         MessageManager.sendMessage(sender, "&a&lPvPTimer Help");
         MessageManager.sendMessage(sender, "&b/pvp disable &6» &7Remove your PvPTimer.");
         MessageManager.sendMessage(sender, "&b/pvp time &6» &7Check your remaining PvPTimer time.");
-        MessageManager.sendMessage(sender, "&b/pvp remove <player> &6» &7Remove PvPTimer from a player.");
-        MessageManager.sendMessage(sender, "&b/pvp set <player> <duration> &6» &7Set remaining PvPTimer time for a player.");
+        if (sender.hasPermission("carbyne.staff")) {
+            MessageManager.sendMessage(sender, "&b/pvp remove <player> &6» &7Remove PvPTimer from a player.");
+            MessageManager.sendMessage(sender, "&b/pvp set <player> <duration> &6» &7Set remaining PvPTimer time for a player.");
+        }
         MessageManager.sendMessage(sender, "&6&m»----------------------------«");
     }
 }

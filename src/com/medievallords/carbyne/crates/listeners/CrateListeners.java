@@ -31,17 +31,15 @@ public class CrateListeners implements Listener {
         if (e.hasItem() && e.getItem() != null && e.getItem().getType() != Material.AIR) {
             Key key = crateManager.getKey(e.getItem());
 
-            if (key != null) {
+            if (key != null)
                 e.setCancelled(true);
-            }
         }
 
         if (e.hasBlock() && e.getClickedBlock() != null && e.getClickedBlock().getType() != Material.AIR) {
             Block block = e.getClickedBlock();
 
-            if (crateManager.getCrate(block.getLocation()) == null) {
+            if (crateManager.getCrate(block.getLocation()) == null)
                 return;
-            }
 
             e.setCancelled(true);
 
@@ -74,14 +72,13 @@ public class CrateListeners implements Listener {
                     return;
                 }
 
-                if (Cooldowns.tryCooldown(player.getUniqueId(), "Crate-Cooldown", 1000)) {
-                    crate.generateRewards(player);
-                } else {
+                if (Cooldowns.tryCooldown(player.getUniqueId(), "Crate-Cooldown", 1000))
+                    crate.generateRewards(player, false);
+                else
                     MessageManager.sendMessage(player, "&cYou cannot use this for another " + (Cooldowns.getCooldown(player.getUniqueId(), "Crate-Cooldown") / 1000) + " seconds.");
-                }
-            } else if (e.getAction() == Action.LEFT_CLICK_BLOCK) {
+            } else if (e.getAction() == Action.LEFT_CLICK_BLOCK)
                 crate.showRewards(player);
-            }
+
         }
     }
 
@@ -89,9 +86,9 @@ public class CrateListeners implements Listener {
     public void onClick(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
 
-        if (e.getInventory().getTitle().contains("Crate Rewards")) {
+        if (e.getInventory().getTitle().contains("Crate Rewards"))
             e.setCancelled(true);
-        } else if (e.getInventory().getTitle().contains("Edit Crate")) {
+        else if (e.getInventory().getTitle().contains("Edit Crate")) {
             if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
                 Crate crate = crateManager.getCrate(player.getUniqueId());
 
@@ -124,15 +121,13 @@ public class CrateListeners implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
 
-        for (Crate crate : crateManager.getCrates()) {
-            if (crate.getCrateOpeners().keySet().contains(player.getUniqueId())) {
+        for (Crate crate : crateManager.getCrates())
+            if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         player.openInventory(crate.getCrateOpeners().get(player.getUniqueId()));
                     }
                 }.runTaskLaterAsynchronously(main, 3L);
-            }
-        }
     }
 }

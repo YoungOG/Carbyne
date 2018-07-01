@@ -37,7 +37,6 @@ public class DailyBonusCommand extends BaseCommand {
 
                 if (args[1].equalsIgnoreCase("day")) {
                     profile.setHasClaimedDailyReward(false);
-                    profile.setHasCompletedDailyChallenge(false);
                     profile.getDailyRewards().put(profile.getDailyRewardDay(), false);
 
                     try {

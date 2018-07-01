@@ -18,7 +18,7 @@ public class DiscordCommand extends BaseCommand {
                 .color(ChatColor.AQUA)
                 .style(ChatColor.BOLD)
                 .style(ChatColor.UNDERLINE)
-                .openURL("https://discord.gg/t6vvffu")
+                .openURL("https://discord.gg/kQxg7pq")
                 .tooltip(ChatColor.translateAlternateColorCodes('&', "&aThis will invite you to join our discord."))
                 .then(ChatColor.translateAlternateColorCodes('&', "&r&b&l] &alink."))
                 .send(player);

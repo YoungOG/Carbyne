@@ -30,9 +30,8 @@ public class CooldownListeners implements Listener {
                             e.setCancelled(true);
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot throw another Enderpearl for &6" + enderpearlCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
-                        } else {
+                        } else
                             new BoardCooldown(board, "enderpearl", 15.0D);
-                        }
                     }
                 }
             } else if (e.getItem().getType() == Material.POTION) {
@@ -58,18 +57,29 @@ public class CooldownListeners implements Listener {
     public void onEat(PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         if (e.getItem() != null) {
-            if (e.getItem().getType() == Material.GOLDEN_APPLE && e.getItem().getDurability() == 1) {
+            if (e.getItem().getType() == Material.GOLDEN_APPLE) {
                 Board board = Board.getByPlayer(p);
 
                 if (board != null) {
-                    BoardCooldown godappleCooldown = board.getCooldown("godapple");
+                    if (e.getItem().getDurability() < 1) {
+                        BoardCooldown godappleCooldown = board.getCooldown("goldenapple");
 
-                    if (godappleCooldown != null) {
-                        e.setCancelled(true);
-                        p.updateInventory();
-                        MessageManager.sendMessage(p, "&eYou cannot eat another God Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.MINUTES) + " &eseconds!");
-                    } else
-                        new BoardCooldown(board, "godapple", 900.0D);
+                        if (godappleCooldown != null) {
+                            e.setCancelled(true);
+                            p.updateInventory();
+                            MessageManager.sendMessage(p, "&eYou cannot eat another Golden Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
+                        } else
+                            new BoardCooldown(board, "goldenapple", 60.0D);
+                    } else {
+                        BoardCooldown godappleCooldown = board.getCooldown("godapple");
+
+                        if (godappleCooldown != null) {
+                            e.setCancelled(true);
+                            p.updateInventory();
+                            MessageManager.sendMessage(p, "&eYou cannot eat another God Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.MINUTES) + " &eminutes!");
+                        } else
+                            new BoardCooldown(board, "godapple", 900.0D);
+                    }
                 }
             } else if (e.getItem().getType() == Material.POTION) {
                 Board board = Board.getByPlayer(p);

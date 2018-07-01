@@ -48,7 +48,7 @@ public class Arena {
     }
 
     public void save() {
-        ConfigurationSection section = main.getArenaFileConfiguration().getConfigurationSection("Arenas");
+        ConfigurationSection section = main.getArenasFileConfiguration().getConfigurationSection("Arenas");
 
         if (!section.isSet(arenaId)) {
             section.createSection(arenaId);
@@ -97,7 +97,7 @@ public class Arena {
         }
 
         try {
-            main.getArenaFileConfiguration().save(main.getArenaFile());
+            main.getArenasFileConfiguration().save(main.getArenasFile());
         } catch (IOException e) {
             e.printStackTrace();
             main.getLogger().log(Level.WARNING, "Failed to save arena " + arenaId + "!");

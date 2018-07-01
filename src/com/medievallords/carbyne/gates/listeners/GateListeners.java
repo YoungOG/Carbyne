@@ -25,15 +25,12 @@ public class GateListeners implements Listener {
             Block block = event.getClickedBlock();
             Gate gate = gateManager.getGate(block.getLocation());
 
-            if (gate == null) {
+            if (gate == null)
                 return;
-            }
 
-            if (gate.getPressurePlateMap().containsKey(block.getLocation())) {
-                if (!gate.getPressurePlateMap().get(block.getLocation())) {
+            if (gate.getPressurePlateMap().containsKey(block.getLocation()))
+                if (!gate.getPressurePlateMap().get(block.getLocation()))
                     gate.pressurePlateActivated(block.getLocation(), true);
-                }
-            }
         }
     }
 
@@ -42,20 +39,16 @@ public class GateListeners implements Listener {
         Block block = event.getBlock();
         Gate gate = gateManager.getGate(block.getLocation());
 
-        if (gate == null) {
+        if (gate == null)
             return;
-        }
 
-        if (gate.getPressurePlateMap().containsKey(block.getLocation())) {
-            if (gate.getPressurePlateMap().get(block.getLocation()) && event.getOldCurrent() > 0) {
+        if (gate.getPressurePlateMap().containsKey(block.getLocation()))
+            if (gate.getPressurePlateMap().get(block.getLocation()) && event.getOldCurrent() > 0)
                 gate.pressurePlateActivated(block.getLocation(), false);
-            }
-        }
 
-        if (event.getOldCurrent() > 0) {
             if (gate.getButtonLocations().contains(block.getLocation())) {
-                gate.buttonActivated(block.getLocation());
+                gate.buttonActivated(block.getLocation(), event.getOldCurrent() == 0);
             }
-        }
+
     }
 }

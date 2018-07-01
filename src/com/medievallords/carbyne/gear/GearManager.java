@@ -23,6 +23,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -187,46 +188,51 @@ public class GearManager {
     public boolean isWearingCarbyne(Player player) {
         boolean wearing = false;
 
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (isCarbyneArmor(item) || isCarbyneWeapon(item)) {
+        for (ItemStack item : player.getInventory().getContents())
+            if (isCarbyneArmor(item) || isCarbyneWeapon(item))
                 wearing = true;
-            }
-        }
 
-        for (ItemStack item : player.getInventory().getArmorContents()) {
-            if (isCarbyneArmor(item) || isCarbyneWeapon(item)) {
+        for (ItemStack item : player.getInventory().getArmorContents())
+            if (isCarbyneArmor(item) || isCarbyneWeapon(item))
                 wearing = true;
-            }
-        }
+
+        return wearing;
+    }
+
+    public boolean isWearingCarbyne(Player player, boolean zoneCheck) {
+        boolean wearing = false;
+
+        for (ItemStack item : player.getInventory().getContents())
+            if (isCarbyneArmor(item) || (isCarbyneWeapon(item) && !getCarbyneWeapon(item).isAllowInDisabledZones()))
+                wearing = true;
+
+        for (ItemStack item : player.getInventory().getArmorContents())
+            if (isCarbyneArmor(item) || (isCarbyneWeapon(item) && !getCarbyneWeapon(item).isAllowInDisabledZones()))
+                wearing = true;
 
         return wearing;
     }
 
     public CarbyneGear getCarbyneGear(String gearCode) {
-        for (CarbyneGear cg : carbyneGear) {
-            if (cg.getGearCode().equalsIgnoreCase(gearCode)) {
+        for (CarbyneGear cg : carbyneGear)
+            if (cg.getGearCode().equalsIgnoreCase(gearCode))
                 return cg;
-            }
-        }
+
         return null;
     }
 
     public CarbyneGear getCarbyneGear(ItemStack is) {
-        if (is.getItemMeta() == null) {
+        if (is.getItemMeta() == null)
             return null;
-        }
 
         List<String> lore = Namer.getLore(is);
 
-        if (lore == null || lore.isEmpty()) {
+        if (lore == null || lore.isEmpty())
             return null;
-        }
 
-        for (CarbyneGear eg : carbyneGear) {
-            if (eg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0)))) {
+        for (CarbyneGear eg : carbyneGear)
+            if (eg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
                 return eg;
-            }
-        }
 
         return null;
     }
@@ -340,10 +346,9 @@ public class GearManager {
     public List<CarbyneWeapon> getCarbyneWeapon() {
         List<CarbyneWeapon> carbyneWeapons = new ArrayList<>();
 
-        for (CarbyneGear cg : carbyneGear) {
+        for (CarbyneGear cg : carbyneGear)
             if (cg instanceof CarbyneWeapon)
                 carbyneWeapons.add((CarbyneWeapon) cg);
-        }
 
         carbyneWeapons.sort((o1, o2) -> Boolean.compare(o1.isHidden(), o2.isHidden()));
 
@@ -446,9 +451,8 @@ public class GearManager {
             return false;
 
         for (CarbyneGear cg : defaultArmors) {
-            if (!(cg instanceof MinecraftArmor)) {
+            if (!(cg instanceof MinecraftArmor))
                 continue;
-            }
 
             if (cg.getItem(false).getType().equals(itemStack.getType()))
                 return true;
@@ -514,14 +518,13 @@ public class GearManager {
     public List<CarbyneArmor> getCarbyneArmorByColor(Color color) {
         List<CarbyneArmor> carbyneArmorList = new ArrayList<>();
 
-        for (CarbyneGear carbyneGear : carbyneGear) {
+        for (CarbyneGear carbyneGear : carbyneGear)
             if (carbyneGear instanceof CarbyneArmor) {
                 CarbyneArmor carbyneArmor = (CarbyneArmor) carbyneGear;
 
                 if (carbyneArmor.getBaseColor().equals(color))
                     carbyneArmorList.add(carbyneArmor);
             }
-        }
 
         return carbyneArmorList;
     }
@@ -547,10 +550,9 @@ public class GearManager {
                 if (item.getItemMeta().hasLore()) {
                     List<String> lore = im.getLore();
 
-                    for (String line : item.getItemMeta().getLore()) {
+                    for (String line : item.getItemMeta().getLore())
                         if (!lore.contains(line) && !line.contains("Damage Reduction"))
                             lore.add(line);
-                    }
 
                     im.setLore(lore);
                 }
@@ -566,21 +568,20 @@ public class GearManager {
 
     public CarbyneGear getRandomCarbyneGear(boolean includeHidden) {
         ArrayList<CarbyneGear> gears = new ArrayList<>();
-        for (CarbyneGear gear : getCarbyneGear()) {
+
+        for (CarbyneGear gear : getCarbyneGear())
             if (gear.isHidden() && includeHidden)
                 gears.add(gear);
             else
                 gears.add(gear);
-        }
 
         return gears.get(ThreadLocalRandom.current().nextInt(0, gears.size()));
     }
 
     public Special getSpecialByName(String name) {
-        for (Special special : specials) {
+        for (Special special : specials)
             if (special.getSpecialName().equalsIgnoreCase(name))
                 return special;
-        }
 
         return null;
     }
@@ -609,28 +610,15 @@ public class GearManager {
 
     public boolean isInFullCarbyne(Player player) {
         ItemStack[] armorContents = player.getInventory().getArmorContents();
-        boolean helmet = false, chestplate = false, leggings = false, boots = false;
 
-        if (armorContents != null && armorContents.length > 0)
+        int i = 0;
+
+        if (armorContents != null)
             for (ItemStack item : armorContents)
-                if (item != null && (item.getType().toString().contains("HELMET") || item.getType().toString().contains("CHESTPLATE") || item.getType().toString().contains("LEGGINGS") || item.getType().toString().contains("BOOTS")))
-                    if (getCarbyneGear(item) != null)
-                        switch (item.getType().toString()) {
-                            case "HELMET":
-                                helmet = true;
-                                break;
-                            case "CHESTPLATE":
-                                chestplate = true;
-                                break;
-                            case "LEGGINGS":
-                                leggings = true;
-                                break;
-                            case "BOOTS":
-                                boots = true;
-                                break;
-                        }
+                if (item != null && getCarbyneArmor(item) != null)
+                    i++;
 
-        return (helmet && chestplate && leggings && boots);
+        return (i == 4);
     }
 
     public Material getTokenMaterial() {
@@ -669,12 +657,65 @@ public class GearManager {
         return damageReduction;
     }
 
+    public float calculateDamage(Player damaged, EntityDamageEvent.DamageCause cause, double damageDealt) {
+        double armorReduction = getDamageReduction(damaged);
+
+        if (armorReduction > 0) {
+            float flatDamage = 0.0f;
+
+            //Calculation of certain DamageCauses for precise balancing.
+            switch (cause) {
+                case FIRE_TICK:
+                    flatDamage = 0.5f;
+                    break;
+                case LAVA:
+                    flatDamage = 1.0f;
+                    break;
+                case LIGHTNING:
+                    flatDamage = 5.0f;
+                    break;
+                case DROWNING:
+                    flatDamage = 2.0f;
+                    break;
+                case STARVATION:
+                    flatDamage = 0.5f;
+                    break;
+                case VOID:
+                    flatDamage = 4.0f;
+                    break;
+                case POISON:
+                    flatDamage = 0.35f;
+                    break;
+                case WITHER:
+                    flatDamage = 0.35f;
+                    break;
+                case SUFFOCATION:
+                    flatDamage = 0.5f;
+                    break;
+                case FALL:
+                    flatDamage = ((float) (damageDealt - damageDealt * (armorReduction - 0.10f))) * getFeatherFallingCalculation(damaged);
+                    break;
+            }
+
+            flatDamage *= 5;
+
+            float eventDamage = (float) damageDealt * 5;
+
+            float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(damaged)))) : flatDamage);
+
+            return calculatePotionEffects(damage, damaged);
+        }
+
+        return (float) (damageDealt * 5);
+    }
+
     public double getProtectionReduction(Player player) {
         String[] types = {"HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"};
         double damageReduction = 0.0;
 
         for (ItemStack is : player.getInventory().getArmorContents()) {
             int index;
+
             for (index = 0; index < types.length; index++)
                 if (is.getType().toString().contains(types[index]))
                     break;

@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
  */
 public class SquadCreateCommand extends BaseCommand {
 
-    @Command(name = "squad.create", inGameOnly = true, aliases = {"squad.c"})
+    @Command(name = "squad.create", inGameOnly = true, aliases = {"party.create"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();

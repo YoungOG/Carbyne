@@ -2,16 +2,18 @@ package com.medievallords.carbyne.gear.effects;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.JSONMessage;
+import com.medievallords.carbyne.utils.ParticleEffect;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class ExhaustEffect extends BukkitRunnable {
+public class WeakenedEffect extends BukkitRunnable {
 
     private Player player;
 
-    public ExhaustEffect(Player player) {
+    public WeakenedEffect(Player player) {
         this.player = player;
     }
 
@@ -49,6 +51,7 @@ public class ExhaustEffect extends BukkitRunnable {
 
     private void beat() {
         player.playSound(player.getLocation(), Sound.NOTE_BASS_DRUM, .55f, .63f);
+        ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.REDSTONE_BLOCK, (byte) 0), 0.5F, 0.1F, 0.5F, 1.0F, 45, player.getLocation(), 50, false);
         String s = ChatColor.translateAlternateColorCodes('&', String.format("&4&l%s \u2764", ""));
         JSONMessage json = JSONMessage.create(s);
         json.actionbar(player);

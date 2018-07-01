@@ -77,12 +77,11 @@ public class GateListCommand extends BaseCommand {
         JSONMessage message2 = JSONMessage.create("");
 
         message2.then(ChatColor.translateAlternateColorCodes('&', "&aGate Id: &b" + gate.getGateId()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aHeartbeat Alive: &b" + (gate.getHeartbeat() != null ? gate.getHeartbeat().isAlive() : "False")) + "\n");
+        message2.then(ChatColor.translateAlternateColorCodes('&', " &aHeartbeat Alive: &b" + (gate.getBukkitTask() != null ? "True" : "False")) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aActive Length: &b" + gate.getActiveLength()) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aCurrent Length: &b" + gate.getCurrentLength()) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aIs Open: &b" + gate.isOpen()) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Open: &b" + gate.isKeepOpen()) + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', " &aKeeping Closed: &b" + gate.isKeepClosed()) + "\n");
         message2.then("\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aPressure Plates(&b" + gate.getPressurePlateMap().keySet().size() + "&a):") + "\n");
 
