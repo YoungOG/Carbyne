@@ -29,38 +29,32 @@ public class GearGuiListeners implements Listener {
     public void onClick(InventoryClickEvent e) {
         Player p = (Player) e.getWhoClicked();
 
-        if (gearGuiManager.isCustomInventory(e.getInventory())) {
+        if (gearGuiManager.isCustomInventory(e.getInventory()))
             e.setCancelled(true);
-        }
+
 
         if (e.getInventory().getSize() == 9) {
-            if (!(e.getRawSlot() < e.getView().getTopInventory().getSize())) {
+            if (!(e.getRawSlot() < e.getView().getTopInventory().getSize()))
                 return;
-            }
-        } else {
-            if (e.getRawSlot() != e.getSlot()) {
+        } else if (e.getRawSlot() != e.getSlot())
                 return;
-            }
-        }
 
-        if (e.getCurrentItem() == null) {
+        if (e.getCurrentItem() == null)
             return;
-        }
 
         if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getStoreGui().getTitle())) {
             e.setCancelled(true);
 
-            if (e.getCurrentItem().getType() == Material.DIAMOND_SWORD) {
+            if (e.getCurrentItem().getType() == Material.DIAMOND_SWORD)
                 p.openInventory(gearGuiManager.getWeaponsGui());
-            } else if (e.getCurrentItem().getType() == Material.LEATHER_CHESTPLATE) {
+            else if (e.getCurrentItem().getType() == Material.LEATHER_CHESTPLATE)
                 p.openInventory(gearGuiManager.getArmorGui());
-            }
         } else if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getWeaponsGui().getTitle())) {
             e.setCancelled(true);
 
-            if (e.getCurrentItem().getType() == Material.BARRIER) {
+            if (e.getCurrentItem().getType() == Material.BARRIER)
                 p.openInventory(gearGuiManager.getStoreGui());
-            } else {
+            else {
                 if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
                     CarbyneWeapon carbyneWeapon = gearManager.getCarbyneWeapon(e.getCurrentItem());
 
@@ -92,11 +86,9 @@ public class GearGuiListeners implements Listener {
                     if (canBuy(p, carbyneWeapon.getCost())) {
                         int total = 0;
 
-                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values()) {
-                            if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
+                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values())
+                            if (item.hasItemMeta() && item.getItemMeta().hasLore())
                                 total += item.getAmount();
-                            }
-                        }
 
                         if (total < carbyneWeapon.getCost()) {
                             MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
@@ -118,9 +110,9 @@ public class GearGuiListeners implements Listener {
         } else if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getArmorGui().getTitle())) {
             e.setCancelled(true);
 
-            if (e.getCurrentItem().getType() == Material.BARRIER) {
+            if (e.getCurrentItem().getType() == Material.BARRIER)
                 p.openInventory(gearGuiManager.getStoreGui());
-            } else {
+            else {
                 if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
                     CarbyneArmor carbyneArmor = gearManager.getCarbyneArmor(e.getCurrentItem());
 
@@ -130,17 +122,16 @@ public class GearGuiListeners implements Listener {
                         return;
                     }
 
-                    if (gearGuiManager.getArmorGuiList().keySet().contains(carbyneArmor.getDisplayName())) {
+                    if (gearGuiManager.getArmorGuiList().keySet().contains(carbyneArmor.getDisplayName()))
                         p.openInventory(gearGuiManager.getArmorGuiList().get(carbyneArmor.getDisplayName()));
-                    }
                 }
             }
         } else if (ChatColor.stripColor(e.getInventory().getTitle()).contains("Purchase Armor") || ChatColor.stripColor(e.getInventory().getTitle()).equalsIgnoreCase("Purchase Armor")) {
             e.setCancelled(true);
 
-            if (e.getCurrentItem().getType() == Material.BARRIER) {
+            if (e.getCurrentItem().getType() == Material.BARRIER)
                 p.openInventory(gearGuiManager.getArmorGui());
-            } else {
+            else {
                 if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
                     CarbyneArmor carbyneArmor = gearManager.getCarbyneArmor(e.getCurrentItem());
 
@@ -172,11 +163,9 @@ public class GearGuiListeners implements Listener {
                     if (canBuy(p, carbyneArmor.getCost())) {
                         int total = 0;
 
-                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values()) {
-                            if (item.hasItemMeta() && item.getItemMeta().hasLore()) {
+                        for (ItemStack item : p.getInventory().all(gearManager.getTokenMaterial()).values())
+                            if (item.hasItemMeta() && item.getItemMeta().hasLore())
                                 total += item.getAmount();
-                            }
-                        }
 
                         if (total < carbyneArmor.getCost()) {
                             MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");

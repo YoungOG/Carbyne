@@ -235,6 +235,7 @@ public class Crate {
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 15, 40, openTime, rewardItems, chosenRewards.get(4)));
         } else
             rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
+
         player.openInventory(inventory);
     }
 
@@ -268,10 +269,10 @@ public class Crate {
             if (random > last && random < value + last) {
                 index = i;
                 break;
-            } else {
+            } else
                 last = value;
-            }
         }
+
         return rewards.get(index);
     }
 
@@ -280,13 +281,12 @@ public class Crate {
 
         double totalPercentage = 0;
 
-        for (Reward reward : getRewards()) {
+        for (Reward reward : getRewards())
             totalPercentage += reward.getChance();
-        }
 
         double random = Maths.randomNumberBetween((int) totalPercentage, 0);
         double last = 0;
-        for (int a = 0; a < amount; a++) {
+        for (int a = 0; a < amount; a++)
             for (int i = 0; i < getRewards().size(); i++) {
                 Reward reward = getRewards().get(i);
                 double value = reward.getChance();
@@ -294,11 +294,9 @@ public class Crate {
                 if (random >= last && random < value + last) {
                     rewards.add(reward);
                     break;
-                } else {
+                } else
                     last = value + last;
-                }
             }
-        }
 
         return rewards;
     }
@@ -313,25 +311,13 @@ public class Crate {
 
     public void runEffect(String crateName) {
         switch (crateName) {
-            case "ObsidianCrate":
-                runObsidianEffect();
-                break;
-            case "EmeraldCrate":
-                runEmeraldEffect();
-                break;
-            case "DiamondCrate":
-                runDiamondEffect();
-                break;
-            case "GoldCrate":
-                runGoldEffect();
-                break;
-            case "IronCrate":
-                runIronEffect();
+            case "Mystical":
+                runMysticalEffect();
                 break;
         }
     }
 
-    private void runObsidianEffect() {
+    private void runMysticalEffect() {
         new BukkitRunnable() {
             private double theta = 0, radius = 0.55;
             private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
@@ -352,90 +338,6 @@ public class Crate {
                 loc.subtract(x, 0, z);
                 ParticleEffect.REDSTONE.display(purple, loc, 40, false);
                 loc.add(x, -y, z);
-            }
-        }.runTaskTimerAsynchronously(main, 0, 1);
-    }
-
-    private void runEmeraldEffect() {
-        new BukkitRunnable() {
-            private double theta = 0, radius = 0.6;
-            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
-
-            @Override
-            public void run() {
-                theta += 0.2;
-                double x = Math.cos(theta) * radius;
-                double y = Math.cos(theta) * radius;
-                double z = Math.sin(theta) * radius;
-
-                loc.add(x, y, z);
-                ParticleEffect.VILLAGER_HAPPY.display(0, 0, 0, 0, 1, loc, 40, false);
-                loc.subtract(x, y, z);
-            }
-        }.runTaskTimerAsynchronously(main, 0, 1);
-    }
-
-    private void runDiamondEffect() {
-        new BukkitRunnable() {
-            private double theta = 0, radius = 0.6;
-            private Location loc = getLocation().clone().add(0.5, 0, 0.5);
-
-            @Override
-            public void run() {
-                ParticleEffect.OrdinaryColor blue = new ParticleEffect.OrdinaryColor(66, 212, 244);
-
-                theta += 0.13;
-
-                double x = Math.sin(theta) * radius;
-                double z = Math.cos(theta) * radius;
-
-                loc.add(x, 0, z);
-                loc.add(0, 0.25, 0);
-                ParticleEffect.REDSTONE.display(blue, loc, 50, true);
-                loc.add(0, 0.25, 0);
-                ParticleEffect.REDSTONE.display(blue, loc, 50, true);
-                loc.subtract(x, 0.5, z);
-            }
-        }.runTaskTimerAsynchronously(main, 0, 1);
-    }
-
-    private void runGoldEffect() {
-        new BukkitRunnable() {
-            private double theta = 0, radius = 0.6;
-            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
-
-            @Override
-            public void run() {
-                ParticleEffect.OrdinaryColor gold = new ParticleEffect.OrdinaryColor(244, 217, 66);
-
-                theta += 0.13;
-
-                double x = Math.sin(theta) * radius;
-                double z = Math.cos(theta) * radius;
-
-                loc.add(x, 0, z);
-                ParticleEffect.REDSTONE.display(gold, loc, 50, true);
-                loc.subtract(x, 0, z);
-            }
-        }.runTaskTimerAsynchronously(main, 0, 1);
-    }
-
-    private void runIronEffect() {
-        new BukkitRunnable() {
-            private double theta = 0, radius = 0.6;
-            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
-
-            @Override
-            public void run() {
-                ParticleEffect.OrdinaryColor silver = new ParticleEffect.OrdinaryColor(201, 197, 175);
-
-                theta += 0.14;
-                double y = Math.cos(theta) * radius;
-                double z = Math.sin(theta) * radius;
-
-                loc.add(0, y, z);
-                ParticleEffect.REDSTONE.display(silver, loc, 50, true);
-                loc.subtract(0, y, z);
             }
         }.runTaskTimerAsynchronously(main, 0, 1);
     }

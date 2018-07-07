@@ -120,8 +120,7 @@ public class RewardGenerator {
                         }
                     } else if (chosenReward.getCommands().size() > 0)
                         for (String cmd : chosenReward.getCommands())
-                                main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()));
-
+                            main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
 
                     if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
                         if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
@@ -156,7 +155,7 @@ public class RewardGenerator {
                 } else {
                     if (chosenReward.getCommands().size() > 0)
                         for (String cmd : chosenReward.getCommands())
-                            main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()));
+                            main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
                 }
 
                 if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))

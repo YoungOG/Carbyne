@@ -13,9 +13,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 public class LootChestManager {
@@ -25,6 +23,9 @@ public class LootChestManager {
     private HashMap<String, List<Loot>> lootTables = new HashMap<>();
     @Getter
     private HashMap<Location, LootChest> lootChests = new HashMap<>();
+
+    private Set<Location> ignoredLocations = new HashSet<>();
+    private HashMap<Location, Long> locationCooldowns = new HashMap<>();
 
     public LootChestManager() {
         load(main.getLootChestsFileConfiguration());
@@ -135,5 +136,27 @@ public class LootChestManager {
         }
 
         return null;
+    }
+
+    public boolean isIgnored(final Location location) {
+        return ignoredLocations.contains(location);
+    }
+
+    public boolean isOnCooldown(final Location location) {
+        if (!locationCooldowns.containsKey(location)) {
+            return false;
+        }
+
+        long time = locationCooldowns.get(location);
+        if (time - System.currentTimeMillis() <= 0) {
+            locationCooldowns.remove(location);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void putOnCooldown(final Location location, final long cooldown) {
+        locationCooldowns.put(location, cooldown);
     }
 }

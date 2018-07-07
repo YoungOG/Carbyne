@@ -65,7 +65,7 @@ public class OptimizationListeners implements Listener {
     public void onSpawn(CreatureSpawnEvent event) {
         if (event.getEntity().getWorld().getName().equalsIgnoreCase("world"))
             if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.CUSTOM)
-                if (!(event.getEntity() instanceof Monster) && !(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem) && !(event.getEntity() instanceof Chicken))
+                if (!(event.getEntity() instanceof Villager) && !(event.getEntity() instanceof IronGolem) && !(event.getEntity() instanceof Chicken))
                     event.setCancelled(true);
 
 

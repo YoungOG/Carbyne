@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -28,7 +29,8 @@ public class Zone {
     private boolean run = true;
     private int cooldown = 0;
     private List<Location> locations = new ArrayList<>();
-
+    private HashMap<String, Integer> lootTables = new HashMap<>();
+    private long cooldownForChests;
 
     public Zone(String name, Selection selection) {
         this.name = name;
@@ -202,5 +204,13 @@ public class Zone {
         }
 
         return players;
+    }
+
+//    private List<Loot> getRandomLoot() {
+//
+//    }
+
+    public void giveLoot(Chest chest) {
+//        List<Loot> loot = getRandomLoot();
     }
 }

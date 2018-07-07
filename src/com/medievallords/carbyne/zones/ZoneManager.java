@@ -107,6 +107,16 @@ public class ZoneManager {
         return null;
     }
 
+    public Zone getZone(final Location location) {
+        for (Zone zone : getZones()) {
+            if (zone.isInZone(location)) {
+                return zone;
+            }
+        }
+
+        return null;
+    }
+
     public List<Zone> getZones() {
         return zones;
     }

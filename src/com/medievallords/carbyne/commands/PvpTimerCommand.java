@@ -43,6 +43,7 @@ public class PvpTimerCommand extends BaseCommand {
                 }
 
                 profile.setPvpTime(0);
+                profile.setTimeLeft(0);
                 MessageManager.sendMessage(player, "&cYou have disabled your pvp timer");
 
             } else if (args[0].equalsIgnoreCase("time")) {
@@ -69,9 +70,11 @@ public class PvpTimerCommand extends BaseCommand {
                     Profile rProfile = getProfileManager().getProfile(toRemove.getUniqueId());
                     if (rProfile != null) {
                         if (rProfile.getPvpTime() <= 0) {
-                            MessageManager.sendMessage(player, "&cYour PvPTimer is not active!");
+                            MessageManager.sendMessage(player, "&c" + toRemove.getName() + "'s PvP Timer is not active.");
                             return;
                         }
+
+                        rProfile.setTimeLeft(0);
                         rProfile.setPvpTime(0);
                         MessageManager.sendMessage(sender, "&aPvP Timer for player has been removed");
                     }

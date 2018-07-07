@@ -46,7 +46,7 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot " + (e.getItem().getDurability() > 16385 ? "throw" : "drink") + " another Potion for &6" + potionCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else if (e.getItem().getDurability() > 16385)
-                            new BoardCooldown(board, "potion", 15.0D);
+                            new BoardCooldown(board, "potion", 18.0D);
                     }
                 }
             }
@@ -69,7 +69,7 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot eat another Golden Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else
-                            new BoardCooldown(board, "goldenapple", 60.0D);
+                            new BoardCooldown(board, "goldenapple", 105.0D);
                     } else {
                         BoardCooldown godappleCooldown = board.getCooldown("godapple");
 
@@ -88,7 +88,7 @@ public class CooldownListeners implements Listener {
                     BoardCooldown potionCooldown = board.getCooldown("potion");
 
                     if (potionCooldown == null)
-                        new BoardCooldown(board, "potion", 15.0D);
+                        new BoardCooldown(board, "potion", 18.0D);
                 }
             }
         }

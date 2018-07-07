@@ -2,9 +2,12 @@ package com.medievallords.carbyne.lootchests;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.zones.Zone;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -83,6 +86,23 @@ public class LootChestListeners implements Listener {
                         }
 
                         MessageManager.sendMessage(e.getPlayer(), sb.toString());
+                    } else {
+                        Block block = e.getClickedBlock();
+                        Location location = block.getLocation();
+                        if (main.getLootChestManager().isIgnored(location)) {
+                            return;
+                        }
+
+                        if (main.getLootChestManager().isOnCooldown(location)) {
+                            return;
+                        }
+
+                        Zone zone = Carbyne.getInstance().getZoneManager().getZone(location);
+                        if (zone == null) {
+                            return;
+                        }
+
+                        zone.giveLoot((Chest) block);
                     }
             } else if (e.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                 if (e.getClickedBlock().getType() == Material.CHEST || e.getClickedBlock().getType() == Material.TRAPPED_CHEST) {

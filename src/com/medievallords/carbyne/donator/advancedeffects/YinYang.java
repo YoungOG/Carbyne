@@ -9,8 +9,7 @@ import org.bukkit.util.Vector;
 /**
  * Created by Dalton on 6/28/2017.
  */
-public class YinYang extends AdvancedEffect
-{
+public class YinYang extends AdvancedEffect {
 
     private static final double RADIUS = 1.85;
     private static final ParticleEffect.OrdinaryColor black = new ParticleEffect.OrdinaryColor(0, 0, 0);
