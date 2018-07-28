@@ -164,15 +164,15 @@ public class CarbyneBoardAdapter {
                     lines.add("&dEnderpearl&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
-                if (cooldown.getId().equals("godapple")) {
-                    lines.add("   ");
-                    lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
-                }
-
-                if (cooldown.getId().equals("goldenapple")) {
-                    lines.add("   ");
-                    lines.add("&dGolden Apple&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
-                }
+//                if (cooldown.getId().equals("godapple")) {
+//                    lines.add("   ");
+//                    lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
+//                }
+//
+//                if (cooldown.getId().equals("goldenapple")) {
+//                    lines.add("   ");
+//                    lines.add("&dGolden Apple&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
+//                }
 
                 if (cooldown.getId().equals("skill")) {
                     lines.add("   ");
@@ -190,7 +190,7 @@ public class CarbyneBoardAdapter {
 
         if (lines.size() >= 1) {
             lines.add(0, "&7&m-------------------");
-            lines.add("&7&m-------------------");
+            lines.add("&7&owww.playminecraft.org");
         }
 
         return lines;
@@ -210,7 +210,7 @@ public class CarbyneBoardAdapter {
 
         if (lines.size() >= 1) {
             lines.add(0, "&7&m-------------------");
-            lines.add("&7&m-------------------");
+            lines.add("&7&owww.playminecraft.org");
         }
 
         return lines;

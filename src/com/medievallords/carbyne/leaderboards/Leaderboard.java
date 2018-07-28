@@ -65,19 +65,16 @@ public class Leaderboard {
 
     @SuppressWarnings("unchecked")
     public void updateSigns(LeaderboardType leaderboardType) {
-        if (primarySignLocation == null) {
+        if (primarySignLocation == null)
             return;
-        }
 
-        if (!primarySignLocation.getChunk().isLoaded()) {
+        if (!primarySignLocation.getChunk().isLoaded())
             return;
-        }
 
         Block primarySignBlock = primarySignLocation.getBlock();
 
-        if (primarySignBlock == null) {
+        if (primarySignBlock == null)
             return;
-        }
 
         BlockState primarySignBlockState = primarySignBlock.getState();
 
@@ -93,17 +90,13 @@ public class Leaderboard {
 
         switch (leaderboardType) {
             case BALANCE:
-                List<Account> balanceAccounts = new ArrayList<>();
                 List<String> balanceAccountNames = new ArrayList<>();
-
-                balanceAccounts.addAll(Account.getAccounts());
-
+                List<Account> balanceAccounts = new ArrayList<>(Account.getAccounts());
                 balanceAccounts.sort(Comparator.comparingDouble(Account::getBalance).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -142,17 +135,14 @@ public class Leaderboard {
                 updateHeads(balanceAccountNames);
                 break;
             case KILLS:
-                List<Profile> killProfiles = new ArrayList<>();
                 List<String> killProfileNames = new ArrayList<>();
-
-                killProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> killProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 killProfiles.sort(Comparator.comparingInt(Profile::getKills).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -191,17 +181,15 @@ public class Leaderboard {
                 updateHeads(killProfileNames);
                 break;
             case CARBYNE_KILLS:
-                List<Profile> carbyneKillProfiles = new ArrayList<>();
                 List<String> carbyneProfileNames = new ArrayList<>();
 
-                carbyneKillProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneKillProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 carbyneKillProfiles.sort(Comparator.comparingInt(Profile::getCarbyneKills).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -240,17 +228,14 @@ public class Leaderboard {
                 updateHeads(carbyneProfileNames);
                 break;
             case DEATHS:
-                List<Profile> deathProfiles = new ArrayList<>();
                 List<String> deathProfileNames = new ArrayList<>();
-
-                deathProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> deathProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 deathProfiles.sort(Comparator.comparingInt(Profile::getDeaths).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -289,17 +274,14 @@ public class Leaderboard {
                 updateHeads(deathProfileNames);
                 break;
             case CARBYNE_DEATHS:
-                List<Profile> carbyneDeathProfiles = new ArrayList<>();
                 List<String> carbyneDeathProfileNames = new ArrayList<>();
-
-                carbyneDeathProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneDeathProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 carbyneDeathProfiles.sort(Comparator.comparingInt(Profile::getCarbyneDeaths).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -338,17 +320,14 @@ public class Leaderboard {
                 updateHeads(carbyneDeathProfileNames);
                 break;
             case KDRATIO:
-                List<Profile> KDRatioProfiles = new ArrayList<>();
                 List<String> KDRatioProfileNames = new ArrayList<>();
-
-                KDRatioProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> KDRatioProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 KDRatioProfiles.sort(Comparator.comparingDouble(Profile::getKDR).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -387,17 +366,14 @@ public class Leaderboard {
                 updateHeads(KDRatioProfileNames);
                 break;
             case CARBYNE_KDRATIO:
-                List<Profile> carbyneKDRatioProfiles = new ArrayList<>();
                 List<String> carbyneKDRatioProfileNames = new ArrayList<>();
-
-                carbyneKDRatioProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneKDRatioProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 carbyneKDRatioProfiles.sort(Comparator.comparingDouble(Profile::getCarbyneKDR).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -436,17 +412,14 @@ public class Leaderboard {
                 updateHeads(carbyneKDRatioProfileNames);
                 break;
             case KILLSTREAK:
-                List<Profile> killstreakProfiles = new ArrayList<>();
                 List<String> killstreakProfileNames = new ArrayList<>();
-
-                killstreakProfiles.addAll(main.getProfileManager().getLoadedProfiles());
+                List<Profile> killstreakProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
 
                 killstreakProfiles.sort(Comparator.comparingDouble(Profile::getKillStreak).reversed());
 
                 for (int i = (signLocations.size() - 1); i >= 0; i--) {
-                    if (signLocations.get(i) == null) {
+                    if (signLocations.get(i) == null)
                         continue;
-                    }
 
                     Block block = signLocations.get(i).getBlock();
                     BlockState blockState = block.getState();
@@ -495,9 +468,8 @@ public class Leaderboard {
         for (Location location : signLocations) {
             Block block = location.getBlock();
 
-            if (block == null) {
+            if (block == null)
                 return;
-            }
 
             BlockState blockState = block.getState();
 
@@ -536,13 +508,12 @@ public class Leaderboard {
                                 new BukkitRunnable() {
                                     @Override
                                     public void run() {
-                                        if (names.get(finalI).startsWith("town-")) {
+                                        if (names.get(finalI).startsWith("town-"))
                                             skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "AcE_whatever") : "AcE_whatever"));
-                                        } else if (names.get(finalI).startsWith("nation-")) {
+                                        else if (names.get(finalI).startsWith("nation-"))
                                             skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "pologobbyboy") : "pologobbyboy"));
-                                        } else {
+                                        else
                                             skull.setOwner((names.get(finalI) != null ? (!names.get(finalI).isEmpty() ? names.get(finalI) : "MHF_Question") : "MHF_Question"));
-                                        }
 
                                         new BukkitRunnable() {
                                             @Override

@@ -43,6 +43,22 @@ public class ZoneManager {
                 zone.setMinDistance(minDistance);
                 zone.setDisplayName(displayName);
 
+                HashMap<String, Integer> lootTables = new HashMap<>();
+                if (cs.contains(key + ".LootTables")) {
+                    for (String node : cs.getStringList(key + ".LootTables")) {
+                        String[] split = node.split(",");
+                        String lootTable = split[0];
+                        int chance = Integer.parseInt(split[1]);
+                        lootTables.put(lootTable, chance);
+                    }
+                }
+
+                zone.setLootTables(lootTables);
+
+                if (cs.contains(key + ".ChestCooldown")) {
+                    zone.setCooldownForChests(cs.getLong(key + ".ChestCooldown"));
+                }
+
                 if (cs.contains(key + ".Mobs")) {
                     HashMap<MythicMob, Integer> mobs = new HashMap<>();
 
@@ -90,6 +106,8 @@ public class ZoneManager {
         cs.set("MinDistance", minDistance);
         cs.set("Mobs", new ArrayList<>());
         cs.set("DisplayName", name);
+        cs.set("LootTables", new HashMap<>());
+        cs.set("ChestCooldown", 0);
 
         try {
             Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());

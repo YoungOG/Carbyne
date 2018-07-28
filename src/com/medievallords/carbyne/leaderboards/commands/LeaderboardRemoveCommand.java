@@ -33,9 +33,8 @@ public class LeaderboardRemoveCommand extends BaseCommand {
         leaderboard.getBukkitTask().cancel();
         getLeaderboardManager().getLeaderboards().remove(leaderboard);
 
-        if (getCarbyne().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").contains(leaderboard.getBoardId())) {
+        if (getCarbyne().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").contains(leaderboard.getBoardId()))
             getCarbyne().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").set(leaderboard.getBoardId(), null);
-        }
 
         MessageManager.sendMessage(sender, "&aThe leaderboard has been removed.");
     }

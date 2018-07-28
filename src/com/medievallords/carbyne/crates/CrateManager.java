@@ -109,7 +109,7 @@ public class CrateManager {
                             List<String> enchantments = rewardsSection.getStringList(rewardId + ".Enchantments");
                             List<String> commands = rewardsSection.getStringList(rewardId + ".Commands");
                             boolean displayItemOnly = rewardsSection.getBoolean(rewardId + ".DisplayItem");
-                            double chance = rewardsSection.getDouble(rewardId + ".Chance");
+                            int chance = rewardsSection.getInt(rewardId + ".Chance");
                             int slot = rewardsSection.getInt(rewardId + ".Slot");
 
                             if (displayName != null) {

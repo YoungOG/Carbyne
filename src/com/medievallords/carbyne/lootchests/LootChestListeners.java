@@ -27,7 +27,7 @@ public class LootChestListeners implements Listener {
     public void onInteract(PlayerInteractEvent e) {
         if (e.getPlayer().getWorld().getName().equalsIgnoreCase("world"))
             if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-                if (e.getClickedBlock().getType().equals(Material.CHEST))
+                if (e.getClickedBlock().getType().equals(Material.CHEST) || e.getClickedBlock().getType() == Material.TRAPPED_CHEST)
                     if (main.getLootChestManager().getLootChests().containsKey(e.getClickedBlock().getLocation())) {
                         LootChest lc = main.getLootChestManager().getLootChests().get(e.getClickedBlock().getLocation());
                         List<ItemStack> loot = lc.getLoot();
@@ -102,7 +102,8 @@ public class LootChestListeners implements Listener {
                             return;
                         }
 
-                        zone.giveLoot((Chest) block);
+                        zone.giveLoot((Chest) block.getState());
+                        main.getLootChestManager().putOnCooldown(location, System.currentTimeMillis() + zone.getCooldownForChests());
                     }
             } else if (e.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                 if (e.getClickedBlock().getType() == Material.CHEST || e.getClickedBlock().getType() == Material.TRAPPED_CHEST) {

@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.commands;
 
+import com.medievallords.carbyne.listeners.CooldownListeners;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
@@ -38,6 +39,26 @@ public class SetDamageCommand extends BaseCommand implements Listener {
             }
         } else {
             MessageManager.sendMessage(player, "&cUsage /setdamage <damage>");
+        }
+    }
+
+    @Command(name = "setpotioncooldown", permission = "carbyne.administrator")
+    public void onComma(CommandArgs commandArgs) {
+        String[] args = commandArgs.getArgs();
+
+        if (args.length == 1) {
+            double cooldown = 15d;
+            try {
+                cooldown = Double.parseDouble(args[0]);
+            } catch (NumberFormatException e) {
+                MessageManager.sendMessage(commandArgs.getSender(), "&cYou need to specify a number (double).");
+                return;
+            }
+
+            CooldownListeners.POTION_COOLDOWN = cooldown;
+            MessageManager.sendMessage(commandArgs.getSender(), "&cThe cooldown is now: &7" + CooldownListeners.POTION_COOLDOWN);
+        } else {
+            MessageManager.sendMessage(commandArgs.getSender(), "&cThe cooldown is currently: &7" + CooldownListeners.POTION_COOLDOWN);
         }
     }
 

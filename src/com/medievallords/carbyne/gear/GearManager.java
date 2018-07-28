@@ -41,6 +41,17 @@ public class GearManager {
     private GearGuiManager gearGuiManager;
     private GearEffects gearEffects;
 
+    private static double PROTECTION_1 = 0.125;
+    private static double PROTECTION_2 = 0.15;
+    private static double PROTECTION_3 = 0.175;
+    private static double PROTECTION_4 = 0.2;
+    private static double PROTECTION_5 = 0.235;
+    private static double PROTECTION_6 = 0.25;
+    private static double PROTECTION_7 = 0.275;
+    private static double PROTECTION_8 = 0.3;
+    private static double PROTECTION_9 = 0.335;
+    private static double PROTECTION_10 = 0.35d;
+
     private List<CarbyneGear> carbyneGear = new ArrayList<>();
     private List<CarbyneGear> defaultArmors = new ArrayList<>();
     private List<CarbyneGear> defaultWeapons = new ArrayList<>();
@@ -84,6 +95,46 @@ public class GearManager {
 
         ConfigurationSection cs;
         String type = "";
+
+        cs = configuration.getConfigurationSection("Protection-Values");
+        if (cs != null) {
+            for (int i = 1; i < 11; i++) {
+                if (cs.contains(i + "")) {
+                    switch (i) {
+                        case 1:
+                            PROTECTION_1 = cs.getDouble(i + "");
+                            break;
+                        case 2:
+                            PROTECTION_2 = cs.getDouble(i + "");
+                            break;
+                        case 3:
+                            PROTECTION_3 = cs.getDouble(i + "");
+                            break;
+                        case 4:
+                            PROTECTION_4 = cs.getDouble(i + "");
+                            break;
+                        case 5:
+                            PROTECTION_5 = cs.getDouble(i + "");
+                            break;
+                        case 6:
+                            PROTECTION_6 = cs.getDouble(i + "");
+                            break;
+                        case 7:
+                            PROTECTION_7 = cs.getDouble(i + "");
+                            break;
+                        case 8:
+                            PROTECTION_8 = cs.getDouble(i + "");
+                            break;
+                        case 9:
+                            PROTECTION_9 = cs.getDouble(i + "");
+                            break;
+                        case 10:
+                            PROTECTION_10 = cs.getDouble(i + "");
+                            break;
+                    }
+                }
+            }
+        }
 
         cs = configuration.getConfigurationSection("Carbyne-Armor");
         for (String id : cs.getKeys(false)) {
@@ -202,13 +253,23 @@ public class GearManager {
     public boolean isWearingCarbyne(Player player, boolean zoneCheck) {
         boolean wearing = false;
 
-        for (ItemStack item : player.getInventory().getContents())
-            if (isCarbyneArmor(item) || (isCarbyneWeapon(item) && !getCarbyneWeapon(item).isAllowInDisabledZones()))
-                wearing = true;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item == null) {
+                continue;
+            }
 
-        for (ItemStack item : player.getInventory().getArmorContents())
             if (isCarbyneArmor(item) || (isCarbyneWeapon(item) && !getCarbyneWeapon(item).isAllowInDisabledZones()))
                 wearing = true;
+        }
+
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            if (item == null) {
+                continue;
+            }
+
+            if (isCarbyneArmor(item) || (isCarbyneWeapon(item) && !getCarbyneWeapon(item).isAllowInDisabledZones()))
+                wearing = true;
+        }
 
         return wearing;
     }
@@ -231,7 +292,7 @@ public class GearManager {
             return null;
 
         for (CarbyneGear eg : carbyneGear)
-            if (eg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+            if (eg.getGearCode().equalsIgnoreCase(getGearCode(is)))
                 return eg;
 
         return null;
@@ -263,7 +324,7 @@ public class GearManager {
                 continue;
 
             if (cg.getItem(false).getType() == is.getType())
-                if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+                if (cg.getGearCode().equalsIgnoreCase(getGearCode(is)))
                     return (CarbyneArmor) cg;
         }
 
@@ -324,7 +385,7 @@ public class GearManager {
             if (!(cg instanceof CarbyneWeapon))
                 continue;
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+            if (cg.getGearCode().equalsIgnoreCase(getGearCode(is)))
                 return (CarbyneWeapon) cg;
         }
 
@@ -383,7 +444,7 @@ public class GearManager {
             if (!(cg instanceof CarbyneWeapon))
                 continue;
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+            if (cg.getGearCode().equalsIgnoreCase(getGearCode(is)))
                 return true;
         }
 
@@ -418,7 +479,7 @@ public class GearManager {
             if (!(cg instanceof CarbyneArmor))
                 continue;
 
-            if (cg.getGearCode().equalsIgnoreCase(HiddenStringUtils.extractHiddenString(lore.get(0))))
+            if (cg.getGearCode().equalsIgnoreCase(getGearCode(is)))
                 return true;
         }
 
@@ -550,9 +611,16 @@ public class GearManager {
                 if (item.getItemMeta().hasLore()) {
                     List<String> lore = im.getLore();
 
-                    for (String line : item.getItemMeta().getLore())
-                        if (!lore.contains(line) && !line.contains("Damage Reduction"))
+                    for (int i = 1; i < item.getItemMeta().getLore().size(); i++) {
+                        String line = item.getItemMeta().getLore().get(i);
+                        if (line == null) {
+                            continue;
+                        }
+
+                        if (!lore.contains(line) && !line.contains("Damage Reduction") && !line.contains("Durability")) {
                             lore.add(line);
+                        }
+                    }
 
                     im.setLore(lore);
                 }
@@ -569,11 +637,15 @@ public class GearManager {
     public CarbyneGear getRandomCarbyneGear(boolean includeHidden) {
         ArrayList<CarbyneGear> gears = new ArrayList<>();
 
-        for (CarbyneGear gear : getCarbyneGear())
-            if (gear.isHidden() && includeHidden)
+        for (CarbyneGear gear : getCarbyneGear()) {
+            if (gear.isHidden()) {
+                if (includeHidden) {
+                    gears.add(gear);
+                }
+            } else {
                 gears.add(gear);
-            else
-                gears.add(gear);
+            }
+        }
 
         return gears.get(ThreadLocalRandom.current().nextInt(0, gears.size()));
     }
@@ -629,7 +701,7 @@ public class GearManager {
         return Material.getMaterial(polishId);
     }
 
-    public double getDamageReduction(Player player) {
+    public double getDamageReduction(Player player, boolean nerf) {
         double damageReduction = 0.0;
 
         for (ItemStack itemStack : player.getInventory().getArmorContents()) {
@@ -643,7 +715,7 @@ public class GearManager {
                 CarbyneArmor carbyneArmor = getCarbyneArmor(itemStack);
 
                 if (carbyneArmor != null)
-                    damageReduction += carbyneArmor.getArmorRating();
+                    damageReduction += carbyneArmor.getArmorRating() * (nerf ? 0.9d : 1d);
             }
 
             if (isDefaultArmor(itemStack)) {
@@ -657,8 +729,8 @@ public class GearManager {
         return damageReduction;
     }
 
-    public float calculateDamage(Player damaged, EntityDamageEvent.DamageCause cause, double damageDealt) {
-        double armorReduction = getDamageReduction(damaged);
+    public float calculateDamage(Player damaged, EntityDamageEvent.DamageCause cause, double damageDealt, boolean nerf) {
+        double armorReduction = getDamageReduction(damaged, nerf);
 
         if (armorReduction > 0) {
             float flatDamage = 0.0f;
@@ -698,10 +770,10 @@ public class GearManager {
             }
 
             flatDamage *= 5;
-
             float eventDamage = (float) damageDealt * 5;
 
-            float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(damaged)))) : flatDamage);
+            //float damage = (float) (flatDamage - (flatDamage * (armorReduction > 0.50 ? armorReduction - 0.50 : 0.0)) <= 0 ? (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(damaged)))) : flatDamage);
+            float damage = (float) (flatDamage > 0 ? flatDamage : (eventDamage - (eventDamage * (armorReduction + getProtectionReduction(damaged)))));
 
             return calculatePotionEffects(damage, damaged);
         }
@@ -710,182 +782,48 @@ public class GearManager {
     }
 
     public double getProtectionReduction(Player player) {
-        String[] types = {"HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"};
+        //String[] types = {"HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"};
         double damageReduction = 0.0;
 
-        for (ItemStack is : player.getInventory().getArmorContents()) {
-            int index;
-
-            for (index = 0; index < types.length; index++)
-                if (is.getType().toString().contains(types[index]))
-                    break;
-
-            if (is == null)
+        for (int index = 0; index < 4; index++) {
+            ItemStack is = player.getInventory().getArmorContents()[index];
+            if (is == null) {
                 continue;
+            }
 
             if (is.getType().equals(Material.AIR))
                 continue;
 
             switch (is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-                case 1: //0.125% / 4 = 0.03125
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.03125;
-                            break;
-                        case 1:
-                            damageReduction += 0.03125;
-                            break;
-                        case 2:
-                            damageReduction += 0.03125;
-                            break;
-                        case 3:
-                            damageReduction += 0.03125;
-                            break;
-                    }
+                case 1:
+                    damageReduction += PROTECTION_1 / 4;
                     break;
-                case 2: //0.15 / 4 = 0.0375
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.0375;
-                            break;
-                        case 1:
-                            damageReduction += 0.0375;
-                            break;
-                        case 2:
-                            damageReduction += 0.0375;
-                            break;
-                        case 3:
-                            damageReduction += 0.0375;
-                            break;
-                    }
+                case 2:
+                    damageReduction += PROTECTION_2 / 4;
                     break;
-                case 3: //0.175 / 4 = 0.04375
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.04375;
-                            break;
-                        case 1:
-                            damageReduction += 0.04375;
-                            break;
-                        case 2:
-                            damageReduction += 0.04375;
-                            break;
-                        case 3:
-                            damageReduction += 0.04375;
-                            break;
-                    }
+                case 3:
+                    damageReduction += PROTECTION_3 / 4;
                     break;
-                case 4: //0.20 / 4 = 0.05
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.05;
-                            break;
-                        case 1:
-                            damageReduction += 0.05;
-                            break;
-                        case 2:
-                            damageReduction += 0.05;
-                            break;
-                        case 3:
-                            damageReduction += 0.05;
-                            break;
-                    }
+                case 4:
+                    damageReduction += PROTECTION_4 / 4;
                     break;
-                case 5: //0.235 / 4 = 0.05875
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.05875;
-                            break;
-                        case 1:
-                            damageReduction += 0.05875;
-                            break;
-                        case 2:
-                            damageReduction += 0.05875;
-                            break;
-                        case 3:
-                            damageReduction += 0.05875;
-                            break;
-                    }
+                case 5:
+                    damageReduction += PROTECTION_5 / 4;
                     break;
-                case 6: //0.25 / 4 = 0.0625
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.0625;
-                            break;
-                        case 1:
-                            damageReduction += 0.0625;
-                            break;
-                        case 2:
-                            damageReduction += 0.0625;
-                            break;
-                        case 3:
-                            damageReduction += 0.0625;
-                            break;
-                    }
+                case 6:
+                    damageReduction += PROTECTION_6 / 4;
                     break;
-                case 7: //0.275 / 4 = 0.06875
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.06875;
-                            break;
-                        case 1:
-                            damageReduction += 0.06875;
-                            break;
-                        case 2:
-                            damageReduction += 0.06875;
-                            break;
-                        case 3:
-                            damageReduction += 0.06875;
-                            break;
-                    }
+                case 7:
+                    damageReduction += PROTECTION_7 / 4;
                     break;
-                case 8: //0.30 / 4 = 0.075
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.075;
-                            break;
-                        case 1:
-                            damageReduction += 0.075;
-                            break;
-                        case 2:
-                            damageReduction += 0.075;
-                            break;
-                        case 3:
-                            damageReduction += 0.075;
-                            break;
-                    }
+                case 8:
+                    damageReduction += PROTECTION_8 / 4;
                     break;
-                case 9: //0.335 / 4 = 0.08375
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.08375;
-                            break;
-                        case 1:
-                            damageReduction += 0.08375;
-                            break;
-                        case 2:
-                            damageReduction += 0.08375;
-                            break;
-                        case 3:
-                            damageReduction += 0.08375;
-                            break;
-                    }
+                case 9:
+                    damageReduction += PROTECTION_9 / 4;
                     break;
-                case 10: //0.35 / 4 = 0.0875
-                    switch (index) {
-                        case 0:
-                            damageReduction += 0.0875;
-                            break;
-                        case 1:
-                            damageReduction += 0.0875;
-                            break;
-                        case 2:
-                            damageReduction += 0.0875;
-                            break;
-                        case 3:
-                            damageReduction += 0.0875;
-                            break;
-                    }
+                case 10:
+                    damageReduction += PROTECTION_10 / 4;
                     break;
             }
         }
@@ -913,5 +851,31 @@ public class GearManager {
         int level = itemStack.getEnchantmentLevel(Enchantment.PROTECTION_FALL);
 
         return damageReduction * (1f - (0.05f * (float) level));
+    }
+
+    public String getGearCode(ItemStack itemStack) {
+        if (!itemStack.hasItemMeta()) {
+            return null;
+        }
+
+        if (!itemStack.getItemMeta().hasLore()) {
+            return null;
+        }
+
+        if (itemStack.getItemMeta().getLore().isEmpty()) {
+            return null;
+        }
+
+        String line = HiddenStringUtils.extractHiddenString(itemStack.getItemMeta().getLore().get(0));
+        if (line == null) {
+            return "NULL";
+        }
+
+        String[] split = line.split(",");
+
+        if (split.length != 2)
+            return line;
+
+        return split[0];
     }
 }

@@ -255,8 +255,16 @@ public class PlayerListeners implements Listener {
     }
 
     @EventHandler
+    public void onWorld(PlayerChangedWorldEvent event) {
+        event.getPlayer().setAllowFlight(false);
+    }
+
+    @EventHandler
     public void onDoubleJump(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
+        if (!player.getWorld().getName().equals("world")) {
+            return;
+        }
 
         if (player.getGameMode() == GameMode.CREATIVE)
             return;
@@ -311,7 +319,7 @@ public class PlayerListeners implements Listener {
         if (!event.isSneaking()) {
             Profile profile = main.getProfileManager().getProfile(event.getPlayer().getUniqueId());
             if (event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
-                if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000) {
+                if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000 && profile.isSkillsToggled()) {
 
                     if (profile.getStamina() > 6 && !profile.isSprintToggled()) {
                         if (!event.getPlayer().hasPotionEffect(PotionEffectType.SPEED)) {

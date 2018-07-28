@@ -17,6 +17,7 @@ public class LagTask implements Runnable {
         int target = (TICK_COUNT - 1 - ticks) % TICKS.length;
         long elapsed = System.currentTimeMillis() - TICKS[target];
 
+
         return ticks / (elapsed / 1000.0D);
     }
 

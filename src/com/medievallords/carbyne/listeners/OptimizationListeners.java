@@ -84,6 +84,13 @@ public class OptimizationListeners implements Listener {
     }
 
     @EventHandler
+    public void onPortal(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL)
+            event.setCancelled(true);
+    }
+
+
+    @EventHandler
     public void onHungerLoss(FoodLevelChangeEvent event) {
         Player player = (Player) event.getEntity();
 

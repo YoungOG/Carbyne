@@ -8,12 +8,10 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -23,10 +21,11 @@ public class ArrowListeners implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
-        if (event.getCause() == EntityDamageEvent.DamageCause.PROJECTILE) {
-            Projectile projectile = (Projectile) event.getDamager();
+        if (event.getDamager() instanceof Arrow) {
+            Arrow projectile = (Arrow) event.getDamager();
 
-            if (event.getEntity() instanceof LivingEntity) {
+            if (projectile.getShooter() != null && projectile.getShooter() instanceof Player && event.getEntity() instanceof LivingEntity) {
+                Player player = (Player) projectile.getShooter();
                 LivingEntity entity = (LivingEntity) event.getEntity();
 
                 double landY = projectile.getLocation().getY(),
@@ -37,7 +36,7 @@ public class ArrowListeners implements Listener {
                     if (Cooldowns.getCooldown(entity.getUniqueId(), "HeadshotCooldown") > 0)
                         return;
 
-                    event.setDamage(event.getDamage() * 4);
+                    event.setDamage(event.getDamage() * 2.5);
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 5 * 20, 4, false, false));
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 5 * 20, 1, false, false));
 
@@ -94,7 +93,7 @@ public class ArrowListeners implements Listener {
             }
         }
 
-        if (event.getEntity() instanceof Player) {
+        /*if (event.getEntity() instanceof Player) {
             if (event.getDamager() instanceof Arrow) {
                 Arrow arrow = (Arrow) event.getDamager();
 
@@ -109,6 +108,6 @@ public class ArrowListeners implements Listener {
                         event.setDamage(0.0);
                     }
             }
-        }
+        }*/
     }
 }

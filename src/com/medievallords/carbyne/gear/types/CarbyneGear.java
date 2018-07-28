@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gear.types;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -21,7 +22,9 @@ public abstract class CarbyneGear {
 	protected int maxDurability = -1;
 	protected boolean hidden = false;
 	protected int cost = 0;
-	
+    protected Material repairType = Material.NETHER_STAR;
+    protected int repairData = 0, repairCost = 1;
+
 	public abstract boolean load(ConfigurationSection cs, String type);
 	
 	public abstract ItemStack getItem(boolean storeItem);

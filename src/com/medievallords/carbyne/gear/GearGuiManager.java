@@ -83,15 +83,14 @@ public class GearGuiManager {
 
             List<String> loreCopy = new ArrayList<>();
 
-            loreCopy.add(HiddenStringUtils.encodeString(carbyneArmor.getGearCode()));
+            loreCopy.add(HiddenStringUtils.encodeString(carbyneArmor.getGearCode() + "," + carbyneArmor.getMaxDurability()));
             loreCopy.add("&aDamage Reduction&7: &b" + (int) (ar * 100) + "%");
 
             if (carbyneArmor.getLore().size() > 0) {
                 loreCopy.add(" ");
 
-                for (String s : carbyneArmor.getLore()) {
+                for (String s : carbyneArmor.getLore())
                     loreCopy.add(ChatColor.translateAlternateColorCodes('&', s));
-                }
             }
 
             armorGui.addItem(new ItemBuilder(carbyneArmor.getItem(true)).setLore(loreCopy).build());
@@ -123,6 +122,12 @@ public class GearGuiManager {
                 armorGuiList.put(carbyneArmor.getDisplayName(), inventory);
             }
         }
+    }
+
+    public void openLootchestInventory(Player player) {
+        Inventory lootChestInventory = Bukkit.createInventory(player, 27, ChatColor.translateAlternateColorCodes('&', "&5Carbyne Loot"));
+
+
     }
 
     public void reloadStoreGuis() {

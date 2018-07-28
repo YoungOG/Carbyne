@@ -28,6 +28,7 @@ combat-tag:
   tag-length: 45
   blocked-cmds:
     - '/town spawn'
+RankRewardCommands: []
 blocked-cmds:
   warzone:
     - '/esethome'

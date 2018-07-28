@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.tutorial.tasks;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.tutorial.TutorialManager;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -57,7 +56,7 @@ public class RockFallTask extends BukkitRunnable {
 
         //new Location(Bukkit.getWorld("world"), -551, 54, -1564), new Location(Bukkit.getWorld("world"), -551, 54, -1564)};
         //new Location(Bukkit.getWorld("world"), -551, 54, -1564), new Location(Bukkit.getWorld("world"), -551, 54, -1564)};
-        TutorialManager.rockFallTasks.add(this);
+//        TutorialManager.rockFallTasks.add(this);
 
     }
 
@@ -130,7 +129,7 @@ public class RockFallTask extends BukkitRunnable {
         new BukkitRunnable() {
             public void run() {
                 final FallingBlock f = player.getWorld().spawnFallingBlock(location, Material.STONE, (byte) 0);
-                Carbyne.getInstance().getTutorialManager().hideEntity(f, player);
+//                Carbyne.getInstance().getTutorialManager().hideEntity(f, player);
                 entities.add(f);
             }
         }.runTask(Carbyne.getInstance());

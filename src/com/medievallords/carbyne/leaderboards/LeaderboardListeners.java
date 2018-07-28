@@ -25,11 +25,9 @@ public class LeaderboardListeners implements Listener {
             if (event.getClickedBlock().getType() == Material.SIGN || event.getClickedBlock().getType() == Material.SIGN_POST || event.getClickedBlock().getType() == Material.WALL_SIGN) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
 
-                if (leaderboardManager.getLeaderboard(sign.getLocation()) != null) {
-                    if (main.getProfileManager().getProfile(sign.getLine(2)) != null) {
+                if (leaderboardManager.getLeaderboard(sign.getLocation()) != null)
+                    if (main.getProfileManager().getProfile(sign.getLine(2)) != null)
                         player.performCommand("stats " + sign.getLine(2));
-                    }
-                }
             }
         }
     }

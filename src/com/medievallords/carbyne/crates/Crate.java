@@ -97,12 +97,12 @@ public class Crate {
 
     public void showRewards(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 54, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
-        List<Integer> randomGear = new ArrayList<>();
+        HashMap<Integer, Boolean> randomGear = new HashMap<>();
 
         for (Reward reward : rewards) {
-            inventory.setItem(reward.getSlot(), new ItemBuilder(reward.getItem(true)).addLore("").addLore("&aChance: &c" + reward.getChance() + "%").build());
+            inventory.setItem(reward.getSlot(), new ItemBuilder(reward.getItem(true)).addLore("").build());
             if (reward.getGearCode().startsWith("randomgear"))
-                randomGear.add(reward.getSlot());
+                randomGear.put(reward.getSlot(), Boolean.valueOf(reward.getGearCode().split(":")[1]));
         }
 
         player.openInventory(inventory);
@@ -118,8 +118,8 @@ public class Crate {
                     return;
                 }
 
-                for (int p : randomGear) {
-                    ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(true).getItem(false);
+                for (int p : randomGear.keySet()) {
+                    ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(randomGear.get(p)).getItem(false);
 
                     inventory.setItem(p, randomCarbyne);
                 }
@@ -253,13 +253,13 @@ public class Crate {
     }
 
     public Reward getReward() {
-        double totalPercentage = 0;
+        int totalPercentage = 0;
 
         for (Reward reward : getRewards())
             totalPercentage += reward.getChance();
 
         int index = -1;
-        double random = Maths.randomNumberBetween((int) totalPercentage, 0);
+        double random = Maths.randomNumberBetween(totalPercentage, 0);
 
         double last = 0;
         for (int i = 0; i < rewards.size(); i++) {
@@ -270,7 +270,7 @@ public class Crate {
                 index = i;
                 break;
             } else
-                last = value;
+                last = last + value;
         }
 
         return rewards.get(index);
@@ -279,14 +279,14 @@ public class Crate {
     public ArrayList<Reward> getRewards(int amount) {
         ArrayList<Reward> rewards = new ArrayList<>();
 
-        double totalPercentage = 0;
+        int totalPercentage = 0;
 
         for (Reward reward : getRewards())
             totalPercentage += reward.getChance();
 
-        double random = Maths.randomNumberBetween((int) totalPercentage, 0);
-        double last = 0;
-        for (int a = 0; a < amount; a++)
+        for (int a = 0; a < amount; a++) {
+            double random = Maths.randomNumberBetween(totalPercentage, 0);
+            double last = 0;
             for (int i = 0; i < getRewards().size(); i++) {
                 Reward reward = getRewards().get(i);
                 double value = reward.getChance();
@@ -297,6 +297,7 @@ public class Crate {
                 } else
                     last = value + last;
             }
+        }
 
         return rewards;
     }
@@ -314,10 +315,38 @@ public class Crate {
             case "Mystical":
                 runMysticalEffect();
                 break;
+            case "Vicious":
+                runViciousEffect();
+                break;
         }
     }
 
     private void runMysticalEffect() {
+        new BukkitRunnable() {
+            private double theta = 0, radius = 0.55;
+            private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
+
+            @Override
+            public void run() {
+                ParticleEffect.OrdinaryColor purple = new ParticleEffect.OrdinaryColor(237, 23, 52);
+
+                theta += 0.2;
+
+                double x = Math.cos(theta) * radius;
+                double y = Math.cos(theta) * radius;
+                double z = Math.sin(theta) * radius;
+
+                loc.add(x, y, z);
+                ParticleEffect.REDSTONE.display(purple, loc, 40, false);
+                loc.subtract(x, 0, z);
+                loc.subtract(x, 0, z);
+                ParticleEffect.REDSTONE.display(purple, loc, 40, false);
+                loc.add(x, -y, z);
+            }
+        }.runTaskTimerAsynchronously(main, 0, 1);
+    }
+
+    private void runViciousEffect() {
         new BukkitRunnable() {
             private double theta = 0, radius = 0.55;
             private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);

@@ -16,6 +16,7 @@ import com.medievallords.carbyne.donator.GamemodeManager;
 import com.medievallords.carbyne.donator.TrailManager;
 import com.medievallords.carbyne.donator.commands.FlyCommand;
 import com.medievallords.carbyne.donator.commands.GamemodeCommand;
+import com.medievallords.carbyne.donator.commands.GiveRankRewardsCommand;
 import com.medievallords.carbyne.donator.commands.TrailCommand;
 import com.medievallords.carbyne.donator.listeners.GameModeListener;
 import com.medievallords.carbyne.donator.listeners.TrailListener;
@@ -34,7 +35,6 @@ import com.medievallords.carbyne.events.UniversalEventListeners;
 import com.medievallords.carbyne.events.component.commands.EventDonationCommands;
 import com.medievallords.carbyne.events.implementations.LastAlive;
 import com.medievallords.carbyne.events.implementations.Race;
-import com.medievallords.carbyne.experimental.TempCommandNeat;
 import com.medievallords.carbyne.gates.GateManager;
 import com.medievallords.carbyne.gates.commands.*;
 import com.medievallords.carbyne.gates.listeners.GateListeners;
@@ -72,8 +72,6 @@ import com.medievallords.carbyne.squads.commands.*;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.staff.commands.*;
 import com.medievallords.carbyne.staff.listeners.*;
-import com.medievallords.carbyne.tutorial.TempCommando;
-import com.medievallords.carbyne.tutorial.TutorialManager;
 import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.combatindicators.PacketManager;
 import com.medievallords.carbyne.utils.combatindicators.PacketManagerImpl;
@@ -108,7 +106,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,8 +127,6 @@ public class Carbyne extends JavaPlugin {
     private boolean worldGuardEnabled = false;
 
     private boolean mythicMobsEnabled = false;
-
-    private ZPermissionsService service = null;
 
     private File gearFile;
     private FileConfiguration gearFileConfiguration;
@@ -187,7 +182,6 @@ public class Carbyne extends JavaPlugin {
     private SpellMenuManager spellMenuManager;
     private DailyBonusManager dailyBonusManager;
     private Tabbed tabbed;
-    private TutorialManager tutorialManager;
     private GearListeners gearListeners;
     private ZoneManager zoneManager;
 
@@ -200,11 +194,6 @@ public class Carbyne extends JavaPlugin {
 
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
-
-        try {
-            service = Bukkit.getServicesManager().load(ZPermissionsService.class);
-        } catch (NoClassDefFoundError e) {
-        }
 
         registerConfigurations();
 
@@ -238,7 +227,6 @@ public class Carbyne extends JavaPlugin {
             all.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
         entityHider = new EntityHider(this, EntityHider.Policy.BLACKLIST);
-        tutorialManager = new TutorialManager();
         profileManager = new ProfileManager();
         staffManager = new StaffManager();
         economyManager = new EconomyManager();
@@ -350,7 +338,7 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new DailyBonusListeners(), this);
         pm.registerEvents(new ZoneListeners(), this);
         pm.registerEvents(new ArrowListeners(), this);
-        pm.registerEvents(tutorialManager, this);
+        pm.registerEvents(new GiveRankRewardsCommand(), this);
 
         if (mythicMobsEnabled)
             pm.registerEvents(new GateMobListeners(), this);
@@ -381,6 +369,7 @@ public class Carbyne extends JavaPlugin {
         new DepositCommand();
         new DailyBonusCommand();
         new LagCommand();
+        new GiveRankRewardsCommand();
 
         //Gate Commands
         new GearCommands();
@@ -503,8 +492,7 @@ public class Carbyne extends JavaPlugin {
         new ZoneCommands();
 
         //TEMPRARY
-        new TempCommando();
-        new TempCommandNeat();
+        // new TempCommandNeat();
     }
 
     private void registerPackets() {
@@ -536,8 +524,8 @@ public class Carbyne extends JavaPlugin {
     }
 
     public void registerConfigurations() {
-        saveResource("gear.yml", false);
-        saveResource("gates.yml", false);
+        https:
+//www.youtube.com/watch?v=vwnAeIsg3as        saveResource("gates.yml", false);
         saveResource("item.csv", false);
         saveResource("crates.yml", false);
         saveResource("arenas.yml", false);

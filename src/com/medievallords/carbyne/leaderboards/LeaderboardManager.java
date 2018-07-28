@@ -33,17 +33,14 @@ public class LeaderboardManager {
                 ArrayList<Location> signLocations = new ArrayList<>();
                 ArrayList<Location> headLocations = new ArrayList<>();
 
-                if (!section.getString(id + ".PrimarySignLocation").isEmpty()) {
+                if (!section.getString(id + ".PrimarySignLocation").isEmpty())
                     primarySignLocation = LocationSerialization.deserializeLocation(section.getString(id + ".PrimarySignLocation"));
-                }
 
-                for (String s : section.getStringList(id + ".signLocations")) {
+                for (String s : section.getStringList(id + ".signLocations"))
                     signLocations.add(LocationSerialization.deserializeLocation(s));
-                }
 
-                for (String s : section.getStringList(id + ".headLocations")) {
+                for (String s : section.getStringList(id + ".headLocations"))
                     headLocations.add(LocationSerialization.deserializeLocation(s));
-                }
 
                 Leaderboard leaderboard = new Leaderboard(id);
                 leaderboard.setPrimarySignLocation(primarySignLocation);
@@ -58,29 +55,24 @@ public class LeaderboardManager {
     }
 
     public void stopAllLeaderboardTasks() {
-        for (Leaderboard leaderboard : leaderboards) {
+        for (Leaderboard leaderboard : leaderboards)
             leaderboard.stop();
-        }
     }
 
     public Leaderboard getLeaderboard(String boardId) {
-        for (Leaderboard leaderboard : leaderboards) {
-            if (leaderboard.getBoardId().equalsIgnoreCase(boardId)) {
+        for (Leaderboard leaderboard : leaderboards)
+            if (leaderboard.getBoardId().equalsIgnoreCase(boardId))
                 return leaderboard;
-            }
-        }
 
         return null;
     }
 
     public Leaderboard getLeaderboard(Location location) {
-        for (Leaderboard leaderboard : leaderboards) {
+        for (Leaderboard leaderboard : leaderboards)
             if ((leaderboard.getPrimarySignLocation() != null && leaderboard.getPrimarySignLocation() == location)
                     || leaderboard.getSignLocations().contains(location)
-                    || leaderboard.getHeadLocations().contains(location)) {
+                    || leaderboard.getHeadLocations().contains(location))
                 return leaderboard;
-            }
-        }
 
         return null;
     }

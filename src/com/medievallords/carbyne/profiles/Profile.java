@@ -39,16 +39,42 @@ import java.util.concurrent.TimeUnit;
 public class Profile {
 
     private UUID uniqueId;
-    private String username, pin, previousInventoryContentString;
-    private int kills, carbyneKills, deaths, carbyneDeaths, killStreak, professionLevel = 1, dailyRewardDay, stamina = 100, piledriveReady = 0;
-    private double professionProgress = 0, requiredProfessionProgress = 100;
-    private long pvpTime, timeLeft, professionResetCooldown, dailyRewardDayTime = -1, dailyRewardChallengeTime = -1, piledriveCombo = 0, sprintCombo = 0;
-    private boolean pvpTimePaused, showTab, showEffects, playSounds, safelyLogged, hasClaimedDailyReward, dailyRewardsSetup,
-            skillsToggled = true, piledriveBoolReady = false, sprintToggled = false, blocking = false;
+    private String username,
+            pin,
+            previousInventoryContentString,
+            carbyneLootInventory;
+    private int kills,
+            carbyneKills,
+            deaths, carbyneDeaths,
+            killStreak,
+            professionLevel = 1,
+            dailyRewardDay,
+            stamina = 100,
+            piledriveReady = 0;
+    private double professionProgress = 0,
+            requiredProfessionProgress = 100;
+    private long pvpTime,
+            timeLeft,
+            professionResetCooldown,
+            dailyRewardDayTime = -1,
+            dailyRewardChallengeTime = -1,
+            piledriveCombo = 0,
+            sprintCombo = 0;
+    private boolean pvpTimePaused,
+            showTab,
+            showEffects,
+            playSounds,
+            safelyLogged,
+            hasClaimedDailyReward,
+            dailyRewardsSetup,
+            skillsToggled = true,
+            piledriveBoolReady = false,
+            sprintToggled = false,
+            blocking = false,
+            hasClaimedRankRewards = false;
     private Event activeEvent;
     private ProfileChatChannel profileChatChannel;
     private HashMap<Integer, Boolean> dailyRewards = new HashMap<>();
-    private HashMap<String, Boolean> votingSites = new HashMap<>();
     private List<UUID> ignoredPlayers = new ArrayList<>();
 
     public Profile(UUID uniqueId) {
@@ -66,6 +92,32 @@ public class Profile {
 
     public void runTickGeneral() {
         Player player = Bukkit.getPlayer(uniqueId);
+        if (stamina < 15) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.setAllowFlight(false);
+                }
+            }.runTask(Carbyne.getInstance());
+        } else {
+            if (player.getWorld().getName().equals("world") && skillsToggled) {
+                Board board = Board.getByPlayer(player);
+                if (board != null) {
+                    BoardCooldown skillCooldown = board.getCooldown("skill");
+
+                    if (skillCooldown == null)
+                        if (skillsToggled)
+                            if (!player.getAllowFlight())
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        player.setAllowFlight(true);
+                                    }
+                                }.runTask(Carbyne.getInstance());
+                }
+            }
+        }
+
         if (sprintToggled) {
             stamina -= 7;
 
@@ -99,25 +151,6 @@ public class Profile {
                 piledriveBoolReady = false;
             }
         }
-
-        if (player != null) {
-            Board board = Board.getByPlayer(player);
-
-            if (board != null) {
-                BoardCooldown skillCooldown = board.getCooldown("skill");
-
-                if (skillCooldown == null)
-                    if (skillsToggled)
-                        if (!player.getAllowFlight())
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    player.setAllowFlight(true);
-                                }
-                            }.runTask(Carbyne.getInstance());
-            }
-        }
-
     }
 
     public boolean hasClaimedDailyReward() {

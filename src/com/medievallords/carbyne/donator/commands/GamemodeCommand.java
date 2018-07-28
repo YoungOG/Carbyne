@@ -26,7 +26,6 @@ public class GamemodeCommand extends BaseCommand {
 
         WorldCoord wc = WorldCoord.parseWorldCoord(player);
 
-
         Resident res;
         try {
             res = TownyUniverse.getDataSource().getResident(player.getName());

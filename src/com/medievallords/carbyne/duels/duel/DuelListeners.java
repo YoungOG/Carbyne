@@ -10,6 +10,7 @@ import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.nisovin.magicspells.events.SpellTargetEvent;
+import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -65,9 +66,18 @@ public class DuelListeners implements Listener {
                 return;
             }
 
-            float damage = gearManager.calculateDamage(player, event.getCause(), originalDamage);
+            float damage = gearManager.calculateDamage(player, event.getCause(), originalDamage, false);
 
-            event.setDamage(damage);
+            //event.setDamage(damage);
+            event.setDamage(0);
+            if (player.getHealth() <= damage) {
+                event.setCancelled(true);
+                player.setHealth(0);
+            } else {
+                player.setHealth(player.getHealth() - damage);
+                player.playEffect(EntityEffect.HURT);
+                //player.damage(damage);
+            }
         }
     }
 

@@ -51,6 +51,18 @@ public class CarbyneArmor extends CarbyneGear {
         this.hidden = cs.getBoolean(type + ".Hidden");
         this.armorRating = cs.getDouble(type + ".ArmorRating");
 
+        if (cs.contains(type + ".RepairMaterial")) {
+            setRepairType(Material.getMaterial(cs.getString(type + ".RepairMaterial")));
+        }
+
+        if (cs.contains(type + ".RepairData")) {
+            setRepairData(cs.getInt(type + ".RepairData"));
+        }
+
+        if (cs.contains(type + ".RepairCost")) {
+            setRepairCost(cs.getInt(type + ".RepairCost"));
+        }
+
         if (cs.getString(type + ".BaseColor") != null) {
             String[] split = cs.getString(type + ".BaseColor").split(",");
 
@@ -117,9 +129,9 @@ public class CarbyneArmor extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
-        loreDupe.add(HiddenStringUtils.encodeString(gearCode));
+        loreDupe.add(HiddenStringUtils.encodeString(gearCode + "," + maxDurability));
         loreDupe.add("&aDamage Reduction&7: &b" + (armorRating * 100) + "%");
-        loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+        //loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
         loreDupe.add("&aPolished&7: &cfalse");
 
         if (offensivePotionEffects.keySet().size() > 0 || defensivePotionEffects.keySet().size() > 0) {
@@ -250,9 +262,20 @@ public class CarbyneArmor extends CarbyneGear {
         if (durability == -1)
             return;
 
+        double chance = 0;
+
+        if (itemStack.containsEnchantment(Enchantment.DURABILITY)) {
+            int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
+            double calc = (100 / (level + 1));
+            chance = calc / 100;
+        }
+
+        if (Math.random() < chance)
+            return;
+
         if (durability >= 1) {
             durability--;
-            Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
+            Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + durability), 0);
             itemStack.setDurability((short) durabilityScale(itemStack));
 
             if (itemStack.getDurability() <= 0)
@@ -271,8 +294,15 @@ public class CarbyneArmor extends CarbyneGear {
         if (itemStack == null)
             return -1;
 
+        String line = HiddenStringUtils.extractHiddenString(itemStack.getItemMeta().getLore().get(0));
+        String[] split = line.split(",");
+        if (split.length != 2) {
+            Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + maxDurability), 0);
+            return -1;
+        }
+
         try {
-            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(split[1]);
         } catch (Exception ez) {
             return -1;
         }
@@ -280,8 +310,7 @@ public class CarbyneArmor extends CarbyneGear {
 
     @Override
     public int getRepairCost(ItemStack itemStack) {
-        int maxAmount = (int) Math.round(cost * 0.7);
-
+        int maxAmount = getRepairCost();
         double per = (double) maxDurability / (double) maxAmount;
         double dura = ((double) (getDurability(itemStack)));
         for (int i = 1; i <= maxAmount; i++)
@@ -293,7 +322,8 @@ public class CarbyneArmor extends CarbyneGear {
 
     @Override
     public void setDurability(ItemStack itemStack, int durability) {
-        Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 2);
+        Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + durability), 0);
+        itemStack.setDurability((short) durabilityScale(itemStack));
     }
 
     public int durabilityScale(ItemStack itemStack) {
@@ -303,7 +333,7 @@ public class CarbyneArmor extends CarbyneGear {
     }
 
     public ItemStack getPolishedItem() {
-        return new ItemBuilder(getItem(false)).setLore(3, "&aPolished: &ctrue").color(getMinFadeColor()).build();
+        return new ItemBuilder(getItem(false)).setLore(2, "&aPolished: &ctrue").color(getMinFadeColor()).build();
     }
 
     public boolean isPolished(ItemStack itemStack) {
@@ -316,11 +346,8 @@ public class CarbyneArmor extends CarbyneGear {
         if (!itemStack.getItemMeta().hasLore())
             return false;
 
-        if (itemStack.getItemMeta().getLore().size() < 4)
-            return false;
-
         try {
-            return Boolean.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1]);
+            return Boolean.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1]);
         } catch (Exception ex) {
             return false;
         }

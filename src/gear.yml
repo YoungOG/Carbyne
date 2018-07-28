@@ -48,6 +48,7 @@ PolishItem:
     - '&aWhen Applied:'
     - '&r &7- &bIncreases Armor Durability'
     - '&r &7- &bAdds a cosmetic fade'
+Protection-Values:
 Carbyne-Armor:
   1:
     Helmet:

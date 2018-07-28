@@ -49,14 +49,14 @@ public class SetDurabilityCommand extends BaseCommand {
 
         MinecraftWeapon weapon = getGearManager().getDefaultWeapon(itemStack);
         if (weapon != null) {
-            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - (durability)));
+            weapon.setDurability(itemStack, durability);
             MessageManager.sendMessage(player, "&aItems durability set");
             return;
         }
 
         MinecraftArmor armor = getGearManager().getDefaultArmor(itemStack);
         if (armor != null) {
-            itemStack.setDurability((short) (itemStack.getType().getMaxDurability() - (durability)));
+            armor.setDurability(itemStack, durability);
             MessageManager.sendMessage(player, "&aItems durability set");
         } else {
             MessageManager.sendMessage(player, "&cYou must be holding carbyne or default gear");

@@ -15,6 +15,8 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 
 public class CooldownListeners implements Listener {
 
+    public static double POTION_COOLDOWN = 16.0d;
+
     @EventHandler
     public void onPearl(PlayerInteractEvent e) {
         Player p = e.getPlayer();
@@ -31,7 +33,7 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot throw another Enderpearl for &6" + enderpearlCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else
-                            new BoardCooldown(board, "enderpearl", 15.0D);
+                            new BoardCooldown(board, "enderpearl", 15.0d);
                     }
                 }
             } else if (e.getItem().getType() == Material.POTION) {
@@ -46,7 +48,7 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot " + (e.getItem().getDurability() > 16385 ? "throw" : "drink") + " another Potion for &6" + potionCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else if (e.getItem().getDurability() > 16385)
-                            new BoardCooldown(board, "potion", 18.0D);
+                            new BoardCooldown(board, "potion", POTION_COOLDOWN);
                     }
                 }
             }
@@ -58,7 +60,9 @@ public class CooldownListeners implements Listener {
         Player p = e.getPlayer();
         if (e.getItem() != null) {
             if (e.getItem().getType() == Material.GOLDEN_APPLE) {
-                Board board = Board.getByPlayer(p);
+                e.setCancelled(true);
+                MessageManager.sendMessage(p, "&cGolden Apples are disabled.");
+               /* Board board = Board.getByPlayer(p);
 
                 if (board != null) {
                     if (e.getItem().getDurability() < 1) {
@@ -69,7 +73,7 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot eat another Golden Apple for &6" + godappleCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else
-                            new BoardCooldown(board, "goldenapple", 105.0D);
+                            new BoardCooldown(board, "goldenapple", 300.0D);
                     } else {
                         BoardCooldown godappleCooldown = board.getCooldown("godapple");
 
@@ -80,7 +84,7 @@ public class CooldownListeners implements Listener {
                         } else
                             new BoardCooldown(board, "godapple", 900.0D);
                     }
-                }
+                }*/
             } else if (e.getItem().getType() == Material.POTION) {
                 Board board = Board.getByPlayer(p);
 
@@ -88,7 +92,7 @@ public class CooldownListeners implements Listener {
                     BoardCooldown potionCooldown = board.getCooldown("potion");
 
                     if (potionCooldown == null)
-                        new BoardCooldown(board, "potion", 18.0D);
+                        new BoardCooldown(board, "potion", POTION_COOLDOWN);
                 }
             }
         }

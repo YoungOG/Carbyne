@@ -59,9 +59,8 @@ public class LeaderboardListCommand extends BaseCommand {
             MessageManager.sendMessage(sender, "&aAvailable Leaderboards:");
 
             List<String> boardIds = new ArrayList<>();
-            for (Leaderboard leaderboard : getLeaderboardManager().getLeaderboards()) {
+            for (Leaderboard leaderboard : getLeaderboardManager().getLeaderboards())
                 boardIds.add("&a" + leaderboard.getBoardId());
-            }
 
             MessageManager.sendMessage(sender, boardIds.toString().replace("[", "").replace("]", "").replace(",", ChatColor.GRAY + ","));
         }

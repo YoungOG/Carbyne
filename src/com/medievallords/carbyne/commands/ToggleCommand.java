@@ -52,7 +52,8 @@ public class ToggleCommand extends BaseCommand {
             } else if (args[0].equalsIgnoreCase("skills")) {
                 if (profile.isSkillsToggled()) {
                     profile.setSkillsToggled(false);
-                    MessageManager.sendMessage(player, "&aSkills have been disabled.");
+                    player.setAllowFlight(false);
+                    MessageManager.sendMessage(player, "&cSkills have been disabled.");
                 } else {
                     profile.setSkillsToggled(true);
                     MessageManager.sendMessage(player, "&aSkills have been enabled.");

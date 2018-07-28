@@ -17,20 +17,17 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Created by Dalton on 6/26/2017.
  */
-public class TrailListener implements Listener
-{
+public class TrailListener implements Listener {
 
     private TrailManager trailManager;
 
-    public TrailListener()
-    {
+    public TrailListener() {
         trailManager = Carbyne.getInstance().getTrailManager();
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e)
-    {
-        if(e.getInventory().getName().equalsIgnoreCase(TrailManager.guiInvName)) {
+    public void onInventoryClick(InventoryClickEvent e) {
+        if (e.getInventory().getName().equalsIgnoreCase(TrailManager.guiInvName)) {
             e.setCancelled(true);
             if (e.getCurrentItem() != null) {
                 ItemStack is = e.getCurrentItem();
@@ -109,12 +106,9 @@ public class TrailListener implements Listener
 
             }
 
-        }
-        else if (e.getInventory().getName().equalsIgnoreCase(TrailManager.advancedGuiName))
-        {
+        } else if (e.getInventory().getName().equalsIgnoreCase(TrailManager.advancedGuiName)) {
             e.setCancelled(true);
-            if(e.getCurrentItem() != null)
-            {
+            if (e.getCurrentItem() != null) {
                 ItemStack is = e.getCurrentItem();
 
                 if (is.hasItemMeta() && is.getItemMeta().hasLore() && ChatColor.stripColor(is.getItemMeta().getLore().get(0)).equalsIgnoreCase("You have not unlocked this effect")) {
@@ -122,8 +116,7 @@ public class TrailListener implements Listener
                     return;
                 }
 
-                switch (is.getType())
-                {
+                switch (is.getType()) {
                     case FLINT_AND_STEEL: {
                         trailManager.getAdvancedEffects().put(e.getWhoClicked().getUniqueId(), new YinYang((Player) e.getWhoClicked()));
                         break;
@@ -136,8 +129,7 @@ public class TrailListener implements Listener
                         trailManager.getAdvancedEffects().remove(e.getWhoClicked().getUniqueId());
                         break;
                     }
-                    case BARRIER:
-                    {
+                    case BARRIER: {
                         e.getWhoClicked().closeInventory();
                         trailManager.showAllEffectsGui((Player) e.getWhoClicked());
                         break;
@@ -159,18 +151,15 @@ public class TrailListener implements Listener
                         break;
                     }
 
-                    default: break;
+                    default:
+                        break;
                 }
             }
-        }
-        else if (e.getInventory().getName().equalsIgnoreCase(TrailManager.selectionGuiName))
-        {
+        } else if (e.getInventory().getName().equalsIgnoreCase(TrailManager.selectionGuiName)) {
             e.setCancelled(true);
-            if(e.getCurrentItem() != null)
-            {
+            if (e.getCurrentItem() != null) {
                 ItemStack is = e.getCurrentItem();
-                switch (is.getType())
-                {
+                switch (is.getType()) {
                     case EMERALD: {
                         trailManager.showPlayerInvenotry((Player) e.getWhoClicked());
                         break;
@@ -185,11 +174,9 @@ public class TrailListener implements Listener
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent e)
-    {
-        if(trailManager.getAdvancedEffects().containsKey(e.getPlayer().getUniqueId()))
-            trailManager.getAdvancedEffects().remove(e.getPlayer().getUniqueId());
-        if(trailManager.getActivePlayerEffects().containsKey(e.getPlayer().getUniqueId()))
+    public void onQuit(PlayerQuitEvent e) {
+        trailManager.getAdvancedEffects().remove(e.getPlayer().getUniqueId());
+        if (trailManager.getActivePlayerEffects().containsKey(e.getPlayer().getUniqueId()))
             trailManager.getActivePlayerEffects().containsKey(e.getPlayer().getUniqueId());
     }
 

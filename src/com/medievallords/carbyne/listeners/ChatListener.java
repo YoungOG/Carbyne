@@ -6,6 +6,8 @@ import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.webhook.DiscordMessage;
+import com.medievallords.carbyne.utils.webhook.StaffHook;
 import com.palmergames.bukkit.towny.TownyEconomyHandler;
 import com.palmergames.bukkit.towny.TownyFormatter;
 import com.palmergames.bukkit.towny.TownySettings;
@@ -44,6 +46,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,6 +60,11 @@ public class ChatListener implements Listener {
     private Carbyne carbyne = Carbyne.getInstance();
     private ArrayList<UUID> notMoved = new ArrayList<>();
     private HashMap<UUID, String> lastMessage = new HashMap<>();
+    private StaffHook staffHook;
+
+    public ChatListener() {
+        staffHook = new StaffHook("https://discordapp.com/api/webhooks/472710997900132353/7UQTFZZvoph_ws63v_Y_dA3D1lGA2I1SvrAAvAghGxs8KATvm0cfVHs1gITDB_idev4n");
+    }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -378,6 +386,10 @@ public class ChatListener implements Listener {
                     break;
             }
         }
+
+        String username = "Chat Logger";
+        String image = "https://i.stack.imgur.com/oZidd.jpg";
+        staffHook.sendMessage(new DiscordMessage(username, new SimpleDateFormat("hh:mm a").format(new Date()) + " - " + player.getName() + ": " + event.getMessage(), image));
 
         System.out.println("[Chat Message] " + player.getName() + ": " + event.getMessage());
         event.setCancelled(true);

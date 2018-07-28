@@ -63,6 +63,18 @@ public class CarbyneWeapon extends CarbyneGear {
         cost = cs.getInt(index + ".Cost");
         allowInDisabledZones = cs.getBoolean(index + ".AllowInDisabledZones");
 
+        if (cs.contains(index + ".RepairMaterial")) {
+            repairType = Material.getMaterial(cs.getString(index + ".RepairMaterial"));
+        }
+
+        if (cs.contains(index + ".RepairData")) {
+            repairData = cs.getInt(index + ".RepairData");
+        }
+
+        if (cs.contains(index + ".RepairCost")) {
+            repairCost = cs.getInt(index + ".RepairCost");
+        }
+
         if (cs.getStringList(index + ".OffensivePotionEffects") != null)
             for (String potion : cs.getStringList(index + ".OffensivePotionEffects")) {
                 String[] split = potion.split(",");
@@ -94,8 +106,8 @@ public class CarbyneWeapon extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
-        loreDupe.add(HiddenStringUtils.encodeString(gearCode));
-        loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+        loreDupe.add(HiddenStringUtils.encodeString(gearCode + "," + maxDurability));
+        //loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
 
         if (special != null)
             loreDupe.add("&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
@@ -260,6 +272,10 @@ public class CarbyneWeapon extends CarbyneGear {
     @Override
     public void damageItem(Player wielder, ItemStack itemStack) {
         int durability = getDurability(itemStack);
+
+        if (durability == -1)
+            return;
+
         double chance = 0;
 
         if (itemStack.containsEnchantment(Enchantment.DURABILITY)) {
@@ -268,15 +284,12 @@ public class CarbyneWeapon extends CarbyneGear {
             chance = calc / 100;
         }
 
-        if (durability == -1)
-            return;
-
         if (Math.random() < chance)
             return;
 
         if (durability >= 1) {
             durability--;
-            Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
+            Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + durability), 0);
             itemStack.setDurability((short) durabilityScale(itemStack));
 
             if (itemStack.getDurability() <= 0)
@@ -294,8 +307,15 @@ public class CarbyneWeapon extends CarbyneGear {
         if (itemStack == null)
             return -1;
 
+        String line = HiddenStringUtils.extractHiddenString(itemStack.getItemMeta().getLore().get(0));
+        String[] split = line.split(",");
+        if (split.length != 2) {
+            Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + maxDurability), 0);
+            return -1;
+        }
+
         try {
-            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(1)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(split[1]);
         } catch (Exception ez) {
             return -1;
         }
@@ -307,14 +327,14 @@ public class CarbyneWeapon extends CarbyneGear {
         if (charge == -1)
             return;
 
-        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 3);
+        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 2);
     }
 
     public int getSpecialCharge(ItemStack itemStack) {
         if (itemStack == null)
             return 0;
         try {
-            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1].split("/")[0]);
         } catch (Exception ez) {
             return 0;
         }
@@ -322,7 +342,7 @@ public class CarbyneWeapon extends CarbyneGear {
 
     @Override
     public int getRepairCost(ItemStack itemStack) {
-        int maxAmount = (int) Math.round(cost * 0.7);
+        int maxAmount = getRepairCost();
         double per = (double) maxDurability / (double) maxAmount;
         double dura = ((double) (getDurability(itemStack)));
 
@@ -335,7 +355,8 @@ public class CarbyneWeapon extends CarbyneGear {
 
     @Override
     public void setDurability(ItemStack itemStack, int durability) {
-        Namer.setLore(itemStack, "&aDurability&7: &c" + durability + "/" + getMaxDurability(), 1);
+        Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + durability), 0);
+        itemStack.setDurability((short) durabilityScale(itemStack));
     }
 
     public int durabilityScale(ItemStack itemStack) {

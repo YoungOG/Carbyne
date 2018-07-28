@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.zones;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.lootchests.Loot;
 import com.medievallords.carbyne.region.Selection;
 import com.medievallords.carbyne.utils.Maths;
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;
@@ -152,7 +153,6 @@ public class Zone {
         int maxX = Math.max(selection.getLocation1().getBlockX(), selection.getLocation2().getBlockX());
         int maxY = Math.max(selection.getLocation1().getBlockY(), selection.getLocation2().getBlockY());
         int maxZ = Math.max(selection.getLocation1().getBlockZ(), selection.getLocation2().getBlockZ());
-
         return (minX <= location.getBlockX() && location.getBlockX() <= maxX && minY <= location.getBlockY() && location.getBlockY() <= maxY && minZ <= location.getBlockZ() && location.getBlockZ() <= maxZ);
     }
 
@@ -178,8 +178,7 @@ public class Zone {
             if (!clone.getBlock().getType().isSolid()) {
                 clone.subtract(0, 2, 0);
 
-                if (clone.getBlock().getType().isSolid())
-                    return (int) location.getBlock().getLightLevel() < 10 || (location.getWorld().getTime() > 12000 && location.getWorld().getTime() < 24000);
+                return clone.getBlock().getType().isSolid();
 
             }
         }
@@ -206,11 +205,44 @@ public class Zone {
         return players;
     }
 
-//    private List<Loot> getRandomLoot() {
-//
-//    }
+    private List<Loot> getRandomLoot() {
+        List<Loot> loots = new ArrayList<>();
+
+        int sum = 0;
+        for (Integer value : lootTables.values())
+            sum += value;
+
+
+        int random = Maths.randomNumberBetween(sum, 0);
+        int last = 0;
+
+        for (String lootTable : lootTables.keySet()) {
+            int value = lootTables.get(lootTable);
+
+            if (random >= last && random < value + last) {
+                loots.addAll(getLoot(lootTable));
+
+                break;
+            } else
+                last = value + last;
+        }
+
+        return loots;
+    }
+
+    public List<Loot> getLoot(String table) {
+        List<Loot> loots = new ArrayList<>();
+        Carbyne.getInstance().getLootChestManager().getLootTables().get(table).forEach(l -> {
+            if (l.shouldSpawnItem())
+                loots.add(l);
+        });
+        return loots;
+    }
 
     public void giveLoot(Chest chest) {
-//        List<Loot> loot = getRandomLoot();
+        List<Loot> loots = getRandomLoot();
+        for (Loot loot : loots) {
+            chest.getBlockInventory().addItem(loot.getItem());
+        }
     }
 }

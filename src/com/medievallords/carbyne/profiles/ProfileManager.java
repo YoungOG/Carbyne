@@ -24,14 +24,9 @@ public class ProfileManager {
     @Getter
     private HashSet<Profile> loadedProfiles = new HashSet<>();
     private MongoCollection<Document> profileCollection = main.getMongoDatabase().getCollection("profiles");
-    //@Getter
-    //private EntityHider entityHider;
 
     public ProfileManager() {
-        //this.entityHider = new EntityHider(Carbyne.getInstance(), EntityHider.Policy.BLACKLIST);
-
         loadProfiles();
-        //startResetting();
 
         new BukkitRunnable() {
             @Override
@@ -128,6 +123,9 @@ public class ProfileManager {
                 if (document.containsKey("timeLeft"))
                     profile.setTimeLeft(document.getLong("timeLeft"));
 
+                if (document.containsKey("hasClaimedRankRewards"))
+                    profile.setHasClaimedRankRewards(document.getBoolean("hasClaimedRankRewards"));
+
                 loadedProfiles.add(profile);
             }
 
@@ -159,6 +157,7 @@ public class ProfileManager {
                 document.append("safelyLogged", profile.isSafelyLogged());
                 document.append("pin", profile.getPin());
                 document.append("previousInventory", profile.getPreviousInventoryContentString());
+                document.append("hasClaimedRankRewards", profile.isHasClaimedRankRewards());
                 document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
 
                 if (profile.isDailyRewardsSetup()) {
@@ -239,6 +238,7 @@ public class ProfileManager {
             document.append("safelyLogged", profile.isSafelyLogged());
             document.append("pin", profile.getPin());
             document.append("previousInventory", profile.getPreviousInventoryContentString());
+            document.append("hasClaimedRankRewards", profile.isHasClaimedRankRewards());
             document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
 
             if (!profile.getIgnoredPlayers().isEmpty()) {

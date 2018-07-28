@@ -11,6 +11,6 @@ public class TempCommando extends BaseCommand {
     public void a(CommandArgs commandArgs) {
         Player player = commandArgs.getPlayer();
 
-        getCarbyne().getTutorialManager().startTutorial(player);
+//        getCarbyne().getTutorialManager().startTutorial(player);
     }
 }

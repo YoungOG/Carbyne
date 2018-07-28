@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.tutorial.tasks;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.tutorial.TutorialManager;
 import com.medievallords.carbyne.utils.ParticleEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -58,8 +57,6 @@ public class CollapseTask extends BukkitRunnable {
         locations.add(new Location(Bukkit.getWorld("world"), -576, 62, -1567));
         locations.add(new Location(Bukkit.getWorld("world"), -609, 61, -1552));
         locations.add(new Location(Bukkit.getWorld("world"), -574, 62, -1567));
-
-        TutorialManager.collapseTasks.add(this);
     }
 
     @Override
@@ -83,7 +80,6 @@ public class CollapseTask extends BukkitRunnable {
         ParticleEffect.SMOKE_NORMAL.display(0, -0.3f, 0, 0, 2, location, true, player);
 
         FallingBlock f = player.getWorld().spawnFallingBlock(location, Material.STONE, (byte) 0);
-        Carbyne.getInstance().getTutorialManager().hideEntity(f, player);
 
         entities.add(f);
 
