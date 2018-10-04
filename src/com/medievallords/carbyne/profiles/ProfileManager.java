@@ -1,6 +1,11 @@
 package com.medievallords.carbyne.profiles;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.quests.Quest;
+import com.medievallords.carbyne.quests.QuestHandler;
+import com.medievallords.carbyne.quests.Task;
+import com.medievallords.carbyne.utils.StaticClasses;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
@@ -10,13 +15,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
-//import com.medievallords.carbyne.utils.EntityHider;
 
 public class ProfileManager {
 
@@ -50,15 +51,41 @@ public class ProfileManager {
                         deaths = document.getInteger("deaths"),
                         carbyneDeaths = document.getInteger("carbyneDeaths"),
                         killstreak = document.getInteger("killStreak"),
-                        professionLevel = 1;
+                        professionLevel = 1,
+                        questsLeft = 10,
+                        skipsLeft = 2;
                 boolean showEffects = document.getBoolean("showEffects"),
                         playSounds = document.getBoolean("playSounds");
                 boolean safelyLogged = document.getBoolean("safelyLogged");
                 List<UUID> ignoredPlayers = new ArrayList<>();
-                long professionResetCooldown = 0;
+                long professionResetCooldown = 0,
+                        nextQuest = 1728000,
+                        nextSkip = 1728000;
                 double professionProgress = 0,
                         requiredProfessionProgress = 1;
-                boolean showTab = true;
+                boolean showTab = true, vanishEffect = true, chatEnabled = true, announcementsEnabled = true;
+                HashMap<String, Long> usedKits = new HashMap<>();
+                List<String> dormantQuests = new ArrayList<>();
+                List<String> quests = new ArrayList<>();
+                List<String> forcedQuests = new ArrayList<>();
+
+                int kitPoints = 0;
+
+                if (document.containsKey("kitPoints")) {
+                    kitPoints = document.getInteger("kitPoints");
+                }
+
+                if (document.containsKey("vanishEffect")) {
+                    vanishEffect = document.getBoolean("vanishEffect");
+                }
+
+                if (document.containsKey("chatEnabled")) {
+                    chatEnabled = document.getBoolean("chatEnabled");
+                }
+
+                if (document.containsKey("announcementsEnabled")) {
+                    announcementsEnabled = document.getBoolean("announcementsEnabled");
+                }
 
                 if (document.containsKey("ignoredPlayers")) {
                     List<String> uuidNameIgnoredPlayers = (List<String>) document.get("ignoredPlayers");
@@ -66,6 +93,15 @@ public class ProfileManager {
                     for (String s : uuidNameIgnoredPlayers)
                         ignoredPlayers.add(UUID.fromString(s));
                 }
+
+                if (document.containsKey("dormantQuests"))
+                    dormantQuests = (List<String>) document.get("dormantQuests");
+
+                if (document.containsKey("quests"))
+                    quests = (List<String>) document.get("quests");
+
+                if (document.containsKey("forcedQuests"))
+                    forcedQuests = (List<String>) document.get("forcedQuests");
 
                 if (document.containsKey("professionLevel"))
                     professionLevel = document.getInteger("professionLevel");
@@ -82,6 +118,18 @@ public class ProfileManager {
                 if (document.containsKey("professionResetCooldown"))
                     professionResetCooldown = document.getLong("professionResetCooldown");
 
+                if (document.containsKey("questsLeft"))
+                    questsLeft = document.getInteger("questsLeft");
+
+                if (document.containsKey("skipsLeft"))
+                    skipsLeft = document.getInteger("skipsLeft");
+
+                if (document.containsKey("nextQuest"))
+                    nextQuest = document.getLong("nextQuest");
+
+                if (document.containsKey("nextSkip"))
+                    nextSkip = document.getLong("nextSkip");
+
                 Profile profile = new Profile(uniqueId);
                 profile.setUsername(username);
                 profile.setKills(kills);
@@ -89,6 +137,7 @@ public class ProfileManager {
                 profile.setDeaths(deaths);
                 profile.setCarbyneDeaths(carbyneDeaths);
                 profile.setKillStreak(killstreak);
+                profile.setKitPoints(kitPoints);
                 profile.setShowEffects(showEffects);
                 profile.setShowTab(showTab);
                 profile.setPlaySounds(playSounds);
@@ -101,6 +150,16 @@ public class ProfileManager {
                 profile.setProfessionProgress(professionProgress);
                 profile.setRequiredProfessionProgress(requiredProfessionProgress);
                 profile.setProfessionResetCooldown(professionResetCooldown);
+                profile.setDormantQuests(dormantQuests);
+                profile.setForcedQuests(forcedQuests);
+                profile.setQuestSkipsLeft(skipsLeft);
+                profile.setQuestsLeft(questsLeft);
+                profile.setQuestNext(nextQuest);
+                profile.setSkipTime(nextSkip);
+                profile.setQuests(quests);
+                profile.setVanishEffect(vanishEffect);
+                profile.setChatEnabled(chatEnabled);
+                profile.setAnnouncementsEnabled(announcementsEnabled);
 
                 profile.setDailyRewardsSetup(document.getBoolean("dailyRewardSetup"));
                 if (profile.isDailyRewardsSetup()) {
@@ -126,6 +185,16 @@ public class ProfileManager {
                 if (document.containsKey("hasClaimedRankRewards"))
                     profile.setHasClaimedRankRewards(document.getBoolean("hasClaimedRankRewards"));
 
+                if (document.containsKey("usedKits")) {
+                    Document document1 = (Document) document.get("usedKits");
+
+                    if (document1 != null)
+                        for (String str : document1.keySet())
+                            usedKits.put(str, (long) document1.get(str));
+
+                    profile.setUsedKits(usedKits);
+                }
+
                 loadedProfiles.add(profile);
             }
 
@@ -135,71 +204,100 @@ public class ProfileManager {
         System.gc();
     }
 
+    public void save() {
+        QuestHandler questHandler = StaticClasses.questHandler;
+        for (Profile profile : getLoadedProfiles()) {
+            Document document = new Document("uniqueId", profile.getUniqueId().toString());
+            document.append("username", profile.getUsername());
+            document.append("kills", profile.getKills());
+            document.append("carbyneKills", profile.getCarbyneKills());
+            document.append("deaths", profile.getDeaths());
+            document.append("carbyneDeaths", profile.getCarbyneDeaths());
+            document.append("killStreak", profile.getKillStreak());
+            document.append("kitPoints", profile.getKitPoints());
+            document.append("usedKits", profile.getUsedKits());
+            document.append("pvpTime", profile.getPvpTime());
+            document.append("pvpTimePaused", profile.isPvpTimePaused());
+            document.append("showEffects", profile.hasEffectsToggled());
+            document.append("showTab", profile.isShowTab());
+            document.append("playSounds", profile.hasSoundsToggled());
+            document.append("safelyLogged", profile.isSafelyLogged());
+            document.append("pin", profile.getPin());
+            document.append("previousInventory", profile.getPreviousInventoryContentString());
+            document.append("hasClaimedRankRewards", profile.isHasClaimedRankRewards());
+            document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
+            document.append("dormantQuests", profile.getDormantQuests());
+            document.append("forcedQuests", profile.getForcedQuests());
+            document.append("questsLeft", profile.getQuestsLeft());
+            document.append("skipsLeft", profile.getQuestSkipsLeft());
+            document.append("nextQuest", profile.getQuestNext());
+            document.append("nextSkip", profile.getSkipTime());
+            document.append("vanishEffect", profile.isVanishEffect());
+            document.append("chatEnabled", profile.isChatEnabled());
+            document.append("announcementsEnabled", profile.isAnnouncementsEnabled());
+
+            List<String> quests = new ArrayList<>();
+            for (Quest quest : questHandler.getQuests(profile.getUniqueId())) {
+                StringBuilder builder = new StringBuilder(quest.getName() + ":" + quest.getPlayers().get(profile.getUniqueId()) + "!");
+                for (Task task : quest.getTasks())
+                    builder.append(task.getName()).append(":").append(task.getPlayers().get(profile.getUniqueId())).append(",");
+
+                //questName!task1:10,task2:20
+                quests.add(builder.toString());
+            }
+
+            document.append("quests", quests);
+
+            if (profile.isDailyRewardsSetup()) {
+                document.append("dailyRewardDay", profile.getDailyRewardDay());
+                document.append("dailyRewardDayTime", profile.getDailyRewardDayTime());
+                document.append("hasClaimedDailyReward", profile.hasClaimedDailyReward());
+
+                Document dailyRewardsDocument = new Document();
+                for (int rewardId : profile.getDailyRewards().keySet())
+                    dailyRewardsDocument.put("" + rewardId, profile.getDailyRewards().get(rewardId));
+                document.append("dailyRewards", dailyRewardsDocument);
+            }
+
+            if (!profile.getIgnoredPlayers().isEmpty()) {
+                List<String> uuids = new ArrayList<>();
+
+                for (UUID id : profile.getIgnoredPlayers())
+                    uuids.add(id.toString());
+
+                document.append("ignoredPlayers", uuids);
+            }
+
+            document.append("professionLevel", profile.getProfessionLevel());
+            document.append("professionProgress", profile.getProfessionProgress());
+            document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
+            document.append("professionResetCooldown", profile.getProfessionResetCooldown());
+
+            if (profile.getTimeLeft() > 1)
+                document.append("timeLeft", profile.getTimeLeft());
+
+            profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
+        }
+    }
+
     public void saveProfiles(boolean async) {
         if (getLoadedProfiles().size() > 0) {
             main.getLogger().log(Level.INFO, "Preparing to save " + getLoadedProfiles().size() + " profiles.");
 
             long startTime = System.currentTimeMillis();
 
-            for (Profile profile : getLoadedProfiles()) {
-                Document document = new Document("uniqueId", profile.getUniqueId().toString());
-                document.append("username", profile.getUsername());
-                document.append("kills", profile.getKills());
-                document.append("carbyneKills", profile.getCarbyneKills());
-                document.append("deaths", profile.getDeaths());
-                document.append("carbyneDeaths", profile.getCarbyneDeaths());
-                document.append("killStreak", profile.getKillStreak());
-                document.append("pvpTime", profile.getPvpTime());
-                document.append("pvpTimePaused", profile.isPvpTimePaused());
-                document.append("showEffects", profile.hasEffectsToggled());
-                document.append("showTab", profile.isShowTab());
-                document.append("playSounds", profile.hasSoundsToggled());
-                document.append("safelyLogged", profile.isSafelyLogged());
-                document.append("pin", profile.getPin());
-                document.append("previousInventory", profile.getPreviousInventoryContentString());
-                document.append("hasClaimedRankRewards", profile.isHasClaimedRankRewards());
-                document.append("dailyRewardSetup", profile.isDailyRewardsSetup());
-
-                if (profile.isDailyRewardsSetup()) {
-                    document.append("dailyRewardDay", profile.getDailyRewardDay());
-                    document.append("dailyRewardDayTime", profile.getDailyRewardDayTime());
-                    document.append("hasClaimedDailyReward", profile.hasClaimedDailyReward());
-
-                    Document dailyRewardsDocument = new Document();
-                    for (int rewardId : profile.getDailyRewards().keySet())
-                        dailyRewardsDocument.put("" + rewardId, profile.getDailyRewards().get(rewardId));
-                    document.append("dailyRewards", dailyRewardsDocument);
-                }
-
-                if (!profile.getIgnoredPlayers().isEmpty()) {
-                    List<String> uuids = new ArrayList<>();
-
-                    for (UUID id : profile.getIgnoredPlayers())
-                        uuids.add(id.toString());
-
-                    document.append("ignoredPlayers", uuids);
-                }
-
-                document.append("professionLevel", profile.getProfessionLevel());
-                document.append("professionProgress", profile.getProfessionProgress());
-                document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
-                document.append("professionResetCooldown", profile.getProfessionResetCooldown());
-
-                if (profile.getTimeLeft() > 1)
-                    document.append("timeLeft", profile.getTimeLeft());
-
-                if (!async)
-                    profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
-                else
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            profileCollection.replaceOne(Filters.eq("uniqueId", profile.getUniqueId().toString()), document, new UpdateOptions().upsert(true));
-                        }
-                    }.runTaskAsynchronously(main);
+            if (async) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        save();
+                        main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
+                    }
+                }.runTaskAsynchronously(main);
+            } else {
+                save();
+                main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
             }
-
-            main.getLogger().log(Level.INFO, "Successfully saved " + getLoadedProfiles().size() + " profiles. Took (" + (System.currentTimeMillis() - startTime) + "ms).");
         }
     }
 
@@ -212,6 +310,8 @@ public class ProfileManager {
             profile.setDeaths(0);
             profile.setCarbyneDeaths(0);
             profile.setKillStreak(0);
+            profile.setKitPoints(0);
+            profile.setUsedKits(new HashMap<>());
             profile.setShowEffects(true);
             profile.setShowTab(true);
             profile.setPlaySounds(true);
@@ -223,6 +323,8 @@ public class ProfileManager {
             profile.setPin("");
             profile.setPreviousInventoryContentString("");
             profile.setDailyRewardsSetup(false);
+            profile.setDormantQuests(new ArrayList<>());
+            profile.setForcedQuests(StaticClasses.questHandler.getForcedQuestsByName());
 
             Document document = new Document("uniqueId", profile.getUniqueId().toString());
             document.append("username", profile.getUsername());
@@ -231,6 +333,8 @@ public class ProfileManager {
             document.append("deaths", profile.getDeaths());
             document.append("carbyneDeaths", profile.getCarbyneDeaths());
             document.append("killStreak", profile.getKillStreak());
+            document.append("kitPoints", profile.getKitPoints());
+            document.append("usedKits", profile.getUsedKits());
             document.append("pvpTime", profile.getPvpTime());
             document.append("pvpTimePaused", profile.isPvpTimePaused());
             document.append("showEffects", profile.hasEffectsToggled());
@@ -254,6 +358,8 @@ public class ProfileManager {
             document.append("professionProgress", profile.getProfessionProgress());
             document.append("requiredProfessionProgress", profile.getRequiredProfessionProgress());
             document.append("professionResetCooldown", profile.getProfessionResetCooldown());
+            document.append("dormantQuests", profile.getDormantQuests());
+            document.append("forcedQuests", profile.getForcedQuests());
 
             new BukkitRunnable() {
                 @Override

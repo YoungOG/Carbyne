@@ -3,6 +3,7 @@ package com.medievallords.carbyne.dailybonus.commands;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -33,7 +34,7 @@ public class DailyBonusCommand extends BaseCommand {
 
         if (args[0].equalsIgnoreCase("reset")) {
             if (args.length > 1) {
-                Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                 if (args[1].equalsIgnoreCase("day")) {
                     profile.setHasClaimedDailyReward(false);
@@ -69,7 +70,7 @@ public class DailyBonusCommand extends BaseCommand {
                             return;
                         }
 
-                        Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
                         profile.setDailyRewardDay(number);
 
                         MessageManager.sendMessage(player, "&aYour DailyBonus day has been set to &b" + (number + 1) + "&a.");
@@ -78,7 +79,7 @@ public class DailyBonusCommand extends BaseCommand {
                     }
                 } else if (args[1].equalsIgnoreCase("daytime")) {
                     try {
-                        Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
                         long time = DateUtil.parseDateDiff(args[2], true);
                         profile.setDailyRewardDayTime(time);
                         Date date = new Date(time);

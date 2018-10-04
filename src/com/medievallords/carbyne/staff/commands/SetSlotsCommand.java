@@ -3,6 +3,7 @@ package com.medievallords.carbyne.staff.commands;
 import com.google.common.primitives.Ints;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -36,15 +37,15 @@ public class SetSlotsCommand extends BaseCommand implements Listener {
                 return;
             }
 
-            getStaffManager().setServerSlots(Integer.parseInt(args[0]));
+            StaticClasses.staffManager.setServerSlots(Integer.parseInt(args[0]));
             MessageManager.sendMessage(sender, "&aThe server slots have been set to &b" + args[0] + "&a.");
         }
     }
 
     @EventHandler
     public void onPing(ServerListPingEvent event) {
-        if (getStaffManager().getServerSlots() > 0) {
-            event.setMaxPlayers(getStaffManager().getServerSlots());
+        if (StaticClasses.staffManager.getServerSlots() > 0) {
+            event.setMaxPlayers(StaticClasses.staffManager.getServerSlots());
         }
     }
 
@@ -52,7 +53,7 @@ public class SetSlotsCommand extends BaseCommand implements Listener {
     public void onLogin(PlayerLoginEvent event) {
         Player player = event.getPlayer();
 
-        if (getStaffManager().getServerSlots() > 0 && PlayerUtility.getOnlinePlayers().size() >= getStaffManager().getServerSlots()) {
+        if (StaticClasses.staffManager.getServerSlots() > 0 && PlayerUtility.getOnlinePlayers().size() >= StaticClasses.staffManager.getServerSlots()) {
             if (!player.hasPermission("carbyne.bypassfull") && !player.hasPermission("carbyne.staff")) {
                 event.disallow(PlayerLoginEvent.Result.KICK_FULL, ChatColor.translateAlternateColorCodes('&', "&5Medieval Lords &cis full! \n&cPurchase a rank at &6playminecraft.buycraft.net &cto join."));
             } else {

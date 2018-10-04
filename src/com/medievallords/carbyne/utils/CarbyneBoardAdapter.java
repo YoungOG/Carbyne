@@ -4,17 +4,18 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.squads.Squad;
-import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -28,72 +29,63 @@ import java.util.logging.Level;
  */
 public class CarbyneBoardAdapter {
 
-    private Carbyne main;
-    private ProfileManager profileManager;
-    private SquadManager squadManager;
+    //private Carbyne main;
+    private String title = "&b&lMedieval Lords";
+    //private ProfileManager profileManager;
+    //private SquadManager squadManager;
+    //private ColorScrollPlus colorScrollPlus;
 
-    public CarbyneBoardAdapter(Carbyne main) {
-        this.main = main;
-        this.profileManager = main.getProfileManager();
-        this.squadManager = main.getSquadManager();
+    public CarbyneBoardAdapter() {
+//        this.colorScrollPlus = new ColorScrollPlus(ChatColor.AQUA, "Medieval Lords", "&f", "&b", "&f", false, false, ColorScrollPlus.ScrollType.FORWARD);
+//
+//        new BukkitRunnable() {
+//            @Override
+//            public void run() {
+//                if (colorScrollPlus.getScrollType() == ColorScrollPlus.ScrollType.FORWARD) {
+//                    if (colorScrollPlus.getPosition() >= colorScrollPlus.getString().length())
+//                        colorScrollPlus.setScrollType(ColorScrollPlus.ScrollType.BACKWARD);
+//                } else if (colorScrollPlus.getPosition() <= -1)
+//                    colorScrollPlus.setScrollType(ColorScrollPlus.ScrollType.FORWARD);
+//
+//                setTitle(colorScrollPlus.next());
+//            }
+//        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3);
     }
 
     public String getTitle(Player player) {
-        return "&b&lMedieval Lords";
+        return title;
     }
 
-    public List<String> getScoreboard(Player player, Board board, Set<BoardCooldown> set) {
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public List<String> getScoreboard(Profile profile, Player player, Board board, Set<BoardCooldown> set) {
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
-        if (main.getStaffManager().getStaffModePlayers().contains(player.getUniqueId()))
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(player.getUniqueId()))
             return staffScoreboard(player);
 
         if (player.hasPermission("carbyne.staff.staffmode"))
-            lines.add("&7Vanished&c: " + main.getStaffManager().isVanished(player));
+            lines.add("&7Vanished&c: " + StaticClasses.staffManager.isVanished(player));
 
-        Profile profile = profileManager.getProfile(player.getUniqueId());
         if (profile.getRemainingPvPTime() > 1) {
             lines.add("         ");
             lines.add("&dProtection&7: " + formatTime(profile.getRemainingPvPTime()));
         }
 
+        PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
+
+        if (player.hasPermission("carbyne.staff.staffmode"))
+            lines.add(" ");
+
+        lines.add("&aHealth&7: " + (int) playerHealth.getHealth());
         lines.add(" ");
-        lines.add("&aStamina&7: " + profile.getStamina());
+        lines.add("&aStamina&7: " + playerHealth.getStamina());
 
-//        if (!CombatTagListeners.isInCombat(player.getUniqueId())) {
-//            if (Account.getAccount(player.getName()) != null) {
-//                lines.add("&aBalance&7: " + MessageManager.format(Account.getAccount(player.getName()).getBalance()));
-//            }
-//
-//            if (main.getMissionsManager().getUuidMissions().containsKey(player.getUniqueId())) {
-//                ArrayList<Mission> activeMissions = new ArrayList<>();
-//                Mission[] missions = main.getMissionsManager().getUuidMissions().get(player.getUniqueId()).getCurrentMissions();
-//
-//                for (Mission mission : missions) {
-//                    if (mission != null && !mission.isActive())
-//                        continue;
-//
-//                    activeMissions.add(mission);
-//                }
-//
-//                if (activeMissions.size() > 0) {
-//                    lines.add(" ");
-//                    lines.add("&aActive Missions&7: " + activeMissions.size());
-//                }
-//            }
-//
-//            if (profileManager.getProfile(player.getUniqueId()).getProfession() != null) {
-//                Profile profile = profileManager.getProfile(player.getUniqueId());
-//                lines.add(" ");
-//                lines.add("&aProfession&7: " + profile.getProfession().getName());
-//                lines.add("  &aLevel&7: " + profile.getProfessionLevel());
-//                lines.add("  &aProgress&7: " + profile.getProfessionProgress());
-//            }
-//        }
-
-        if (squadManager.getSquad(player.getUniqueId()) != null) {
-            Squad squad = squadManager.getSquad(player.getUniqueId());
+        if (StaticClasses.squadManager.getSquad(player.getUniqueId()) != null) {
+            Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
             if (squad.getMembers().size() > 0) {
                 lines.add(" ");
@@ -106,8 +98,8 @@ public class CarbyneBoardAdapter {
         }
 
         if (board.getCooldown("target") == null) {
-            if (squadManager.getSquad(player.getUniqueId()) != null) {
-                Squad squad = squadManager.getSquad(player.getUniqueId());
+            if (StaticClasses.squadManager.getSquad(player.getUniqueId()) != null) {
+                Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
                 if (squad.getTargetUUID() != null)
                     squad.setTargetUUID(null);
@@ -117,9 +109,9 @@ public class CarbyneBoardAdapter {
             }
         }
 
-        ItemStack hand = player.getInventory().getItemInHand();
-        if (hand != null) {
-            CarbyneWeapon carbyneWeapon = main.getGearManager().getCarbyneWeapon(hand);
+        ItemStack hand = player.getInventory().getItemInMainHand();
+        if (hand != null && hand.getType() != Material.DRAGON_EGG) {
+            CarbyneWeapon carbyneWeapon = StaticClasses.gearManager.getCarbyneWeapon(hand);
 
             if (carbyneWeapon != null && carbyneWeapon.getSpecial() != null) {
                 lines.add("    ");
@@ -136,23 +128,21 @@ public class CarbyneBoardAdapter {
                     lines.add("&dLogout&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
 
-                if (cooldown.getId().equals("target")) {
-                    if (squadManager.getSquad(player.getUniqueId()) != null) {
-                        Squad squad = squadManager.getSquad(player.getUniqueId());
+                if (cooldown.getId().equals("target"))
+                    if (StaticClasses.squadManager.getSquad(player.getUniqueId()) != null) {
+                        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
                         if (squad.getTargetUUID() != null || squad.getTargetSquad() != null) {
                             lines.add("     ");
                             lines.add("&dTarget&7: " + (squad.getTargetSquad() != null ? Bukkit.getPlayer(squad.getTargetSquad().getLeader()).getName() + "'s Squad" : Bukkit.getPlayer(squad.getTargetUUID()).getName()));
                         }
                     }
-                }
 
-                if (cooldown.getId().equals("combattag")) {
+                if (cooldown.getId().equals("combattag"))
                     if (CombatTagListeners.isInCombat(player.getUniqueId())) {
                         lines.add("  ");
                         lines.add("&dCombat Timer&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                     }
-                }
 
                 if (cooldown.getId().equals("potion")) {
                     lines.add("   ");
@@ -163,16 +153,6 @@ public class CarbyneBoardAdapter {
                     lines.add("   ");
                     lines.add("&dEnderpearl&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
                 }
-
-//                if (cooldown.getId().equals("godapple")) {
-//                    lines.add("   ");
-//                    lines.add("&dGod Apple&7: " + cooldown.getFormattedString(BoardFormat.MINUTES));
-//                }
-//
-//                if (cooldown.getId().equals("goldenapple")) {
-//                    lines.add("   ");
-//                    lines.add("&dGolden Apple&7: " + cooldown.getFormattedString(BoardFormat.SECONDS));
-//                }
 
                 if (cooldown.getId().equals("skill")) {
                     lines.add("   ");
@@ -185,11 +165,12 @@ public class CarbyneBoardAdapter {
                 }
             }
         } catch (Exception e) {
-            main.getLogger().log(Level.WARNING, e.getMessage());
+            Carbyne.getInstance().getLogger().log(Level.WARNING, e.getMessage());
         }
 
         if (lines.size() >= 1) {
             lines.add(0, "&7&m-------------------");
+            lines.add(" ");
             lines.add("&7&owww.playminecraft.org");
         }
 
@@ -197,7 +178,7 @@ public class CarbyneBoardAdapter {
     }
 
     private List<String> staffScoreboard(Player player) {
-        StaffManager staffManager = main.getStaffManager();
+        StaffManager staffManager = StaticClasses.staffManager;
         ArrayList<String> lines = new ArrayList<>();
         lines.add("&7Vanished: &c" + staffManager.isVanished(player));
         lines.add("    ");
@@ -210,6 +191,7 @@ public class CarbyneBoardAdapter {
 
         if (lines.size() >= 1) {
             lines.add(0, "&7&m-------------------");
+            lines.add(" ");
             lines.add("&7&owww.playminecraft.org");
         }
 
@@ -247,7 +229,7 @@ public class CarbyneBoardAdapter {
     }
 
     String formatHealth(double health) {
-        double hearts = (health / 2) / 5;
+        double hearts = (health / 2);
         DecimalFormat format = new DecimalFormat("#");
 
         if (hearts <= 10 && hearts >= 7.5)

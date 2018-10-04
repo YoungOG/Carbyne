@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gates.commands;
 
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -25,7 +26,7 @@ public class GateCreateCommand extends BaseCommand {
 
         String gateId = args[0];
 
-        if (getGateManager().getGate(gateId) != null) {
+        if (StaticClasses.gateManager.getGate(gateId) != null) {
             MessageManager.sendMessage(sender, "&cThere is already a with the ID \"" + gateId + "\".");
             return;
         }
@@ -33,7 +34,7 @@ public class GateCreateCommand extends BaseCommand {
         Gate gate = new Gate(gateId);
         gate.setActiveLength(1);
         gate.setCurrentLength(1);
-        getGateManager().getGates().add(gate);
+        StaticClasses.gateManager.getGates().add(gate);
         MessageManager.sendMessage(sender, "&aYou have created a new gate named \"&b" + gateId + "&a\".");
     }
 }

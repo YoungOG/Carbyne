@@ -25,7 +25,6 @@ import java.util.Map;
 
 public abstract class Event {
 
-    protected static Carbyne main = Carbyne.getInstance();
     @Getter
     protected static Location spawn = new Location(Bukkit.getWorld("world"), -729, 110, 295);
     @Getter

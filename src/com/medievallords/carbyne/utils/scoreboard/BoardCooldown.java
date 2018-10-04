@@ -25,12 +25,10 @@ public class BoardCooldown {
     }
 
     public String getFormattedString(final BoardFormat format) {
-        if (format == null) {
+        if (format == null)
             throw new NullPointerException();
-        }
-        if (format == BoardFormat.SECONDS) {
+        if (format == BoardFormat.SECONDS)
             return BoardCooldown.SECONDS_FORMATTER.format((this.end - System.currentTimeMillis()) / 1000.0f);
-        }
         return DurationFormatUtils.formatDuration(this.end - System.currentTimeMillis(), "mm:ss");
     }
 

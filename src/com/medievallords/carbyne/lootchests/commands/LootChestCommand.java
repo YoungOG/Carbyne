@@ -4,6 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.lootchests.LootChest;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -52,17 +53,17 @@ public class LootChestCommand extends BaseCommand {
                 try {
                     String uniqueName = args[1];
 
-                    if (getLootChestManager().findLootChestWithName(uniqueName) != null) {
+                    if (StaticClasses.lootChestManager.findLootChestWithName(uniqueName) != null) {
                         MessageManager.sendMessage(sender, "&cThe name " + uniqueName + " is already in use!");
                         return;
                     }
 
-                    if (!getLootChestManager().getLootTables().containsKey(args[2])) {
+                    if (!StaticClasses.lootChestManager.getLootTables().containsKey(args[2])) {
                         MessageManager.sendMessage(sender, "&cThere is no loot table called " + args[2] + "!");
                         return;
                     }
 
-                    Block block = sender.getTargetBlock((HashSet<Byte>) null, 10);
+                    Block block = sender.getTargetBlock(null, 10);
 
                     if (block != null && (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST)) {
                         MessageManager.sendMessage(sender, "&cYou must be looking at a Chest within a ten block range.");
@@ -77,7 +78,7 @@ public class LootChestCommand extends BaseCommand {
                     String respawnString = args[3];
                     int maxItems = 0;
 
-                    getLootChestManager().getLootChests().put(location, new LootChest(getLootChestManager(), uniqueName, lootTableName, location, respawnString, maxItems, blockFace));
+                    StaticClasses.lootChestManager.getLootChests().put(location, new LootChest(uniqueName, lootTableName, location, respawnString, maxItems, blockFace));
 
                     String cp = "LootChests." + uniqueName;
                     main.getLootChestsFileConfiguration().set(cp + ".LootTable", lootTableName);
@@ -98,12 +99,12 @@ public class LootChestCommand extends BaseCommand {
 
                 LootChest chest;
 
-                if ((chest = getLootChestManager().findLootChestWithName(args[1])) == null) {
+                if ((chest = StaticClasses.lootChestManager.findLootChestWithName(args[1])) == null) {
                     MessageManager.sendMessage(sender, "&cA loot chest with this name does not exist!");
                     return;
                 }
 
-                getLootChestManager().getLootChests().remove(chest.getLocation());
+                StaticClasses.lootChestManager.getLootChests().remove(chest.getLocation());
 
                 try {
                     main.getLootChestsFileConfiguration().set("LootChests." + args[1] + ".LootTable", null);
@@ -117,18 +118,18 @@ public class LootChestCommand extends BaseCommand {
                     MessageManager.sendMessage(sender, "&cFailed to remove loot chest from file!");
                 }
             } else if (args[0].equalsIgnoreCase("reload")) {
-                getLootChestManager().reload();
+                StaticClasses.lootChestManager.reload();
                 MessageManager.sendMessage(sender, "&cLoots reloaded");
             } else if (args[0].equalsIgnoreCase("face")) {
                 if (args.length == 2) {
                     try {
                         BlockFace face = BlockFace.valueOf(args[1]);
 
-                        Block block = sender.getTargetBlock((HashSet<Byte>) null, 10);
+                        Block block = sender.getTargetBlock(null, 10);
                         Location location = block.getLocation();
 
-                        if (getLootChestManager().getLootChests().containsKey(location)) {
-                            LootChest lootChest = getLootChestManager().getLootChests().get(location);
+                        if (StaticClasses.lootChestManager.getLootChests().containsKey(location)) {
+                            LootChest lootChest = StaticClasses.lootChestManager.getLootChests().get(location);
                             lootChest.setFace(face);
                             main.getLootChestsFileConfiguration().set("LootChests." + "DOWN" + ".Face", face.name());
                             try {
@@ -199,7 +200,7 @@ public class LootChestCommand extends BaseCommand {
 //
 //        for (Location location : gate.getPressurePlateMap().keySet()) {
 //            id++;
-//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
 //        }
 //
 //        message2.then("\n");
@@ -208,7 +209,7 @@ public class LootChestCommand extends BaseCommand {
 //        id = 0;
 //        for (Location location : gate.getRedstoneBlockLocations()) {
 //            id++;
-//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
 //        }
 //
 //        message2.then("\n");
@@ -217,7 +218,7 @@ public class LootChestCommand extends BaseCommand {
 //        id = 0;
 //        for (Location location : gate.getButtonLocations()) {
 //            id++;
-//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+//            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
 //        }
 //
 //        if (getCarbyne().isMythicMobsEnabled()) {

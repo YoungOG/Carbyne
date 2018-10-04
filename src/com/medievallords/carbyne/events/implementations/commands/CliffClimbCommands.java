@@ -5,6 +5,7 @@ import com.medievallords.carbyne.events.implementations.CliffClimb;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -38,7 +39,7 @@ public class CliffClimbCommands extends BaseCommand
         {
             if(args[0].equalsIgnoreCase("join"))
             {
-                Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
                 if (profile.getActiveEvent() != null) {
                     MessageManager.sendMessage(player, "&cYou are already in an event!");
                     return;

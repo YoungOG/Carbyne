@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -19,7 +21,7 @@ public class BalanceCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
-        if (getEconomyManager().isEconomyHalted()) {
+        if (StaticClasses.economyManager.isEconomyHalted()) {
             MessageManager.sendMessage(player, "&cThe economy is temporarily disabled. The administrators will let you know when it is re-enabled.");
             return;
         }
@@ -64,7 +66,7 @@ public class BalanceCommand extends BaseCommand {
                             topten++;
                         }
                     }
-                }.runTaskAsynchronously(getCarbyne());
+                }.runTaskAsynchronously(Carbyne.getInstance());
             } else {
                 MessageManager.sendMessage(player, "&cUsage: /balance");
             }

@@ -1,8 +1,10 @@
 package com.medievallords.carbyne.lootchests;
 
-import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.customevents.LootChestLootEvent;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.zones.Zone;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -21,15 +23,13 @@ import java.util.List;
 
 public class LootChestListeners implements Listener {
 
-    private Carbyne main = Carbyne.getInstance();
-
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         if (e.getPlayer().getWorld().getName().equalsIgnoreCase("world"))
             if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
                 if (e.getClickedBlock().getType().equals(Material.CHEST) || e.getClickedBlock().getType() == Material.TRAPPED_CHEST)
-                    if (main.getLootChestManager().getLootChests().containsKey(e.getClickedBlock().getLocation())) {
-                        LootChest lc = main.getLootChestManager().getLootChests().get(e.getClickedBlock().getLocation());
+                    if (StaticClasses.lootChestManager.getLootChests().containsKey(e.getClickedBlock().getLocation())) {
+                        LootChest lc = StaticClasses.lootChestManager.getLootChests().get(e.getClickedBlock().getLocation());
                         List<ItemStack> loot = lc.getLoot();
                         Inventory playerInv = e.getPlayer().getInventory();
 
@@ -45,6 +45,12 @@ public class LootChestListeners implements Listener {
 
                         int maxItems = lc.getMaxItems();
                         int itemsSpawned = 0;
+
+                        LootChestLootEvent lootEvent = new LootChestLootEvent(e.getPlayer(), (Chest) e.getClickedBlock().getState(), lc.getLootLoot());
+                        Bukkit.getPluginManager().callEvent(lootEvent);
+                        if (lootEvent.isCancelled()) {
+                            return;
+                        }
 
                         for (int i = 0; i < loot.size(); i++) {
                             if (itemsSpawned >= maxItems && maxItems > 0) {
@@ -89,29 +95,29 @@ public class LootChestListeners implements Listener {
                     } else {
                         Block block = e.getClickedBlock();
                         Location location = block.getLocation();
-                        if (main.getLootChestManager().isIgnored(location)) {
+                        if (StaticClasses.lootChestManager.isIgnored(location)) {
                             return;
                         }
 
-                        if (main.getLootChestManager().isOnCooldown(location)) {
+                        if (StaticClasses.lootChestManager.isOnCooldown(location)) {
                             return;
                         }
 
-                        Zone zone = Carbyne.getInstance().getZoneManager().getZone(location);
+                        Zone zone = StaticClasses.zoneManager.getZone(location);
                         if (zone == null) {
                             return;
                         }
 
-                        zone.giveLoot((Chest) block.getState());
-                        main.getLootChestManager().putOnCooldown(location, System.currentTimeMillis() + zone.getCooldownForChests());
+                        zone.giveLoot(e.getPlayer(), (Chest) block.getState());
+                        StaticClasses.lootChestManager.putOnCooldown(location, System.currentTimeMillis() + zone.getCooldownForChests());
                     }
             } else if (e.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                 if (e.getClickedBlock().getType() == Material.CHEST || e.getClickedBlock().getType() == Material.TRAPPED_CHEST) {
                     if (e.getPlayer().hasPermission("carbyne.commands.lootchest") || e.getPlayer().isOp()) {
-                        if (!main.getLootChestManager().getLootChests().containsKey(e.getClickedBlock().getLocation()))
+                        if (!StaticClasses.lootChestManager.getLootChests().containsKey(e.getClickedBlock().getLocation()))
                             return;
 
-                        LootChest lc = main.getLootChestManager().getLootChests().get(e.getClickedBlock().getLocation());
+                        LootChest lc = StaticClasses.lootChestManager.getLootChests().get(e.getClickedBlock().getLocation());
 
                         if (lc != null) {
                             MessageManager.sendMessage(e.getPlayer(), "&aThis LootChest is named &b" + lc.getChestConfigName() + "&a.");
@@ -130,7 +136,7 @@ public class LootChestListeners implements Listener {
     public void onBlockBreak(BlockBreakEvent e) {
         Location l = e.getBlock().getLocation();
         if (l.getWorld().getName().equalsIgnoreCase("world"))
-            if (main.getLootChestManager().getLootChests().containsKey(l))
+            if (StaticClasses.lootChestManager.getLootChests().containsKey(l))
                 e.setCancelled(true);
     }
 }

@@ -2,6 +2,7 @@ package com.medievallords.carbyne.staff.commands;
 
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -16,7 +17,7 @@ public class SetPinCommand extends BaseCommand {
     @Command(name = "setpin", permission = "carbyne.command.setpin", inGameOnly = true)
     public void onCommand(CommandArgs commandArgs) {
         Player player = commandArgs.getPlayer();
-        Profile profile = getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         if (commandArgs.getArgs().length != 1) {
             MessageManager.sendMessage(player, "&cUsage: /setpin <pin>");

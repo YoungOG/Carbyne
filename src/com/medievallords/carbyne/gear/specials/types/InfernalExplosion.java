@@ -24,7 +24,7 @@ public class InfernalExplosion implements Special {
 
     @Override
     public int getRequiredCharge() {
-        return 20;
+        return 40;
     }
 
     @Override
@@ -38,8 +38,8 @@ public class InfernalExplosion implements Special {
         caster.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
         caster.removePotionEffect(PotionEffectType.INCREASE_DAMAGE);
 
-        caster.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 2));
-        caster.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 2));
+        caster.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 3));
+        caster.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 3));
 
         final List<Color> colors = new ArrayList<>();
         colors.add(Color.RED);

@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.donator.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -20,7 +21,7 @@ public class GamemodeCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
 
         if (player.hasPermission("carbyne.commands.gamemode.ignore") && args.length == 0) {
-            getGamemodeManager().toggleGamemode(player);
+            StaticClasses.gamemodeManager.toggleGamemode(player);
             return;
         }
 
@@ -42,7 +43,7 @@ public class GamemodeCommand extends BaseCommand {
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.tgm.toggle")) {
-            getGamemodeManager().toggleTownCreative(commandArgs.getPlayer());
+            StaticClasses.gamemodeManager.toggleTownCreative(commandArgs.getPlayer());
             return;
         }
 
@@ -55,11 +56,11 @@ public class GamemodeCommand extends BaseCommand {
         }
 
         if (check.equals(residentsTown)) {
-            if (getGamemodeManager().getCreativeTowns().containsKey(residentsTown)) {
-                getGamemodeManager().toggleGamemode(player);
+            if (StaticClasses.gamemodeManager.getCreativeTowns().containsKey(residentsTown)) {
+                StaticClasses.gamemodeManager.toggleGamemode(player);
                 return;
             } else if (player.hasPermission("carbyne.commands.tgm")) {
-                getGamemodeManager().toggleGamemode(player);
+                StaticClasses.gamemodeManager.toggleGamemode(player);
                 return;
             } else
                 MessageManager.sendMessage(player, "&cYou cannot do this!");
@@ -73,11 +74,11 @@ public class GamemodeCommand extends BaseCommand {
 
             try {
                 if (nation.equals(residentsTown.getNation())) {
-                    if (getGamemodeManager().getCreativeTowns().containsKey(residentsTown)) {
-                        getGamemodeManager().toggleGamemode(player);
+                    if (StaticClasses.gamemodeManager.getCreativeTowns().containsKey(residentsTown)) {
+                        StaticClasses.gamemodeManager.toggleGamemode(player);
                         return;
                     } else if (player.hasPermission("carbyne.commands.tgm")) {
-                        getGamemodeManager().toggleGamemode(player);
+                        StaticClasses.gamemodeManager.toggleGamemode(player);
                         return;
                     } else {
                         MessageManager.sendMessage(player, "&cYou cannot do this!");

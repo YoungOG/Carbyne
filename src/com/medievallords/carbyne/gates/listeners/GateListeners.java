@@ -1,8 +1,7 @@
 package com.medievallords.carbyne.gates.listeners;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
-import com.medievallords.carbyne.gates.GateManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,14 +15,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
  */
 public class GateListeners implements Listener {
 
-    private Carbyne carbyne = Carbyne.getInstance();
-    private GateManager gateManager = carbyne.getGateManager();
-
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.PHYSICAL) {
             Block block = event.getClickedBlock();
-            Gate gate = gateManager.getGate(block.getLocation());
+            Gate gate = StaticClasses.gateManager.getGate(block.getLocation());
 
             if (gate == null)
                 return;
@@ -37,7 +33,7 @@ public class GateListeners implements Listener {
     @EventHandler
     public void onRedstone(BlockRedstoneEvent event) {
         Block block = event.getBlock();
-        Gate gate = gateManager.getGate(block.getLocation());
+        Gate gate = StaticClasses.gateManager.getGate(block.getLocation());
 
         if (gate == null)
             return;

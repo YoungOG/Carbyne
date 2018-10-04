@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gear.commands;
 
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -30,18 +31,18 @@ public class GearSetChargeCommand extends BaseCommand {
             return;
         }
 
-        if (player.getItemInHand() == null) {
+        if (player.getInventory().getItemInMainHand() == null) {
             MessageManager.sendMessage(sender, "&cPlayer does not have an item in hand");
             return;
         }
 
-        CarbyneWeapon carbyneWeapon = getGearManager().getCarbyneWeapon(player.getItemInHand());
+        CarbyneWeapon carbyneWeapon = StaticClasses.gearManager.getCarbyneWeapon(player.getInventory().getItemInMainHand());
         if (carbyneWeapon == null) {
             MessageManager.sendMessage(sender, "&cPlayer is not holding a Carbyne-Weapon");
             return;
         }
 
-        int charge = carbyneWeapon.getSpecialCharge(player.getItemInHand());
+        int charge = carbyneWeapon.getSpecialCharge(player.getInventory().getItemInMainHand());
         try {
             charge = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
@@ -49,9 +50,9 @@ public class GearSetChargeCommand extends BaseCommand {
         }
 
         if (charge > carbyneWeapon.getSpecial().getRequiredCharge()) {
-            carbyneWeapon.setSpecialCharge(player.getItemInHand(), carbyneWeapon.getSpecial().getRequiredCharge());
+            carbyneWeapon.setSpecialCharge(player.getInventory().getItemInMainHand(), carbyneWeapon.getSpecial().getRequiredCharge());
         } else {
-            carbyneWeapon.setSpecialCharge(player.getItemInHand(), charge);
+            carbyneWeapon.setSpecialCharge(player.getInventory().getItemInMainHand(), charge);
         }
 
         MessageManager.sendMessage(sender, "&aCharge has been set to &5" + charge + " for &7" + player.getName());

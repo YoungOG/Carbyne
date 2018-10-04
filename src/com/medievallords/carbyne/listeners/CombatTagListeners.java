@@ -8,10 +8,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.CombatTaggedEvent;
 import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.profiles.ProfileManager;
-import com.medievallords.carbyne.utils.ItemBuilder;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import com.nisovin.magicspells.events.SpellTargetEvent;
@@ -64,8 +61,7 @@ public class CombatTagListeners implements Listener {
     //=================[ Tag listeners ]=================
     private final Map<UUID, Set<Location>> previousUpdates = new HashMap<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ForceField Thread").build());
-    private Carbyne main = Carbyne.getInstance();
-    private ProfileManager profileManager = main.getProfileManager();
+    //private Carbyne main = Carbyne.getInstance();
     private Multimap<UUID, ItemStack[]> inventories = ArrayListMultimap.create();
     private HashMap<Villager, BukkitRunnable> tasks = new HashMap<>();
 
@@ -83,9 +79,7 @@ public class CombatTagListeners implements Listener {
 
     public static boolean isInCombat(UUID id) {
         if (getRemainingTime(id) <= 0) {
-            if (tagged.containsKey(id)) {
-                tagged.remove(id);
-            }
+            tagged.remove(id);
 
             return false;
         } else {
@@ -161,8 +155,8 @@ public class CombatTagListeners implements Listener {
             Player playerDamager = (Player) damager;
             Player damaged = (Player) event.getEntity();
 
-            Profile damagerProfile = main.getProfileManager().getProfile(playerDamager.getUniqueId());
-            Profile damagedProfile = main.getProfileManager().getProfile(damaged.getUniqueId());
+            Profile damagerProfile = StaticClasses.profileManager.getProfile(playerDamager.getUniqueId());
+            Profile damagedProfile = StaticClasses.profileManager.getProfile(damaged.getUniqueId());
 
             if (damagedProfile != null && damagerProfile != null) {
                 if (damagerProfile.getRemainingPvPTime() > 1) {
@@ -183,8 +177,8 @@ public class CombatTagListeners implements Listener {
                 Player damaged = (Player) event.getEntity();
 
                 if (damager instanceof Player) {
-                    Profile damagerProfile = main.getProfileManager().getProfile(damager.getUniqueId());
-                    Profile damagedProfile = main.getProfileManager().getProfile(damaged.getUniqueId());
+                    Profile damagerProfile = StaticClasses.profileManager.getProfile(damager.getUniqueId());
+                    Profile damagedProfile = StaticClasses.profileManager.getProfile(damaged.getUniqueId());
 
                     if (damagedProfile != null && damagerProfile != null) {
                         if (damagedProfile.getRemainingPvPTime() > 1) {
@@ -204,11 +198,9 @@ public class CombatTagListeners implements Listener {
         }
 
 
-        if (damager instanceof Projectile) {
-            if (((Projectile) damager).getShooter() != null) {
+        if (damager instanceof Projectile)
+            if (((Projectile) damager).getShooter() != null)
                 damager = (Entity) ((Projectile) damager).getShooter();
-            }
-        }
 
         if (event.getEntity() instanceof Player) {
             Player tagged = (Player) event.getEntity();
@@ -246,31 +238,28 @@ public class CombatTagListeners implements Listener {
         if (isInCombat(player.getUniqueId())) {
             String command = event.getMessage();
 
-            for (String disabledCommand : main.getConfig().getStringList("combat-tag.blocked-cmds")) {
-                if (command.indexOf(" ") == disabledCommand.length()) {
+            for (String disabledCommand : Carbyne.getInstance().getConfig().getStringList("combat-tag.blocked-cmds"))
+                if (command.indexOf(" ") == disabledCommand.length())
                     if (command.substring(0, command.indexOf(" ")).equalsIgnoreCase(disabledCommand)) {
                         MessageManager.sendMessage(player, "&7This command is disabled while in combat.");
                         event.setCancelled(true);
                         return;
-                    }
-                } else if (disabledCommand.indexOf(" ") > 0) {
+                    } else if (disabledCommand.indexOf(" ") > 0)
                     if (command.toLowerCase().startsWith(disabledCommand.toLowerCase())) {
                         MessageManager.sendMessage(player, "&7This command is disabled while in combat.");
                         event.setCancelled(true);
                         return;
+                    } else if (!command.contains(" ") && command.equalsIgnoreCase(disabledCommand)) {
+                        MessageManager.sendMessage(player, "&7This command is disabled while in combat.");
+                        event.setCancelled(true);
+                        return;
                     }
-                } else if (!command.contains(" ") && command.equalsIgnoreCase(disabledCommand)) {
-                    MessageManager.sendMessage(player, "&7This command is disabled while in combat.");
-                    event.setCancelled(true);
-                    return;
-                }
-            }
         }
     }
 
     @EventHandler
     public void shutdown(PluginDisableEvent event) {
-        if (event.getPlugin() != main)
+        if (event.getPlugin() != Carbyne.getInstance())
             return;
 
         // Shutdown executor service and clean up threads
@@ -300,9 +289,8 @@ public class CombatTagListeners implements Listener {
         Location t = event.getTo();
         Location f = event.getFrom();
 
-        if (t.getBlockX() == f.getBlockX() && t.getBlockY() == f.getBlockY() && t.getBlockZ() == f.getBlockZ()) {
+        if (t.getBlockX() == f.getBlockX() && t.getBlockY() == f.getBlockY() && t.getBlockZ() == f.getBlockZ())
             return;
-        }
 
         final Player player = event.getPlayer();
 
@@ -311,9 +299,8 @@ public class CombatTagListeners implements Listener {
             // Stop processing if player has logged off
             UUID uuid = player.getUniqueId();
 
-            if (Bukkit.getPlayer(uuid) == null) {
+            if (Bukkit.getPlayer(uuid) == null)
                 return;
-            }
 
             // Update the players force field perspective and find all blocks to stop spoofing
             Set<Location> changedBlocks = getChangedBlocks(player);
@@ -321,11 +308,10 @@ public class CombatTagListeners implements Listener {
             byte forceFieldMaterialDamage = 14;
 
             Set<Location> removeBlocks;
-            if (previousUpdates.containsKey(uuid)) {
+            if (previousUpdates.containsKey(uuid))
                 removeBlocks = previousUpdates.get(uuid);
-            } else {
+            else
                 removeBlocks = new HashSet<>();
-            }
 
             for (Location location : changedBlocks) {
                 player.sendBlockChange(location, forceFieldMaterial, forceFieldMaterialDamage);
@@ -362,25 +348,20 @@ public class CombatTagListeners implements Listener {
             return;
         }
 
-        if (main.getDuelManager().getDuelFromUUID(player.getUniqueId()) != null) {
-            return;
-        }
+//        if (StaticClasses.duelManager.getDuelFromUUID(player.getUniqueId()) != null)
+//            return;
 
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
-
-        if (profile == null) {
-            removeCombatTag(player.getUniqueId());
-            return;
-        }
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         if (player.getGameMode() == GameMode.SURVIVAL) {
             if (!profile.isSafelyLogged()) {
                 if (isInCombat(player.getUniqueId()) || (TownyUniverse.getTownBlock(player.getLocation()) == null || TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp)) {
+                    PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
                     Location loggedLocation = player.getLocation();
-                    Villager villager = (Villager) loggedLocation.getWorld().spawnCreature(loggedLocation, EntityType.VILLAGER);
+                    Villager villager = (Villager) loggedLocation.getWorld().spawnEntity(loggedLocation, EntityType.VILLAGER);
                     villager.setAdult();
-                    villager.setMaxHealth(player.getMaxHealth());
-                    villager.setHealth(player.getHealth());
+//                    villager.setMaxHealth(player.getMaxHealth());
+                    villager.setHealth(playerHealth.getHealth() / playerHealth.getMaxHealth());
                     villager.setCustomName(ChatColor.translateAlternateColorCodes('&', player.getDisplayName()));
                     villager.setCustomNameVisible(true);
                     villager.setFireTicks(player.getFireTicks());
@@ -388,16 +369,15 @@ public class CombatTagListeners implements Listener {
                     villager.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 7, false, false));
                     villager.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
                     villager.setCanPickupItems(false);
-                    villager.setMetadata("logger", new FixedMetadataValue(main, player.getUniqueId().toString()));
+                    villager.setMetadata("logger", new FixedMetadataValue(Carbyne.getInstance(), player.getUniqueId().toString()));
 //                    ReflectionUtils.setCollidable(villager, false);
 
                     loggers.put(player.getUniqueId(), villager);
                     inventories.get(player.getUniqueId()).add(player.getInventory().getContents());
                     inventories.get(player.getUniqueId()).add(player.getInventory().getArmorContents());
 
-                    if (tasks.containsKey(villager)) {
+                    if (tasks.containsKey(villager))
                         tasks.get(villager).cancel();
-                    }
 
                     tasks.put(villager, new BukkitRunnable() {
                         public void run() {
@@ -406,20 +386,17 @@ public class CombatTagListeners implements Listener {
                         }
                     });
 
-                    tasks.get(villager).runTaskLater(main, 10 * 20L);
+                    tasks.get(villager).runTaskLater(Carbyne.getInstance(), 10 * 20L);
                 }
-            } else {
-                if (player.getWorld().getName().equalsIgnoreCase("world")) {
+            } else if (player.getWorld().getName().equalsIgnoreCase("world"))
                     Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
-                }
-            }
         }
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         if (profile == null) {
             if (loggers.get(player.getUniqueId()) != null && (loggers.get(player.getUniqueId()).getHealth() > 0 && !loggers.get(player.getUniqueId()).isDead())) {
@@ -436,18 +413,16 @@ public class CombatTagListeners implements Listener {
         }
 
         if (profile.isSafelyLogged()) {
-            if (loggers.containsKey(player.getUniqueId())) {
+            if (loggers.containsKey(player.getUniqueId()))
                 if (loggers.get(player.getUniqueId()).getHealth() > 0 && !loggers.get(player.getUniqueId()).isDead()) {
                     tasks.remove(loggers.get(player.getUniqueId()));
                     loggers.get(player.getUniqueId()).remove();
                     loggers.remove(player.getUniqueId());
                     inventories.removeAll(player.getUniqueId());
                 }
-            }
 
-            if (player.getWorld().getName().equalsIgnoreCase("world")) {
+            if (player.getWorld().getName().equalsIgnoreCase("world"))
                 Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
-            }
 
             profile.setSafelyLogged(false);
         } else {
@@ -463,7 +438,7 @@ public class CombatTagListeners implements Listener {
                             player.getInventory().setBoots(null);
                             player.setHealth(0.0);
                         }
-                    }.runTaskLater(main, 5L);
+                    }.runTaskLater(Carbyne.getInstance(), 5L);
 
                     tasks.remove(loggers.get(player.getUniqueId()));
                     loggers.get(player.getUniqueId()).remove();
@@ -474,9 +449,8 @@ public class CombatTagListeners implements Listener {
                 }
 
                 if ((loggers.get(player.getUniqueId()).getHealth() > 0 && loggers.get(player.getUniqueId()).isDead())) {
-                    if (player.getWorld().getName().equalsIgnoreCase("world")) {
+                    if (player.getWorld().getName().equalsIgnoreCase("world"))
                         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
-                    }
                 } else if (loggers.get(player.getUniqueId()).getHealth() > 0 && !loggers.get(player.getUniqueId()).isDead()) {
                     player.teleport(loggers.get(player.getUniqueId()).getLocation());
                     player.setHealth(loggers.get(player.getUniqueId()).getHealth());
@@ -492,18 +466,15 @@ public class CombatTagListeners implements Listener {
                             player.getInventory().setBoots(null);
                             player.setHealth(0.0);
                         }
-                    }.runTaskLater(main, 5L);
+                    }.runTaskLater(Carbyne.getInstance(), 5L);
                 }
 
                 tasks.remove(loggers.get(player.getUniqueId()));
                 loggers.get(player.getUniqueId()).remove();
                 loggers.remove(player.getUniqueId());
                 inventories.removeAll(player.getUniqueId());
-            } else {
-                if (player.getWorld().getName().equalsIgnoreCase("world")) {
+            } else if (player.getWorld().getName().equalsIgnoreCase("world"))
                     Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "spawn " + player.getName());
-                }
-            }
         }
         //Idk if this is right or if im missing something but i think this is right lol
     }
@@ -516,15 +487,11 @@ public class CombatTagListeners implements Listener {
             if (villager.hasMetadata("logger")) {
                 UUID id = UUID.fromString(villager.getMetadata("logger").get(0).value().toString());
 
-                if (loggers.containsKey(id) && loggers.get(id) == villager) {
-                    for (ItemStack[] itemStacks : inventories.get(id)) {
-                        for (ItemStack items : itemStacks) {
-                            if (items != null && items.getType() != Material.AIR) {
+                if (loggers.containsKey(id) && loggers.get(id) == villager)
+                    for (ItemStack[] itemStacks : inventories.get(id))
+                        for (ItemStack items : itemStacks)
+                            if (items != null && items.getType() != Material.AIR)
                                 villager.getLocation().getWorld().dropItemNaturally(villager.getLocation(), items);
-                            }
-                        }
-                    }
-                }
 
                 tasks.remove(loggers.get(id));
             }
@@ -542,11 +509,10 @@ public class CombatTagListeners implements Listener {
                 count.remove(event.getPlayer().getUniqueId());
                 MessageManager.sendMessage(event.getPlayer(), "&cYou moved! Logout has been cancelled!");
 
-                Board board = Board.getByPlayer(event.getPlayer());
+                Board board = Board.getByPlayer(event.getPlayer().getUniqueId());
 
-                if (board.getCooldown("logout") != null) {
+                if (board.getCooldown("logout") != null)
                     board.getCooldown("logout").cancel();
-                }
             }
         }
     }
@@ -556,23 +522,20 @@ public class CombatTagListeners implements Listener {
         if (event.getRightClicked() instanceof Villager) {
             Villager villager = (Villager) event.getRightClicked();
 
-            if (villager.hasMetadata("logger")) {
+            if (villager.hasMetadata("logger"))
                 event.setCancelled(true);
-            }
         }
     }
 
     @EventHandler
     public void onUnload(ChunkUnloadEvent event) {
-        for (Entity entity : event.getChunk().getEntities()) {
+        for (Entity entity : event.getChunk().getEntities())
             if (entity instanceof Villager) {
                 Villager villager = (Villager) entity;
 
-                if (villager.hasMetadata("logger")) {
+                if (villager.hasMetadata("logger"))
                     villager.remove();
-                }
             }
-        }
     }
 
     private Set<Location> getChangedBlocks(Player player) {
@@ -622,27 +585,25 @@ public class CombatTagListeners implements Listener {
     }
 
     private boolean isPvpSurrounding(Location loc) {
-        for (BlockFace direction : ALL_DIRECTIONS) {
-            if (isPvpEnabledAt(loc.getBlock().getRelative(direction).getLocation())) {
+        for (BlockFace direction : ALL_DIRECTIONS)
+            if (isPvpEnabledAt(loc.getBlock().getRelative(direction).getLocation()))
                 return true;
-            }
-        }
 
         return false;
     }
 
     public boolean setCombatTag(Player p) {
-        tagged.put(p.getUniqueId(), PvPTimeout(main.getConfig().getInt("combat-tag.tag-length")));
+        tagged.put(p.getUniqueId(), PvPTimeout(Carbyne.getInstance().getConfig().getInt("combat-tag.tag-length")));
 
-        Board board = Board.getByPlayer(p);
+        Board board = Board.getByPlayer(p.getUniqueId());
         if (board != null) {
             BoardCooldown boardCooldown = board.getCooldown("combattag");
 
-            if (boardCooldown == null) {
-                new BoardCooldown(board, "combattag", main.getConfig().getInt("combat-tag.tag-length"));
-            } else {
+            if (boardCooldown == null)
+                new BoardCooldown(board, "combattag", Carbyne.getInstance().getConfig().getInt("combat-tag.tag-length"));
+            else {
                 boardCooldown.cancel();
-                new BoardCooldown(board, "combattag", main.getConfig().getInt("combat-tag.tag-length"));
+                new BoardCooldown(board, "combattag", Carbyne.getInstance().getConfig().getInt("combat-tag.tag-length"));
             }
         }
 
@@ -652,15 +613,13 @@ public class CombatTagListeners implements Listener {
     public long removeCombatTag(UUID id) {
         if (isInCombat(id)) {
             if (Bukkit.getPlayer(id) != null) {
-                Player player = Bukkit.getPlayer(id);
-                Board board = Board.getByPlayer(player);
+                Board board = Board.getByPlayer(id);
 
                 if (board != null) {
                     BoardCooldown boardCooldown = board.getCooldown("combattag");
 
-                    if (boardCooldown != null) {
+                    if (boardCooldown != null)
                         board.getCooldown("combattag").cancel();
-                    }
                 }
             }
 
@@ -681,10 +640,10 @@ public class CombatTagListeners implements Listener {
     @EventHandler
     public void onSpell(SpellTargetEvent event) {
         if (event.getTarget() instanceof Player) {
-            Profile target = main.getProfileManager().getProfile(event.getTarget().getUniqueId());
-            Profile caster = main.getProfileManager().getProfile(event.getCaster().getUniqueId());
+            Profile target = StaticClasses.profileManager.getProfile(event.getTarget().getUniqueId());
+            Profile caster = StaticClasses.profileManager.getProfile(event.getCaster().getUniqueId());
 
-            if (target != null && caster != null) {
+            if (target != null && caster != null)
                 if (caster.getRemainingPvPTime() > 1) {
                     event.setCancelled(true);
                     MessageManager.sendMessage(event.getCaster(), "&cYou cannot cast spells on someone whilst you have a pvp-protection timer");
@@ -692,22 +651,19 @@ public class CombatTagListeners implements Listener {
                     event.setCancelled(true);
                     MessageManager.sendMessage(event.getCaster(), "&cYou cannot cast spells on someone whilst they have a pvp-protection timer");
                 }
-            }
         }
     }
 
     public static class ForceFieldTask extends BukkitRunnable {
 
-        private final Carbyne plugin;
-
         private final Map<UUID, Location> validLocations = new HashMap<>();
 
-        private ForceFieldTask(Carbyne plugin) {
-            this.plugin = plugin;
+        private ForceFieldTask() {
+
         }
 
         public static void run(Carbyne plugin) {
-            new ForceFieldTask(plugin).runTaskTimer(plugin, 1, 1);
+            new ForceFieldTask().runTaskTimer(plugin, 1, 1);
         }
 
         @Override
@@ -715,18 +671,14 @@ public class CombatTagListeners implements Listener {
             for (Player player : PlayerUtility.getOnlinePlayers()) {
                 UUID playerId = player.getUniqueId();
 
-                // Do nothing if player isn't even tagged.
                 if (!CombatTagListeners.isInCombat(playerId))
                     continue;
 
                 Location loc = player.getLocation();
-                if (CombatTagListeners.isPvpEnabledAt(loc)) {
-                    // Track the last PVP-enabled location that the player was in.
+                if (CombatTagListeners.isPvpEnabledAt(loc))
                     validLocations.put(playerId, loc);
-                } else if (validLocations.containsKey(playerId)) {
-                    // Teleport the player to the last valid PVP-enabled location.
+                else if (validLocations.containsKey(playerId))
                     player.teleport(validLocations.get(playerId));
-                }
             }
         }
     }

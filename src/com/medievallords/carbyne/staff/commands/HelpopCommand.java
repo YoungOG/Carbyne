@@ -9,6 +9,7 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 /**
@@ -32,19 +33,18 @@ public class HelpopCommand extends BaseCommand {
         if (Cooldowns.tryCooldown(player.getUniqueId(), "helpopCD", 60000)) {
             MessageManager.sendMessage(player, "&aAll online staff have been alerted.");
 
-            for (Player all : PlayerUtility.getOnlinePlayers()) {
+            for (Player all : PlayerUtility.getOnlinePlayers())
                 if (all.hasPermission("carbyne.staff")) {
+                    all.playSound(all.getLocation(), Sound.BLOCK_NOTE_PLING, 1F, 1F);
                     MessageManager.sendMessage(all, "&6&m»----------------------------«");
                     JSONMessage message = JSONMessage.create(ChatColor.translateAlternateColorCodes('&',"&6&l" +player.getName() + " is requesting help."));
-                    message.tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to teleport to " + player.getDisplayName() + "&a."));
+                    message.tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to teleport to &f" + player.getDisplayName() + "&a."));
                     message.runCommand("/teleport " + player.getName());
                     message.send(all);
                     MessageManager.sendMessage(all, "&6Message&b: " + helpMessage);
                     MessageManager.sendMessage(all, "&6&m»----------------------------«");
                 }
-            }
-        } else {
+        } else
             MessageManager.sendMessage(player, "&cYou are still on cooldown for another " + (Cooldowns.getCooldown(player.getUniqueId(), "helpopCD") / 1000) + " seconds.");
-        }
     }
 }

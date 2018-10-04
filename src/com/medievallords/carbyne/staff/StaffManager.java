@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.staff;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.*;
+import de.slikey.effectlib.util.ParticleEffect;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -9,8 +11,12 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Bat;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -27,7 +33,6 @@ import java.util.*;
 public class StaffManager {
 
     private final ItemStack randomTeleportTool, toggleVanishTool, freezeTool, inspectInventoryTool, thruTool, air, wand;
-    private Carbyne main = Carbyne.getInstance();
     private HashSet<UUID> vanish = new HashSet<>(), frozen = new HashSet<>(), frozenStaff = new HashSet<>();
     private List<UUID> staffModePlayers = new ArrayList<>(), staffChatPlayers = new ArrayList<>();
     private Set<UUID> staff = new HashSet<>();
@@ -36,7 +41,7 @@ public class StaffManager {
     @Setter
     private int slowChatTime = 0;
     @Setter
-    private int serverSlots = 175;
+    private int serverSlots = 60;
     private Map<String, Boolean> falsePerms = new HashMap<>(), truePerms = new HashMap<>();
 
     private File staffWhitelistCommandsFile;
@@ -45,7 +50,7 @@ public class StaffManager {
     private List<String> staffmodeCommandWhitelist;
 
     public StaffManager() {
-        staffWhitelistCommandsFile = new File(main.getDataFolder(), "staffmodewhitelist.yml");
+        staffWhitelistCommandsFile = new File(Carbyne.getInstance().getDataFolder(), "staffmodewhitelist.yml");
         staffWhitelistCommandConfiguration = YamlConfiguration.loadConfiguration(staffWhitelistCommandsFile);
 
         staffmodeCommandWhitelist = staffWhitelistCommandConfiguration.getStringList("Commands");
@@ -67,7 +72,7 @@ public class StaffManager {
             @Override
             public void run() {
                 int amount = PlayerUtility.getOnlinePlayers().size();
-                logToFile("[Players] Online: " + amount + " ------ Time: " + new Date().toString());
+                StringUtils.logToFile("[Players] Online: " + amount + " ------ Time: " + new Date().toString(), "playersLog.txt");
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 20 * 60 * 30);
 
@@ -88,7 +93,7 @@ public class StaffManager {
                     MessageManager.sendMessage(id, "&4&l[&c&l!&4&l] &6Join the Discord using: /discord");
                 }
             }
-        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 3 * 25L);
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 75);
     }
 
     /**
@@ -105,8 +110,8 @@ public class StaffManager {
             player.getInventory().clear();
             showPlayer(player);
 
-            for (String permissionNode : falsePerms.keySet())
-                Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " false");
+//            for (String permissionNode : falsePerms.keySet())
+//                Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " false");
 
             MessageManager.sendMessage(player, "&cYou have disabled staff mode and are now visible!");
         } else
@@ -116,12 +121,12 @@ public class StaffManager {
                 player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, air, toggleVanishTool, randomTeleportTool});
                 vanishPlayer(player);
 
-                for (String permissionNode : truePerms.keySet())
-                    Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " true");
+//                for (String permissionNode : truePerms.keySet())
+//                    Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " true");
 
                 MessageManager.sendMessage(player, "&cYou have enabled staff mode and have vanished!");
-                main.getTrailManager().getAdvancedEffects().remove(player.getUniqueId());
-                main.getTrailManager().getActivePlayerEffects().remove(player.getUniqueId());
+                StaticClasses.trailManager.getAdvancedEffects().remove(player.getUniqueId());
+                StaticClasses.trailManager.getActivePlayerEffects().remove(player.getUniqueId());
 
             } else
                 MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
@@ -180,6 +185,34 @@ public class StaffManager {
         if (vanish.contains(player.getUniqueId())) {
             showPlayer(player);
             MessageManager.sendMessage(player, "&cYou have been un-vanished!");
+            Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
+            if (!profile.isVanishEffect()) {
+                return;
+            }
+
+            if (player.isOp()) {
+                player.getWorld().strikeLightningEffect(player.getLocation());
+
+                for (int i = 0; i < 10; i++) {
+                    Bat bat = (Bat) player.getWorld().spawnEntity(player.getLocation(), EntityType.BAT);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            bat.setHealth(0);
+                        }
+                    }.runTaskLater(Carbyne.getInstance(), 80);
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if (bat.isDead() || bat.getHealth() <= 0)
+                                cancel();
+
+                            ParticleEffect.FLAME.display(0.0F, 0.0F, 0.0F, 0.01F, 1, bat.getLocation(), 50);
+                        }
+                    }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 1L);
+                }
+            }
         } else {
             vanishPlayer(player);
             MessageManager.sendMessage(player, "&cYou are now vanished!");
@@ -230,23 +263,29 @@ public class StaffManager {
     public void freezePlayer(Player player) {
         frozen.add(player.getUniqueId());
         player.setWalkSpeed(0.0F);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 100000, 1000));
         MessageManager.sendMessage(player, "&cYou have been frozen.");
     }
 
     public void unfreezePlayer(Player player) {
         frozen.remove(player.getUniqueId());
         player.setWalkSpeed(0.2F);
+        player.removePotionEffect(PotionEffectType.JUMP);
         MessageManager.sendMessage(player, "&aYou are no longer frozen.");
     }
 
     public void shutdown() {
-        for (UUID id : frozen)
-            unfreezePlayer(Bukkit.getPlayer(id));
+        for (UUID id : frozen) {
+            Player player = Bukkit.getPlayer(id);
+            player.setWalkSpeed(0.2f);
+            player.removePotionEffect(PotionEffectType.JUMP);
+            unfreezePlayer(player);
+        }
 
         for (UUID id : staffModePlayers) {
             Bukkit.getPlayer(id).getInventory().clear();
             //Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "pex user " + Bukkit.getPlayer(id).getName() + " remove mv.bypass.gamemode.*");
-            PermissionUtils.setPermissions(Bukkit.getPlayer(id).addAttachment(main), falsePerms, true);
+            PermissionUtils.setPermissions(Bukkit.getPlayer(id).addAttachment(Carbyne.getInstance()), falsePerms, true);
         }
     }
 
@@ -255,31 +294,12 @@ public class StaffManager {
             player.setGameMode(GameMode.CREATIVE);
         else {
             player.setGameMode(GameMode.SURVIVAL);
-            player.setMaxHealth(100.0);
+            player.setMaxHealth(player.getMaxHealth());
             player.setHealth(player.getMaxHealth());
         }
     }
 
     public boolean isVanished(Player player) {
         return vanish.contains(player.getUniqueId());
-    }
-
-    public void logToFile(String message) {
-        try {
-            File saveTo = new File(Carbyne.getInstance().getDataFolder(), "playersLog.txt");
-
-            if (!saveTo.exists()) {
-                saveTo.createNewFile();
-            }
-
-            FileWriter fw = new FileWriter(saveTo, true);
-
-            PrintWriter pw = new PrintWriter(fw);
-            pw.println(message);
-            pw.flush();
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

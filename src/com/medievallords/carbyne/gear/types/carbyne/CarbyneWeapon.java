@@ -1,18 +1,23 @@
 package com.medievallords.carbyne.gear.types.carbyne;
 
 import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.gear.artifacts.Artifact;
 import com.medievallords.carbyne.gear.effects.carbyne.CarbyneEffect;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
+import com.medievallords.carbyne.gear.types.GearState;
+import com.medievallords.carbyne.recipes.CustomCarbyneRecipe;
 import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -25,7 +30,6 @@ import java.util.List;
 @Setter
 public class CarbyneWeapon extends CarbyneGear {
 
-    private GearManager gearManager;
     private List<String> enchantments = new ArrayList<>();
     private String material = "";
     private HashMap<PotionEffect, Double> offensivePotionEffects = new HashMap<>();
@@ -33,13 +37,12 @@ public class CarbyneWeapon extends CarbyneGear {
     private List<CarbyneEffect> carbyneEffects = new ArrayList<>();
     private Special special;
     private boolean allowInDisabledZones;
-
-    public CarbyneWeapon(GearManager gearManager) {
-        this.gearManager = gearManager;
-    }
+    private double damage = 25;
+    private Artifact artifact;
+    private final List<CustomCarbyneRecipe> recipes = new ArrayList<>();
 
     @Override
-    public boolean load(ConfigurationSection cs, String index) {
+    public boolean load(ConfigurationSection cs, String index, GearManager gearManager) {
         if ((displayName = cs.getString(index + ".DisplayName")) == null) return false;
         if ((type = cs.getString(index + ".Type")) == null) return false;
         if ((gearCode = cs.getString(index + ".GearCode")) == null) return false;
@@ -49,6 +52,7 @@ public class CarbyneWeapon extends CarbyneGear {
         if ((enchantments = cs.getStringList(index + ".Enchantments")) == null || enchantments.size() <= 0)
             return false;
         if ((cost = cs.getInt(index + ".Cost")) == -1) return false;
+        if ((damage = cs.getDouble(index + ".Damage")) == -1) return false;
 
         displayName = cs.getString(index + ".DisplayName");
         type = cs.getString(index + ".Type");
@@ -58,10 +62,13 @@ public class CarbyneWeapon extends CarbyneGear {
         maxDurability = cs.getInt(index + ".Durability");
         lore = cs.getStringList(index + ".Lore");
         enchantments = cs.getStringList(index + ".Enchantments");
-        hidden = cs.getBoolean(index + ".Hidden");
+        if (cs.contains(index + ".State")) {
+            this.state = GearState.valueOf(cs.getString(index + ".State").toUpperCase());
+        }
         gearCode = cs.getString(index + ".GearCode");
         cost = cs.getInt(index + ".Cost");
         allowInDisabledZones = cs.getBoolean(index + ".AllowInDisabledZones");
+        damage = cs.getDouble(index + ".Damage");
 
         if (cs.contains(index + ".RepairMaterial")) {
             repairType = Material.getMaterial(cs.getString(index + ".RepairMaterial"));
@@ -99,6 +106,103 @@ public class CarbyneWeapon extends CarbyneGear {
             if (gearManager.getSpecialByName(cs.getString(index + ".Special")) != null)
                 special = gearManager.getSpecialByName(cs.getString(index + ".Special"));
 
+        if (!cs.contains(index + ".Artifact")) {
+            return true;
+        }
+
+        Artifact artifactF = gearManager.getArtifact(cs.getString(index + ".Artifact"));
+        if (artifactF == null) {
+            return true;
+        }
+
+        this.artifact = artifactF;
+
+        if (!cs.contains(index + ".RecipeIngredients")) {
+            return true;
+        }
+
+        /* Crafting Recipe Format
+
+        ArtifactRecipe: aba,aca,ada
+        ArtifactRecipeIngredients:
+        - 'a=GOLD_BLOCK:0'
+        - 'b=EMERALD:0'
+        - 'c=QUARTZ:0'
+        - 'd=NETHER_STAR:0'
+        ArtifactRecipeResult:
+          ItemMat: QUARTZ
+          ItemData: 0
+          Amount: 1
+          DisplayName: '&l&bCarbyne Fragment'
+          Lore:
+          - 'Line 1'
+          - 'Line 2'
+          Enchantments:
+          - 'DURABILITY,1'
+
+         */
+
+        ConfigurationSection recipeSection = cs.getConfigurationSection(index + ".RecipeIngredients");
+        for (String recipeName : recipeSection.getKeys(false)) {
+            ArrayList<ItemStack> ingredients = new ArrayList<>();
+            for (String recipeItemString : recipeSection.getConfigurationSection(recipeName).getKeys(false)) {
+                ConfigurationSection itemSection = recipeSection.getConfigurationSection(recipeName).getConfigurationSection(recipeItemString);
+
+                boolean carbyneToken = false;
+                String resultItemDisplay = "";
+                if (itemSection.contains("DisplayName")) {
+                    String disp = itemSection.getString("DisplayName");
+                    if (disp.equalsIgnoreCase("token")) {
+                        carbyneToken = true;
+                    } else {
+                        resultItemDisplay = disp;
+                    }
+                }
+                if (!carbyneToken) {
+                    Material resultItemMaterial = Material.getMaterial(itemSection.contains("ItemMat") ? itemSection.getString("ItemMat") : "AIR");
+
+
+                    if (resultItemMaterial == Material.AIR) {
+                        ingredients.add(new ItemBuilder(resultItemMaterial).build());
+                        continue;
+                    }
+
+                    int resultItemData = itemSection.contains("ItemData") ? itemSection.getInt("ItemData") : 0;
+                    int resultItemAmount = itemSection.contains("Amount") ? itemSection.getInt("Amount") : 1;
+                    List<String> resultItemLore = itemSection.contains("Lore") ? itemSection.getStringList("Lore") : new ArrayList<>();
+
+                    ItemBuilder itemBuilder = new ItemBuilder(resultItemMaterial);
+                    itemBuilder.durability(resultItemData);
+                    if (!resultItemDisplay.isEmpty()) {
+                        itemBuilder.name(resultItemDisplay);
+                    }
+                    if (!resultItemLore.isEmpty()) {
+                        itemBuilder.setLore(resultItemLore);
+                    }
+
+                    itemBuilder.amount(resultItemAmount);
+
+                    if (itemSection.contains("Enchantments")) {
+                        HashMap<Enchantment, Integer> resultItemEnchantments = new HashMap<>();
+                        for (String enchantmentString : itemSection.getStringList("Enchantments")) {
+                            String[] enchSplit = enchantmentString.split(",");
+                            resultItemEnchantments.put(Enchantment.getByName(enchSplit[0].toUpperCase()), Integer.parseInt(enchSplit[1]));
+                        }
+
+                        itemBuilder.addEnchantments(resultItemEnchantments);
+                    }
+
+                    ingredients.add(itemBuilder.build());
+                } else {
+                    ingredients.add(gearManager.getTokenItem());
+                }
+
+            }
+
+            ingredients.add(this.artifact.getCustomRecipe().getResult());
+
+            this.recipes.add(new CustomCarbyneRecipe("recipe:" + recipeName + ":" + gearCode, getItem(false), ingredients));
+        }
         return true;
     }
 
@@ -106,8 +210,48 @@ public class CarbyneWeapon extends CarbyneGear {
     public ItemStack getItem(boolean storeItem) {
         List<String> loreDupe = new ArrayList<>();
 
+        HashMap<Enchantment, Integer> enchantmentHashMap = new HashMap<>();
+        for (String s : enchantments) {
+            String[] split = s.split(",");
+
+            if (split.length != 2)
+                continue;
+
+            if (!type.equalsIgnoreCase("bow")) {
+                if (split[0].equalsIgnoreCase("sharpness"))
+                    enchantmentHashMap.put(Enchantment.DAMAGE_ALL, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("arthropod"))
+                    enchantmentHashMap.put(Enchantment.DAMAGE_ARTHROPODS, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("undead"))
+                    enchantmentHashMap.put(Enchantment.DAMAGE_UNDEAD, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("fire"))
+                    enchantmentHashMap.put(Enchantment.FIRE_ASPECT, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("loot"))
+                    enchantmentHashMap.put(Enchantment.LOOT_BONUS_MOBS, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("knockback"))
+                    enchantmentHashMap.put(Enchantment.KNOCKBACK, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("durability"))
+                    enchantmentHashMap.put(Enchantment.DURABILITY, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("efficiency"))
+                    enchantmentHashMap.put(Enchantment.DIG_SPEED, Integer.valueOf(split[1]));
+                else if (split[0].equalsIgnoreCase("fortune"))
+                    enchantmentHashMap.put(Enchantment.LOOT_BONUS_BLOCKS, Integer.valueOf(split[1]));
+            } else if (split[0].equalsIgnoreCase("damage"))
+                enchantmentHashMap.put(Enchantment.ARROW_DAMAGE, Integer.valueOf(split[1]));
+            else if (split[0].equalsIgnoreCase("fire"))
+                enchantmentHashMap.put(Enchantment.ARROW_FIRE, Integer.valueOf(split[1]));
+            else if (split[0].equalsIgnoreCase("infinite"))
+                enchantmentHashMap.put(Enchantment.ARROW_INFINITE, Integer.valueOf(split[1]));
+            else if (split[0].equalsIgnoreCase("knockback"))
+                enchantmentHashMap.put(Enchantment.ARROW_KNOCKBACK, Integer.valueOf(split[1]));
+        }
+
         loreDupe.add(HiddenStringUtils.encodeString(gearCode + "," + maxDurability));
-        //loreDupe.add("&aDurability&7: &c" + getMaxDurability() + "/" + getMaxDurability());
+        double totalDamage = damage;
+        if (enchantmentHashMap.containsKey(Enchantment.DAMAGE_ALL))
+            totalDamage += enchantmentHashMap.get(Enchantment.DAMAGE_ALL) * GearManager.SHARPNESS_DAMAGE;
+
+        loreDupe.add("&aDamage&7: &c" + ((int) (totalDamage)) + "-" + ((int) totalDamage + (int)(totalDamage * 0.8)));
 
         if (special != null)
             loreDupe.add("&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));
@@ -135,7 +279,10 @@ public class CarbyneWeapon extends CarbyneGear {
         }
 
         if (lore != null && lore.size() > 0) {
-            loreDupe.add("");
+            if (!loreDupe.isEmpty()) {
+                loreDupe.add("");
+            }
+
             loreDupe.addAll(lore);
         }
 
@@ -167,43 +314,6 @@ public class CarbyneWeapon extends CarbyneGear {
                 return null;
         else if (type.equalsIgnoreCase("bow"))
             mat = Material.BOW;
-
-
-        HashMap<Enchantment, Integer> enchantmentHashMap = new HashMap<>();
-        for (String s : enchantments) {
-            String[] split = s.split(",");
-
-            if (split.length != 2)
-                continue;
-
-            if (!type.equalsIgnoreCase("bow")) {
-                if (split[0].equalsIgnoreCase("sharpness"))
-                    enchantmentHashMap.put(Enchantment.DAMAGE_ALL, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("arthropod"))
-                    enchantmentHashMap.put(Enchantment.DAMAGE_ARTHROPODS, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("undead"))
-                    enchantmentHashMap.put(Enchantment.DAMAGE_UNDEAD, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("fire"))
-                    enchantmentHashMap.put(Enchantment.FIRE_ASPECT, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("loot"))
-                    enchantmentHashMap.put(Enchantment.LOOT_BONUS_MOBS, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("knockback"))
-                    enchantmentHashMap.put(Enchantment.KNOCKBACK, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("durability"))
-                    enchantmentHashMap.put(Enchantment.DURABILITY, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("efficiency"))
-                    enchantmentHashMap.put(Enchantment.DIG_SPEED, Integer.valueOf(split[1]));
-                else if (split[0].equalsIgnoreCase("fortune"))
-                    enchantmentHashMap.put(Enchantment.LOOT_BONUS_BLOCKS, Integer.valueOf(split[1]));
-            } else if (split[0].equalsIgnoreCase("damage"))
-                    enchantmentHashMap.put(Enchantment.ARROW_DAMAGE, Integer.valueOf(split[1]));
-            else if (split[0].equalsIgnoreCase("fire"))
-                    enchantmentHashMap.put(Enchantment.ARROW_FIRE, Integer.valueOf(split[1]));
-            else if (split[0].equalsIgnoreCase("infinite"))
-                    enchantmentHashMap.put(Enchantment.ARROW_INFINITE, Integer.valueOf(split[1]));
-            else if (split[0].equalsIgnoreCase("knockback"))
-                    enchantmentHashMap.put(Enchantment.ARROW_KNOCKBACK, Integer.valueOf(split[1]));
-        }
 
         ItemBuilder builder = new ItemBuilder(mat)
                 .name(displayName)
@@ -269,6 +379,10 @@ public class CarbyneWeapon extends CarbyneGear {
         }
     }
 
+    public double getTotalDamage() {
+        return damage;
+    }
+
     @Override
     public void damageItem(Player wielder, ItemStack itemStack) {
         int durability = getDurability(itemStack);
@@ -276,7 +390,7 @@ public class CarbyneWeapon extends CarbyneGear {
         if (durability == -1)
             return;
 
-        double chance = 0;
+        double chance = 1;
 
         if (itemStack.containsEnchantment(Enchantment.DURABILITY)) {
             int level = itemStack.getEnchantmentLevel(Enchantment.DURABILITY);
@@ -284,10 +398,13 @@ public class CarbyneWeapon extends CarbyneGear {
             chance = calc / 100;
         }
 
-        if (Math.random() < chance)
+        if (chance < Math.random())
             return;
 
         if (durability >= 1) {
+            if (durability > maxDurability)
+                durability = maxDurability;
+
             durability--;
             Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + durability), 0);
             itemStack.setDurability((short) durabilityScale(itemStack));
@@ -297,8 +414,11 @@ public class CarbyneWeapon extends CarbyneGear {
             else if (itemStack.getDurability() >= itemStack.getType().getMaxDurability())
                 itemStack.setDurability(itemStack.getType().getMaxDurability());
         } else {
+            PlayerItemBreakEvent event = new PlayerItemBreakEvent(wielder, itemStack);
+            Bukkit.getPluginManager().callEvent(event);
             wielder.getInventory().remove(itemStack);
-            wielder.playSound(wielder.getLocation(), Sound.ITEM_BREAK, 1, 1);
+            wielder.updateInventory();
+            wielder.playSound(wielder.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
         }
     }
 
@@ -311,13 +431,14 @@ public class CarbyneWeapon extends CarbyneGear {
         String[] split = line.split(",");
         if (split.length != 2) {
             Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + maxDurability), 0);
-            return -1;
+            return maxDurability;
         }
 
         try {
             return Integer.valueOf(split[1]);
         } catch (Exception ez) {
-            return -1;
+            Namer.setLore(itemStack, HiddenStringUtils.encodeString(gearCode + "," + maxDurability), 0);
+            return maxDurability;
         }
     }
 
@@ -327,14 +448,14 @@ public class CarbyneWeapon extends CarbyneGear {
         if (charge == -1)
             return;
 
-        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 2);
+        Namer.setLore(itemStack, "&aSpecial Charge&7: &c" + amount + "/" + special.getRequiredCharge(), 3);
     }
 
     public int getSpecialCharge(ItemStack itemStack) {
         if (itemStack == null)
             return 0;
         try {
-            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(2)).replace(" ", "").split(":")[1].split("/")[0]);
+            return Integer.valueOf(ChatColor.stripColor(itemStack.getItemMeta().getLore().get(3)).replace(" ", "").split(":")[1].split("/")[0]);
         } catch (Exception ez) {
             return 0;
         }

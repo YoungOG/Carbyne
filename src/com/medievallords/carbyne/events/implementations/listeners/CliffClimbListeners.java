@@ -1,12 +1,7 @@
 package com.medievallords.carbyne.events.implementations.listeners;
 
 import com.medievallords.carbyne.events.implementations.CliffClimb;
-import com.medievallords.carbyne.utils.MessageManager;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 
 /**
  * Created by Dalton on 7/5/2017.
@@ -21,28 +16,28 @@ public class CliffClimbListeners implements Listener
         this.cliffClimb = cliffClimb;
     }
 
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e)
-    {
-        if(!e.getFrom().getDirection().equals(e.getTo().getDirection()) && cliffClimb.getWaitingTasks().containsKey(e.getPlayer()))
-        {
-            cliffClimb.getWaitingTasks().get(e.getPlayer()).cancel();
-            cliffClimb.getWaitingTasks().remove(e.getPlayer());
-            MessageManager.sendMessage(e.getPlayer(), "&cTeleportation cancelled!");
-        }
-    }
-
-    @EventHandler
-    public void onInteract (PlayerInteractEvent event) {
-        if (event.getAction() == Action.PHYSICAL) {
-            if (event.getClickedBlock().getLocation().equals(cliffClimb.getWinningLocation())) {
-                if (cliffClimb.getParticipants().contains(event.getPlayer()) && cliffClimb.getWinner() == null && cliffClimb.isAfterCountdown()) {
-                    MessageManager.sendMessage(event.getPlayer(), "&2You have defeated Cliff Climb!");
-                    cliffClimb.setWinner(event.getPlayer());
-                }
-            }
-        }
-    }
+//    @EventHandler
+//    public void onPlayerMove(PlayerMoveEvent e)
+//    {
+//        if(!e.getFrom().getDirection().equals(e.getTo().getDirection()) && cliffClimb.getWaitingTasks().containsKey(e.getPlayer()))
+//        {
+//            cliffClimb.getWaitingTasks().get(e.getPlayer()).cancel();
+//            cliffClimb.getWaitingTasks().remove(e.getPlayer());
+//            MessageManager.sendMessage(e.getPlayer(), "&cTeleportation cancelled!");
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onInteract (PlayerInteractEvent event) {
+//        if (event.getAction() == Action.PHYSICAL) {
+//            if (event.getClickedBlock().getLocation().equals(cliffClimb.getWinningLocation())) {
+//                if (cliffClimb.getParticipants().contains(event.getPlayer()) && cliffClimb.getWinner() == null && cliffClimb.isAfterCountdown()) {
+//                    MessageManager.sendMessage(event.getPlayer(), "&2You have defeated Cliff Climb!");
+//                    cliffClimb.setWinner(event.getPlayer());
+//                }
+//            }
+//        }
+//    }
 
     /*@EventHandler
     public void onTeleport(PlayerTeleportEvent e)

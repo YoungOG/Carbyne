@@ -1,9 +1,12 @@
 package com.medievallords.carbyne.crates;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.crates.animations.*;
 import com.medievallords.carbyne.crates.keys.Key;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.utils.LocationSerialization;
+import com.medievallords.carbyne.utils.StaticClasses;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,22 +23,26 @@ import java.util.logging.Level;
 
 public class CrateManager {
 
-    private Carbyne main = Carbyne.getInstance();
     private ArrayList<Key> keys = new ArrayList<>();
     private ArrayList<Crate> crates = new ArrayList<>();
     private HashMap<Sound, Double[]> sounds = new HashMap<>();
 
     public CrateManager() {
-        load(main.getCratesFileConfiguration());
+        //load(Carbyne.getInstance().getCratesFileConfiguration());
     }
 
     public void load(FileConfiguration crateFileConfiguration) {
         sounds.clear();
+        if (!crates.isEmpty()) {
+            for (Crate crate : crates) {
+                Bukkit.getScheduler().cancelTask(crate.getTaskID());
+            }
+        }
         crates.clear();
         keys.clear();
 
-        if (main.getConfig().getStringList("crates.opening-sounds").size() > 0) {
-            for (String s : main.getConfig().getStringList("crates.opening-sounds")) {
+        if (Carbyne.getInstance().getConfig().getStringList("crates.opening-sounds").size() > 0) {
+            for (String s : Carbyne.getInstance().getConfig().getStringList("crates.opening-sounds")) {
                 String[] args = s.split(",");
 
                 Double[] doubles = { Double.valueOf(args[1]), Double.valueOf(args[1]) };
@@ -48,10 +55,10 @@ public class CrateManager {
         ConfigurationSection keyConfigurationSection = crateFileConfiguration.getConfigurationSection("Keys");
 
         if (keyConfigurationSection.getKeys(false).size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + keyConfigurationSection.getKeys(false).size() + " key(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Preparing to load " + keyConfigurationSection.getKeys(false).size() + " key(s).");
 
             for (String name : keyConfigurationSection.getKeys(false)) {
-                main.getLogger().log(Level.INFO, "Key found: " + name + ", loading.");
+                Carbyne.getInstance().getLogger().log(Level.INFO, "Key found: " + name + ", loading.");
 
                 int itemId = keyConfigurationSection.getInt(name + ".ItemID");
                 int itemData = keyConfigurationSection.getInt(name + ".ItemData");
@@ -65,29 +72,30 @@ public class CrateManager {
                 key.setLore(lore);
                 for (String s : enchantments) {
                     String[] args = s.split(",");
-                    key.getEnchantments().put(Enchantment.getByName(args[0]), Integer.valueOf(args[1]) + 1);
+                    key.getEnchantments().put(Enchantment.getByName(args[0]), Integer.valueOf(args[1]));
                 }
                 key.setCrate(crate);
 
                 keys.add(key);
             }
 
-            main.getLogger().log(Level.INFO, "Successfully loaded " + keys.size() + " key(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Successfully loaded " + keys.size() + " key(s).");
         }
 
         ConfigurationSection crateConfigurationSection = crateFileConfiguration.getConfigurationSection("Crates");
 
         if (crateConfigurationSection.getKeys(false).size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to load " + crateConfigurationSection.getKeys(false).size() + " crate(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Preparing to load " + crateConfigurationSection.getKeys(false).size() + " crate(s).");
 
             for (String name : crateConfigurationSection.getKeys(false)) {
                 Crate crate = new Crate(name);
 
-                main.getLogger().log(Level.INFO, "Crate found: " + crate.getName() + ", loading.");
+                Carbyne.getInstance().getLogger().log(Level.INFO, "Crate found: " + crate.getName() + ", loading.");
 
                 Location location = null;
                 int rewardsAmount = 1;
                 List<Reward> rewards = new ArrayList<>();
+                CrateAnimation crateAnimation = null;
 
                 if (crateConfigurationSection.get(name + ".Location") != null)
                     location = LocationSerialization.deserializeLocation(crateConfigurationSection.getString(name + ".Location"));
@@ -120,9 +128,9 @@ public class CrateManager {
                                     lore.clear();
                                     lore.add("&eGives a random carbyne gear item.");
                                 } else {
-                                    if (Carbyne.getInstance().getGearManager().getCarbyneGear(displayName) != null) {
+                                    if (StaticClasses.gearManager.getCarbyneGear(displayName) != null) {
                                         gearCode = displayName;
-                                        displayName = Carbyne.getInstance().getGearManager().getCarbyneGear(gearCode).getDisplayName();
+                                        displayName = StaticClasses.gearManager.getCarbyneGear(gearCode).getDisplayName();
                                     }
                                 }
                             }
@@ -132,7 +140,7 @@ public class CrateManager {
                             reward.setLore(lore);
                             for (String s : enchantments) {
                                 String[] args = s.split(",");
-                                reward.getEnchantments().put(Enchantment.getByName(args[0]), Integer.valueOf(args[1]) + 1);
+                                reward.getEnchantments().put(Enchantment.getByName(args[0]), Integer.valueOf(args[1]));
                             }
                             reward.setCommands(commands);
                             reward.setDisplayItemOnly(displayItemOnly);
@@ -142,13 +150,49 @@ public class CrateManager {
                             rewards.add(reward);
                         }
 
-                        main.getLogger().log(Level.INFO, "Loaded " + rewards.size() + " rewards for the crate '" + name + "'.");
+                        Carbyne.getInstance().getLogger().log(Level.INFO, "Loaded " + rewards.size() + " rewards for the crate '" + name + "'.");
                     }
+                }
+
+                if (crateConfigurationSection.get(name + ".Animation") != null) {
+                    switch (crateConfigurationSection.getString(name + ".Animation").toLowerCase()) {
+                        case "legacy":
+                            crateAnimation = new LegacyAnimation(rewards, rewardsAmount);
+                            break;
+                        case "memory":
+                            int slots = 36;
+                            if (crateConfigurationSection.contains(name + ".AnimationSlots")) {
+                                slots = crateConfigurationSection.getInt(name + ".AnimationSlots");
+                            }
+
+                            int eachItemAmount = 2;
+                            if (crateConfigurationSection.contains(name + ".EachAmount")) {
+                                eachItemAmount = crateConfigurationSection.getInt(name + ".EachAmount");
+                            }
+
+                            crateAnimation = new MemoryAnimation(slots, rewards, rewardsAmount, eachItemAmount);
+                            break;
+                        case "select":
+                            int slots2 = 36;
+                            if (crateConfigurationSection.contains(name + ".AnimationSlots")) {
+                                slots2 = crateConfigurationSection.getInt(name + ".AnimationSlots");
+                            }
+
+                            crateAnimation = new SelectAnimation(slots2, rewards, rewardsAmount);
+                            break;
+                        default:
+                            Bukkit.getLogger().log(Level.WARNING, "&cCould not load the crate animation for crate: " + name);
+                            continue;
+                    }
+                } else {
+                    Bukkit.getLogger().log(Level.WARNING, "&cCould not load the crate animation for crate: " + name);
+                    continue;
                 }
 
                 if (location != null)
                     crate.setLocation(location);
 
+                crate.setAnimation(crateAnimation);
                 crate.setRewardsAmount(rewardsAmount);
 
                 if (rewards.size() > 0)
@@ -159,18 +203,18 @@ public class CrateManager {
                 crate.runEffect(name);
             }
 
-            main.getLogger().log(Level.INFO, "Successfully loaded " + getCrates().size() + " crate(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Successfully loaded " + getCrates().size() + " crate(s).");
         }
     }
 
     public void save(FileConfiguration crateFileConfiguration) {
         if (getCrates().size() > 0) {
-            main.getLogger().log(Level.INFO, "Preparing to save " + getCrates().size() + " crate(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Preparing to save " + getCrates().size() + " crate(s).");
 
             for (Crate crate : getCrates())
                 crate.save(crateFileConfiguration);
 
-            main.getLogger().log(Level.INFO, "Successfully saved " + getCrates().size() + " crate(s).");
+            Carbyne.getInstance().getLogger().log(Level.INFO, "Successfully saved " + getCrates().size() + " crate(s).");
         }
     }
 
@@ -192,9 +236,23 @@ public class CrateManager {
     }
 
     public Crate getCrate(UUID uniqueId) {
-        for (Crate crate : getCrates())
-            if (crate.getEditors().contains(uniqueId))
-                return crate;
+        for (Crate crate : getCrates()) {
+            if (crate.getAnimation() instanceof LegacyAnimation) {
+                LegacyAnimation la = (LegacyAnimation) crate.getAnimation();
+                if (la.getCrateOpeners().containsKey(uniqueId))
+                    return crate;
+            } else if (crate.getAnimation() instanceof MemoryAnimation) {
+                MemoryAnimation ma = (MemoryAnimation) crate.getAnimation();
+                if (ma.getMemoryDataMap().containsKey(uniqueId)) {
+                    return crate;
+                }
+            } else if (crate.getAnimation() instanceof SelectAnimation) {
+                SelectAnimation sa = (SelectAnimation) crate.getAnimation();
+                if (sa.getSelectDataMap().containsKey(uniqueId)) {
+                    return crate;
+                }
+            }
+        }
 
         return null;
     }
@@ -227,9 +285,23 @@ public class CrateManager {
     }
 
     public boolean isOpeningCrate(Player player) {
-        for (Crate crate : getCrates())
-            if (crate.getCrateOpeners().containsKey(player.getUniqueId()))
-                return true;
+        for (Crate crate : getCrates()) {
+            if (crate.getAnimation() instanceof LegacyAnimation) {
+                LegacyAnimation la = (LegacyAnimation) crate.getAnimation();
+                if (la.getCrateOpeners().containsKey(player.getUniqueId()))
+                    return true;
+            } else if (crate.getAnimation() instanceof MemoryAnimation) {
+                MemoryAnimation ma = (MemoryAnimation) crate.getAnimation();
+                if (ma.getMemoryDataMap().containsKey(player.getUniqueId())) {
+                    return true;
+                }
+            } else if (crate.getAnimation() instanceof SelectAnimation) {
+                SelectAnimation sa = (SelectAnimation) crate.getAnimation();
+                if (sa.getSelectDataMap().containsKey(player.getUniqueId())) {
+                    return true;
+                }
+            }
+        }
 
         return false;
     }

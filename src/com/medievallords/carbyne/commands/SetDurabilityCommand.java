@@ -4,6 +4,7 @@ import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftArmor;
 import com.medievallords.carbyne.gear.types.minecraft.MinecraftWeapon;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -25,7 +26,7 @@ public class SetDurabilityCommand extends BaseCommand {
             return;
         }
 
-        ItemStack itemStack = player.getItemInHand();
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack == null) {
             MessageManager.sendMessage(player, "&cYou're not holding an item");
             return;
@@ -39,7 +40,7 @@ public class SetDurabilityCommand extends BaseCommand {
             return;
         }
 
-        CarbyneGear gear = getGearManager().getCarbyneGear(itemStack);
+        CarbyneGear gear = StaticClasses.gearManager.getCarbyneGear(itemStack);
         if (gear != null) {
             gear.setDurability(itemStack, durability);
             MessageManager.sendMessage(player, "&aItems durability set");
@@ -47,14 +48,14 @@ public class SetDurabilityCommand extends BaseCommand {
         }
 
 
-        MinecraftWeapon weapon = getGearManager().getDefaultWeapon(itemStack);
+        MinecraftWeapon weapon = StaticClasses.gearManager.getDefaultWeapon(itemStack);
         if (weapon != null) {
             weapon.setDurability(itemStack, durability);
             MessageManager.sendMessage(player, "&aItems durability set");
             return;
         }
 
-        MinecraftArmor armor = getGearManager().getDefaultArmor(itemStack);
+        MinecraftArmor armor = StaticClasses.gearManager.getDefaultArmor(itemStack);
         if (armor != null) {
             armor.setDurability(itemStack, durability);
             MessageManager.sendMessage(player, "&aItems durability set");

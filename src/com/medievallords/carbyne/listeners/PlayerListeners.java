@@ -1,8 +1,8 @@
 package com.medievallords.carbyne.listeners;
 
+import com.destroystokyo.paper.Title;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
-import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
@@ -12,7 +12,7 @@ import com.vexsoftware.votifier.model.VotifierEvent;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -31,29 +31,24 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import org.github.paperspigot.Title;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class PlayerListeners implements Listener {
 
     @Getter
     private static int voteCount = 0;
-    private Carbyne main = Carbyne.getInstance();
     private String joinMessage;
     private String[] subtitles;
+    //@Getter
+    //private static List<String> chunksUpdated = new ArrayList<>();
 
     public PlayerListeners() {
         joinMessage = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("JoinMessage"));
-
-        if (joinMessage == null)
-            joinMessage = ChatColor.translateAlternateColorCodes('&', "&5Medieval Lords");
-
         List<String> initSubs = Carbyne.getInstance().getConfig().getStringList("JoinMessageSubtitles");
-        subtitles = initSubs.toArray(new String[initSubs.size()]);
+        subtitles = initSubs.toArray(new String[0]);
 
         if (subtitles.length < 1 || subtitles[0] == null)
             subtitles = new String[]{};
@@ -62,10 +57,43 @@ public class PlayerListeners implements Listener {
             subtitles[i] = ChatColor.translateAlternateColorCodes('&', subtitles[i]);
     }
 
+//    @EventHandler
+//    public void onChunkLoad(ChunkLoadEvent event) {
+//        if (!chunksUpdated.contains(event.getWorld().getName() + "," + event.getChunk().getX() + "," + event.getChunk().getZ())) {
+//            chunksUpdated.add(event.getWorld().getName() + "," + event.getChunk().getX() + "," + event.getChunk().getZ());
+//            for (BlockState blockState : event.getChunk().getTileEntities()) {
+//                if (blockState instanceof ContainerBlock) {
+//                    ContainerBlock block = (ContainerBlock) blockState;
+//
+//                    for (int x = 0; x < block.getInventory().getSize(); x++) {
+//                        ItemStack itemStack = block.getInventory().getItem(x);
+//                        if (itemStack == null) {
+//                            continue;
+//                        }
+//
+//                        CarbyneGear gear = StaticClasses.gearManager.getCarbyneGear(itemStack);
+//                        if (gear != null && (gear.getState() == GearState.HIDDEN || gear.getState() == GearState.CONCEALED)) {
+//                            block.getInventory().setItem(x, null);
+//                        }
+//
+//                        switch (itemStack.getType()) {
+//                            case DRAGON_EGG:
+//                            case GOLD_NUGGET:
+//                            case GOLD_INGOT:
+//                            case GOLD_BLOCK:
+//                                block.getInventory().setItem(x, null);
+//                                break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
 
         if (!player.hasPlayedBefore())
             player.sendTitle(new Title.Builder().title(joinMessage).subtitle(subtitles[Maths.randomNumberBetween(subtitles.length, 0)]).stay(55).build());
@@ -88,8 +116,8 @@ public class PlayerListeners implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getPlayer().getGameMode() == GameMode.CREATIVE) {
-            if (event.getPlayer().getItemInHand() != null && event.getPlayer().getItemInHand().getType() != Material.AIR) {
-                ItemStack item = event.getPlayer().getItemInHand();
+            if (event.getPlayer().getInventory().getItemInMainHand() != null && event.getPlayer().getInventory().getItemInMainHand().getType() != Material.AIR) {
+                ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
                 switch (item.getType()) {
                     case TRAPPED_CHEST:
                     case CHEST:
@@ -98,7 +126,7 @@ public class PlayerListeners implements Listener {
                     case DROPPER:
                     case FURNACE:
                     case BREWING_STAND:
-                        net.minecraft.server.v1_8_R3.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
+                        net.minecraft.server.v1_12_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
                         if (itemStack.getTag() != null) {
                             event.setCancelled(true);
                             itemStack.setTag(null);
@@ -112,28 +140,14 @@ public class PlayerListeners implements Listener {
     @EventHandler
     public void onVote(VotifierEvent event) {
         Player player = Bukkit.getPlayer(event.getVote().getUsername());
-        player.playSound(player.getLocation(), Sound.ORB_PICKUP, 1, .1f);
-
         if (player != null) {
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, .1f);
             voteCount++;
 
-            if (voteCount % 15 == 0 && voteCount < 100)
+            if (voteCount % 15 == 0 && voteCount < 500)
                 MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l" + voteCount + " &aconsecutive votes has been reached! Vote using &3/vote&a!");
 
-            ItemStack reward;
-
-            reward = main.getCrateManager().getKey("MysticalKey").getItem().clone();
-
-            Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(player.getInventory(), reward);
-
-            if (leftovers.values().size() > 0) {
-                MessageManager.sendMessage(player, "&cThis item could not fit in your inventory, and was dropped to the ground.");
-
-                for (ItemStack itemStack : leftovers.values()) {
-                    Item item = player.getWorld().dropItem(player.getEyeLocation(), itemStack);
-                    item.setVelocity(player.getEyeLocation().getDirection().normalize().multiply(1));
-                }
-            }
+            StaticClasses.profileManager.getProfile(player.getUniqueId()).setKitPoints(StaticClasses.profileManager.getProfile(player.getUniqueId()).getKitPoints() + 1);
 
             double anotherRandom = Math.random();
             int amount;
@@ -149,14 +163,12 @@ public class PlayerListeners implements Listener {
 
             Account.getAccount(player.getUniqueId()).setBalance(Account.getAccount(player.getUniqueId()).getBalance() + amount);
 
-            MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received a " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
-            MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received a " + reward.getItemMeta().getDisplayName() + "&a! Thank you for voting!");
+            MessageManager.broadcastMessage("&f[&3Voting&f]: &5" + player.getName() + " &ahas voted and has received &c1 KitPoint&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
+            MessageManager.sendMessage(player, "&f[&3Voting&f]: &aYou have received 1 KitPoint&a! Thank you for voting!");
         }
 
-        if (voteCount >= 100) {
+        if (voteCount >= 500) {
             voteCount = 0;
-
-            ItemStack reward = main.getCrateManager().getKey("MysticalKey").getItem().clone();
 
             double anotherRandom = Math.random();
             int amount;
@@ -170,22 +182,10 @@ public class PlayerListeners implements Listener {
             else
                 amount = 75;
 
-            for (Player online : PlayerUtility.getOnlinePlayers()) {
-                Map<Integer, ItemStack> leftovers = InventoryWorkaround.addItems(online.getInventory(), reward);
+            for (Player online : PlayerUtility.getOnlinePlayers())
+                StaticClasses.profileManager.getProfile(online.getUniqueId()).setKitPoints(StaticClasses.profileManager.getProfile(online.getUniqueId()).getKitPoints() + 1);
 
-                if (leftovers.values().size() > 0) {
-                    MessageManager.sendMessage(online, "&cThis item could not fit in your inventory, and was dropped to the ground.");
-
-                    for (ItemStack itemStack : leftovers.values()) {
-                        Item item = online.getWorld().dropItem(online.getEyeLocation(), itemStack);
-                        item.setVelocity(online.getEyeLocation().getDirection().normalize().multiply(1));
-                    }
-                }
-
-                Account.getAccount(online.getUniqueId()).setBalance(Account.getAccount(online.getUniqueId()).getBalance() + amount);
-            }
-
-            MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l100 &aconsecutive votes has been reached, everyone online gets 1 " + reward.getItemMeta().getDisplayName() + "&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
+            MessageManager.broadcastMessage("&f[&3Voting&f]: &5&l500 &aconsecutive votes has been reached, everyone online gets &c1 KitPoint&a&a, and &c" + MessageManager.format(amount) + "&a! Vote using &3/vote&a!");
         }
     }
 
@@ -196,7 +196,7 @@ public class PlayerListeners implements Listener {
         ItemStack bone = new ItemBuilder(Material.BONE).build();
 
         Player player = event.getEntity();
-        player.getWorld().playSound(player.getLocation(), Sound.VILLAGER_HIT, 1, 0.15f);
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_VILLAGER_HURT, 1, 0.15f);
         ParticleEffect.LAVA.display(0, 0, 0, 0, 2, player.getLocation(), 60, false);
         List<Item> items = new ArrayList<>();
 
@@ -222,14 +222,14 @@ public class PlayerListeners implements Listener {
             public void run() {
                 for (Item item : items)
                     if (item.isOnGround()) {
-                        item.getWorld().playSound(item.getLocation(), Sound.LAVA_POP, 1, 1f);
+                        item.getWorld().playSound(item.getLocation(), Sound.BLOCK_LAVA_POP, 1, 1f);
                         i++;
                     }
 
                 if (items.size() <= 0 || i >= 3)
                     cancel();
             }
-        }.runTaskTimerAsynchronously(main, 0, 5);
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 5);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -237,20 +237,15 @@ public class PlayerListeners implements Listener {
                     item.remove();
                 items.clear();
             }
-        }.runTaskLater(main, 150);
+        }.runTaskLater(Carbyne.getInstance(), 150);
     }
 
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
-        if (!event.getTo().getChunk().isLoaded()) {
-            event.getTo().getChunk().load();
-            event.getTo().getWorld().refreshChunk(event.getTo().getChunk().getX(), event.getTo().getChunk().getZ());
-        }
-
-        if (!main.getStaffManager().isVanished(event.getPlayer()))
+        if (!StaticClasses.staffManager.isVanished(event.getPlayer()))
             if (event.getFrom().getWorld().equals(event.getTo().getWorld()) && event.getFrom().distance(event.getTo()) > 10) {
-                event.getPlayer().playSound(event.getTo(), Sound.ENDERMAN_TELEPORT, .6f, 1);
-                event.getPlayer().playSound(event.getFrom(), Sound.ENDERMAN_TELEPORT, .6f, 1);
+                event.getPlayer().playSound(event.getTo(), Sound.ENTITY_ENDERMEN_TELEPORT, .6f, 1);
+                event.getPlayer().playSound(event.getFrom(), Sound.ENTITY_ENDERMEN_TELEPORT, .6f, 1);
             }
     }
 
@@ -262,25 +257,22 @@ public class PlayerListeners implements Listener {
     @EventHandler
     public void onDoubleJump(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
-        if (!player.getWorld().getName().equals("world")) {
-            return;
-        }
 
         if (player.getGameMode() == GameMode.CREATIVE)
             return;
 
-        if (main.getGamemodeManager().getFlyPlayers().contains(player) || main.getGamemodeManager().getGmPlayers().contains(player))
+        if (StaticClasses.gamemodeManager.getFlyPlayers().contains(player) || StaticClasses.gamemodeManager.getGmPlayers().contains(player))
             return;
 
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
-        if (profile.getStamina() >= 15 && profile.isSkillsToggled()) {
-            Board board = Board.getByPlayer(player);
+        PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
+        if (playerHealth.getStamina() >= 15 && playerHealth.isSkillsToggled()) {
+            Board board = Board.getByPlayer(player.getUniqueId());
 
             if (board != null) {
                 BoardCooldown skillCooldown = board.getCooldown("skill");
 
                 if (skillCooldown == null) {
-                    profile.setStamina(profile.getStamina() - 15);
+                    playerHealth.setStamina(playerHealth.getStamina() - 15);
                     event.setCancelled(true);
                     player.setAllowFlight(false);
 
@@ -290,7 +282,7 @@ public class PlayerListeners implements Listener {
                     Vector direction = player.getLocation().getDirection();
                     Vector forward = direction.multiply(3);
 
-                    if (profile.isSprintToggled())
+                    if (playerHealth.isSprintToggled())
                         forward.multiply(4.5);
 
                     Vector vector = player.getLocation().toVector().subtract(player.getLocation().add(0, 3, 0).toVector());
@@ -306,7 +298,7 @@ public class PlayerListeners implements Listener {
                     ParticleEffect.CLOUD.display(0.0F, 0.0F, 0.0F, 0.004F, 100, player.getLocation().subtract(0.0, 0.1, 0.0), 15, false);
 
                     for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 15))
-                        all.playSound(all.getLocation(), Sound.HORSE_JUMP, 3.0F, 0.533F);
+                        all.playSound(all.getLocation(), Sound.ENTITY_HORSE_JUMP, 3.0F, 0.533F);
                 }
             } else
                 event.setCancelled(true);
@@ -317,44 +309,48 @@ public class PlayerListeners implements Listener {
     @EventHandler
     public void onSprintToggle(PlayerToggleSneakEvent event) {
         if (!event.isSneaking()) {
-            Profile profile = main.getProfileManager().getProfile(event.getPlayer().getUniqueId());
-            if (event.getPlayer().getGameMode() == GameMode.SURVIVAL) {
-                if (System.currentTimeMillis() - profile.getSprintCombo() <= 1000 && profile.isSkillsToggled()) {
 
-                    if (profile.getStamina() > 6 && !profile.isSprintToggled()) {
-                        if (!event.getPlayer().hasPotionEffect(PotionEffectType.SPEED)) {
-                            profile.setSprintToggled(true);
-                            event.getPlayer().setWalkSpeed(0.4f);
-                            profile.setSprintCombo(0);
+            if (event.getPlayer().getGameMode() == GameMode.CREATIVE)
+                return;
 
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    if (!event.getPlayer().isOnline()) {
-                                        cancel();
-                                    }
-                                    if (profile.isSprintToggled()) {
-                                        ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, 0.0F, 0.03F, 2, event.getPlayer().getLocation().subtract(0.0, 0.1, 0.0), 30, false);
-                                    } else {
-                                        cancel();
-                                    }
-                                }
-                            }.runTaskTimerAsynchronously(main, 0, 1);
+            if (StaticClasses.gamemodeManager.getFlyPlayers().contains(event.getPlayer()) || StaticClasses.gamemodeManager.getGmPlayers().contains(event.getPlayer()))
+                return;
 
-                            MessageManager.sendMessage(event.getPlayer(), "&aSuper Sprint has been enabled!");
+            PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(event.getPlayer().getUniqueId());
 
-                        } else {
-                            MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use Super Sprint while you have speed.");
-                        }
-                    } else if (profile.isSprintToggled()) {
-                        profile.setSprintToggled(false);
-                        event.getPlayer().setWalkSpeed(0.2f);
-                        profile.setSprintCombo(0);
-                        MessageManager.sendMessage(event.getPlayer(), "&cSuper Sprint has been disabled!");
+            if (System.currentTimeMillis() - playerHealth.getSprintCombo() <= 1000 && playerHealth.isSkillsToggled()) {
+                if (playerHealth.getStamina() > 6 && !playerHealth.isSprintToggled()) {
+                    if (!event.getPlayer().hasPotionEffect(PotionEffectType.SPEED)) {
+                        playerHealth.setSprintToggled(true);
+                        event.getPlayer().setWalkSpeed(0.4f);
+                        playerHealth.setSprintCombo(0);
+
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (!event.getPlayer().isOnline())
+                                    cancel();
+
+                                if (playerHealth.isSprintToggled())
+                                    ParticleEffect.SMOKE_LARGE.display(0.0F, 0.0F, 0.0F, 0.03F, 2, event.getPlayer().getLocation().subtract(0.0, 0.1, 0.0), 30, false);
+                                else
+                                    cancel();
+                            }
+                        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 1);
+
+                        MessageManager.sendMessage(event.getPlayer(), "&aSuper Sprint has been enabled!");
+
+                    } else {
+                        MessageManager.sendMessage(event.getPlayer(), "&cYou cannot use Super Sprint while you have speed.");
                     }
-                } else {
-                    profile.setSprintCombo(System.currentTimeMillis());
+                } else if (playerHealth.isSprintToggled()) {
+                    playerHealth.setSprintToggled(false);
+                    event.getPlayer().setWalkSpeed(0.2f);
+                    playerHealth.setSprintCombo(0);
+                    MessageManager.sendMessage(event.getPlayer(), "&cSuper Sprint has been disabled!");
                 }
+            } else {
+                playerHealth.setSprintCombo(System.currentTimeMillis());
             }
         }
     }
@@ -364,24 +360,24 @@ public class PlayerListeners implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             Player player = event.getPlayer();
 
-            if (player.getItemInHand().getType().toString().contains("SWORD") || player.getItemInHand().getType().toString().contains("AXE") || player.getItemInHand().getType().toString().contains("HOE")) {
-                Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+            if (player.getInventory().getItemInMainHand().getType().toString().contains("SWORD") || player.getInventory().getItemInMainHand().getType().toString().contains("AXE") || player.getInventory().getItemInMainHand().getType().toString().contains("HOE")) {
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
 
-                if (profile.getStamina() >= 60 && profile.isSkillsToggled()) {
-                    Board board = Board.getByPlayer(player);
+                if (playerHealth.getStamina() >= 60 && playerHealth.isSkillsToggled()) {
+                    Board board = Board.getByPlayer(player.getUniqueId());
 
                     if (board != null) {
                         BoardCooldown skillCooldown = board.getCooldown("skill");
 
                         if (skillCooldown == null) {
-                            if (!profile.isPiledriveBoolReady()) {
-                                if (System.currentTimeMillis() - profile.getPiledriveCombo() <= 1000) {
-                                    profile.setPiledriveReady(3);
-                                    profile.setPiledriveCombo(0);
-                                    profile.setPiledriveBoolReady(true);
+                            if (!playerHealth.isPiledriveBoolReady()) {
+                                if (System.currentTimeMillis() - playerHealth.getPiledriveCombo() <= 1000) {
+                                    playerHealth.setPiledriveReady(3);
+                                    playerHealth.setPiledriveCombo(0);
+                                    playerHealth.setPiledriveBoolReady(true);
                                     MessageManager.sendMessage(player, "&aReady to piledrive! Damage an enemy to initiate!");
                                 } else
-                                    profile.setPiledriveCombo(System.currentTimeMillis());
+                                    playerHealth.setPiledriveCombo(System.currentTimeMillis());
                             }
                         }
                     }
@@ -395,19 +391,24 @@ public class PlayerListeners implements Listener {
         if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
             Player damaged = (Player) event.getEntity();
             Player damager = (Player) event.getDamager();
-            Profile profile = main.getProfileManager().getProfile(damager.getUniqueId());
+            PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(damager.getUniqueId());
 
-            if (main.getDuelManager().getDuelFromUUID(damaged.getUniqueId()) != null) {
-                if (profile.isPiledriveBoolReady() && profile.getStamina() >= 60)
-                    pileDrive(damaged, damager);
-            } else {
+//            if (StaticClasses.duelManager.getDuelFromUUID(damaged.getUniqueId()) != null) {
+//                if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
+//                    pileDrive(damaged, damager);
+//            } else {
+
                 TownBlock townBlock = TownyUniverse.getTownBlock(damaged.getLocation());
 
-                if (townBlock != null)
+                if (townBlock != null) {
                     if (townBlock.getPermissions().pvp)
-                        if (profile.isPiledriveBoolReady() && profile.getStamina() >= 60)
+                        if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
                             pileDrive(damaged, damager);
-            }
+                } else {
+                    if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
+                        pileDrive(damaged, damager);
+                }
+            //}
         }
     }
 
@@ -427,23 +428,24 @@ public class PlayerListeners implements Listener {
 
     public void pileDrive(Player damaged, Player damager) {
         MessageManager.sendMessage(damager, "&aYou have piledrived &5" + damaged.getName() + "&a!");
-        Profile damagerProfile = main.getProfileManager().getProfile(damager.getUniqueId());
+        PlayerHealth damagerPlayer = PlayerHealth.getPlayerHealth(damager.getUniqueId());
         PotionEffect potionEffect = new PotionEffect(PotionEffectType.CONFUSION, 100, 2);
         PotionEffect potionEffect2 = new PotionEffect(PotionEffectType.BLINDNESS, 60, 2);
         PotionEffect potionEffect3 = new PotionEffect(PotionEffectType.SLOW, 80, 2);
         damaged.addPotionEffect(potionEffect);
         damaged.addPotionEffect(potionEffect2);
         damaged.addPotionEffect(potionEffect3);
-        damagerProfile.setPiledriveReady(0);
-        damagerProfile.setPiledriveBoolReady(false);
-        damagerProfile.setStamina(damagerProfile.getStamina() - 60);
+        damagerPlayer.setPiledriveReady(0);
+        damagerPlayer.setPiledriveBoolReady(false);
+        damagerPlayer.setStamina(damagerPlayer.getStamina() - 60);
         FireworkEffect effect = FireworkEffect.builder().withColor(Color.RED).with(FireworkEffect.Type.BURST).build();
         FireworkEffect effect2 = FireworkEffect.builder().withColor(Color.ORANGE).trail(true).withFade(Color.YELLOW).with(FireworkEffect.Type.BURST).build();
         InstantFirework.spawn(damaged.getLocation(), effect);
         InstantFirework.spawn(damaged.getLocation(), effect2, effect);
-        damaged.damage(6D);
+        PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(damaged.getUniqueId());
+        playerHealth.setHealth(playerHealth.getHealth() - (playerHealth.getMaxHealth() * 0.02));
 
-        new BoardCooldown(Board.getByPlayer(damager), "skill", 10.0D);
+        new BoardCooldown(Board.getByPlayer(damager.getUniqueId()), "skill", 10.0D);
 
         damaged.sendTitle(new Title.Builder()
                 .title(ChatColor.translateAlternateColorCodes('&', "&cYou have been piledriven!")).stay(200)
@@ -466,7 +468,7 @@ public class PlayerListeners implements Listener {
                         chicken.setHealth(0);
                     }
                 }
-            }.runTaskLater(main, 200L);
+            }.runTaskLater(Carbyne.getInstance(), 200L);
         }
     }
 

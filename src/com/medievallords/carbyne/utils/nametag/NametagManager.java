@@ -1,9 +1,8 @@
 package com.medievallords.carbyne.utils.nametag;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.squads.Squad;
-import com.medievallords.carbyne.squads.SquadManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -12,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NametagManager {
-
-    private static SquadManager squadManager = Carbyne.getInstance().getSquadManager();
 
     private static Map<String, NametagPlayer> players = new HashMap<>();
 
@@ -50,7 +47,7 @@ public class NametagManager {
         } else
             nametag = refreshForTag.getPlayerNametag(toRefreshTag);
 
-        int health = (int) toRefresh.getHealth() / 5;
+        int health = (int) toRefresh.getHealth();
         String suffix = StringUtils.formatHealthBar(health);
         nametag.setSuffix(" " + suffix);
 
@@ -95,8 +92,8 @@ public class NametagManager {
 
         nametag.setPrefix(ChatColor.GOLD + "");
         //Squad
-        Squad toRefreshSquad = squadManager.getSquad(toRefresh.getUniqueId());
-        Squad refreshForSquad = squadManager.getSquad(refreshFor.getUniqueId());
+        Squad toRefreshSquad = StaticClasses.squadManager.getSquad(toRefresh.getUniqueId());
+        Squad refreshForSquad = StaticClasses.squadManager.getSquad(refreshFor.getUniqueId());
 
         if (toRefreshSquad != null && refreshForSquad != null) {
             if (toRefreshSquad.getUniqueId().equals(refreshForSquad.getUniqueId())) {

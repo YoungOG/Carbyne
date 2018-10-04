@@ -2,7 +2,7 @@ package com.medievallords.carbyne.region;
 
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.GearManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,8 +10,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.io.IOException;
 
 public class Region {
-
-    private GearManager gearManager = Carbyne.getInstance().getGearManager();
     private Selection selection;
     private String name;
 
@@ -19,7 +17,7 @@ public class Region {
         this.selection = new Selection(null, null);
         this.name = name;
         this.load();
-        gearManager.getNerfedRegions().add(this);
+        StaticClasses.gearManager.getNerfedRegions().add(this);
     }
 
     public String getName() {
@@ -73,7 +71,7 @@ public class Region {
     }
 
     public static Region get(String name) {
-        for (final Region r : Carbyne.getInstance().getGearManager().getNerfedRegions())
+        for (final Region r : StaticClasses.gearManager.getNerfedRegions())
             if (r.name.equalsIgnoreCase(name))
                 return r;
 
@@ -81,7 +79,7 @@ public class Region {
     }
 
     public static Region get(Location location) {
-        for (Region r : Carbyne.getInstance().getGearManager().getNerfedRegions()) {
+        for (Region r : StaticClasses.gearManager.getNerfedRegions()) {
             if (r.getSelection() != null && r.getSelection().getLocation1() != null && r.getSelection().getLocation2() != null && location.getWorld() == r.getSelection().getLocation1().getWorld()) {
                 int minX = min(r.getSelection().getLocation1().getBlockX(), r.getSelection().getLocation2().getBlockX());
                 int minY = min(r.getSelection().getLocation1().getBlockY(), r.getSelection().getLocation2().getBlockY());

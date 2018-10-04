@@ -3,6 +3,7 @@ package com.medievallords.carbyne.squads.commands;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -33,7 +34,7 @@ public class SquadInviteCommand extends BaseCommand{
             return;
         }
 
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (squad == null) {
             MessageManager.sendMessage(player, "&cYou are not in a squad.");
@@ -45,7 +46,7 @@ public class SquadInviteCommand extends BaseCommand{
             return;
         }
 
-        if (getSquadManager().getSquad(target.getUniqueId()) != null) {
+        if (StaticClasses.squadManager.getSquad(target.getUniqueId()) != null) {
             MessageManager.sendMessage(player, "&cThat player is already in a squad.");
             return;
         }

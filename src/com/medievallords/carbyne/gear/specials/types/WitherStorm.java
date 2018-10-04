@@ -3,6 +3,7 @@ package com.medievallords.carbyne.gear.specials.types;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.utils.InstantFirework;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
@@ -78,7 +79,9 @@ public class WitherStorm implements Special {
     private void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                entity.damage(entity.getHealth() * 0.5);
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(entity.getUniqueId());
+                playerHealth.setHealth(playerHealth.getHealth() * 0.5, (Player) entity);
+                entity.damage(0.0);
                 entity.setFireTicks(20 * 5);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
                 return;

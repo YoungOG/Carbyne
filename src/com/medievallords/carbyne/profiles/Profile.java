@@ -2,27 +2,27 @@ package com.medievallords.carbyne.profiles;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
-import com.medievallords.carbyne.events.Event;
 import com.medievallords.carbyne.listeners.PlayerListeners;
+import com.medievallords.carbyne.quests.Quest;
+import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.squads.Squad;
-import com.medievallords.carbyne.squads.SquadManager;
-import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.*;
-import com.medievallords.carbyne.utils.scoreboard.Board;
-import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import com.medievallords.carbyne.utils.tabbed.item.TextTabItem;
 import com.medievallords.carbyne.utils.tabbed.tablist.TableTabList;
 import com.medievallords.carbyne.zones.Zone;
-import com.medievallords.carbyne.zones.ZoneManager;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_8_R3.EntityPlayer;
+import me.lucko.luckperms.LuckPerms;
+import me.lucko.luckperms.api.Group;
+import me.lucko.luckperms.api.User;
+import me.lucko.luckperms.api.manager.GroupManager;
+import net.minecraft.server.v1_12_R1.EntityPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -49,8 +49,8 @@ public class Profile {
             killStreak,
             professionLevel = 1,
             dailyRewardDay,
-            stamina = 100,
-            piledriveReady = 0;
+            questSkipsLeft = 2, questsLeft = 10,
+            kitPoints = 0;
     private double professionProgress = 0,
             requiredProfessionProgress = 100;
     private long pvpTime,
@@ -58,8 +58,8 @@ public class Profile {
             professionResetCooldown,
             dailyRewardDayTime = -1,
             dailyRewardChallengeTime = -1,
-            piledriveCombo = 0,
-            sprintCombo = 0;
+            skipTime = 0,
+            questNext = 0;
     private boolean pvpTimePaused,
             showTab,
             showEffects,
@@ -68,14 +68,27 @@ public class Profile {
             hasClaimedDailyReward,
             dailyRewardsSetup,
             skillsToggled = true,
-            piledriveBoolReady = false,
-            sprintToggled = false,
-            blocking = false,
-            hasClaimedRankRewards = false;
-    private Event activeEvent;
+            hasClaimedRankRewards = false,
+            vanishEffect = true,
+            chatEnabled = true,
+            announcementsEnabled = true;
+
+    /*
+
+
+    List:
+    - questName:[task1,5:task2,0]
+    - questName2:[task3,5:task4,0]
+     */
+
     private ProfileChatChannel profileChatChannel;
     private HashMap<Integer, Boolean> dailyRewards = new HashMap<>();
+    private HashMap<String, Long> usedKits = new HashMap<>();
     private List<UUID> ignoredPlayers = new ArrayList<>();
+    private List<String> quests = new ArrayList<>();
+    private List<String> dormantQuests = new ArrayList<>();
+    private List<String> forcedQuests = new ArrayList<>();
+
 
     public Profile(UUID uniqueId) {
         this.uniqueId = uniqueId;
@@ -88,69 +101,6 @@ public class Profile {
                         prepareNewDay();
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 20L);
-    }
-
-    public void runTickGeneral() {
-        Player player = Bukkit.getPlayer(uniqueId);
-        if (stamina < 15) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    player.setAllowFlight(false);
-                }
-            }.runTask(Carbyne.getInstance());
-        } else {
-            if (player.getWorld().getName().equals("world") && skillsToggled) {
-                Board board = Board.getByPlayer(player);
-                if (board != null) {
-                    BoardCooldown skillCooldown = board.getCooldown("skill");
-
-                    if (skillCooldown == null)
-                        if (skillsToggled)
-                            if (!player.getAllowFlight())
-                                new BukkitRunnable() {
-                                    @Override
-                                    public void run() {
-                                        player.setAllowFlight(true);
-                                    }
-                                }.runTask(Carbyne.getInstance());
-                }
-            }
-        }
-
-        if (sprintToggled) {
-            stamina -= 7;
-
-            if (stamina < 7) {
-                sprintToggled = false;
-
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        player.setWalkSpeed(0.2f);
-                    }
-                }.runTask(Carbyne.getInstance());
-
-                MessageManager.sendMessage(player, "&cSuper Sprint has been disabled!");
-            }
-        } else if (blocking) {
-            stamina -= 15;
-
-            if (stamina < 15) {
-                blocking = false;
-                MessageManager.sendMessage(player, "&cSuper Block has been disabled!");
-            }
-        } else if (stamina < 100)
-            stamina++;
-
-        if (piledriveReady > 0)
-            piledriveReady--;
-        else {
-            if (piledriveBoolReady) {
-                MessageManager.sendMessage(uniqueId, "&cYou are no longer able to piledrive!");
-                piledriveBoolReady = false;
-            }
-        }
     }
 
     public boolean hasClaimedDailyReward() {
@@ -212,6 +162,72 @@ public class Profile {
         }
     }
 
+    public void checkQuestNext() {
+        if (questNext <= 0) {
+            questsLeft = 10;
+            if (Bukkit.getPlayer(uniqueId).hasPermission("carbyne.donator")) {
+                questSkipsLeft += 5;
+            }
+
+            questNext = System.currentTimeMillis();
+        } else {
+            if (System.currentTimeMillis() >= questNext + 1728000) {
+                questsLeft = 10;
+                if (Bukkit.getPlayer(uniqueId).hasPermission("carbyne.donator")) {
+                    questSkipsLeft += 5;
+                }
+
+                questNext = System.currentTimeMillis();
+            }
+        }
+    }
+
+    public String getQuestNextString() {
+        if (questNext <= 0) {
+            return "now";
+        }
+
+        long timeLeft =  - (questNext + 1728000) - System.currentTimeMillis();
+        if (timeLeft <= 0) {
+            return "now";
+        } else {
+            return DateUtil.readableTime(timeLeft, true);
+        }
+    }
+
+    public void checkQuestSkip() {
+        if (skipTime <= 0) {
+            questSkipsLeft = 3;
+            if (Bukkit.getPlayer(uniqueId).hasPermission("carbyne.donator")) {
+                questSkipsLeft += 2;
+            }
+
+            skipTime = System.currentTimeMillis();
+        } else {
+            if (System.currentTimeMillis() >= skipTime + 1728000) {
+                questSkipsLeft = 3;
+                if (Bukkit.getPlayer(uniqueId).hasPermission("carbyne.donator")) {
+                    questSkipsLeft += 2;
+                }
+
+                skipTime = System.currentTimeMillis();
+            }
+        }
+    }
+
+    public String getSkipTimeString() {
+        if (skipTime <= 0) {
+            return "now";
+        }
+
+        long timeLeft = (skipTime + 1728000) - System.currentTimeMillis();
+        if (timeLeft <= 0) {
+            return "now";
+        } else {
+            return DateUtil.readableTime(timeLeft, true);
+        }
+    }
+
     public void setPvpTimePaused(boolean paused) {
         if (this.pvpTimePaused != paused) {
             if (paused)
@@ -246,7 +262,7 @@ public class Profile {
         if (player != null)
             if (ChatColor.stripColor(player.getOpenInventory().getTopInventory().getTitle()).contains("Daily Bonus")) {
                 player.closeInventory();
-                Carbyne.getInstance().getDailyBonusManager().openDailyBonusGui(player);
+                StaticClasses.dailyBonusManager.openDailyBonusGui(player);
             }
     }
 
@@ -283,17 +299,19 @@ public class Profile {
         GLOBAL, LOCAL, TOWN, NATION
     }
 
+    //TODO: Add default tab, stylized by tabbed, (removes the npc name confliction)
+
     public static class PlayerTabRunnable extends BukkitRunnable {
 
-        private StaffManager staffManager = Carbyne.getInstance().getStaffManager();
-        private SquadManager squadManager = Carbyne.getInstance().getSquadManager();
-        private ZoneManager zoneManager = Carbyne.getInstance().getZoneManager();
+        private static final GroupManager api = LuckPerms.getApi().getGroupManager();
+
         //private DropPointManager dropPointManager = Carbyne.getInstance().getDropPointManager();
-        private Profile profile;
-        private Player player;
-        private EntityPlayer entityPlayer;
-        private Account account;
-        private TableTabList tab;
+        private final Profile profile;
+        private final Player player;
+        private final EntityPlayer entityPlayer;
+        private final Account account;
+        private final TableTabList tab;
+        private final User user;
 
         public PlayerTabRunnable(Player player, Profile profile, Account account, TableTabList tab) {
             this.player = player;
@@ -301,26 +319,26 @@ public class Profile {
             this.profile = profile;
             this.tab = tab;
             this.entityPlayer = ((CraftPlayer) player).getHandle();
+            this.user = LuckPerms.getApi().getUser(player.getUniqueId());
         }
 
-        private String getZone(Player player) {
-            for (Zone zone : zoneManager.getZones())
-                if (zone.getPlayersInZone().contains(player.getUniqueId()))
-                    return zone.getDisplayName();
-
-            return "Safezone";
-        }
-
-        @Override
         public void run() {
             tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1));
-            tab.set(0, 2, new TextTabItem(" §d§lBalance§7: " + account.getBalance(), 1));
-            tab.set(0, 3, new TextTabItem(" §d§lPing§7: " + entityPlayer.ping, 1));
+
+            Group group = api.getGroup(user.getPrimaryGroup());
+            String display = "Default";
+            if (group != null) {
+                display = group.getDisplayName();
+            }
+            tab.set(0, 2, new TextTabItem(" §d§lRank§7: " + ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', display)), 1));
+            tab.set(0, 3, new TextTabItem(" §d§lBalance§7: \u00A9" + (int) account.getBalance(), 1));
+            tab.set(0, 4, new TextTabItem(" §d§lKit Points§7: " + profile.getKitPoints(), 1));
+            tab.set(0, 5, new TextTabItem(" §d§lPing§7: " + entityPlayer.ping, 1));
 
             tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1));
             tab.set(0, 8, new TextTabItem(" §d§lTPS§7: " + new DecimalFormat("##.00").format(BigDecimal.valueOf(LagTask.getTPS())) + " §7\u2758 §d§lLag§7: " + Math.round((1.0D - LagTask.getTPS() / 20.0D) * 100.0D) + "%", 1));
-            tab.set(0, 9, new TextTabItem(" §d§lPlayers Online§7: " + (Bukkit.getOnlinePlayers().size() - staffManager.getVanish().size()), 1));
-            tab.set(0, 10, new TextTabItem(" §d§lStaff Online§7: " + staffManager.getStaff().size(), 1));
+            tab.set(0, 9, new TextTabItem(" §d§lPlayers Online§7: " + (Bukkit.getOnlinePlayers().size() - StaticClasses.staffManager.getVanish().size()), 1));
+            tab.set(0, 10, new TextTabItem(" §d§lStaff Online§7: " + StaticClasses.staffManager.getStaff().size(), 1));
             tab.set(0, 11, new TextTabItem(" §d§lConsecutive Votes§7: " + PlayerListeners.getVoteCount(), 1));
 
 
@@ -367,32 +385,28 @@ public class Profile {
             tab.set(1, 7, new TextTabItem(" §d§lCarbyne KDR§7: " + profile.getCarbyneKDR(), 1));
             tab.set(1, 8, new TextTabItem(" §d§lStreak§7: " + profile.getKillStreak(), 1));
 
-            tab.set(1, 13, new TextTabItem("§b§lVoting: §7Use /vote", 1));
-//            tab.set(1, 14, new TextTabItem("  §d§lMinecraft-MP§7: §a§l\u2714", 1));
-//            tab.set(1, 15, new TextTabItem("  §d§lMinecraftServers§7: §c§l\u292B", 1));
-//            tab.set(1, 16, new TextTabItem("  §d§lPlanetMinecraft§7: §c§l\u292B", 1));
-//            tab.set(1, 17, new TextTabItem("  §d§lMinecraft-Server§7: §c§l\u292B", 1));
-//            tab.set(1, 18, new TextTabItem("  §d§lTopG§7: §c§l\u292B", 1));
-
-
-            Squad squad = squadManager.getSquad(player.getUniqueId());
-            tab.set(2, 1, new TextTabItem("§b§lSquad Info:" + (squad != null ? " §7(" + squad.getAllPlayers().size() + "/5)" : " §7(none)"), 1));
+            Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
+            tab.set(1, 11, new TextTabItem("§b§lSquad Info:" + (squad != null ? " §7(" + squad.getAllPlayers().size() + "/5)" : " §7(none)"), 1));
             if (squad != null) {
-                tab.set(2, 2, new TextTabItem(" §d§lLeader§7:", 1));
+                tab.set(1, 12, new TextTabItem(" §d§lLeader§7:", 1));
                 Player leader = Bukkit.getPlayer(squad.getLeader());
-                int leaderHealth = (int) leader.getHealth() / 5;
-                tab.set(2, 3, new TextTabItem(" §7§l- §a" + leader.getName() + ChatColor.translateAlternateColorCodes('&', " " + StringUtils.formatHealthBar(leaderHealth)), ((CraftPlayer) leader).getHandle().ping));
-                tab.set(2, 4, new TextTabItem(" §d§lMembers§7:", 1));
+                int leaderHealth = (int) leader.getHealth();
+                tab.set(1, 13, new TextTabItem(" §7§l- §a" + leader.getName() + ChatColor.translateAlternateColorCodes('&', " " + StringUtils.formatHealthBar(leaderHealth)), ((CraftPlayer) leader).getHandle().ping));
+                tab.set(1, 14, new TextTabItem(" §d§lMembers§7:", 1));
 
-                for (int i = 5; i < 9; i++)
-                    tab.set(2, i, new TextTabItem(" §7§l- ", 1));
+                for (int i = 15; i < 19; i++)
+                    tab.set(1, i, new TextTabItem(" §7§l- ", 1));
 
-                int x = 5;
+                int x = 15;
                 for (int i = 0; i < squad.getMembers().size(); i++) {
                     Player other = Bukkit.getPlayer(squad.getMembers().get(i));
-                    int otherHealth = (int) other.getHealth() / 5;
-                    tab.set(2, x, new TextTabItem(" §7§l- §a" + other.getName() + ChatColor.translateAlternateColorCodes('&', " " + StringUtils.formatHealthBar(otherHealth)), ((CraftPlayer) other).getHandle().ping));
+                    int otherHealth = (int) other.getHealth();
+                    tab.set(1, x, new TextTabItem(" §7§l- §a" + other.getName() + ChatColor.translateAlternateColorCodes('&', " " + StringUtils.formatHealthBar(otherHealth)), ((CraftPlayer) other).getHandle().ping));
                     x++;
+                }
+            } else {
+                for (int i = 12; i < 19; i++) {
+                    tab.set(1, i, new TextTabItem("", 1));
                 }
             }
 
@@ -434,6 +448,43 @@ public class Profile {
                 tab.set(3, index++, new TextTabItem("   §aY§7: " + dropPoint.getMainLocation().getY(), 1));
                 tab.set(3, index++, new TextTabItem("   §aZ§7: " + dropPoint.getMainLocation().getZ(), 1));
             }*/
+
+            tab.set(2, 1, new TextTabItem("§b§lQuests:", 1));
+            for (int i = 2; i < 20; i++) {
+                tab.set(2, i, new TextTabItem("", 1));
+            }
+
+            List<Quest> quests = StaticClasses.questHandler.getQuests(player.getUniqueId());
+            if (!quests.isEmpty()) {
+                int i = 2;
+                for (Quest quest : quests) {
+                    if (i >= 19)
+                        break;
+
+                    if (quest.isComplete(player)) {
+                        tab.set(2, i++, new TextTabItem("  §d§l" + quest.getDisplayName() + ": §a§l\u2713", 1));
+                    } else {
+                        tab.set(2, i++, new TextTabItem("  §d§l" + quest.getDisplayName() + ":", 1));
+                        List<Task> tasks = quest.getTasks();
+                        for (Task task : tasks) {
+                            if (!task.isCompleted(player.getUniqueId())) {
+                                if (i >= 19)
+                                    break;
+
+                                tab.set(2, i++, new TextTabItem(ChatColor.translateAlternateColorCodes('&', "    " + task.getProgress(player)), 1));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private String getZone(Player player) {
+            for (Zone zone : StaticClasses.zoneManager.getZones())
+                if (zone.getPlayersInZone().contains(player.getUniqueId()))
+                    return zone.getDisplayName();
+
+            return "Safezone";
         }
     }
 }

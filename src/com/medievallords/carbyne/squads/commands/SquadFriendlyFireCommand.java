@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.squads.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -19,14 +21,14 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 public class SquadFriendlyFireCommand extends BaseCommand implements Listener {
 
     public SquadFriendlyFireCommand() {
-        Bukkit.getPluginManager().registerEvents(this, getCarbyne());
+        Bukkit.getPluginManager().registerEvents(this, Carbyne.getInstance());
     }
 
     @Command(name = "squad.friendlyfire", inGameOnly = true, aliases = {"squad.ff", "party.friendlyfire", "party.ff"})
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (args.length != 0) {
             MessageManager.sendMessage(player, "&cUsage: /squad");
@@ -53,7 +55,7 @@ public class SquadFriendlyFireCommand extends BaseCommand implements Listener {
         if (event.getEntity() instanceof Player) {
             Player damaged = (Player) event.getEntity();
             Player damager = null;
-            Squad squad = getSquadManager().getSquad(damaged.getUniqueId());
+            Squad squad = StaticClasses.squadManager.getSquad(damaged.getUniqueId());
 
             if (squad == null) {
                 return;
@@ -72,7 +74,7 @@ public class SquadFriendlyFireCommand extends BaseCommand implements Listener {
             }
 
             if (damager != null) {
-                if (getSquadManager().getSquad(damager.getUniqueId()) != null && getSquadManager().getSquad(damager.getUniqueId()).getUniqueId().equals(squad.getUniqueId())) {
+                if (StaticClasses.squadManager.getSquad(damager.getUniqueId()) != null && StaticClasses.squadManager.getSquad(damager.getUniqueId()).getUniqueId().equals(squad.getUniqueId())) {
                     if (!squad.isFriendlyFireToggled()) {
                         event.setCancelled(true);
                     }

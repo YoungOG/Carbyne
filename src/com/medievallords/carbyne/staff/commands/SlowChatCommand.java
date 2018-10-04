@@ -3,6 +3,7 @@ package com.medievallords.carbyne.staff.commands;
 import com.google.common.primitives.Ints;
 import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -25,13 +26,13 @@ public class SlowChatCommand extends BaseCommand {
             MessageManager.sendMessage(sender, "&cUsage: /slowchat <time|off>");
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("off")) {
-                if (getStaffManager().getSlowChatTime() <= 0) {
+                if (StaticClasses.staffManager.getSlowChatTime() <= 0) {
                     MessageManager.sendMessage(sender, "&cThe chat is now slowed.");
                     return;
                 }
 
                 MessageManager.broadcastMessage("&eThe chat is no longer slowed");
-                getStaffManager().setSlowChatTime(0);
+                StaticClasses.staffManager.setSlowChatTime(0);
 
                 for (UUID id : Cooldowns.cooldowns.rowKeySet()) {
                     if (Cooldowns.getCooldown(id, "slowChatCD") >= 0) {
@@ -49,7 +50,7 @@ public class SlowChatCommand extends BaseCommand {
                     return;
                 }
 
-                getStaffManager().setSlowChatTime(Integer.valueOf(args[0]));
+                StaticClasses.staffManager.setSlowChatTime(Integer.valueOf(args[0]));
                 MessageManager.broadcastMessage("&eThe chat is now slowed, you can only speak every &6" + Integer.valueOf(args[0]) + " &eseconds.");
             }
         } else {

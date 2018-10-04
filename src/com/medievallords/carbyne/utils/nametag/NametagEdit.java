@@ -1,7 +1,8 @@
 package com.medievallords.carbyne.utils.nametag;
 
-import net.minecraft.server.v1_8_R3.PacketPlayOutScoreboardTeam;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import net.minecraft.server.v1_12_R1.PacketPlayOutScoreboardTeam;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
@@ -41,7 +42,7 @@ public class NametagEdit {
 
     public NametagEdit(){
         this.packet = new PacketPlayOutScoreboardTeam();
-        setField("i", packOptionData());
+        setField("j", packOptionData());
     }
 
     public void setNametag(Nametag nametag){
@@ -59,7 +60,7 @@ public class NametagEdit {
 
     public void setCanSeeFriendlyInvisibles(boolean canSeeFriendlyInvisibles) {
         this.canSeeFriendlyInvisibles = canSeeFriendlyInvisibles;
-        setField("i", packOptionData());
+        setField("j", packOptionData());
     }
 
     public boolean isAllowFriendlyFire() {
@@ -84,8 +85,15 @@ public class NametagEdit {
         return var1;
     }
 
+    /*
+
+     v1_8("g", "c", "d", "a", "h", "i", "b", "NA", "NA", "e"),
+    v1_12("h", "c", "d", "a", "i", "j", "b", "NA", "f", "e"),
+
+     */
+
     public void setParam(NametagParam param){
-        this.setField("h",param.getParam());
+        this.setField("i",param.getParam());
     }
 
     public void setName(String name){
@@ -135,7 +143,7 @@ public class NametagEdit {
 
     private void addAll(final Collection<?> col) {
         try {
-            final Field f = this.packet.getClass().getDeclaredField("g");
+            final Field f = this.packet.getClass().getDeclaredField("h");
             f.setAccessible(true);
             ((Collection)f.get(this.packet)).addAll(col);
         } catch (Exception ex){
@@ -145,7 +153,7 @@ public class NametagEdit {
 
     private void remove(final Player p) {
         try{
-            final Field f = this.packet.getClass().getDeclaredField("g");
+            final Field f = this.packet.getClass().getDeclaredField("h");
             f.setAccessible(true);
             if(((Collection)f.get(this.packet)).contains(p.getName())) {
                 ((Collection) f.get(this.packet)).remove(p.getName());
@@ -158,7 +166,7 @@ public class NametagEdit {
 
     public boolean contains(final Player p) {
         try{
-            final Field f = this.packet.getClass().getDeclaredField("g");
+            final Field f = this.packet.getClass().getDeclaredField("h");
             f.setAccessible(true);
             return ((Collection) f.get(this.packet)).contains(p.getName());
         }

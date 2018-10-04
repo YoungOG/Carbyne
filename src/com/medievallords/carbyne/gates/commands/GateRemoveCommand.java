@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.gates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -25,14 +27,14 @@ public class GateRemoveCommand extends BaseCommand {
 
         String gateId = args[0];
 
-        if (getGateManager().getGate(gateId) == null) {
+        if (StaticClasses.gateManager.getGate(gateId) == null) {
             MessageManager.sendMessage(sender, "&cCould not find a gate with the ID \"" + gateId + "\".");
             return;
         }
 
-        Gate gate = getGateManager().getGate(gateId);
-        getGateManager().getGates().remove(gate);
-        getCarbyne().getGatesFileConfiguration().getConfigurationSection("Gates").set(gate.getGateId(), null);
+        Gate gate = StaticClasses.gateManager.getGate(gateId);
+        StaticClasses.gateManager.getGates().remove(gate);
+        Carbyne.getInstance().getGatesFileConfiguration().getConfigurationSection("Gates").set(gate.getGateId(), null);
 
         MessageManager.sendMessage(sender, "&aYou have removed a gate named \"&b" + gateId + "&a\".");
     }

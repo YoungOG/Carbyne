@@ -1,10 +1,12 @@
 package com.medievallords.carbyne.regeneration;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.listeners.PlayerListeners;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.WorldCoord;
@@ -31,6 +33,7 @@ public class RegenerationHandler {
 
     private Carbyne main = Carbyne.getInstance();
     private MongoCollection<Document> taskCollection = main.getMongoDatabase().getCollection("regen-tasks");
+    private MongoCollection<Document> chunkCollection = main.getMongoDatabase().getCollection("reset-chunks");
     @Getter
     private List<UUID> bypassers = new ArrayList<>();
     private HashMap<Material, Material> regenIntoData = new HashMap<>();
@@ -43,16 +46,14 @@ public class RegenerationHandler {
         load();
     }
 
-    public void reload()
-    {
+    public void reload() {
         bypassers = new ArrayList<>();
         regenIntoData = new HashMap<>();
         timeData = new HashMap<>();
         load();
     }
 
-    public void load()
-    {
+    public void load() {
         FileConfiguration configuration = main.getConfig();
 
         if (configuration.getStringList("regeneration").size() > 0)
@@ -78,7 +79,7 @@ public class RegenerationHandler {
      * @param type  NOT NULL RegenerationType enum.
      */
     public void request(Block block, RegenerationType type) {
-        if(!timeData.containsKey(block.getType())) return;
+        if (!timeData.containsKey(block.getType())) return;
         WorldCoord wc = WorldCoord.parseWorldCoord(block);
         if (!isLocationEmpty(wc, block.getLocation())) return;
         storeRegenerationInformation(wc, block, type);
@@ -186,7 +187,8 @@ public class RegenerationHandler {
         ArrayList<Document> regenData = (ArrayList<Document>) wcDoc.get("data");
         String data = LocationSerialization.serializeLocation(location);
 
-        for (Document aRegenData : regenData) if (data.equals(aRegenData.get("location", String.class))) return false;
+        for (Document aRegenData : regenData)
+            if (data.equals(aRegenData.get("location", String.class))) return false;
 
         return true;
     }

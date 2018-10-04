@@ -1,8 +1,10 @@
 package com.medievallords.carbyne.gates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -31,7 +33,7 @@ public class GateListCommand extends BaseCommand {
             return;
         }
 
-        if (getGateManager().getGates().size() <= 0) {
+        if (StaticClasses.gateManager.getGates().size() <= 0) {
             MessageManager.sendMessage(sender, "&cThere are no available gates to display.");
             return;
         }
@@ -43,9 +45,9 @@ public class GateListCommand extends BaseCommand {
 
             JSONMessage message = JSONMessage.create("");
 
-            for (int i = 0; i < getGateManager().getGates().size(); i++) {
-                if (i < getGateManager().getGates().size() - 1) {
-                    Gate gate = getGateManager().getGates().get(i);
+            for (int i = 0; i < StaticClasses.gateManager.getGates().size(); i++) {
+                if (i < StaticClasses.gateManager.getGates().size() - 1) {
+                    Gate gate = StaticClasses.gateManager.getGates().get(i);
 
 
 
@@ -53,7 +55,7 @@ public class GateListCommand extends BaseCommand {
                             .tooltip(getMessageForGate(gate))
                             .then(", ").color(ChatColor.GRAY);
                 } else {
-                    Gate gate = getGateManager().getGates().get(i);
+                    Gate gate = StaticClasses.gateManager.getGates().get(i);
 
                     message.then(gate.getGateId()).color(ChatColor.AQUA)
                             .tooltip(getMessageForGate(gate));
@@ -65,7 +67,7 @@ public class GateListCommand extends BaseCommand {
             MessageManager.sendMessage(sender, "&aAvailable Gates:");
 
             List<String> gateIds = new ArrayList<>();
-            for (Gate gate : getGateManager().getGates()) {
+            for (Gate gate : StaticClasses.gateManager.getGates()) {
                 gateIds.add("&a" + gate.getGateId());
             }
 
@@ -89,7 +91,7 @@ public class GateListCommand extends BaseCommand {
 
         for (Location location : gate.getPressurePlateMap().keySet()) {
             id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
         }
 
         message2.then("\n");
@@ -98,7 +100,7 @@ public class GateListCommand extends BaseCommand {
         id = 0;
         for (Location location : gate.getRedstoneBlockLocations()) {
             id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
         }
 
         message2.then("\n");
@@ -107,10 +109,10 @@ public class GateListCommand extends BaseCommand {
         id = 0;
         for (Location location : gate.getButtonLocations()) {
             id++;
-            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
+            message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null" ) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ()) + "\n");
         }
 
-        if (getCarbyne().isMythicMobsEnabled()) {
+        if (Carbyne.getInstance().isMythicMobsEnabled()) {
             message2.then("\n");
 
             int spawnerCount = 0;

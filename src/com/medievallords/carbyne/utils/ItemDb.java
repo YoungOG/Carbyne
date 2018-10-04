@@ -161,9 +161,9 @@ public class ItemDb {
         List<ItemStack> is = new ArrayList<>();
 
         if (args.length < 1) {
-            is.add(p.getItemInHand());
+            is.add(p.getInventory().getItemInMainHand());
         } else if (args[0].equalsIgnoreCase("hand")) {
-            is.add(p.getItemInHand());
+            is.add(p.getInventory().getItemInMainHand());
         } else if (args[0].equalsIgnoreCase("inventory") || args[0].equalsIgnoreCase("invent") || args[0].equalsIgnoreCase("all")) {
             for (ItemStack stack : p.getInventory().getContents()) {
                 if (stack == null || stack.getType() == Material.AIR) {

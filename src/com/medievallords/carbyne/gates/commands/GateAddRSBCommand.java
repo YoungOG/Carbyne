@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gates.commands;
 
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -28,24 +29,24 @@ public class GateAddRSBCommand extends BaseCommand {
 
         String gateId = args[0];
 
-        Gate gate = getGateManager().getGate(gateId);
+        Gate gate = StaticClasses.gateManager.getGate(gateId);
 
         if (gate == null) {
             MessageManager.sendMessage(player, "&cCould not find a gate with the ID \"" + gateId + "\".");
             return;
         }
 
-        if (player.getTargetBlock((HashSet<Byte>) null, 50).getType() != Material.REDSTONE_BLOCK) {
+        if (player.getTargetBlock(null, 50).getType() != Material.REDSTONE_BLOCK) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Redstone Block.");
             return;
         }
 
-        if (gate.getRedstoneBlockLocations().contains(player.getTargetBlock((HashSet<Byte>) null, 50).getLocation())) {
+        if (gate.getRedstoneBlockLocations().contains(player.getTargetBlock(null, 50).getLocation())) {
             MessageManager.sendMessage(player, "&cThat Redstone Block is already added to the gate " + gateId + ".");
             return;
         }
 
-        gate.getRedstoneBlockLocations().add(player.getTargetBlock((HashSet<Byte>) null,  50).getLocation());
+        gate.getRedstoneBlockLocations().add(player.getTargetBlock(null,  50).getLocation());
         gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have added a Redstone Block to the gate &b" + gate.getGateId() + "&a.");
     }

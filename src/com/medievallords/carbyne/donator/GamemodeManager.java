@@ -2,6 +2,7 @@ package com.medievallords.carbyne.donator;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
@@ -24,8 +25,6 @@ import java.util.List;
 @Getter
 public class GamemodeManager {
 
-    private Carbyne main = Carbyne.getInstance();
-
     private List<Player> flyPlayers = new ArrayList<>();
     private List<Player> gmPlayers = new ArrayList<>();
     private HashMap<Town, String> flightTowns = new HashMap<>();
@@ -36,7 +35,7 @@ public class GamemodeManager {
     }
 
     private void load() {
-        FileConfiguration gamemodeFileConfiguration = main.getDonatorTownsConfiguration();
+        FileConfiguration gamemodeFileConfiguration = Carbyne.getInstance().getDonatorTownsFileConfiguration();
 
         List<String> temp = gamemodeFileConfiguration.getStringList("FlightTowns");
         if (temp.size() > 0)
@@ -66,15 +65,15 @@ public class GamemodeManager {
     }
 
     public void toggleFlight(Player player) {
-        if (!main.getGamemodeManager().getFlyPlayers().contains(player)) {
+        if (!StaticClasses.gamemodeManager.getFlyPlayers().contains(player)) {
             player.setAllowFlight(true);
             player.setFlying(true);
-            main.getGamemodeManager().getFlyPlayers().add(player);
+            StaticClasses.gamemodeManager.getFlyPlayers().add(player);
             MessageManager.sendMessage(player, "&cFlight enabled!");
         } else {
             player.setAllowFlight(false);
             player.setFlying(false);
-            main.getGamemodeManager().getFlyPlayers().remove(player);
+            StaticClasses.gamemodeManager.getFlyPlayers().remove(player);
             MessageManager.sendMessage(player, "&cFlight disabled!");
         }
     }
@@ -100,7 +99,7 @@ public class GamemodeManager {
         if (creativeTowns.containsKey(town)) {
             creativeTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown creative is disabled!");
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
+            List<String> temp = Carbyne.getInstance().getDonatorTownsFileConfiguration().getStringList("CreativeTowns");
             for (String entry : temp) {
                 String[] entrySplit = entry.split(",");
                 if (entrySplit[0].equalsIgnoreCase(town.getName())) {
@@ -109,11 +108,11 @@ public class GamemodeManager {
                 }
             }
 
-            main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
+            Carbyne.getInstance().getDonatorTownsFileConfiguration().set("CreativeTowns", temp);
 
             try {
-                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                Carbyne.getInstance().setDonatorTownsFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getDonatorTownsFile()));
+                Carbyne.getInstance().getDonatorTownsFileConfiguration().save(Carbyne.getInstance().getDonatorTownsFile());
             } catch (IOException e) {}
         } else {
             Resident res = null;
@@ -133,13 +132,13 @@ public class GamemodeManager {
 
             creativeTowns.put(town2, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown creative enabled!");
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
+            List<String> temp = Carbyne.getInstance().getDonatorTownsFileConfiguration().getStringList("CreativeTowns");
             temp.add(town.getName() + "," + player.getUniqueId().toString());
 
-            main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
+            Carbyne.getInstance().getDonatorTownsFileConfiguration().set("CreativeTowns", temp);
             try {
-                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                Carbyne.getInstance().setDonatorTownsFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getDonatorTownsFile()));
+                Carbyne.getInstance().getDonatorTownsFileConfiguration().save(Carbyne.getInstance().getDonatorTownsFile());
             } catch (IOException e) {
             }
         }
@@ -178,7 +177,7 @@ public class GamemodeManager {
             flightTowns.remove(town);
             MessageManager.sendMessage(player, "&cTown flight has been disabled!");
 
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
+            List<String> temp = Carbyne.getInstance().getDonatorTownsFileConfiguration().getStringList("FlightTowns");
             for (String entry : temp) {
                 String[] splitEntry = entry.split(",");
                 if (splitEntry[0].equalsIgnoreCase(town.getName())) {
@@ -187,23 +186,23 @@ public class GamemodeManager {
                 }
             }
 
-            main.getDonatorTownsConfiguration().set("FlightTowns", temp);
+            Carbyne.getInstance().getDonatorTownsFileConfiguration().set("FlightTowns", temp);
             try {
-                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                Carbyne.getInstance().setDonatorTownsFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getDonatorTownsFile()));
+                Carbyne.getInstance().getDonatorTownsFileConfiguration().save(Carbyne.getInstance().getDonatorTownsFile());
             } catch (IOException e) {}
         } else {
 
             flightTowns.put(town, player.getUniqueId().toString());
             MessageManager.sendMessage(player, "&cTown flight enabled!");
 
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
+            List<String> temp = Carbyne.getInstance().getDonatorTownsFileConfiguration().getStringList("FlightTowns");
             temp.add(town.getName() + "," + player.getUniqueId().toString());
 
-            main.getDonatorTownsConfiguration().set("FlightTowns", temp);
+            Carbyne.getInstance().getDonatorTownsFileConfiguration().set("FlightTowns", temp);
             try {
-                main.setDonatorTownsConfiguration(YamlConfiguration.loadConfiguration(main.getDonatorTownsFile()));
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                Carbyne.getInstance().setDonatorTownsFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getDonatorTownsFile()));
+                Carbyne.getInstance().getDonatorTownsFileConfiguration().save(Carbyne.getInstance().getDonatorTownsFile());
             } catch (IOException e) {}
         }
     }

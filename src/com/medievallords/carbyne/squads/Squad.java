@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.squads;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import lombok.Getter;
@@ -21,7 +21,6 @@ import java.util.UUID;
 @Setter
 public class Squad {
 
-    private SquadManager squadManager = Carbyne.getInstance().getSquadManager();
     private UUID uniqueId;
     private UUID leader;
     private SquadType type = SquadType.PRIVATE;
@@ -43,10 +42,10 @@ public class Squad {
 
         sendAllMembersMessage("&cYour squad has been disbanded.");
 
-        squadManager.getSquads().remove(this);
+        StaticClasses.squadManager.getSquads().remove(this);
 
         for (UUID id : getAllPlayers()) {
-            Board board = Board.getByPlayer(Bukkit.getPlayer(Bukkit.getPlayer(id).getUniqueId()));
+            Board board = Board.getByPlayer(id);
 
             if (board != null) {
                 BoardCooldown targetCooldown = board.getCooldown("target");

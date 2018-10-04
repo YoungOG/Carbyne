@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.regeneration.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -22,12 +23,12 @@ public class RegenerationBypassCommand extends BaseCommand {
             return;
         }
 
-        if (getRegenerationHandler().getBypassers().contains(player.getUniqueId())) {
-            getRegenerationHandler().getBypassers().remove(player.getUniqueId());
+        if (StaticClasses.regenerationHandler.getBypassers().contains(player.getUniqueId())) {
+            StaticClasses.regenerationHandler.getBypassers().remove(player.getUniqueId());
             MessageManager.sendMessage(player, "&cYou are no longer bypassing regeneration.");
 
         } else {
-            getRegenerationHandler().getBypassers().add(player.getUniqueId());
+            StaticClasses.regenerationHandler.getBypassers().add(player.getUniqueId());
             MessageManager.sendMessage(player, "&cYou are now bypassing regeneration.");
         }
     }

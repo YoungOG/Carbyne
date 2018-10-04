@@ -30,64 +30,48 @@ public class DateUtil {
         int seconds = 0;
         boolean found = false;
         while (m.find()) {
-            if (m.group() == null || m.group().isEmpty()) {
+            if (m.group() == null || m.group().isEmpty())
                 continue;
-            }
-            for (int i = 0; i < m.groupCount(); i++) {
+            for (int i = 0; i < m.groupCount(); i++)
                 if (m.group(i) != null && !m.group(i).isEmpty()) {
                     found = true;
                     break;
                 }
-            }
             if (found) {
-                if (m.group(1) != null && !m.group(1).isEmpty()) {
+                if (m.group(1) != null && !m.group(1).isEmpty())
                     years = Integer.parseInt(m.group(1));
-                }
-                if (m.group(2) != null && !m.group(2).isEmpty()) {
+                if (m.group(2) != null && !m.group(2).isEmpty())
                     months = Integer.parseInt(m.group(2));
-                }
-                if (m.group(3) != null && !m.group(3).isEmpty()) {
+                if (m.group(3) != null && !m.group(3).isEmpty())
                     weeks = Integer.parseInt(m.group(3));
-                }
-                if (m.group(4) != null && !m.group(4).isEmpty()) {
+                if (m.group(4) != null && !m.group(4).isEmpty())
                     days = Integer.parseInt(m.group(4));
-                }
-                if (m.group(5) != null && !m.group(5).isEmpty()) {
+                if (m.group(5) != null && !m.group(5).isEmpty())
                     hours = Integer.parseInt(m.group(5));
-                }
-                if (m.group(6) != null && !m.group(6).isEmpty()) {
+                if (m.group(6) != null && !m.group(6).isEmpty())
                     minutes = Integer.parseInt(m.group(6));
-                }
-                if (m.group(7) != null && !m.group(7).isEmpty()) {
+                if (m.group(7) != null && !m.group(7).isEmpty())
                     seconds = Integer.parseInt(m.group(7));
-                }
                 break;
             }
         }
         if (!found)
             throw new Exception("Illegal Date");
         Calendar c = new GregorianCalendar();
-        if (years > 0) {
+        if (years > 0)
             c.add(Calendar.YEAR, years * (future ? 1 : -1));
-        }
-        if (months > 0) {
+        if (months > 0)
             c.add(Calendar.MONTH, months * (future ? 1 : -1));
-        }
-        if (weeks > 0) {
+        if (weeks > 0)
             c.add(Calendar.WEEK_OF_YEAR, weeks * (future ? 1 : -1));
-        }
-        if (days > 0) {
+        if (days > 0)
             c.add(Calendar.DAY_OF_MONTH, days * (future ? 1 : -1));
-        }
-        if (hours > 0) {
+        if (hours > 0)
             c.add(Calendar.HOUR_OF_DAY, hours * (future ? 1 : -1));
-        }
-        if (minutes > 0) {
+        if (minutes > 0)
             c.add(Calendar.MINUTE, minutes * (future ? 1 : -1));
-        }
-        if (seconds > 0) {
+        if (seconds > 0)
             c.add(Calendar.SECOND, seconds * (future ? 1 : -1));
-        }
         Calendar max = new GregorianCalendar();
         max.add(Calendar.YEAR, 10);
         if (c.after(max))
@@ -119,9 +103,8 @@ public class DateUtil {
         boolean future = false;
         if (toDate.equals(fromDate))
             return "now";
-        if (toDate.after(fromDate)) {
+        if (toDate.after(fromDate))
             future = true;
-        }
         StringBuilder sb = new StringBuilder();
         int[] types = new int[]{Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH, Calendar.HOUR_OF_DAY,
                 Calendar.MINUTE, Calendar.SECOND};
@@ -129,9 +112,8 @@ public class DateUtil {
                 "minutes", "second", "seconds"};
         int accuracy = 0;
         for (int i = 0; i < types.length; i++) {
-            if (accuracy > 2) {
+            if (accuracy > 2)
                 break;
-            }
             int diff = dateDiff(types[i], fromDate, toDate, future);
             if (diff > 0) {
                 accuracy++;
@@ -144,13 +126,18 @@ public class DateUtil {
     }
 
     public static String readableTime(long time, boolean abbreviate) {
-        int SECOND = 1000;
-        int MINUTE = 60 * SECOND;
-        int HOUR = 60 * MINUTE;
-        int DAY = 24 * HOUR;
+        long SECOND = 1000;
+        long MINUTE = 60 * SECOND;
+        long HOUR = 60 * MINUTE;
+        long DAY = 24 * HOUR;
+        long MONTH = 30 * DAY;
 
         long ms = time;
-        StringBuilder text = new StringBuilder("");
+        StringBuilder text = new StringBuilder();
+        if (ms > MONTH) {
+            text.append(ms / MONTH).append((!abbreviate ? " months" : "m "));
+            ms %= MONTH;
+        }
         if (ms > DAY) {
             text.append(ms / DAY).append((!abbreviate ? " days " : "d "));
             ms %= DAY;
@@ -163,9 +150,8 @@ public class DateUtil {
             text.append(ms / MINUTE).append((!abbreviate ? " minutes " : "m "));
             ms %= MINUTE;
         }
-        if (ms > SECOND) {
+        if (ms > SECOND)
             text.append(ms / SECOND).append((!abbreviate ? " seconds" : "s"));
-        }
 
         return text.toString();
     }

@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.gear.specials.types;
 
 import com.medievallords.carbyne.gear.specials.Special;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -67,7 +68,9 @@ public class LightningStorm implements Special {
     private void damageEntity(LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                entity.damage(entity.getHealth() * 0.5);
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(entity.getUniqueId());
+                playerHealth.setHealth(playerHealth.getHealth() * 0.5, (Player) entity);
+                entity.damage(0.0);
                 entity.setFireTicks(20 * 5);
                 return;
             }

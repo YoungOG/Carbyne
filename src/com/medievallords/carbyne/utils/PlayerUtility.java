@@ -7,14 +7,14 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
-import net.minecraft.server.v1_8_R3.ChatMessage;
-import net.minecraft.server.v1_8_R3.EntityPlayer;
-import net.minecraft.server.v1_8_R3.PacketPlayOutOpenWindow;
+import net.minecraft.server.v1_12_R1.ChatMessage;
+import net.minecraft.server.v1_12_R1.EntityPlayer;
+import net.minecraft.server.v1_12_R1.PacketPlayOutOpenWindow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class PlayerUtility {
 
@@ -252,5 +253,42 @@ public class PlayerUtility {
                 if (e.getLocation().getBlock().getLocation().distance(loc) == 0)
                     return (ItemFrame) e;
         return null;
+    }
+
+    public static boolean hasInventorySpace(Inventory inventory, ItemStack is) {
+        Inventory inv = Bukkit.createInventory(null, inventory.getSize());
+
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (inventory.getItem(i) != null) {
+                ItemStack item = inventory.getItem(i).clone();
+                inv.setItem(i, item);
+            }
+        }
+
+        return inv.addItem(new ItemStack[]{is.clone()}).size() <= 0;
+
+    }
+
+    public static int checkSlotsAvailable(Inventory inv) {
+        ItemStack[] items = inv.getContents();
+        int emptySlots = 0;
+
+        for (ItemStack is : items) {
+            if (is == null) {
+                emptySlots = emptySlots + 1;
+            }
+        }
+
+        return emptySlots;
+    }
+
+    public static List<String> toList(Player[] array) {
+        List<String> list = new ArrayList<>();
+
+        for (Player t : array) {
+            list.add(t.getName());
+        }
+
+        return list;
     }
 }

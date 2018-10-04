@@ -5,6 +5,7 @@ import com.medievallords.carbyne.crates.keys.Key;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -33,7 +34,7 @@ public class CrateListCommand extends BaseCommand {
         }
 
         if (args[0].equalsIgnoreCase("crates")) {
-            if (getCrateManager().getCrates().size() <= 0) {
+            if (StaticClasses.crateManager.getCrates().size() <= 0) {
                 MessageManager.sendMessage(sender, Lang.CRATE_LIST_NO_CRATES.toString());
                 return;
             }
@@ -44,18 +45,18 @@ public class CrateListCommand extends BaseCommand {
                 MessageManager.sendMessage(sender,  Lang.SUCCESS_CRATE_LIST_HEADER.toString().replace("{TYPE}", "Crates"));
 
                 JSONMessage message = JSONMessage.create();
-                for (int i = 0; i < getCrateManager().getCrates().size(); i++) {
-                    if (i < getCrateManager().getCrates().size() - 1) {
-                        Crate crate = getCrateManager().getCrates().get(i);
+                for (int i = 0; i < StaticClasses.crateManager.getCrates().size(); i++) {
+                    if (i < StaticClasses.crateManager.getCrates().size() - 1) {
+                        Crate crate = StaticClasses.crateManager.getCrates().get(i);
 
                         message.then(crate.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
-                                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "World: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()))
+                                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "CGWorld: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()))
                                 .then(", ").color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_COMMA_COLOR.toString()));
                     } else {
-                        Crate crate = getCrateManager().getCrates().get(i);
+                        Crate crate = StaticClasses.crateManager.getCrates().get(i);
 
                         message.then(crate.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
-                                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "World: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()));
+                                .tooltip(ChatColor.translateAlternateColorCodes('&', "&aLocation: " + (crate.getLocation() != null ? "CGWorld: &b" + crate.getLocation().getWorld().getName() + "&a, X: &b" + crate.getLocation().getBlockX() + "&a, Y: &b" + crate.getLocation().getBlockY() + "&a, Z: &b" + crate.getLocation().getBlockZ() + "&a)" : "&cNot set") + "\n&aRewards Amount: &b" + crate.getRewardsAmount()));
                     }
                 }
 
@@ -64,14 +65,14 @@ public class CrateListCommand extends BaseCommand {
                 MessageManager.sendMessage(sender,  Lang.SUCCESS_CRATE_LIST_HEADER.toString().replace("{TYPE}", "Crates"));
 
                 List<String> crateNames = new ArrayList<>();
-                for (Crate crate : getCrateManager().getCrates()) {
+                for (Crate crate : StaticClasses.crateManager.getCrates()) {
                     crateNames.add(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()) + crate.getName());
                 }
 
                 MessageManager.sendMessage(sender, crateNames.toString().replace("[", "").replace("]", "").replace(",", ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_COMMA_COLOR.toString()) + ","));
             }
         } else if (args[0].equalsIgnoreCase("keys")) {
-            if (getCrateManager().getKeys().size() <= 0) {
+            if (StaticClasses.crateManager.getKeys().size() <= 0) {
                 MessageManager.sendMessage(sender, Lang.CRATE_LIST_NO_KEYS.toString());
                 return;
             }
@@ -82,15 +83,15 @@ public class CrateListCommand extends BaseCommand {
                 MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_LIST_HEADER.toString().replace("{TYPE}", "Keys"));
 
                 JSONMessage message = JSONMessage.create();
-                for (int i = 0; i < getCrateManager().getKeys().size(); i++) {
-                    if (i < getCrateManager().getKeys().size() - 1) {
-                        Key key = getCrateManager().getKeys().get(i);
+                for (int i = 0; i < StaticClasses.crateManager.getKeys().size(); i++) {
+                    if (i < StaticClasses.crateManager.getKeys().size() - 1) {
+                        Key key = StaticClasses.crateManager.getKeys().get(i);
 
                         message.then(key.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
                                 .tooltip(ChatColor.translateAlternateColorCodes('&', "&aItemID: &b" + key.getItemId() + "\n&aItemData: &b" + key.getItemData() + "\n&aDisplay Name: " + key.getDisplayName() + "\n&aCrate: " + (!key.getCrate().isEmpty() && key.getCrate() != null ? "&b" + key.getCrate() : "&cNone")))
                                 .then(", ").color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_COMMA_COLOR.toString()));
                     } else {
-                        Key key = getCrateManager().getKeys().get(i);
+                        Key key = StaticClasses.crateManager.getKeys().get(i);
 
                         message.then(key.getName()).color(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()))
                                 .tooltip(ChatColor.translateAlternateColorCodes('&', "&aItemID: &b" + key.getItemId() + "\n&aItemData: &b" + key.getItemData() + "\n&aDisplay Name: " + key.getDisplayName() + "\n&aCrate: " + (!key.getCrate().isEmpty() && key.getCrate() != null ? "&b" + key.getCrate() : "&cNone")));
@@ -102,7 +103,7 @@ public class CrateListCommand extends BaseCommand {
                 MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_LIST_HEADER.toString().replace("{TYPE}", "Keys"));
 
                 List<String> keyNames = new ArrayList<>();
-                for (Key key : getCrateManager().getKeys()) {
+                for (Key key : StaticClasses.crateManager.getKeys()) {
                     keyNames.add(ChatColor.valueOf(Lang.SUCCESS_CRATE_LIST_NAME_COLOR.toString()) + key.getName());
                 }
 

@@ -58,7 +58,7 @@ public enum Lang {
     SUCCESS_CRATE_RELOAD("COMMANDS.SUCCESS.CRATE_RELOAD", "&aConfiguration successfully reloaded."),
     SUCCESS_CRATE_REMOVE("COMMANDS.SUCCESS.CRATE_REMOVE", "&aYou have remove the crate &b{CRATE_NAME}&a."),
     SUCCESS_CRATE_RENAME("COMMANDS.SUCCESS.CRATE_RENAME", "&aYou have renamed the crate &b{CURRENT_NAME} &ato &b{NEW_NAME}&a."),
-    SUCCESS_CRATE_SET_LOCATION("COMMANDS.SUCCESS.CRATE_SET_LOCATION", "&aYou have set the location of &b{CRATE_NAME} &ato (World: &b{WORLD}&a, X: &b{X}&a, Y: &b{Y}&a, Z: &b{Z}&a)."),
+    SUCCESS_CRATE_SET_LOCATION("COMMANDS.SUCCESS.CRATE_SET_LOCATION", "&aYou have set the location of &b{CRATE_NAME} &ato (CGWorld: &b{WORLD}&a, X: &b{X}&a, Y: &b{Y}&a, Z: &b{Z}&a)."),
     SUCCESS_GIVEAWAY_START("COMMANDS.SUCCESS.GIVEAWAY.START", "&aYou have started a giveaway"),
     SUCCESS_GIVEAWAY_END("COMMANDS.SUCCESS.GIVEAWAY.END", "&aYou have ended a giveaway"),
     SUCCESS_CLEAR_LAG_CLEAR("COMMANDS.SUCCESS.CLEAR_LAG.CLEAR", "&aCleared &b{AMOUNT} &aout of &b{TOTAL} &afrom the world &b{WORLD}&a."),

@@ -4,6 +4,7 @@ import com.medievallords.carbyne.crates.keys.Key;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -39,12 +40,12 @@ public class CrateKeyCommand extends BaseCommand {
 
             int amount = Integer.valueOf(args[3]);
 
-            if (getCrateManager().getKeys().size() <= 0) {
+            if (StaticClasses.crateManager.getKeys().size() <= 0) {
                 MessageManager.sendMessage(sender, Lang.CRATE_KEYS_NO_KEYS.toString());
                 return;
             }
 
-            Key key = getCrateManager().getKey(name);
+            Key key = StaticClasses.crateManager.getKey(name);
 
             if (key == null) {
                 MessageManager.sendMessage(sender, Lang.CRATE_KEYS_NOT_FOUND.toString().replace("{NAME}", name));

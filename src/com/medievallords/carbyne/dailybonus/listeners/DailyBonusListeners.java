@@ -1,11 +1,12 @@
 package com.medievallords.carbyne.dailybonus.listeners;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.crates.CrateManager;
-import com.medievallords.carbyne.dailybonus.DailyBonusManager;
 import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.profiles.ProfileManager;
+import com.medievallords.carbyne.quests.Task;
+import com.medievallords.carbyne.quests.types.CreateNationTask;
+import com.medievallords.carbyne.quests.types.DailyBonusStreakTask;
 import com.medievallords.carbyne.utils.Cooldowns;
+import com.medievallords.carbyne.utils.StaticClasses;
 import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,19 +29,14 @@ import java.util.UUID;
  */
 public class DailyBonusListeners implements Listener {
 
-    private Carbyne main = Carbyne.getInstance();
-    private ProfileManager profileManager = main.getProfileManager();
-    private DailyBonusManager dailyBonusManager = main.getDailyBonusManager();
-    private CrateManager crateManager = main.getCrateManager();
-
-    private HashSet<UUID> crateOpeners = new HashSet<>();
+    //private HashSet<UUID> crateOpeners = new HashSet<>();
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
 
         if (event.getInventory().getTitle().contains("Daily Bonus")) {
-            Profile profile = profileManager.getProfile(player.getUniqueId());
+            Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
             ItemStack item = event.getCurrentItem();
             event.setCancelled(true);
 
@@ -50,7 +47,7 @@ public class DailyBonusListeners implements Listener {
 
                     if ((index == profile.getDailyRewardDay()) && !hasClaimed) {
                         if (Cooldowns.getCooldown(player.getUniqueId(), "DailyRewardWarmUp") > 0) {
-                            player.playSound(player.getLocation(), Sound.ANVIL_LAND, 1.0F, 1.0F);
+                            player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
                             return;
                         }
 
@@ -59,23 +56,32 @@ public class DailyBonusListeners implements Listener {
 
                         player.closeInventory();
 
-                        if (!dailyBonusManager.hasClaimedAllDays(profile)) {
-                            if (crateManager.getCrates().get(0) != null)
+                        List<Task> tasks = StaticClasses.questHandler.getTasks(player.getUniqueId());
+
+                        for (Task task : tasks) {
+                            if (task instanceof DailyBonusStreakTask) {
+                                task.incrementProgress(player.getUniqueId(), 1);
+                            }
+                        }
+
+                        if (!StaticClasses.dailyBonusManager.hasClaimedAllDays(profile)) {
+                            if (StaticClasses.crateManager.getCrates().get(0) != null)
                                 new BukkitRunnable() {
                                     @Override
                                     public void run() {
-                                        crateManager.getCrates().get(0).generateRewards(player, true);
-                                        crateOpeners.add(player.getUniqueId());
+                                        StaticClasses.crateManager.getCrates().get(0).generateRewards(player, true);
+                                        //crateOpeners.add(player.getUniqueId());
                                     }
-                                }.runTaskLater(main, 2L);
-                        } else if (crateManager.getCrates().get(1) != null)
+                                }.runTaskLater(Carbyne.getInstance(), 2L);
+                        } else if (StaticClasses.crateManager.getCrates().get(1) != null)
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    crateManager.getCrates().get(1).generateRewards(player, true);
-                                    crateOpeners.add(player.getUniqueId());
+                                    StaticClasses.crateManager.getCrates().get(1).generateRewards(player, true);
+
+                                    //crateOpeners.add(player.getUniqueId());
                                 }
-                            }.runTaskLater(main, 2L);
+                            }.runTaskLater(Carbyne.getInstance(), 2L);
                     }
                 }
             }
@@ -106,7 +112,7 @@ public class DailyBonusListeners implements Listener {
         if (event.getRightClicked() != null && event.getRightClicked().getType() == EntityType.PLAYER) {
             if (event.getRightClicked().getCustomName() == null) {
                 if (CitizensAPI.getNPCRegistry().isNPC(event.getRightClicked())) {
-                    Profile profile = profileManager.getProfile(player.getUniqueId());
+                    Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                     event.setCancelled(true);
 
@@ -115,7 +121,7 @@ public class DailyBonusListeners implements Listener {
                         profile.assignNewWeeklyRewards();
                     }
 
-                    dailyBonusManager.openDailyBonusGui(event.getPlayer());
+                    StaticClasses.dailyBonusManager.openDailyBonusGui(event.getPlayer());
                 }
             }
         }
@@ -127,11 +133,11 @@ public class DailyBonusListeners implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                Profile profile = profileManager.getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                 if (!profile.hasClaimedDailyReward())
                     Cooldowns.setCooldown(player.getUniqueId(), "DailyRewardWarmUp", 300000);
             }
-        }.runTaskLaterAsynchronously(main, 10L);
+        }.runTaskLaterAsynchronously(Carbyne.getInstance(), 10L);
     }
 }

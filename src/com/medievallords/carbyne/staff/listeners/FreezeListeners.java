@@ -1,8 +1,7 @@
 package com.medievallords.carbyne.staff.listeners;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,7 +9,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -20,25 +18,23 @@ import org.bukkit.event.player.PlayerQuitEvent;
  */
 public class FreezeListeners implements Listener {
 
-    private StaffManager staffManager = Carbyne.getInstance().getStaffManager();
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-
-        if (event.getFrom().getY() != event.getTo().getY()) {
-            if (staffManager.getFrozen().contains(player.getUniqueId())) {
-                event.setTo(event.getFrom());
-            }
-        }
-    }
+//    @EventHandler
+//    public void onMove(PlayerMoveEvent event) {
+//        Player player = event.getPlayer();
+//
+//        if (event.getFrom().getY() != event.getTo().getY()) {
+//            if (StaticClasses.staffManager.getFrozen().contains(player.getUniqueId())) {
+//                event.setTo(event.getFrom());
+//            }
+//        }
+//    }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        if (staffManager.getFrozen().contains(player.getUniqueId())) {
-            staffManager.unfreezePlayer(player);
+        if (StaticClasses.staffManager.getFrozen().contains(player.getUniqueId())) {
+            StaticClasses.staffManager.unfreezePlayer(player);
             MessageManager.broadcastMessage("&7[&c!&7] &5" + player.getName() + " &chas logged out while frozen!", "carbyne.command.freeze");
         }
     }
@@ -46,7 +42,7 @@ public class FreezeListeners implements Listener {
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
-            if (staffManager.getFrozen().contains(event.getEntity().getUniqueId())) {
+            if (StaticClasses.staffManager.getFrozen().contains(event.getEntity().getUniqueId())) {
                 event.setCancelled(true);
 
                 if (event.getDamager() instanceof Player) {
@@ -56,7 +52,7 @@ public class FreezeListeners implements Listener {
         }
 
         if (event.getDamager() instanceof Player) {
-            if (staffManager.getFrozen().contains(event.getDamager().getUniqueId())) {
+            if (StaticClasses.staffManager.getFrozen().contains(event.getDamager().getUniqueId())) {
                 event.setCancelled(true);
             }
         }
@@ -64,14 +60,14 @@ public class FreezeListeners implements Listener {
 
     @EventHandler
     public void onPickup(PlayerPickupItemEvent event) {
-        if (staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
-        if (staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot build while frozen.");
         }
@@ -79,7 +75,7 @@ public class FreezeListeners implements Listener {
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
-        if (staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot build while frozen.");
         }
@@ -87,7 +83,7 @@ public class FreezeListeners implements Listener {
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        if (staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getFrozen().contains(event.getPlayer().getUniqueId())) {
             String message = event.getMessage();
 
             if (!message.startsWith("/message") && !message.startsWith("/r") && !message.startsWith("/msg") && !message.startsWith("/reply") && !message.startsWith("/discord")) {

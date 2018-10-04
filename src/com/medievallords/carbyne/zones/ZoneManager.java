@@ -4,10 +4,10 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.region.Selection;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.mobs.MythicMob;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,31 +44,52 @@ public class ZoneManager {
                 zone.setDisplayName(displayName);
 
                 HashMap<String, Integer> lootTables = new HashMap<>();
-                if (cs.contains(key + ".LootTables")) {
+                if (cs.contains(key + ".LootTables"))
                     for (String node : cs.getStringList(key + ".LootTables")) {
                         String[] split = node.split(",");
                         String lootTable = split[0];
                         int chance = Integer.parseInt(split[1]);
                         lootTables.put(lootTable, chance);
                     }
-                }
 
                 zone.setLootTables(lootTables);
 
-                if (cs.contains(key + ".ChestCooldown")) {
+                if (cs.contains(key + ".ChestCooldown"))
                     zone.setCooldownForChests(cs.getLong(key + ".ChestCooldown"));
-                }
+
+                HashMap<EntityType, List<MobData>> mobDataList = new HashMap<>();
 
                 if (cs.contains(key + ".Mobs")) {
-                    HashMap<MythicMob, Integer> mobs = new HashMap<>();
+                    ConfigurationSection mobSection = cs.getConfigurationSection(key + ".Mobs");
+                    if (mobSection != null) {
+                        for (String entityTypeName : mobSection.getKeys(false)) {
+                            List<MobData> mobList = new ArrayList<>();
+                            List<String> mobs = mobSection.getStringList(entityTypeName);
+                            if (mobs == null) {
+                                continue;
+                            }
 
-                    for (String s : cs.getStringList(key + ".Mobs")) {
-                        String[] split = s.split(",");
-                        mobs.put(MythicMobs.inst().getMobManager().getMythicMob(split[0]), Integer.parseInt(split[1]));
+                            for (String mobDataString : mobs) {
+                                String[] split = mobDataString.split(",");
+                                mobList.add((new MobData(MythicMobs.inst().getMobManager().getMythicMob(split[0]), Integer.parseInt(split[1]))));
+                            }
+
+                            mobDataList.put(EntityType.valueOf(entityTypeName.toUpperCase()), mobList);
+                        }
                     }
-
-                    zone.getMobs().putAll(mobs);
+                    //Mobs:
+                    //  ZOMBIE:
+                    //    - Undead,10
+                    //    - Skeleton,30
+                    //  SKELETON:
+                    //    - Skeleton,100
+                    //    - Zombie,10
                 }
+
+                zone.setMobs(mobDataList);
+
+                if (cs.contains(key + ".NerfedZone"))
+                    zone.setNerfedZone(cs.getBoolean(key + ".NerfedZone"));
 
                 zones.add(zone);
             }
@@ -108,6 +129,7 @@ public class ZoneManager {
         cs.set("DisplayName", name);
         cs.set("LootTables", new HashMap<>());
         cs.set("ChestCooldown", 0);
+        cs.set("NerfedZone", false);
 
         try {
             Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());
@@ -126,11 +148,9 @@ public class ZoneManager {
     }
 
     public Zone getZone(final Location location) {
-        for (Zone zone : getZones()) {
-            if (zone.isInZone(location)) {
+        for (Zone zone : getZones())
+            if (zone.isInZone(location))
                 return zone;
-            }
-        }
 
         return null;
     }

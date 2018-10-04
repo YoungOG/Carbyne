@@ -1,13 +1,15 @@
 package com.medievallords.carbyne.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import net.minecraft.server.v1_8_R3.PacketPlayOutCamera;
+import net.minecraft.server.v1_12_R1.PacketPlayOutCamera;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,8 +58,8 @@ public class FollowCommand extends BaseCommand implements Listener {
             return;
         }
 
-        if (!getStaffManager().isVanished(player)) {
-            getStaffManager().toggleVanish(player);
+        if (!StaticClasses.staffManager.isVanished(player)) {
+            StaticClasses.staffManager.toggleVanish(player);
         }
 
         player.teleport(target);
@@ -67,7 +69,7 @@ public class FollowCommand extends BaseCommand implements Listener {
             public void run() {
                 toggleCamera(player, target);
             }
-        }.runTaskLater(getCarbyne(), 60);
+        }.runTaskLater(Carbyne.getInstance(), 60);
 
         followers.put(player, target);
 
@@ -87,7 +89,7 @@ public class FollowCommand extends BaseCommand implements Listener {
                     player.teleport(target);
                 }
             }
-        }.runTaskTimer(getCarbyne(), 0, 10);
+        }.runTaskTimer(Carbyne.getInstance(), 0, 10);
     }
 
     @EventHandler
@@ -104,9 +106,7 @@ public class FollowCommand extends BaseCommand implements Listener {
             }
         }
 
-        if (followers.containsKey(event.getPlayer())) {
-            followers.remove(event.getPlayer());
-        }
+        followers.remove(event.getPlayer());
     }
 
     @EventHandler
@@ -114,8 +114,8 @@ public class FollowCommand extends BaseCommand implements Listener {
         if (followers.containsValue(event.getPlayer())) {
             for (Player player : followers.keySet()) {
                 if (followers.get(player).equals(event.getPlayer())) {
-                    if (!getStaffManager().isVanished(player)) {
-                        getStaffManager().toggleVanish(player);
+                    if (!StaticClasses.staffManager.isVanished(player)) {
+                        StaticClasses.staffManager.toggleVanish(player);
                     }
 
                     player.teleport(followers.get(player));
@@ -126,7 +126,7 @@ public class FollowCommand extends BaseCommand implements Listener {
                         public void run() {
                             toggleCamera(player, followers.get(player));
                         }
-                    }.runTaskLater(getCarbyne(), 60);
+                    }.runTaskLater(Carbyne.getInstance(), 60);
                 }
             }
         }
@@ -145,7 +145,7 @@ public class FollowCommand extends BaseCommand implements Listener {
                         public void run() {
                             toggleCamera(player, followers.get(player));
                         }
-                    }.runTaskLater(getCarbyne(), 60);
+                    }.runTaskLater(Carbyne.getInstance(), 60);
 
                 }
             }

@@ -1,8 +1,10 @@
 package com.medievallords.carbyne.crates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.Crate;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -30,14 +32,14 @@ public class CrateSetLocationCommand extends BaseCommand {
 
         String name = args[0];
 
-        if (getCrateManager().getCrate(name) == null) {
+        if (StaticClasses.crateManager.getCrate(name) == null) {
             MessageManager.sendMessage(sender, Lang.CRATE_NOT_FOUND.toString().replace("{NAME}", name));
             return;
         }
 
-        Crate crate = getCrateManager().getCrate(name);
-        crate.setLocation(Bukkit.getPlayer(sender.getName()).getTargetBlock((HashSet<Byte>) null, 50).getLocation());
-        crate.save(getCarbyne().getCratesFileConfiguration());
+        Crate crate = StaticClasses.crateManager.getCrate(name);
+        crate.setLocation(Bukkit.getPlayer(sender.getName()).getTargetBlock(null, 50).getLocation());
+        crate.save(Carbyne.getInstance().getCratesFileConfiguration());
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_SET_LOCATION.toString().replace("{CRATE_NAME}", crate.getName()).replace("{WORLD}", crate.getLocation().getWorld().getName()).replace("{X}", "" + crate.getLocation().getBlockX()).replace("{Y}", "" + crate.getLocation().getBlockY()).replace("{Z}", "" + crate.getLocation().getBlockZ()));
     }

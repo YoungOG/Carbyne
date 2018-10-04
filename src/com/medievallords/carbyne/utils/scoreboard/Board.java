@@ -8,10 +8,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Board {
     private static Set<Board> boards;
@@ -22,27 +19,25 @@ public class Board {
 
     private final CarbyneBoardAdapter carbyne;
     private Scoreboard scoreboard;
-    private Player player;
+    private UUID uuid;
     private Objective objective;
     private Set<String> keys;
     private List<BoardEntry> entries;
     private Set<BoardCooldown> cooldowns;
 
     public Board(final Player player, final CarbyneBoardAdapter carbyne) {
-        this.player = player;
+        this.uuid = player.getUniqueId();
         this.carbyne = carbyne;
         this.keys = new HashSet<>();
         this.cooldowns = new HashSet<>();
         this.entries = new ArrayList<>();
-        this.setup();
+        this.setup(player);
     }
 
-    public static Board getByPlayer(final Player player) {
-        for (final Board board : Board.boards) {
-            if (board.getPlayer().getName().equals(player.getName())) {
+    public static Board getByPlayer(final UUID uuid) {
+        for (final Board board : Board.boards)
+            if (board.getUuid().equals(uuid))
                 return board;
-            }
-        }
         return null;
     }
 
@@ -50,18 +45,16 @@ public class Board {
         return Board.boards;
     }
 
-    private void setup() {
-        if (!this.player.getScoreboard().equals(Bukkit.getScoreboardManager().getMainScoreboard())) {
-            this.scoreboard = this.player.getScoreboard();
-        } else {
+    private void setup(Player player) {
+        if (!player.getScoreboard().equals(Bukkit.getScoreboardManager().getMainScoreboard()))
+            this.scoreboard = player.getScoreboard();
+        else
             this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        }
         (this.objective = this.scoreboard.registerNewObjective("alex_is_shit", "dummy")).setDisplaySlot(DisplaySlot.SIDEBAR);
-        if (this.carbyne != null) {
-            this.objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.carbyne.getTitle(this.player)));
-        } else {
+        if (this.carbyne != null)
+            this.objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', this.carbyne.getTitle(player)));
+        else
             this.objective.setDisplayName("Default Title");
-        }
         Board.boards.add(this);
     }
 
@@ -81,30 +74,30 @@ public class Board {
     }
 
     public List<String> getBoardEntriesFormatted() {
-        final List<String> toReturn = new ArrayList<String>();
-        for (final BoardEntry entry : new ArrayList<BoardEntry>(this.entries)) {
+        final List<String> toReturn = new ArrayList<>();
+        for (final BoardEntry entry : new ArrayList<>(this.entries))
             toReturn.add(entry.getText());
-        }
         return toReturn;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 
     public BoardEntry getByPosition(final int position) {
         int i = 0;
         for (final BoardEntry board : this.entries) {
-            if (i == position) {
+            if (i == position)
                 return board;
-            }
             ++i;
         }
         return null;
     }
 
     public BoardCooldown getCooldown(final String id) {
-        for (final BoardCooldown cooldown : this.getCooldowns()) {
-            if (cooldown.getId().equals(id)) {
+        for (final BoardCooldown cooldown : this.getCooldowns())
+            if (cooldown.getId().equals(id))
                 return cooldown;
-            }
-        }
         return null;
     }
 
@@ -115,10 +108,6 @@ public class Board {
 
     public Scoreboard getScoreboard() {
         return this.scoreboard;
-    }
-
-    public Player getPlayer() {
-        return this.player;
     }
 
     public Objective getObjective() {

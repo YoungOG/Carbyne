@@ -3,6 +3,7 @@ package com.medievallords.carbyne.commands;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -35,7 +36,7 @@ public class PvpTimerCommand extends BaseCommand {
                     return;
                 }
 
-                Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                 if (profile.getPvpTime() <= 0 || profile.getRemainingPvPTime() <= 0) {
                     MessageManager.sendMessage(player, "&cYour PvPTimer is not active!");
@@ -52,7 +53,7 @@ public class PvpTimerCommand extends BaseCommand {
                     return;
                 }
 
-                Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                 if (profile.getPvpTime() <= 0 || profile.getRemainingPvPTime() <= 0) {
                     MessageManager.sendMessage(player, "&cYour PvPTimer is not active!");
@@ -67,7 +68,7 @@ public class PvpTimerCommand extends BaseCommand {
                 Player toRemove = Bukkit.getServer().getPlayer(args[1]);
 
                 if (toRemove != null) {
-                    Profile rProfile = getProfileManager().getProfile(toRemove.getUniqueId());
+                    Profile rProfile = StaticClasses.profileManager.getProfile(toRemove.getUniqueId());
                     if (rProfile != null) {
                         if (rProfile.getPvpTime() <= 0) {
                             MessageManager.sendMessage(player, "&c" + toRemove.getName() + "'s PvP Timer is not active.");
@@ -86,7 +87,7 @@ public class PvpTimerCommand extends BaseCommand {
                 Player toSet = Bukkit.getServer().getPlayer(args[1]);
 
                 if (toSet != null) {
-                    Profile rProfile = getProfileManager().getProfile(toSet.getUniqueId());
+                    Profile rProfile = StaticClasses.profileManager.getProfile(toSet.getUniqueId());
                     if (rProfile != null) {
                         try {
                             long time = Integer.parseInt(args[2]);

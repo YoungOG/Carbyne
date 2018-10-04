@@ -1,11 +1,11 @@
 package com.medievallords.carbyne.utils;
 
-import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import net.minecraft.server.v1_8_R3.NBTTagInt;
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
+import net.minecraft.server.v1_12_R1.NBTTagInt;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -212,7 +212,7 @@ public class ItemBuilder {
 
     public ItemBuilder addGlow() {
         item.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, 1);
-        net.minecraft.server.v1_8_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+        net.minecraft.server.v1_12_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
         NBTTagCompound tag = nmsStack.hasTag() ? nmsStack.getTag() : new NBTTagCompound();
         tag.set("HideFlags", new NBTTagInt(1));
         nmsStack.setTag(tag);
@@ -223,7 +223,7 @@ public class ItemBuilder {
 
     public ItemBuilder hideGlow() {
         item.removeEnchantment(Enchantment.ARROW_DAMAGE);
-        net.minecraft.server.v1_8_R3.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
+        net.minecraft.server.v1_12_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
         NBTTagCompound tag = nmsStack.hasTag() ? nmsStack.getTag() : new NBTTagCompound();
         tag.set("HideFlags", new NBTTagInt(0));
         nmsStack.setTag(tag);

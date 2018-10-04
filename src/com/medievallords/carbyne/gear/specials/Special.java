@@ -1,8 +1,8 @@
 package com.medievallords.carbyne.gear.specials;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -28,8 +28,8 @@ public interface Special {
     }
 
     default boolean isOnSameTeam(Player caster, Player hit) {
-        Squad squadCaster = Carbyne.getInstance().getSquadManager().getSquad(caster.getUniqueId());
-        Squad squadHit = Carbyne.getInstance().getSquadManager().getSquad(hit.getUniqueId());
+        Squad squadCaster = StaticClasses.squadManager.getSquad(caster.getUniqueId());
+        Squad squadHit = StaticClasses.squadManager.getSquad(hit.getUniqueId());
 
         if (squadHit == null || squadCaster == null) {
             return false;

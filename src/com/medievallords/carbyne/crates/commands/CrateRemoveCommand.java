@@ -1,8 +1,10 @@
 package com.medievallords.carbyne.crates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.Crate;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,14 +29,14 @@ public class CrateRemoveCommand extends BaseCommand {
 
         String name = args[0];
 
-        if (getCrateManager().getCrate(name) == null) {
+        if (StaticClasses.crateManager.getCrate(name) == null) {
             MessageManager.sendMessage(sender, Lang.CRATE_NOT_FOUND.toString().replace("{NAME}", name));
             return;
         }
 
-        Crate crate = getCrateManager().getCrate(name);
-        getCrateManager().getCrates().remove(crate);
-        getCarbyne().getCratesFileConfiguration().getConfigurationSection("Crates").set(crate.getName(), null);
+        Crate crate = StaticClasses.crateManager.getCrate(name);
+        StaticClasses.crateManager.getCrates().remove(crate);
+        Carbyne.getInstance().getCratesFileConfiguration().getConfigurationSection("Crates").set(crate.getName(), null);
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_REMOVE.toString().replace("{CRATE_NAME}", crate.getName()));
     }

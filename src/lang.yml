@@ -49,7 +49,7 @@ COMMANDS:
     CRATE_RELOAD: "&aConfiguration successfully reloaded."
     CRATE_REMOVE: "&aYou have removed the crate &b{CRATE_NAME}&a."
     CRATE_RENAME: "&aYou have renamed the crate &b{CURRENT_NAME} &ato &b{NEW_NAME}&a."
-    CRATE_SET_LOCATION: "&aYou have set the location of &b{CRATE_NAME} &ato (World: &b{WORLD}&a, &bX:&b{X}&a, &b{Y}&a, &b{Z}&a)."
+    CRATE_SET_LOCATION: "&aYou have set the location of &b{CRATE_NAME} &ato (CGWorld: &b{WORLD}&a, &bX:&b{X}&a, &b{Y}&a, &b{Z}&a)."
     GIVEAWAY:
       SUCCESS_START: "&aYou have started a giveaway"
       SUCCESS_END: "&aYou have ended a giveaway"

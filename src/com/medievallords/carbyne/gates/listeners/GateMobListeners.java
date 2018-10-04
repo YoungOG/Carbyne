@@ -2,7 +2,7 @@ package com.medievallords.carbyne.gates.listeners;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
-import com.medievallords.carbyne.gates.GateManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobSpawnEvent;
@@ -18,8 +18,6 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public class GateMobListeners implements Listener {
 
-    private Carbyne carbyne = Carbyne.getInstance();
-    private GateManager gateManager = carbyne.getGateManager();
 
     @EventHandler
     public void onEntitySpawn(MythicMobSpawnEvent event) {
@@ -29,7 +27,7 @@ public class GateMobListeners implements Listener {
                 ActiveMob mob = MythicMobs.inst().getMobManager().getMythicMobInstance(event.getEntity());
                 if (mob != null)
                     if (mob.getSpawner() != null)
-                        for (Gate gate : gateManager.getGates())
+                        for (Gate gate : StaticClasses.gateManager.getGates())
                             for (MythicSpawner spawner : gate.getMythicSpawners().values())
                                 if (spawner != null)
                                     if (spawner.getInternalName().equalsIgnoreCase(mob.getSpawner().getInternalName())) {
@@ -37,7 +35,7 @@ public class GateMobListeners implements Listener {
                                         return;
                                     }
             }
-        }.runTaskLater(carbyne, 5L);
+        }.runTaskLater(Carbyne.getInstance(), 5L);
     }
 
     @EventHandler
@@ -49,7 +47,7 @@ public class GateMobListeners implements Listener {
 
                 if (mob != null)
                     if (mob.getSpawner() != null)
-                        for (Gate gate : gateManager.getGates())
+                        for (Gate gate : StaticClasses.gateManager.getGates())
                             for (MythicSpawner spawner : gate.getMythicSpawners().values())
                                 if (spawner != null)
                                     if (spawner == mob.getSpawner()) {
@@ -57,6 +55,6 @@ public class GateMobListeners implements Listener {
                                         return;
                                     }
             }
-        }.runTaskLater(carbyne, 5L);
+        }.runTaskLater(Carbyne.getInstance(), 5L);
     }
 }

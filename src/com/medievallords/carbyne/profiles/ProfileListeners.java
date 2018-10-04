@@ -6,6 +6,8 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.customevents.ProfileCreatedEvent;
 import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.utils.Cooldowns;
+import com.medievallords.carbyne.utils.PlayerHealth;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.nametag.NametagManager;
 import com.medievallords.carbyne.utils.serialization.InventorySerialization;
 import com.medievallords.carbyne.utils.tabbed.item.TextTabItem;
@@ -23,10 +25,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -39,14 +43,14 @@ import java.util.logging.Level;
  */
 public class ProfileListeners implements Listener {
 
-    private Carbyne main = Carbyne.getInstance();
     private HashMap<UUID, Profile.PlayerTabRunnable> playerTabs = new HashMap<>();
+    private static final Location holoLocation = new Location(Bukkit.getWorld("world"), -716.5, 108, 307.5);
     String tablistHeader, tablistFooter;
 
     public ProfileListeners() {
-        if (main.getConfig().getString("TablistHeader") != null)
+        if (Carbyne.getInstance().getConfig().getString("TablistHeader") != null)
             tablistHeader = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistHeader"));
-        if (main.getConfig().getString("TablistFooter") != null)
+        if (Carbyne.getInstance().getConfig().getString("TablistFooter") != null)
             tablistFooter = ChatColor.translateAlternateColorCodes('&', Carbyne.getInstance().getConfig().getString("TablistFooter"));
 
         handleSkills();
@@ -58,15 +62,15 @@ public class ProfileListeners implements Listener {
             public void run() {
                 try {
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
-                        profile.runTickGeneral();
+                        PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
+                        playerHealth.runTickGeneral(player);
                     }
                 } catch (Exception e) {
-                    System.out.println("Error profiles warzone-------------");
+                    System.out.println("Error player health warzone-------------");
                     e.printStackTrace();
                 }
             }
-        }.runTaskTimerAsynchronously(main, 20, 20);
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 20, 20);
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -78,8 +82,6 @@ public class ProfileListeners implements Listener {
 
         player.setAllowFlight(true);
         player.setFlying(false);
-        player.setMaxHealth(100.0);
-        player.setHealth(player.getMaxHealth());
 
         Account account = Account.getAccount(player.getUniqueId());
         if (account != null)
@@ -87,13 +89,19 @@ public class ProfileListeners implements Listener {
         else
             Account.createAccount(player.getUniqueId(), player.getName());
 
-        if (!main.getProfileManager().hasProfile(player.getUniqueId())) {
-            main.getProfileManager().createProfile(player);
-            ProfileCreatedEvent profileCreatedEvent = new ProfileCreatedEvent(player, main.getProfileManager().getProfile(player.getUniqueId()));
+        if (!StaticClasses.profileManager.hasProfile(player.getUniqueId())) {
+            StaticClasses.profileManager.createProfile(player);
+            ProfileCreatedEvent profileCreatedEvent = new ProfileCreatedEvent(player, StaticClasses.profileManager.getProfile(player.getUniqueId()));
             Bukkit.getPluginManager().callEvent(profileCreatedEvent);
         }
 
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
+
+        double maxHealth = StaticClasses.gearManager.calculateMaxHealth(event.getPlayer(), false);
+        PlayerHealth playerHealth = new PlayerHealth(maxHealth, maxHealth, profile.isSkillsToggled());
+        playerHealth.setMaxHealth(maxHealth);
+        playerHealth.setHealth(maxHealth, player);
+        PlayerHealth.players.put(event.getPlayer().getUniqueId(), playerHealth);
 
         if (!profile.getUsername().equalsIgnoreCase(player.getName())) {
             try {
@@ -108,7 +116,7 @@ public class ProfileListeners implements Listener {
                 //Bukkit.broadcastMessage("Resident Replacement: " + TownyUniverse.getDataSource().getResident(player.getName()).getName());
             } catch (NotRegisteredException ignored) {
             } catch (Exception shouldNeverHappen) {
-                main.getLogger().log(Level.SEVERE, "EXCEPTION OCCURRED IN TOWNY NAME UPDATER: ");
+                Carbyne.getInstance().getLogger().log(Level.SEVERE, "EXCEPTION OCCURRED IN TOWNY NAME UPDATER: ");
                 shouldNeverHappen.printStackTrace();
 
             }
@@ -128,60 +136,56 @@ public class ProfileListeners implements Listener {
             profile.setPvpTimePaused(false);
 
         if (profile.isShowTab()) {
-            TableTabList tab = main.getTabbed().newTableTabList(event.getPlayer());
-            tab.setHeader(tablistHeader);
-            tab.setFooter(tablistFooter);
+            TableTabList tab = Carbyne.getInstance().getTabbed().newTableTabList(event.getPlayer());
+            tab.setHeader(tablistHeader.replace("{newline}", "\n"));
+            tab.setFooter(tablistFooter.replace("{newline}", "\n"));
 
             for (int i = 0; i < 4; i++)
                 for (int l = 0; l < 20; l++)
                     tab.set(i, l, new TextTabItem("", 1));
 
             Profile.PlayerTabRunnable runnable = new Profile.PlayerTabRunnable(event.getPlayer(), profile, Account.getAccount(event.getPlayer().getUniqueId()), tab);
-            runnable.runTaskTimerAsynchronously(main, 5L, 20);
+            runnable.runTaskTimerAsynchronously(Carbyne.getInstance(), 5L, 20);
 
             playerTabs.put(event.getPlayer().getUniqueId(), runnable);
         }
 
-        Hologram holo = HologramsAPI.createHologram(main, new Location(Bukkit.getWorld("world"), -716.5, 108, 307.5));
+        Hologram holo = HologramsAPI.createHologram(Carbyne.getInstance(), holoLocation);
         holo.getVisibilityManager().showTo(player);
         holo.getVisibilityManager().setVisibleByDefault(false);
-        main.getDailyBonusManager().getPlayerHolograms().put(player.getUniqueId(), holo);
+        StaticClasses.dailyBonusManager.getPlayerHolograms().put(player.getUniqueId(), holo);
+        StaticClasses.dailyBonusManager.getToUpdate().add(profile);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        PlayerHealth.players.remove(event.getPlayer().getUniqueId());
+
         if (playerTabs.containsKey(event.getPlayer().getUniqueId()) && playerTabs.get(event.getPlayer().getUniqueId()) != null) {
             playerTabs.get(event.getPlayer().getUniqueId()).cancel();
             playerTabs.remove(event.getPlayer().getUniqueId());
         }
 
-        main.getDailyBonusManager().getPlayerHolograms().get(event.getPlayer().getUniqueId()).delete();
-        main.getDailyBonusManager().getPlayerHolograms().remove(event.getPlayer().getUniqueId());
+        StaticClasses.dailyBonusManager.getPlayerHolograms().get(event.getPlayer().getUniqueId()).delete();
+        StaticClasses.dailyBonusManager.getPlayerHolograms().remove(event.getPlayer().getUniqueId());
+        StaticClasses.dailyBonusManager.getToUpdate().remove(StaticClasses.profileManager.getProfile(event.getPlayer().getUniqueId()));
 
         NametagManager.remove(event.getPlayer());
     }
 
     @EventHandler
-    public void onKick(PlayerKickEvent event) {
-        if (playerTabs.containsKey(event.getPlayer().getUniqueId()) && playerTabs.get(event.getPlayer().getUniqueId()) != null) {
-            playerTabs.get(event.getPlayer().getUniqueId()).cancel();
-            playerTabs.remove(event.getPlayer().getUniqueId());
-        }
-    }
-
-    @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         profile.setPreviousInventoryContentString(InventorySerialization.serializePlayerInventoryAsString(player.getInventory()));
 
         profile.setKillStreak(0);
 
-        if (main.getGearManager().isInFullCarbyne(player)) {
+        if (StaticClasses.gearManager.isInFullCarbyne(player)) {
             if (player.getKiller() != null) {
                 Player killer = player.getKiller();
-                Profile killerProfile = main.getProfileManager().getProfile(killer.getUniqueId());
+                Profile killerProfile = StaticClasses.profileManager.getProfile(killer.getUniqueId());
 
                 if (Cooldowns.tryCooldown(player.getUniqueId(), killer.getUniqueId().toString() + ":carbynedeath", 300000))
                     profile.setCarbyneDeaths(profile.getCarbyneDeaths() + 1);
@@ -193,7 +197,7 @@ public class ProfileListeners implements Listener {
         } else {
             if (player.getKiller() != null) {
                 Player killer = player.getKiller();
-                Profile killerProfile = main.getProfileManager().getProfile(killer.getUniqueId());
+                Profile killerProfile = StaticClasses.profileManager.getProfile(killer.getUniqueId());
 
                 if (Cooldowns.tryCooldown(player.getUniqueId(), killer.getUniqueId().toString() + ":death", 300000))
                     profile.setDeaths(profile.getDeaths() + 1);
@@ -205,7 +209,7 @@ public class ProfileListeners implements Listener {
         }
 
         if (player.getKiller() != null) {
-            Profile killerProfile = main.getProfileManager().getProfile(player.getKiller().getUniqueId());
+            Profile killerProfile = StaticClasses.profileManager.getProfile(player.getKiller().getUniqueId());
 
             if (Cooldowns.tryCooldown(player.getKiller().getUniqueId(), player.getUniqueId().toString() + ":killstreak", 300000))
                 killerProfile.setKillStreak(killerProfile.getKillStreak() + 1);
@@ -215,7 +219,12 @@ public class ProfileListeners implements Listener {
     @EventHandler
     public void plotChange(PlayerChangePlotEvent event) {
         Player player = event.getPlayer();
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
+
+        if (player.getLocation().getWorld().equals(holoLocation.getWorld()) && player.getLocation().distance(holoLocation) < 50)
+            StaticClasses.dailyBonusManager.getToUpdate().add(profile);
+        else
+            StaticClasses.dailyBonusManager.getToUpdate().remove(profile);
 
         try {
             if (!event.getTo().getTownBlock().getPermissions().pvp)

@@ -5,17 +5,42 @@ import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 
 public class CooldownListeners implements Listener {
 
-    public static double POTION_COOLDOWN = 16.0d;
+    public static double POTION_COOLDOWN = 15.0d;
+
+    @EventHandler
+    public void onProjectile(ProjectileLaunchEvent event) {
+        if (event.getEntity().getType() != EntityType.SPLASH_POTION) {
+            return;
+        }
+
+        if (event.getEntity().getShooter() == null || !(event.getEntity().getShooter() instanceof Player)) {
+            return;
+        }
+
+        Board board = Board.getByPlayer(((Player) event.getEntity().getShooter()).getUniqueId());
+        if (board != null) {
+            BoardCooldown potionCooldown = board.getCooldown("potion");
+            if (potionCooldown == null) {
+                new BoardCooldown(board, "potion", POTION_COOLDOWN);
+            } else {
+                event.setCancelled(true);
+            }
+        }
+    }
 
     @EventHandler
     public void onPearl(PlayerInteractEvent e) {
@@ -23,7 +48,7 @@ public class CooldownListeners implements Listener {
         if (e.hasItem()) {
             if (e.getItem().getType() == Material.ENDER_PEARL) {
                 if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                    Board board = Board.getByPlayer(p);
+                    Board board = Board.getByPlayer(p.getUniqueId());
 
                     if (board != null) {
                         BoardCooldown enderpearlCooldown = board.getCooldown("enderpearl");
@@ -33,12 +58,12 @@ public class CooldownListeners implements Listener {
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot throw another Enderpearl for &6" + enderpearlCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
                         } else
-                            new BoardCooldown(board, "enderpearl", 15.0d);
+                            new BoardCooldown(board, "enderpearl", 60.0d);
                     }
                 }
             } else if (e.getItem().getType() == Material.POTION) {
                 if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                    Board board = Board.getByPlayer(p);
+                    Board board = Board.getByPlayer(p.getUniqueId());
 
                     if (board != null) {
                         BoardCooldown potionCooldown = board.getCooldown("potion");
@@ -47,8 +72,7 @@ public class CooldownListeners implements Listener {
                             e.setCancelled(true);
                             p.updateInventory();
                             MessageManager.sendMessage(p, "&eYou cannot " + (e.getItem().getDurability() > 16385 ? "throw" : "drink") + " another Potion for &6" + potionCooldown.getFormattedString(BoardFormat.SECONDS) + " &eseconds!");
-                        } else if (e.getItem().getDurability() > 16385)
-                            new BoardCooldown(board, "potion", POTION_COOLDOWN);
+                        }
                     }
                 }
             }
@@ -86,7 +110,7 @@ public class CooldownListeners implements Listener {
                     }
                 }*/
             } else if (e.getItem().getType() == Material.POTION) {
-                Board board = Board.getByPlayer(p);
+                Board board = Board.getByPlayer(p.getUniqueId());
 
                 if (board != null) {
                     BoardCooldown potionCooldown = board.getCooldown("potion");

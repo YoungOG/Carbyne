@@ -43,6 +43,11 @@ regeneration:
 economy:
   gold-worth: 100.00
   sales-tax: 0.015
+suplur-drop-rate: 15
+glass-drop-rate: 15
+gold-nugget-droprate: 0.35
+gold-ore-min: 1
+gold-ore_max: 5
 database:
   host: ''
   port: 27017

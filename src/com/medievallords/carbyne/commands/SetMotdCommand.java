@@ -1,7 +1,14 @@
 package com.medievallords.carbyne.commands;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -10,10 +17,14 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerListPingEvent;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SetMotdCommand extends BaseCommand implements Listener {
@@ -24,13 +35,29 @@ public class SetMotdCommand extends BaseCommand implements Listener {
         Bukkit.getPluginManager().registerEvents(this, Carbyne.getInstance());
 
         List<String> initMotd = Carbyne.getInstance().getConfig().getStringList("Motd");
-        motd = initMotd.toArray(new String[initMotd.size()]);
+        motd = initMotd.toArray(new String[0]);
 
         if (motd.length < 1 || motd[0] == null)
             motd = new String[]{"Example", "Motd"};
 
         for (int i = 0; i < motd.length; i++)
             motd[i] = ChatColor.translateAlternateColorCodes('&', motd[i]);
+
+        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Carbyne.getInstance(),
+                ListenerPriority.NORMAL,
+                Collections.singletonList(PacketType.Status.Server.OUT_SERVER_INFO),
+                ListenerOptions.ASYNC) {
+            public void onPacketSending(final PacketEvent event) {
+                List<WrappedGameProfile> profilesToView = new ArrayList<>();
+                StaffManager staffManager = StaticClasses.staffManager;
+                for (Player player : Bukkit.getOnlinePlayers())
+                    if (!staffManager.isVanished(player))
+                        profilesToView.add(new WrappedGameProfile("1", ChatColor.translateAlternateColorCodes('&', "&7" + player.getName())));
+                event.getPacket().getServerPings().read(0).setPlayersOnline(profilesToView.size());
+                event.getPacket().getServerPings().read(0).setMotD(ChatColor.translateAlternateColorCodes('&', motd.length > 1 ? StringEscapeUtils.unescapeJava(motd[0]) + "\n" + StringEscapeUtils.unescapeJava(motd[1]) : StringEscapeUtils.unescapeJava(motd[0])));
+                event.getPacket().getServerPings().read(0).setPlayers(profilesToView);
+            }
+        });
     }
 
     @Command(name = "reloadmotd", permission = "carbyne.administrator")
@@ -39,7 +66,7 @@ public class SetMotdCommand extends BaseCommand implements Listener {
         Carbyne.getInstance().saveConfig();
 
         List<String> initMotd = Carbyne.getInstance().getConfig().getStringList("Motd");
-        motd = initMotd.toArray(new String[initMotd.size()]);
+        motd = initMotd.toArray(new String[0]);
 
         if (motd.length < 1 || motd[0] == null)
             motd = new String[]{"Example", "Motd"};
@@ -70,7 +97,7 @@ public class SetMotdCommand extends BaseCommand implements Listener {
                     return;
                 }
 
-                motd[index] = message;
+                motd[index-1] = message;
                 Carbyne.getInstance().getConfig().set("Motd", motd);
                 Carbyne.getInstance().saveConfig();
                 MessageManager.sendMessage(sender, "&aYou have set the Motd Index: &b" + index + " &ato: &b" + message + "&a.");
@@ -82,8 +109,8 @@ public class SetMotdCommand extends BaseCommand implements Listener {
         }
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onPing(ServerListPingEvent event) {
         event.setMotd(motd.length > 1 ? StringEscapeUtils.unescapeJava(motd[0]) + "\n" + StringEscapeUtils.unescapeJava(motd[1]) : StringEscapeUtils.unescapeJava(motd[0]));
-    }
+    }*/
 }

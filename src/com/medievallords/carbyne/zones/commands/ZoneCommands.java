@@ -2,16 +2,11 @@ package com.medievallords.carbyne.zones.commands;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.region.RegionUser;
-import com.medievallords.carbyne.utils.JSONMessage;
-import com.medievallords.carbyne.utils.LocationSerialization;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.NumberUtil;
+import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import com.medievallords.carbyne.zones.Zone;
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.mobs.MythicMob;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,8 +14,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class ZoneCommands extends BaseCommand {
@@ -44,15 +37,15 @@ public class ZoneCommands extends BaseCommand {
                     return;
                 }
 
-                getZoneManager().createZone(args[1], user.getSelection(), Integer.parseInt(args[2]), Double.parseDouble(args[3]));
+                StaticClasses.zoneManager.createZone(args[1], user.getSelection(), Integer.parseInt(args[2]), Double.parseDouble(args[3]));
                 MessageManager.sendMessage(player, "&A zone has successfully been created.");
             } else if (args[0].equalsIgnoreCase("set")) {
                 if (args.length != 4) {
-                    MessageManager.sendMessage(player, "&cUsage: /zone set <zone> <displayName/maxMobs/minDistance> <value>");
+                    MessageManager.sendMessage(player, "&cUsage: /zone set <zone> <displayName/maxMobs/minDistance/nerfed> <value>");
                     return;
                 }
 
-                Zone zone = getZoneManager().getZone(args[1]);
+                Zone zone = StaticClasses.zoneManager.getZone(args[1]);
 
                 if (zone == null) {
                     MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
@@ -90,6 +83,11 @@ public class ZoneCommands extends BaseCommand {
                         cs.set("MinDistance", args[3]);
                         MessageManager.sendMessage(player, "&aSuccessfully set the MinDistance for &5" + zone.getName() + " &ato &b\"" + args[3] + "\"&a.");
                         break;
+                    case "nerfedzone":
+                        zone.setMinDistance(Integer.parseInt(args[3]));
+                        cs.set("NerfedZone", Boolean.parseBoolean(args[3]));
+                        MessageManager.sendMessage(player, "&aSuccessfully set the MinDistance for &5" + zone.getName() + " &ato &b\"" + Boolean.parseBoolean(args[3]) + "\"&a.");
+                        break;
                 }
 
                 try {
@@ -98,115 +96,118 @@ public class ZoneCommands extends BaseCommand {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else if (args[0].equalsIgnoreCase("addmob")) {
-                if (args.length != 4) {
-                    MessageManager.sendMessage(player, "&cUsage: /zone addmob <zone> <mobname> <chance>");
-                    return;
-                }
-
-                Zone zone = getZoneManager().getZone(args[1]);
-
-                if (zone == null) {
-                    MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
-                    return;
-                }
-
-                for (MythicMob mob : zone.getMobs().keySet())
-                    if (mob.getInternalName().equalsIgnoreCase(args[2])) {
-                        MessageManager.sendMessage(player, "&cThis zone already contains that mob.");
-                        return;
-                    }
-
-                MythicMob mob = MythicMobs.inst().getMobManager().getMythicMob(args[2]);
-
-                if (mob == null) {
-                    MessageManager.sendMessage(player, "&cThat is not a valid MythicMob");
-                    return;
-                }
-
-                if (!NumberUtil.isInt(args[3])) {
-                    MessageManager.sendMessage(player, "&cPlease enter an integer for the input.");
-                    return;
-                }
-
-                zone.getMobs().put(mob, Integer.parseInt(args[3]));
-
-                ConfigurationSection cs = Carbyne.getInstance().getZonesFileConfiguration();
-                cs = cs.getConfigurationSection(zone.getName());
-
-                if (cs.contains(zone.getName() + ".Mobs")) {
-                    Map<MythicMob, Integer> mobs = zone.getMobs();
-                    List<String> mobLines = cs.getStringList(zone.getName() + ".Mobs");
-
-                    for (MythicMob mob1 : mobs.keySet())
-                        mobLines.add(mob1.getInternalName() + "," + mobs.get(mob1));
-
-                    cs.set(zone.getName() + ".Mobs", mobLines);
-                }
-
-                try {
-                    Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());
-                    Carbyne.getInstance().setZonesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getZonesFile()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                MessageManager.sendMessage(player, "&aSuccessfully added the mob &b\"" + mob.getInternalName() + "\" &awith the chance &b\"" + args[3] + "\" &ato &5" + zone.getName() + " &azone.");
-            } else if (args[0].equalsIgnoreCase("delmob")) {
-                if (args.length != 4) {
-                    MessageManager.sendMessage(player, "&cUsage: /zone addmob <zone> <mobname>");
-                    return;
-                }
-
-                Zone zone = getZoneManager().getZone(args[1]);
-
-                if (zone == null) {
-                    MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
-                    return;
-                }
-
-                boolean contains = true;
-
-                for (MythicMob mob : zone.getMobs().keySet())
-                    if (mob.getInternalName().equalsIgnoreCase(args[2]))
-                        contains = false;
-
-                if (!contains) {
-                    MessageManager.sendMessage(player, "&cThis zone does not contain that mob.");
-                    return;
-                }
-
-                MythicMob mob = MythicMobs.inst().getMobManager().getMythicMob(args[2]);
-
-                if (mob == null) {
-                    MessageManager.sendMessage(player, "&cThat is not a valid MythicMob");
-                    return;
-                }
-
-                zone.getMobs().remove(mob);
-
-                ConfigurationSection cs = Carbyne.getInstance().getZonesFileConfiguration();
-                cs = cs.getConfigurationSection(zone.getName());
-
-                if (cs.contains(zone.getName() + ".Mobs")) {
-                    Map<MythicMob, Integer> mobs = zone.getMobs();
-                    List<String> mobLines = cs.getStringList(zone.getName() + ".Mobs");
-
-                    for (MythicMob mob1 : mobs.keySet())
-                        mobLines.add(mob1.getInternalName() + "," + mobs.get(mob1));
-
-                    cs.set(zone.getName() + ".Mobs", mobLines);
-                }
-
-                try {
-                    Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());
-                    Carbyne.getInstance().setZonesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getZonesFile()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                MessageManager.sendMessage(player, "&aSuccessfully removed the mob &b\"" + mob.getInternalName() + "\" &afrom &5" + zone.getName() + " &azone.");
-            } else if (args[0].equalsIgnoreCase("setSelection")) {
+            }
+//            else if (args[0].equalsIgnoreCase("addmob")) {
+//                if (args.length != 4) {
+//                    MessageManager.sendMessage(player, "&cUsage: /zone addmob <zone> <mobname> <chance>");
+//                    return;
+//                }
+//
+//                Zone zone = getZoneManager().getZone(args[1]);
+//
+//                if (zone == null) {
+//                    MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
+//                    return;
+//                }
+//
+//                for (MythicMob mob : zone.getMobs().keySet())
+//                    if (mob.getInternalName().equalsIgnoreCase(args[2])) {
+//                        MessageManager.sendMessage(player, "&cThis zone already contains that mob.");
+//                        return;
+//                    }
+//
+//                MythicMob mob = MythicMobs.inst().getMobManager().getMythicMob(args[2]);
+//
+//                if (mob == null) {
+//                    MessageManager.sendMessage(player, "&cThat is not a valid MythicMob");
+//                    return;
+//                }
+//
+//                if (!NumberUtil.isInt(args[3])) {
+//                    MessageManager.sendMessage(player, "&cPlease enter an integer for the input.");
+//                    return;
+//                }
+//
+//                zone.getMobs().put(mob, Integer.parseInt(args[3]));
+//
+//                ConfigurationSection cs = Carbyne.getInstance().getZonesFileConfiguration();
+//                cs = cs.getConfigurationSection(zone.getName());
+//
+//                if (cs.contains(zone.getName() + ".Mobs")) {
+//                    Map<MythicMob, Integer> mobs = zone.getMobs();
+//                    List<String> mobLines = cs.getStringList(zone.getName() + ".Mobs");
+//
+//                    for (MythicMob mob1 : mobs.keySet())
+//                        mobLines.add(mob1.getInternalName() + "," + mobs.get(mob1));
+//
+//                    cs.set(zone.getName() + ".Mobs", mobLines);
+//                }
+//
+//                try {
+//                    Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());
+//                    Carbyne.getInstance().setZonesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getZonesFile()));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                MessageManager.sendMessage(player, "&aSuccessfully added the mob &b\"" + mob.getInternalName() + "\" &awith the chance &b\"" + args[3] + "\" &ato &5" + zone.getName() + " &azone.");
+//            }
+//            else if (args[0].equalsIgnoreCase("delmob")) {
+//                if (args.length != 4) {
+//                    MessageManager.sendMessage(player, "&cUsage: /zone addmob <zone> <mobname>");
+//                    return;
+//                }
+//
+//                Zone zone = getZoneManager().getZone(args[1]);
+//
+//                if (zone == null) {
+//                    MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
+//                    return;
+//                }
+//
+//                boolean contains = true;
+//
+//                for (MythicMob mob : zone.getMobs().keySet())
+//                    if (mob.getInternalName().equalsIgnoreCase(args[2]))
+//                        contains = false;
+//
+//                if (!contains) {
+//                    MessageManager.sendMessage(player, "&cThis zone does not contain that mob.");
+//                    return;
+//                }
+//
+//                MythicMob mob = MythicMobs.inst().getMobManager().getMythicMob(args[2]);
+//
+//                if (mob == null) {
+//                    MessageManager.sendMessage(player, "&cThat is not a valid MythicMob");
+//                    return;
+//                }
+//
+//                zone.getMobs().remove(mob);
+//
+//                ConfigurationSection cs = Carbyne.getInstance().getZonesFileConfiguration();
+//                cs = cs.getConfigurationSection(zone.getName());
+//
+//                if (cs.contains(zone.getName() + ".Mobs")) {
+//                    Map<MythicMob, Integer> mobs = zone.getMobs();
+//                    List<String> mobLines = cs.getStringList(zone.getName() + ".Mobs");
+//
+//                    for (MythicMob mob1 : mobs.keySet())
+//                        mobLines.add(mob1.getInternalName() + "," + mobs.get(mob1));
+//
+//                    cs.set(zone.getName() + ".Mobs", mobLines);
+//                }
+//
+//                try {
+//                    Carbyne.getInstance().getZonesFileConfiguration().save(Carbyne.getInstance().getZonesFile());
+//                    Carbyne.getInstance().setZonesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getZonesFile()));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                MessageManager.sendMessage(player, "&aSuccessfully removed the mob &b\"" + mob.getInternalName() + "\" &afrom &5" + zone.getName() + " &azone.");
+//            }
+            else if (args[0].equalsIgnoreCase("setSelection")) {
                 if (args.length != 2) {
                     MessageManager.sendMessage(player, "&cUsage: /zone setSelection <name>");
                     return;
@@ -219,7 +220,7 @@ public class ZoneCommands extends BaseCommand {
                     return;
                 }
 
-                Zone zone = getZoneManager().getZone(args[1]);
+                Zone zone = StaticClasses.zoneManager.getZone(args[1]);
 
                 if (zone == null) {
                     MessageManager.sendMessage(player, "&cA zone with that name could not be found.");
@@ -246,7 +247,7 @@ public class ZoneCommands extends BaseCommand {
 
                 MessageManager.sendMessage(player, "&aSuccessfully set the Selection for &5" + zone.getName() + "&a.");
             } else if (args[0].equalsIgnoreCase("list")) {
-                if (getZoneManager().getZones().size() <= 0) {
+                if (StaticClasses.zoneManager.getZones().size() <= 0) {
                     MessageManager.sendMessage(player, "&cThere are no available zones to display.");
                     return;
                 }
@@ -255,15 +256,15 @@ public class ZoneCommands extends BaseCommand {
 
                 JSONMessage message = JSONMessage.create("");
 
-                for (int i = 0; i < getZoneManager().getZones().size(); i++) {
-                    if (i < getZoneManager().getZones().size() - 1) {
-                        Zone zone = getZoneManager().getZones().get(i);
+                for (int i = 0; i < StaticClasses.zoneManager.getZones().size(); i++) {
+                    if (i < StaticClasses.zoneManager.getZones().size() - 1) {
+                        Zone zone = StaticClasses.zoneManager.getZones().get(i);
 
                         message.then(zone.getName()).color(ChatColor.AQUA)
                                 .tooltip(getMessageForZone(zone))
                                 .then(", ").color(ChatColor.GRAY);
                     } else {
-                        Zone zone = getZoneManager().getZones().get(i);
+                        Zone zone = StaticClasses.zoneManager.getZones().get(i);
 
                         message.then(zone.getName()).color(ChatColor.AQUA)
                                 .tooltip(getMessageForZone(zone));
@@ -272,7 +273,7 @@ public class ZoneCommands extends BaseCommand {
 
                 message.send(player);
             } else if (args[0].equalsIgnoreCase("reload")) {
-                getZoneManager().reload();
+                StaticClasses.zoneManager.reload();
                 MessageManager.sendMessage(player, "&aZones have been reloaded");
             }
         } else {
@@ -292,12 +293,12 @@ public class ZoneCommands extends BaseCommand {
         message2.then(ChatColor.translateAlternateColorCodes('&', "&aZone Name&7: &b" + zone.getName()) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aZone Displayname&7: &b" + zone.getDisplayName()) + "\n");
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aZone Selection&7:") + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', "   &7Point 1 - (World&b: "
+        message2.then(ChatColor.translateAlternateColorCodes('&', "   &7Point 1 - (CGWorld&b: "
                 + zone.getSelection().getLocation1().getWorld().getName()
                 + "&7, X&b: " + zone.getSelection().getLocation1().getBlockX()
                 + "&7, Y&b: " + zone.getSelection().getLocation1().getBlockY()
                 + "&7, Z&b: " + zone.getSelection().getLocation1().getBlockZ() + "&7)") + "\n");
-        message2.then(ChatColor.translateAlternateColorCodes('&', "   &7Point 2 - (World&b: "
+        message2.then(ChatColor.translateAlternateColorCodes('&', "   &7Point 2 - (CGWorld&b: "
                 + zone.getSelection().getLocation2().getWorld().getName()
                 + "&7, X&b: " + zone.getSelection().getLocation2().getBlockX()
                 + "&7, Y&b: " + zone.getSelection().getLocation2().getBlockY()
@@ -320,17 +321,17 @@ public class ZoneCommands extends BaseCommand {
             }
         }
         message2.then(ChatColor.translateAlternateColorCodes('&', " &aMobs&7(&b" + zone.getAmountOfMobs() + "&7/&b" + zone.getMaxMobs() + "&7):") + "\n");
-        if (zone.getMobs().keySet().size() > 0) {
-            int id = 0;
-
-            for (MythicMob mob : zone.getMobs().keySet()) {
-                if (mob == null)
-                    continue;
-
-                id++;
-                message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &b" + mob.getInternalName() + "&7, &b" + zone.getMobs().get(mob)) + "\n");
-            }
-        }
+//        if (zone.getMobs().keySet().size() > 0) {
+//            int id = 0;
+//
+//            for (MythicMob mob : zone.getMobs().keySet()) {
+//                if (mob == null)
+//                    continue;
+//
+//                id++;
+//                message2.then(ChatColor.translateAlternateColorCodes('&', "   &b" + id + "&7. &b" + mob.getInternalName() + "&7, &b" + zone.getMobs().get(mob)) + "\n");
+//            }
+//        }
         return message2;
     }
 }

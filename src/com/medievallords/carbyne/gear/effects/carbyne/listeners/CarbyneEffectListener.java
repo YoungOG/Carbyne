@@ -1,7 +1,7 @@
 package com.medievallords.carbyne.gear.effects.carbyne.listeners;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,7 +22,7 @@ public class CarbyneEffectListener implements Listener {
             return;
         }
 
-        CarbyneWeapon carbyneWeapon = Carbyne.getInstance().getGearManager().getCarbyneWeapon(bow);
+        CarbyneWeapon carbyneWeapon = StaticClasses.gearManager.getCarbyneWeapon(bow);
         if (carbyneWeapon == null) {
             return;
         }

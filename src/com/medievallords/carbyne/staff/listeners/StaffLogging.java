@@ -27,7 +27,7 @@ public class StaffLogging implements Listener {
     private final List<String> blackList = Arrays.asList("t", "n", "town", "nation");
 
     public StaffLogging() {
-        staffHook = new StaffHook("https://discordapp.com/api/webhooks/367488913650089985/mOd3IIQIQ4lAxiC6N-qOSDc7WHhlswTeAEYzIjTXNcj0QTv8VLX42oAlXDAwBtRU6PDP");
+        staffHook = new StaffHook("https://discordapp.com/api/webhooks/476368645824708608/NfrlEDogdNwlWMDSUeA5Z9n8ijgcTRxJsg9PVHGvT6qjqNnTG7tjBFXIbGcv18gUAT2L");
     }
 
     @EventHandler

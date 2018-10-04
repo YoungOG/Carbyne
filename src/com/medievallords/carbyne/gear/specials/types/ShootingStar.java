@@ -60,9 +60,9 @@ public class ShootingStar implements Special, Listener {
                         Player player = (Player) entity;
                         if (!player.equals(caster)) {
                             player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 300, 1));
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 200, 1));
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 200, 1));
-                            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 1));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 2));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 100, 2));
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 200, 0));
                             player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 200, 1));
                         }
                     }
@@ -106,7 +106,7 @@ public class ShootingStar implements Special, Listener {
 
     private void makeExplosion(final Location loc) {
         ParticleEffect.EXPLOSION_LARGE.display(0, 0, 0, 0, 1, loc, 50, false);
-        loc.getWorld().playSound(loc, Sound.EXPLODE, 2, 1.3f);
+        loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2, 1.3f);
     }
 
     public FireworkEffect[] getFireworkEffect() {

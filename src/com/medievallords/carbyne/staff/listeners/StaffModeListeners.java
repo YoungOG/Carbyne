@@ -1,8 +1,7 @@
 package com.medievallords.carbyne.staff.listeners;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -23,18 +22,12 @@ import org.bukkit.inventory.ItemStack;
  */
 public class StaffModeListeners implements Listener {
 
-    private StaffManager staffManager;
-
-    public StaffModeListeners() {
-        staffManager = Carbyne.getInstance().getStaffManager();
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void playerInteract(PlayerInteractAtEntityEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
             if (e.getRightClicked() instanceof Player) {
 
-                ItemStack tool = e.getPlayer().getItemInHand();
+                ItemStack tool = e.getPlayer().getInventory().getItemInMainHand();
 
                 switch (tool.getType()) {
                     case BOOK: {
@@ -44,7 +37,7 @@ public class StaffModeListeners implements Listener {
                     }
                     case ICE: {
                         e.setCancelled(true);
-                        staffManager.toggleFreeze((Player) e.getRightClicked(), e.getPlayer());
+                        StaticClasses.staffManager.toggleFreeze((Player) e.getRightClicked(), e.getPlayer());
                         break;
                     }
                 }
@@ -55,7 +48,7 @@ public class StaffModeListeners implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
             Player staff = e.getPlayer();
 
             if (e.getItem() == null)
@@ -67,14 +60,14 @@ public class StaffModeListeners implements Listener {
                     case INK_SACK:
                         switch (e.getItem().getDurability()) {
                             case 10:
-                                staffManager.toggleVanish(staff);
+                                StaticClasses.staffManager.toggleVanish(staff);
                                 break;
                             default:
                                 break;
                         }
                         return;
                     case WATCH:
-                        staffManager.teleportToRandomPlayer(staff);
+                        StaticClasses.staffManager.teleportToRandomPlayer(staff);
                         break;
                     case COMPASS:
                         e.getPlayer().performCommand("thru");
@@ -85,7 +78,7 @@ public class StaffModeListeners implements Listener {
                 Material tool = e.getItem().getType();
                 switch (tool) {
                     case WATCH:
-                        staffManager.teleportToPlayerUnderY30(staff);
+                        StaticClasses.staffManager.teleportToPlayerUnderY30(staff);
                         break;
                     case COMPASS:
                         e.getPlayer().performCommand("thru");
@@ -103,18 +96,18 @@ public class StaffModeListeners implements Listener {
      */
     @EventHandler
     public void onEntityDamage(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof Player && staffManager.getStaffModePlayers().contains(e.getEntity().getUniqueId())) {
+        if (e.getEntity() instanceof Player && StaticClasses.staffManager.getStaffModePlayers().contains(e.getEntity().getUniqueId())) {
             e.setCancelled(true);
             return;
         }
 
         if (e.getDamager() instanceof Player) {
-            if (staffManager.getStaffModePlayers().contains(e.getDamager().getUniqueId()))
+            if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getDamager().getUniqueId()))
                 e.setCancelled(true);
         } else if (e.getDamager() instanceof Projectile && ((Projectile) e.getDamager()).getShooter() != null && ((Projectile) e.getDamager()).getShooter() instanceof Player) {
             Player damager = (Player) (((Projectile) e.getDamager()).getShooter());
 
-            if (staffManager.getStaffModePlayers().contains(damager.getUniqueId()))
+            if (StaticClasses.staffManager.getStaffModePlayers().contains(damager.getUniqueId()))
                 e.setCancelled(true);
         }
     }
@@ -126,7 +119,7 @@ public class StaffModeListeners implements Listener {
      */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
     }
 
@@ -137,27 +130,27 @@ public class StaffModeListeners implements Listener {
      */
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId())) {
             e.getPlayer().getInventory().clear();
-            staffManager.toggleStaffMode(e.getPlayer());
+            StaticClasses.staffManager.toggleStaffMode(e.getPlayer());
         }
     }
 
     @EventHandler
     public void onPlayerItemPickUp(PlayerPickupItemEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getPlayer().getUniqueId()))
             e.setCancelled(true);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (staffManager.getStaffModePlayers().contains(e.getWhoClicked().getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(e.getWhoClicked().getUniqueId())) {
             e.setCancelled(true);
             ((Player) e.getWhoClicked()).updateInventory();
         }
@@ -165,7 +158,7 @@ public class StaffModeListeners implements Listener {
 
     @EventHandler
     public void onCreativeClick(InventoryCreativeEvent event) {
-        if (staffManager.getStaffModePlayers().contains(event.getWhoClicked().getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffModePlayers().contains(event.getWhoClicked().getUniqueId())) {
             event.setCancelled(true);
             ((Player) event.getWhoClicked()).updateInventory();
         }
@@ -173,12 +166,12 @@ public class StaffModeListeners implements Listener {
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent event) {
-        if (staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
+        if (StaticClasses.staffManager.getVanish().contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cYou cannot drop items in vanish");
             /*
             ItemStack item = event.getItemDrop().getItemStack().clone();
-            item.setAmount(event.getPlayer().getInventory().getItemInHand().getAmount() + 1);
+            item.setAmount(event.getPlayer().getInventory().getInventory().getItemInMainHand().getAmount() + 1);
             event.getItemDrop().remove();
             event.getPlayer().getInventory().setItem(event.getPlayer().getInventory().getHeldItemSlot(), item);
             */

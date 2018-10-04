@@ -61,8 +61,8 @@ public class SetHitDelayCommand extends BaseCommand implements Listener {
             for (Player all : PlayerUtility.getOnlinePlayers())
                 all.setMaximumNoDamageTicks(hitDelayTicks);
 
-            getCarbyne().getConfig().set("HitDelay", hitDelayTicks);
-            getCarbyne().saveConfig();
+            Carbyne.getInstance().getConfig().set("HitDelay", hitDelayTicks);
+            Carbyne.getInstance().saveConfig();
 
             MessageManager.sendMessage(sender, "&aYou have set the HitDelay to &b" + hitDelayTicks + " ticks&a.");
         } catch (NumberFormatException ignored) {

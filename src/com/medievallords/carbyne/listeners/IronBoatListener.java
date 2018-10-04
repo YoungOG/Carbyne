@@ -41,6 +41,7 @@ public class IronBoatListener implements Listener {
 
     @EventHandler
     public void onPlayerPlaceLavaMinecart(PlayerInteractEvent e) {
+        //No one uses this shit
         Player p = e.getPlayer();
 
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
@@ -58,7 +59,7 @@ public class IronBoatListener implements Listener {
                                     cart.setMetadata("IronBoat", new FixedMetadataValue(main, true));
 
                                     if (p.getGameMode() == GameMode.SURVIVAL) {
-                                        p.getInventory().removeItem(p.getItemInHand());
+                                        p.getInventory().removeItem(p.getInventory().getItemInMainHand());
                                     }
                                 }
                             }
@@ -67,7 +68,7 @@ public class IronBoatListener implements Listener {
                 }
             } else {
                 try {
-                    for (Block b : p.getLineOfSight((HashSet<Byte>) null, 5)) {
+                    for (Block b : p.getLineOfSight(null, 5)) {
                         if (b.getType() != Material.AIR) {
                             if (b.getType() == Material.LAVA || b.getType() == Material.STATIONARY_LAVA) {
                                 if (e.getItem() != null) {
@@ -82,7 +83,7 @@ public class IronBoatListener implements Listener {
                                                     cart.setMetadata("IronBoat", new FixedMetadataValue(main, true));
 
                                                     if (p.getGameMode() == GameMode.SURVIVAL) {
-                                                        p.getInventory().removeItem(p.getItemInHand());
+                                                        p.getInventory().removeItem(p.getInventory().getItemInMainHand());
                                                     }
                                                 }
                                             }

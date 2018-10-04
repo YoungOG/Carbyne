@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.donator.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -20,7 +21,7 @@ public class FlyCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
 
         if (player.hasPermission("carbyne.commands.gamemode.ignore") && args.length == 0) {
-            getGamemodeManager().toggleFlight(player);
+            StaticClasses.gamemodeManager.toggleFlight(player);
             return;
         }
 
@@ -43,7 +44,7 @@ public class FlyCommand extends BaseCommand {
         }
 
         if (args.length == 1 && args[0].equalsIgnoreCase("toggle") && player.hasPermission("carbyne.commands.fly.toggle")) {
-            getGamemodeManager().toggleTownFlight(commandArgs.getPlayer());
+            StaticClasses.gamemodeManager.toggleTownFlight(commandArgs.getPlayer());
             return;
         }
 
@@ -56,11 +57,11 @@ public class FlyCommand extends BaseCommand {
         }
 
         if (check.equals(residentsTown)) {
-            if (getGamemodeManager().getFlightTowns().containsKey(residentsTown)) {
-                getGamemodeManager().toggleFlight(player);
+            if (StaticClasses.gamemodeManager.getFlightTowns().containsKey(residentsTown)) {
+                StaticClasses.gamemodeManager.toggleFlight(player);
                 return;
             } else if (player.hasPermission("carbyne.commands.fly")) {
-                getGamemodeManager().toggleFlight(player);
+                StaticClasses.gamemodeManager.toggleFlight(player);
                 return;
             } else
                 MessageManager.sendMessage(player, "&cYou cannot do this!");
@@ -74,11 +75,11 @@ public class FlyCommand extends BaseCommand {
 
             try {
                 if (nation.equals(residentsTown.getNation())) {
-                    if (getGamemodeManager().getFlightTowns().containsKey(residentsTown)) {
-                        getGamemodeManager().toggleFlight(player);
+                    if (StaticClasses.gamemodeManager.getFlightTowns().containsKey(residentsTown)) {
+                        StaticClasses.gamemodeManager.toggleFlight(player);
                         return;
                     } else if (player.hasPermission("carbyne.commands.fly")) {
-                        getGamemodeManager().toggleFlight(player);
+                        StaticClasses.gamemodeManager.toggleFlight(player);
                         return;
                     } else {
                         MessageManager.sendMessage(player, "&cYou cannot do this!");

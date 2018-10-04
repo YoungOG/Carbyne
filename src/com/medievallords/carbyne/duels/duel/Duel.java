@@ -1,15 +1,13 @@
 package com.medievallords.carbyne.duels.duel;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.arena.Arena;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by xwiena22 on 2017-03-something
@@ -17,9 +15,9 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-public abstract class Duel {
+public class Duel {
 
-    private static Carbyne main = Carbyne.getInstance();
+    //ADD A LOOT INVENTORY
 
     private static final int COUNTDOWN_DURATION = 5;
 
@@ -27,11 +25,9 @@ public abstract class Duel {
     private DuelStage duelStage;
     private List<Item> drops;
     private long startTimeMillis;
-    private List<UUID> playersAlive = new ArrayList<>();
-    private int bets;
-    private HashMap<UUID, Integer> playerBets = new HashMap<>();
-    public int taskId;
-    private boolean ended = false;
+    private Set<UUID> teamOneAlive = new HashSet<>();
+    private Set<UUID> teamTwoAlive = new HashSet<>();
+    private int money, taskId;
 
     public Duel(Arena arena) {
         this.arena = arena;
@@ -39,16 +35,75 @@ public abstract class Duel {
         this.drops = new ArrayList<>();
     }
 
-    public abstract void start();
+    public void start() {
+        for (UUID playerId : teamOneAlive) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                for (Duel duel : arena.getDuels()) {
+                    for (UUID otherId : duel.getTeamOneAlive()) {
+                        Player other = Bukkit.getPlayer(otherId);
+                        if (other != null) {
+                            other.hidePlayer(player);
+                            player.hidePlayer(other);
+                        }
+                    }
 
-    public abstract void countdown();
+                    for (UUID otherId : duel.getTeamTwoAlive()) {
+                        Player other = Bukkit.getPlayer(otherId);
+                        if (other != null) {
+                            other.hidePlayer(player);
+                            player.hidePlayer(other);
+                        }
+                    }
+                }
+            }
+        }
 
-    public abstract void end(UUID winnerId);
+        for (UUID playerId : teamTwoAlive) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                for (Duel duel : arena.getDuels()) {
+                    for (UUID otherId : duel.getTeamOneAlive()) {
+                        Player other = Bukkit.getPlayer(otherId);
+                        if (other != null) {
+                            other.hidePlayer(player);
+                            player.hidePlayer(other);
+                        }
+                    }
 
-    public abstract void check();
+                    for (UUID otherId : duel.getTeamTwoAlive()) {
+                        Player other = Bukkit.getPlayer(otherId);
+                        if (other != null) {
+                            other.hidePlayer(player);
+                            player.hidePlayer(other);
+                        }
+                    }
+                }
+            }
+        }
 
-    public abstract void task();
+        this.duelStage = DuelStage.FIGHTING;
+    }
 
-    public abstract void stopTask();
+    public void countdown() {
+        this.duelStage = DuelStage.COUNTING_DOWN;
+    }
+
+    public void end(UUID winnerId) {
+
+        this.duelStage = DuelStage.ENDED;
+    }
+
+    public void check() {
+
+    }
+
+    public void task() {
+
+    }
+
+    public void stopTask() {
+
+    }
 
 }

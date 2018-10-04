@@ -2,6 +2,7 @@ package com.medievallords.carbyne.squads.commands;
 
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -20,7 +21,7 @@ public class SquadKickCommand extends BaseCommand {
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (args.length != 1) {
             MessageManager.sendMessage(player, "&cUsage: /squad");
@@ -49,12 +50,12 @@ public class SquadKickCommand extends BaseCommand {
             return;
         }
 
-        if (getSquadManager().getSquad(target.getUniqueId()) == null) {
+        if (StaticClasses.squadManager.getSquad(target.getUniqueId()) == null) {
             MessageManager.sendMessage(player, "&cThat player is not in your squad.");
             return;
         }
 
-        if (!getSquadManager().getSquad(target.getUniqueId()).getUniqueId().equals(squad.getUniqueId())) {
+        if (!StaticClasses.squadManager.getSquad(target.getUniqueId()).getUniqueId().equals(squad.getUniqueId())) {
             MessageManager.sendMessage(player, "&cThat player is not in your squad.");
             return;
         }
@@ -65,7 +66,7 @@ public class SquadKickCommand extends BaseCommand {
 
         squad.sendAllMembersMessage("&b" + target.getName() + " &chas been kicked from the squad.");
 
-        Board board = Board.getByPlayer(Bukkit.getPlayer(target.getUniqueId()));
+        Board board = Board.getByPlayer(target.getUniqueId());
 
         if (board != null) {
             BoardCooldown targetCooldown = board.getCooldown("target");

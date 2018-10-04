@@ -1,0 +1,12 @@
+Interval: 600
+Messages:
+  '1':
+    Message:
+    - '&7[&e!&7] &6If you are lucky you may find a &6few gold nuggets &6from &6the &6stone &6you mine!'
+    - ''
+    - 'A new line'
+    ToolTip:
+    - '&7There is a 35% chance that stone drops gold nuggets when they are mined.'
+    - 'New line'
+    Command: ''
+    URL: ''

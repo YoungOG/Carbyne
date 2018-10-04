@@ -2,6 +2,7 @@ package com.medievallords.carbyne.leaderboards.commands;
 
 import com.medievallords.carbyne.leaderboards.Leaderboard;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -28,14 +29,14 @@ public class LeaderboardSetPrimarySignCommand extends BaseCommand {
             return;
         }
 
-        Leaderboard leaderboard = getLeaderboardManager().getLeaderboard(args[0]);
+        Leaderboard leaderboard = StaticClasses.leaderboardManager.getLeaderboard(args[0]);
 
         if (leaderboard == null) {
             MessageManager.sendMessage(player, "&cCould not find the requested leaderboard.");
             return;
         }
 
-        Block block = player.getTargetBlock((HashSet<Byte>) null, 10);
+        Block block = player.getTargetBlock(null, 10);
 
         if (block == null) {
             MessageManager.sendMessage(player, "&cCould not find a block within 10 blocks of where your looking at.");

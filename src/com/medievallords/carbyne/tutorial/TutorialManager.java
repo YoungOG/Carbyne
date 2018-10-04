@@ -15,7 +15,6 @@ public class TutorialManager {
     }
 
     public static void handleLeave(Player player) {
-
     }
 
 }

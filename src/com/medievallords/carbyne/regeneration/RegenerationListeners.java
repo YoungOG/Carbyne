@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.regeneration;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.palmergames.bukkit.towny.event.PlayerChangePlotEvent;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import org.bukkit.Material;
@@ -24,7 +25,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class RegenerationListeners implements Listener {
 
     private Carbyne main = Carbyne.getInstance();
-    private RegenerationHandler regenerationHandler = main.getRegenerationHandler();
 
     /**
      * Requests a block broken to regenerate
@@ -37,8 +37,8 @@ public class RegenerationListeners implements Listener {
 
         new BukkitRunnable() {
             public void run() {
-                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
-                    regenerationHandler.request(e.getBlock(), RegenerationType.BROKEN);
+                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !StaticClasses.regenerationHandler.getBypassers().contains(player.getUniqueId()))
+                    StaticClasses.regenerationHandler.request(e.getBlock(), RegenerationType.BROKEN);
             }
         }.runTaskAsynchronously(main);
 
@@ -55,8 +55,8 @@ public class RegenerationListeners implements Listener {
 
         new BukkitRunnable() {
             public void run() {
-                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !regenerationHandler.getBypassers().contains(player.getUniqueId()))
-                    regenerationHandler.request(e.getBlock(), RegenerationType.PLACED);
+                if (player.getWorld().getName().equalsIgnoreCase("player_world") && !StaticClasses.regenerationHandler.getBypassers().contains(player.getUniqueId()))
+                    StaticClasses.regenerationHandler.request(e.getBlock(), RegenerationType.PLACED);
             }
         }.runTaskAsynchronously(main);
 
@@ -71,7 +71,7 @@ public class RegenerationListeners implements Listener {
     public void onPlayerChangeCoord(PlayerChangePlotEvent e) {
         if (e.getTo().getWorldName().equalsIgnoreCase("player_world")) {
             WorldCoord wc = e.getTo();
-            regenerationHandler.checkAndAct(wc);
+            StaticClasses.regenerationHandler.checkAndAct(wc);
         }
     }
 
@@ -108,8 +108,8 @@ public class RegenerationListeners implements Listener {
                     WorldCoord worldCoord = WorldCoord.parseWorldCoord(moved);
 
                     if (e.getBlocks().size() <= 1)
-                        if (regenerationHandler.isLocationEmpty(worldCoord, moved.getLocation()))
-                            regenerationHandler.request(moved, RegenerationType.PLACED);
+                        if (StaticClasses.regenerationHandler.isLocationEmpty(worldCoord, moved.getLocation()))
+                            StaticClasses.regenerationHandler.request(moved, RegenerationType.PLACED);
                 }
             }
         }

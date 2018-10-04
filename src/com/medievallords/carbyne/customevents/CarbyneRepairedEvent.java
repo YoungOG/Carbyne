@@ -41,6 +41,10 @@ public class CarbyneRepairedEvent extends Event implements Cancellable {
         return handlers;
     }
 
+    public CarbyneGear getGear() {
+        return gear;
+    }
+
     public static HandlerList getHandlerList() {
         return handlers;
     }

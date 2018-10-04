@@ -2,6 +2,7 @@ package com.medievallords.carbyne.commands;
 
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -21,7 +22,7 @@ public class LocalChatCommand extends BaseCommand {
 
         Profile profile;
 
-        if ((profile = getProfileManager().getProfile(player.getUniqueId())) == null) {
+        if ((profile = StaticClasses.profileManager.getProfile(player.getUniqueId())) == null) {
             MessageManager.sendMessage(player, "&cThere was an error");
             return;
         }

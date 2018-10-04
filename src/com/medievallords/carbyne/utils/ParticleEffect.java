@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.utils;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -1401,11 +1400,9 @@ public enum ParticleEffect {
 				return;
 			}
 			try {
-				version = Integer.parseInt(Character.toString(ReflectionUtils.PackageType.getServerVersion().charAt(3)));
-				if (version > 7) {
-					enumParticle = ReflectionUtils.PackageType.MINECRAFT_SERVER.getClass("EnumParticle");
-				}
-				Class<?> packetClass = ReflectionUtils.PackageType.MINECRAFT_SERVER.getClass(version < 7 ? "Packet63WorldParticles" : "PacketPlayOutWorldParticles");
+				version = 12;
+				enumParticle = ReflectionUtils.PackageType.MINECRAFT_SERVER.getClass("EnumParticle");
+				Class<?> packetClass = ReflectionUtils.PackageType.MINECRAFT_SERVER.getClass("PacketPlayOutWorldParticles");
 				packetConstructor = ReflectionUtils.getConstructor(packetClass);
 				getHandle = ReflectionUtils.getMethod("CraftPlayer", ReflectionUtils.PackageType.CRAFTBUKKIT_ENTITY, "getHandle");
 				playerConnection = ReflectionUtils.getField("EntityPlayer", ReflectionUtils.PackageType.MINECRAFT_SERVER, false, "playerConnection");
@@ -1489,7 +1486,7 @@ public enum ParticleEffect {
 		public void sendTo(Location center, Player player, boolean bypass) throws PacketInstantiationException, PacketSendingException {
 			initializePacket(center);
 			try {
-				Profile profile = Carbyne.getInstance().getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
                 if (profile != null)
                     if (!profile.hasEffectsToggled() && !bypass)

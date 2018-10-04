@@ -3,6 +3,7 @@ package com.medievallords.carbyne.crates.commands;
 import com.medievallords.carbyne.crates.Crate;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,13 +28,13 @@ public class CrateCreateCommand extends BaseCommand {
 
         String name = args[0];
 
-        if (getCrateManager().getCrate(name) != null) {
+        if (StaticClasses.crateManager.getCrate(name) != null) {
             MessageManager.sendMessage(sender, Lang.ERROR_CRATE_CREATE.toString());
             return;
         }
 
         Crate crate = new Crate(name);
-        getCrateManager().getCrates().add(crate);
+        StaticClasses.crateManager.getCrates().add(crate);
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_CREATE.toString().replace("{CRATE_NAME}", crate.getName()));
     }

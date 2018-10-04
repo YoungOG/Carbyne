@@ -4,6 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -19,7 +20,7 @@ public class LogoutCommand extends BaseCommand {
     public void onCommand(CommandArgs commandArgs) {
         Player player = commandArgs.getPlayer();
 
-        Profile profile = getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         if (profile == null) {
             player.kickPlayer(ChatColor.YELLOW + "You have safely logged out.");
@@ -53,9 +54,9 @@ public class LogoutCommand extends BaseCommand {
             }
         });
 
-        CombatTagListeners.getCounters().get(player.getUniqueId()).runTaskTimer(getCarbyne(), 0L, 20);
+        CombatTagListeners.getCounters().get(player.getUniqueId()).runTaskTimer(Carbyne.getInstance(), 0L, 20);
 
-        Board board = Board.getByPlayer(player);
+        Board board = Board.getByPlayer(player.getUniqueId());
 
         new BoardCooldown(board, "logout", 15.0D);
     }

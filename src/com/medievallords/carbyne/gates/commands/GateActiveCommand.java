@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gates.commands;
 
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,7 +28,7 @@ public class GateActiveCommand extends BaseCommand {
             String gateId = args[0];
             int length = Integer.parseInt(args[1]);
 
-            Gate gate = getGateManager().getGate(gateId);
+            Gate gate = StaticClasses.gateManager.getGate(gateId);
 
             if (gate == null) {
                 MessageManager.sendMessage(sender, "&cCould not find a gate with the ID \"" + gateId + "\".");

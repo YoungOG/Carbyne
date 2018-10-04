@@ -30,8 +30,8 @@ public class RulesCommand extends BaseCommand {
     private void load() {
         rules = new HashMap<>();
 
-        Carbyne.getInstance().setRulesFileCongfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getRulesFile()));
-        FileConfiguration fc = Carbyne.getInstance().getRulesFileCongfiguration();
+        Carbyne.getInstance().setRulesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getRulesFile()));
+        FileConfiguration fc = Carbyne.getInstance().getRulesFileConfiguration();
         ConfigurationSection cs = fc.getConfigurationSection("Rules");
 
         for (String section : cs.getKeys(false)) {

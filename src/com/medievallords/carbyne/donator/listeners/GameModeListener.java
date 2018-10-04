@@ -118,7 +118,7 @@ public class GameModeListener implements Listener {
             if (gamemodeManager.getFlightTowns().containsKey(offline.getUniqueId())) {
                 gamemodeManager.getFlightTowns().remove(offline.getUniqueId());
 
-                List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
+                List<String> temp = main.getDonatorTownsFileConfiguration().getStringList("FlightTowns");
                 for (String entry : temp) {
                     String[] splitEntry = entry.split(",");
                     if (splitEntry[0].equalsIgnoreCase(offline.getUniqueId().toString())) {
@@ -127,16 +127,16 @@ public class GameModeListener implements Listener {
                     }
                 }
 
-                main.getDonatorTownsConfiguration().set("FlightTowns", temp);
+                main.getDonatorTownsFileConfiguration().set("FlightTowns", temp);
                 try {
-                    main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                    main.getDonatorTownsFileConfiguration().save(main.getDonatorTownsFile());
                 } catch (IOException ignore) {
                 }
             }
 
             if (gamemodeManager.getCreativeTowns().containsKey(offline.getUniqueId())) {
                 gamemodeManager.getCreativeTowns().remove(offline.getUniqueId());
-                List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
+                List<String> temp = main.getDonatorTownsFileConfiguration().getStringList("CreativeTowns");
                 for (String entry : temp) {
                     String[] entrySplit = entry.split(",");
                     if (entrySplit[0].equalsIgnoreCase(offline.getUniqueId().toString())) {
@@ -145,9 +145,9 @@ public class GameModeListener implements Listener {
                     }
                 }
 
-                main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
+                main.getDonatorTownsFileConfiguration().set("CreativeTowns", temp);
                 try {
-                    main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                    main.getDonatorTownsFileConfiguration().save(main.getDonatorTownsFile());
                 } catch (IOException ignore) {
                 }
             }
@@ -158,7 +158,7 @@ public class GameModeListener implements Listener {
             gamemodeManager.getFlightTowns().remove(player.getUniqueId());
             MessageManager.sendMessage(player, "&cTown flight has been disabled!");
 
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("FlightTowns");
+            List<String> temp = main.getDonatorTownsFileConfiguration().getStringList("FlightTowns");
             for (String entry : temp) {
                 String[] splitEntry = entry.split(",");
                 if (splitEntry[0].equalsIgnoreCase(player.getUniqueId().toString())) {
@@ -167,16 +167,16 @@ public class GameModeListener implements Listener {
                 }
             }
 
-            main.getDonatorTownsConfiguration().set("FlightTowns", temp);
+            main.getDonatorTownsFileConfiguration().set("FlightTowns", temp);
             try {
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                main.getDonatorTownsFileConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException ignore) {}
         }
 
         if (gamemodeManager.getCreativeTowns().containsKey(player.getUniqueId())) {
             gamemodeManager.getCreativeTowns().remove(player.getUniqueId());
             MessageManager.sendMessage(player, "&cTown creative is disabled!");
-            List<String> temp = main.getDonatorTownsConfiguration().getStringList("CreativeTowns");
+            List<String> temp = main.getDonatorTownsFileConfiguration().getStringList("CreativeTowns");
             for (String entry : temp) {
                 String[] entrySplit = entry.split(",");
                 if (entrySplit[0].equalsIgnoreCase(player.getUniqueId().toString())) {
@@ -185,9 +185,9 @@ public class GameModeListener implements Listener {
                 }
             }
 
-            main.getDonatorTownsConfiguration().set("CreativeTowns", temp);
+            main.getDonatorTownsFileConfiguration().set("CreativeTowns", temp);
             try {
-                main.getDonatorTownsConfiguration().save(main.getDonatorTownsFile());
+                main.getDonatorTownsFileConfiguration().save(main.getDonatorTownsFile());
             } catch (IOException ignore) {}
         }
     }

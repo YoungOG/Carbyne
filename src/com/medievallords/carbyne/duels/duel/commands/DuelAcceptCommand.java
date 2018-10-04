@@ -23,38 +23,40 @@ public class DuelAcceptCommand extends BaseCommand {
         if (args.length != 0) {
             MessageManager.sendMessage(player, "&cUsage: /duel");
             return;
+//        }
+//
+//        DuelRequest request = DuelRequest.getRequest(player.getUniqueId());
+//        if (request == null) {
+//            MessageManager.sendMessage(player, "&cYou can only do this command in the duel");
+//            return;
+//        }
+//
+//        request.getArena().stopCancel();
+//
+//        if (request.getBets().size() < 2) {
+//            MessageManager.sendMessage(player, "&cYou both must enter a bet");
+//            return;
+//        }
+//
+//        request.getPlayers().put(player.getUniqueId(), true);
+//        request.sendMessageToAll("&b" + player.getName() + "&a has accepted the duel");
+//        request.cancelTask();
+//
+//        int i = 0;
+//        for (UUID uuid : request.getPlayers().keySet()) {
+//            if (request.getPlayers().get(uuid)) {
+//                i++;
+//            }
+//        }
+//
+//        if (i >= request.getPlayers().size()) {
+//            request.request();
+//            return;
+//        }
+//
+//        request.runTask();
+//
+//    }
         }
-
-        DuelRequest request = DuelRequest.getRequest(player.getUniqueId());
-        if (request == null) {
-            MessageManager.sendMessage(player, "&cYou can only do this command in the duel");
-            return;
-        }
-
-        request.getArena().stopCancel();
-
-        if (request.getBets().size() < 2) {
-            MessageManager.sendMessage(player, "&cYou both must enter a bet");
-            return;
-        }
-
-        request.getPlayers().put(player.getUniqueId(), true);
-        request.sendMessageToAll("&b" + player.getName() + "&a has accepted the duel");
-        request.cancelTask();
-
-        int i = 0;
-        for (UUID uuid : request.getPlayers().keySet()) {
-            if (request.getPlayers().get(uuid)) {
-                i++;
-            }
-        }
-
-        if (i >= request.getPlayers().size()) {
-            request.request();
-            return;
-        }
-
-        request.runTask();
-
     }
 }

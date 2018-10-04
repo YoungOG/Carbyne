@@ -1,9 +1,8 @@
 package com.medievallords.carbyne.crates.rewards;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.GearManager;
-import com.medievallords.carbyne.packages.Package;
+import com.medievallords.carbyne.gear.artifacts.Artifact;
 import com.medievallords.carbyne.utils.ItemBuilder;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
@@ -22,9 +21,6 @@ import java.util.List;
 @Getter
 @Setter
 public class Reward {
-
-    private Carbyne main = Carbyne.getInstance();
-    private GearManager gearManager = main.getGearManager();
 
     private int id;
     private int itemId;
@@ -47,25 +43,39 @@ public class Reward {
     }
 
     public ItemStack getItem(boolean displayItem) {
-        if (Material.getMaterial(itemId) == gearManager.getTokenMaterial() && itemData == gearManager.getTokenData())
-            return new ItemBuilder(gearManager.getTokenItem()).amount(amount).build();
+        if (Material.getMaterial(itemId) == StaticClasses.gearManager.getTokenMaterial() && itemData == StaticClasses.gearManager.getTokenData())
+            return new ItemBuilder(StaticClasses.gearManager.getTokenItem()).amount(amount).build();
 
-        else if (Material.getMaterial(itemId) == gearManager.getPolishMaterial() && itemData == gearManager.getPolishData())
-            return new ItemBuilder(gearManager.getPolishItem()).amount(amount).build();
+        else if (Material.getMaterial(itemId) == StaticClasses.gearManager.getPolishMaterial() && itemData == StaticClasses.gearManager.getPolishData())
+            return new ItemBuilder(StaticClasses.gearManager.getPolishItem()).amount(amount).build();
         else if (gearCode.contains("randomgear") && !displayItem)
-            return new ItemBuilder(gearManager.getRandomCarbyneGear(Boolean.valueOf(gearCode.split(":")[1])).getItem(false)).amount(amount).build();
-        else if (gearManager.getCarbyneGear(gearCode) != null) {
-            if (gearManager.getCarbyneGear(gearCode).getItem(false) != null)
-                return new ItemBuilder(gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();
-        } else if (Package.getPackage(displayName) != null)
-            return Package.getPackage(displayName).getItem(amount);
+            return new ItemBuilder(StaticClasses.gearManager.getRandomCarbyneGear(Boolean.valueOf(gearCode.split(":")[1])).getItem(false)).amount(amount).build();
+        else if (StaticClasses.gearManager.getCarbyneGear(gearCode) != null) {
+            if (StaticClasses.gearManager.getCarbyneGear(gearCode).getItem(false) != null)
+                return new ItemBuilder(StaticClasses.gearManager.getCarbyneGear(gearCode).getItem(false)).amount(amount).build();
+        } else if (displayName.contains("randomartifact")) {
+            String name = displayName;
+            String[] split = name.split(":");
+
+            if (split.length > 1) {
+                return StaticClasses.gearManager.getRandomArtifact(Boolean.parseBoolean(split[1])).getCustomRecipe().getResult();
+            }
+        }
+//        else if (Package.getPackage(displayName) != null)
+//            return Package.getPackage(displayName).getItem(amount);
+
+        Artifact artifact = StaticClasses.gearManager.getArtifact(displayName);
+        if (artifact != null) {
+            return artifact.getCustomRecipe().getResult();
+        }
+
         else
             return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).amount(amount).name(displayName).setLore(lore).addEnchantments(enchantments).build();
-        return null;
+        //return null;
     }
 
     @Override
     public String toString() {
-        return "Reward(itemId: " + itemId + ", itemData: " + itemData + ", amount: " + amount + ", displayName: " + displayName + ", gearCode: " + gearCode + ", lore: " + lore.toString() + ", enchantments: " + enchantments.keySet() + ", commands: " + commands.toString() + ", displayItemOnly: " + displayItemOnly + ")";
+        return "QuestReward(itemId: " + itemId + ", itemData: " + itemData + ", amount: " + amount + ", displayName: " + displayName + ", gearCode: " + gearCode + ", lore: " + lore.toString() + ", enchantments: " + enchantments.keySet() + ", commands: " + commands.toString() + ", displayItemOnly: " + displayItemOnly + ")";
     }
 }

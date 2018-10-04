@@ -1,9 +1,9 @@
 package com.medievallords.carbyne.duels.duel.commands;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.duels.duel.request.DuelRequest;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -29,8 +29,8 @@ public class DuelSetSquadFightCommand extends BaseCommand {
             return;
         }
 
-        if (Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId()) != null) {
-            Squad squad = Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId());
+        if (StaticClasses.squadManager.getSquad(player.getUniqueId()) != null) {
+            Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
             for (UUID uuid : squad.getAllPlayers()) {
                 Player mate = Bukkit.getServer().getPlayer(uuid);
@@ -41,7 +41,7 @@ public class DuelSetSquadFightCommand extends BaseCommand {
             }
         }
 
-        if (getSquadManager().getSquad(player.getUniqueId()) == null) {
+        if (StaticClasses.squadManager.getSquad(player.getUniqueId()) == null) {
             MessageManager.sendMessage(player, "&cYou cannot start a squad fight since you are not in a squad");
             return;
         }

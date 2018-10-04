@@ -1,7 +1,11 @@
 package com.medievallords.carbyne.squads;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.quests.Task;
+import com.medievallords.carbyne.quests.types.CastSpellTask;
+import com.medievallords.carbyne.quests.types.CreateSquadTask;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -34,6 +38,14 @@ public class SquadManager implements Listener {
         Squad squad = new Squad(leader);
         squads.add(squad);
 
+        List<Task> tasks = StaticClasses.questHandler.getTasks(leader);
+
+        for (Task task : tasks) {
+            if (task instanceof CreateSquadTask) {
+                task.incrementProgress(leader, 1);
+            }
+        }
+
         MessageManager.sendMessage(leader, "&aYou have created a new squad.\n&eUse &a/squad &eto view all available squad commands.");
     }
 
@@ -50,7 +62,7 @@ public class SquadManager implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        Squad squad = Carbyne.getInstance().getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = getSquad(player.getUniqueId());
 
         if (squad != null) {
             if (squad.getLeader().equals(player.getUniqueId())) {
@@ -78,7 +90,7 @@ public class SquadManager implements Listener {
     {
         if(e.getTarget() instanceof Player) {
             Player target = (Player) e.getTarget();
-            Squad squad1 = Carbyne.getInstance().getSquadManager().getSquad(target.getUniqueId());
+            Squad squad1 = getSquad(target.getUniqueId());
 
             if(squad1 != null && squad1.getMembers().contains(e.getCaster().getUniqueId()))
                 e.setCancelled(true);

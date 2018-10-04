@@ -23,6 +23,7 @@ public abstract class AdvancedEffect
     public static final String waterSpiralPermission = "carbyne.effects.advanced.waterspiral";
     public static final String yinYangPermission = "carbyne.effects.advanced.yinyang";
     public static final String boxPermission = "carbyne.effects.advanced.box";
+    public static final String starPermission = "carbyne.effects.advanced.star";
 
     public static final String trailOrigamiStar = "carbyne.effects.trail.origamistar";
     public static final String trailWarning = "carbyne.effects.trail.warning";

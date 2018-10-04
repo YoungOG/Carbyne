@@ -22,7 +22,7 @@ public class GearEffects implements HeartbeatTask {
     private Heartbeat heartbeat;
     private Random random = new Random();
 
-    public GearEffects(){
+    public GearEffects() {
         if (this.heartbeat == null) {
             this.heartbeat = new Heartbeat(this, 250L);
             heartbeat.start();
@@ -36,14 +36,14 @@ public class GearEffects implements HeartbeatTask {
             if (all.getFireTicks() > 1)
                 ParticleEffect.FLAME.display(0.35f, 0.35f, 0.35f, (float) 0.02, 5, all.getLocation().add(0, 1, 0), 50, false);
 
-            if (all.getItemInHand().containsEnchantment(Enchantment.DAMAGE_ALL) || all.getItemInHand().containsEnchantment(Enchantment.ARROW_DAMAGE))
+            if (all.getInventory().getItemInMainHand().containsEnchantment(Enchantment.DAMAGE_ALL) || all.getInventory().getItemInMainHand().containsEnchantment(Enchantment.ARROW_DAMAGE))
                 if (!CombatTagListeners.isInCombat(all.getUniqueId()))
                     effectSharpnessPlayers(all);
 
             if (all.isSprinting() && all.isOnGround())
                 ParticleEffect.FOOTSTEP.display(0.2f, 0f, 0.2f, (float) 0.15, 1, all.getLocation().add(0, 0.02, 0), 50, false);
 
-            if (all.getHealth() < 9)
+            if (all.getHealth() < 5)
                 bleed(all);
 
             for (PotionEffect effects : all.getActivePotionEffects()) {
@@ -76,12 +76,12 @@ public class GearEffects implements HeartbeatTask {
 
     public void effectSharpnessPlayers(Player player) {
         float enchantsO = 0;
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.DAMAGE_ALL);
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.KNOCKBACK) * 2;
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.FIRE_ASPECT) * 2;
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.ARROW_INFINITE) * 3;
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.ARROW_FIRE) * 2;
-        enchantsO += (float) player.getItemInHand().getEnchantmentLevel(Enchantment.ARROW_DAMAGE);
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.DAMAGE_ALL);
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.KNOCKBACK) * 2;
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.FIRE_ASPECT) * 2;
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.ARROW_INFINITE) * 3;
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.ARROW_FIRE) * 2;
+        enchantsO += (float) player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.ARROW_DAMAGE);
         float amount = enchantsO;
         ParticleEffect.PORTAL.display(0.2f, 0.2f, 0.2f, (float) 0.15, (int) amount * 5, player.getLocation().add(0, 0.2, 0), 50, false);
     }
@@ -121,42 +121,7 @@ public class GearEffects implements HeartbeatTask {
     }
 
     public void bleed(Player player) {
-        switch((int)(player.getHealth() * 1)){
-            case 9:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 20, player.getLocation(), 50, false);
-                break;
-            case 8:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 25, player.getLocation(), 50, false);
-                break;
-            case 7:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 30, player.getLocation(), 50, false);
-                break;
-            case 6:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 35, player.getLocation(), 50, false);
-                break;
-            case 5:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 40, player.getLocation(), 50, false);
-                break;
-            case 4:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 45, player.getLocation(), 50, false);
-                break;
-            case 3:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 25, player.getLocation(), 50, false);
-                ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.REDSTONE_BLOCK, (byte) 0), 0.35f, 0.35f, 0.35f, (float) 0.02, 25, player.getLocation(), 50, false);
-                break;
-            case 2:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 27, player.getLocation(), 50, false);
-                ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.REDSTONE_BLOCK, (byte) 0), 0.35f, 0.35f, 0.35f, (float) 0.02, 27, player.getLocation(), 50, false);
-                break;
-            case 1:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 30, player.getLocation(), 50, false);
-                ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.REDSTONE_BLOCK, (byte) 0), 0.35f, 0.35f, 0.35f, (float) 0.02, 30, player.getLocation(), 50, false);
-                break;
-            default:
-                ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 10, player.getLocation(), 50, false);
-                ParticleEffect.BLOCK_CRACK.display(new ParticleEffect.BlockData(Material.REDSTONE_BLOCK, (byte) 0), 0.35f, 0.35f, 0.35f, (float) 0.02, 10, player.getLocation(), 50, false);
-                break;
-        }
+        ParticleEffect.DRIP_LAVA.display(0.35f, 0.35f, 0.35f, (float) 0.02, 40, player.getLocation(), 50, false);
     }
     public float getRandomNegPosOne(float modifier){
         float rand1 = (float)random.nextDouble();

@@ -1,7 +1,10 @@
 package com.medievallords.carbyne.utils.scoreboard;
 
 
+import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.CarbyneBoardAdapter;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -16,15 +19,13 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class CarbyneScoreboard implements Listener {
 
     CarbyneBoardAdapter adapter;
     private JavaPlugin plugin;
+    private final List<Profile> profiles = new ArrayList<>();
 
     public CarbyneScoreboard(final JavaPlugin plugin, final CarbyneBoardAdapter adapter) {
         this.plugin = plugin;
@@ -36,32 +37,35 @@ public class CarbyneScoreboard implements Listener {
     private void run() {
         new BukkitRunnable() {
             public void run() {
-                if (CarbyneScoreboard.this.adapter == null) {
+                if (CarbyneScoreboard.this.adapter == null)
                     return;
-                }
-                for (final Player player : Bukkit.getOnlinePlayers()) {
-                    final Board board = Board.getByPlayer(player);
+
+                for (Profile profile : profiles) {
+                    final Player player = Bukkit.getPlayer(profile.getUniqueId());
+                    final Board board = Board.getByPlayer(profile.getUniqueId());
                     if (board != null) {
-                        final List<String> scores = CarbyneScoreboard.this.adapter.getScoreboard(player, board, board.getCooldowns());
-                        final List<String> translatedScores = new ArrayList<String>();
+                        final List<String> scores = CarbyneScoreboard.this.adapter.getScoreboard(profile, player, board, board.getCooldowns());
+                        final List<String> translatedScores = new ArrayList<>();
+
                         if (scores == null) {
-                            if (board.getEntries().isEmpty()) {
+                            if (board.getEntries().isEmpty())
                                 continue;
-                            }
-                            for (final BoardEntry boardEntry : board.getEntries()) {
+
+                            for (final BoardEntry boardEntry : board.getEntries())
                                 boardEntry.remove();
-                            }
+
                             board.getEntries().clear();
                         } else {
-                            for (final String line : scores) {
+                            for (final String line : scores)
                                 translatedScores.add(ChatColor.translateAlternateColorCodes('&', line));
-                            }
+
                             Collections.reverse(scores);
                             final Scoreboard scoreboard = board.getScoreboard();
                             final Objective objective = board.getObjective();
-                            if (!objective.getDisplayName().equals(CarbyneScoreboard.this.adapter.getTitle(player))) {
+
+                            if (!objective.getDisplayName().equals(CarbyneScoreboard.this.adapter.getTitle(player)))
                                 objective.setDisplayName(ChatColor.translateAlternateColorCodes('&', CarbyneScoreboard.this.adapter.getTitle(player)));
-                            }
+
                             int i = 0;
                             Label_0280:
                             while (i < scores.size()) {
@@ -77,11 +81,10 @@ public class CarbyneScoreboard implements Listener {
                                     }
                                     final int positionToSearch = position - 1;
                                     final BoardEntry entry = board.getByPosition(positionToSearch);
-                                    if (entry == null) {
+                                    if (entry == null)
                                         new BoardEntry(board, text).send(position);
-                                    } else {
+                                    else
                                         entry.setText(text).setup().send(position);
-                                    }
                                     if (board.getEntries().size() > scores.size()) {
                                         final Iterator<BoardEntry> iterator = board.getEntries().iterator();
                                         while (iterator.hasNext()) {
@@ -94,6 +97,7 @@ public class CarbyneScoreboard implements Listener {
                                     }
                                 }
                             }
+
                             player.setScoreboard(scoreboard);
                         }
                     }
@@ -104,16 +108,25 @@ public class CarbyneScoreboard implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoinEvent(final PlayerJoinEvent event) {
-        if (Board.getByPlayer(event.getPlayer()) == null) {
+        if (Board.getByPlayer(event.getPlayer().getUniqueId()) == null) {
             new Board(event.getPlayer(), adapter);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Profile profile = StaticClasses.profileManager.getProfile(event.getPlayer().getUniqueId());
+                    if (profile != null)
+                        profiles.add(profile);
+                }
+            }.runTaskLater(Carbyne.getInstance(), 39);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuitEvent(final PlayerQuitEvent event) {
-        final Board board = Board.getByPlayer(event.getPlayer());
+        final Board board = Board.getByPlayer(event.getPlayer().getUniqueId());
         if (board != null) {
             Board.getBoards().remove(board);
+            profiles.remove(StaticClasses.profileManager.getProfile(event.getPlayer().getUniqueId()));
         }
     }
 
@@ -128,10 +141,9 @@ public class CarbyneScoreboard implements Listener {
     public void setAdapter(final CarbyneBoardAdapter adapter) {
         this.adapter = adapter;
         for (final Player player : Bukkit.getOnlinePlayers()) {
-            final Board board = Board.getByPlayer(player);
-            if (board != null) {
+            final Board board = Board.getByPlayer(player.getUniqueId());
+            if (board != null)
                 Board.getBoards().remove(board);
-            }
             new Board(player, adapter);
         }
     }

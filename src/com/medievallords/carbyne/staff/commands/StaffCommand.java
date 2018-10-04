@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.staff.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -20,7 +21,7 @@ public class StaffCommand extends BaseCommand {
 
         if (args.length == 0) {
             if (player.hasPermission("carbyne.staff.staffmode"))
-                getStaffManager().toggleStaffMode(player);
+                StaticClasses.staffManager.toggleStaffMode(player);
         } else if (args.length == 1) {
             if (!player.hasPermission("carbyne.staff.staffmode.others")) {
                 MessageManager.sendMessage(player, "&cYou do not have sufficient permissions.");
@@ -35,7 +36,7 @@ public class StaffCommand extends BaseCommand {
             }
 
             if (target.hasPermission("carbyne.staff.staffmode")) {
-                getStaffManager().toggleStaffMode(target);
+                StaticClasses.staffManager.toggleStaffMode(target);
                 MessageManager.sendMessage(player, "&aYou have toggled &5" + target.getName() + " &ain or out of staff mode.");
             } else {
                 MessageManager.sendMessage(player, "&cThis player does not have sufficient permissions.");

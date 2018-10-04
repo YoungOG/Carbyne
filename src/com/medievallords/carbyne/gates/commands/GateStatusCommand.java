@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.gates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,12 +29,12 @@ public class GateStatusCommand extends BaseCommand {
 
         String gateId = args[0];
 
-        if (getGateManager().getGate(gateId) == null) {
+        if (StaticClasses.gateManager.getGate(gateId) == null) {
             MessageManager.sendMessage(sender, "&cCould not find a gate with the ID \"" + gateId + "\".");
             return;
         }
 
-        Gate gate = getGateManager().getGate(gateId);
+        Gate gate = StaticClasses.gateManager.getGate(gateId);
 
         MessageManager.sendMessage(sender, "&aGate Id: &b" + gate.getGateId());
         MessageManager.sendMessage(sender, " &aRunnable Active: &b" + (gate.getBukkitTask() != null ? "true" : "False"));
@@ -46,7 +48,7 @@ public class GateStatusCommand extends BaseCommand {
         int id = 0;
         for (Location location : gate.getPressurePlateMap().keySet()) {
             id++;
-            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
+            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aActive: &b" + gate.getPressurePlateMap().get(location) + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
         }
 
         MessageManager.sendMessage(sender, " &aRedstone Blocks(&b" + gate.getRedstoneBlockLocations().size() + "&a):");
@@ -54,7 +56,7 @@ public class GateStatusCommand extends BaseCommand {
         id = 0;
         for (Location location : gate.getRedstoneBlockLocations()) {
             id++;
-            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null") + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
+            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null") + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
         }
 
         MessageManager.sendMessage(sender, " &aButton(&b" + gate.getButtonLocations().size() + "&a):");
@@ -62,10 +64,10 @@ public class GateStatusCommand extends BaseCommand {
         id = 0;
         for (Location location : gate.getButtonLocations()) {
             id++;
-            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null") + "&a, World: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
+            MessageManager.sendMessage(sender, "   &b" + id + "&7. &aType: &b" + (location.getBlock() != null ? location.getBlock().getType() : "Null") + "&a, CGWorld: &b" + location.getWorld().getName() + "&a, X: &b" + location.getBlockX() + "&a, Y: &b" + location.getBlockY() + "&a, Z: &b" + location.getBlockZ());
         }
 
-        if (getCarbyne().isMythicMobsEnabled()) {
+        if (Carbyne.getInstance().isMythicMobsEnabled()) {
             int spawnerCount = 0;
 
             for (MythicSpawner spawner : gate.getMythicSpawners().values()) {

@@ -4,6 +4,7 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.Spellbook;
@@ -32,7 +33,6 @@ public class SpellMenuListeners implements Listener {
     private static Set<UUID> spellSubMenuUsers = new HashSet<>();
     @Getter
     private static HashMap<UUID, String> spellConfigurationMenuUsers = new HashMap<>();
-    private Carbyne main = Carbyne.getInstance();
     private Spell forget;
 
     public SpellMenuListeners() {
@@ -54,18 +54,21 @@ public class SpellMenuListeners implements Listener {
                     Spellbook spellbook = MagicSpells.getSpellbook(player);
                     Spell spell = MagicSpells.getSpellByInGameName(spellName);
 
+                    if (spell == null)
+                        return;
+
                     if (spellbook.hasSpell(spell)) {
-                        main.getSpellMenuManager().openSpellSubMenu(player, spellName);
-                        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1.0F, 1.0F);
+                        StaticClasses.spellMenuManager.openSpellSubMenu(player, spellName);
+                        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F);
                     } else {
                         if (!spellbook.canLearn(spell)) {
                             player.closeInventory();
-                            player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.0F, 1.0F);
+                            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
                             MessageManager.sendMessage(player, "&cYou cannot learn this spell.");
                             return;
                         } else if (spellbook.hasSpell(spell)) {
                             player.closeInventory();
-                            player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.0F, 1.0F);
+                            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
                             MessageManager.sendMessage(player, "&cYou have already learnt this spell.");
                             return;
                         } else {
@@ -73,7 +76,7 @@ public class SpellMenuListeners implements Listener {
                             spellbook.save();
 
                             inventory.setItem(event.getSlot(), new ItemBuilder(item).setLore(0, "&b&lLearnt").setLore(1, "&8Click to manage this spell.").addGlow().build());
-                            player.playSound(player.getLocation(), Sound.NOTE_PLING, 1.0F, 1.0F);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1.0F, 1.0F);
                         }
                     }
                 }
@@ -89,17 +92,17 @@ public class SpellMenuListeners implements Listener {
                 switch (item.getType()) {
                     case ENCHANTMENT_TABLE:
                         spellSubMenuUsers.remove(player.getUniqueId());
-                        main.getSpellMenuManager().openSpellConfigurationMenu(player, spellName);
+                        StaticClasses.spellMenuManager.openSpellConfigurationMenu(player, spellName);
                         break;
                     case REDSTONE:
                         if (player.getInventory().containsAtLeast(new ItemStack(Material.DIAMOND), 5)) {
                             forget.castSpell(player, Spell.SpellCastState.NORMAL, 1, new String[]{spellName + ""});
                             PlayerUtility.removeItems(player.getInventory(), Material.DIAMOND, 0, 5);
-                            player.playSound(player.getLocation(), Sound.CLICK, 1.0F, 1.0F);
+                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 1.0F);
                         } else {
                             spellSubMenuUsers.remove(player.getUniqueId());
-                            main.getSpellMenuManager().openSpellSubMenu(player, spellName);
-                            player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.0F, 1.0F);
+                            StaticClasses.spellMenuManager.openSpellSubMenu(player, spellName);
+                            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.0F, 1.0F);
                             MessageManager.sendMessage(player, "&cYou need to have at least 5 diamonds in your inventory to forget this spell.");
                             return;
                         }
@@ -196,7 +199,7 @@ public class SpellMenuListeners implements Listener {
                     }
 
 
-                    player.playSound(player.getLocation(), Sound.CLICK, 1.0F, 1.0F);
+                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 1.0F);
                 }
             }
         }
@@ -211,19 +214,19 @@ public class SpellMenuListeners implements Listener {
                 @Override
                 public void run() {
                     spellSubMenuUsers.remove(player.getUniqueId());
-                    main.getSpellMenuManager().openSpellsMenu(player);
-                    player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1.0F, 1.0F);
+                    StaticClasses.spellMenuManager.openSpellsMenu(player);
+                    player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F);
                 }
-            }.runTaskLater(main, 1L);
+            }.runTaskLater(Carbyne.getInstance(), 1L);
         } else if (spellConfigurationMenuUsers.containsKey(player.getUniqueId())) {
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     spellConfigurationMenuUsers.remove(player.getUniqueId());
-                    main.getSpellMenuManager().openSpellsMenu(player);
-                    player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1.0F, 1.0F);
+                    StaticClasses.spellMenuManager.openSpellsMenu(player);
+                    player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F);
                 }
-            }.runTaskLater(main, 1L);
+            }.runTaskLater(Carbyne.getInstance(), 1L);
         }
     }
 }

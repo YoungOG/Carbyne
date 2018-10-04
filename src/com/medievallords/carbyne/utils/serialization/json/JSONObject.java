@@ -54,10 +54,10 @@ import java.util.*;
  * The <code>put</code> methods add or replace values in an object. For example,
  *
  * <pre>
- * myString = new JSONObject().put(&quot;JSON&quot;, &quot;Hello, World!&quot;).toString();
+ * myString = new JSONObject().put(&quot;JSON&quot;, &quot;Hello, CGWorld!&quot;).toString();
  * </pre>
  *
- * produces the string <code>{"JSON": "Hello, World"}</code>.
+ * produces the string <code>{"JSON": "Hello, CGWorld"}</code>.
  * <p>
  * The texts produced by the <code>toString</code> methods strictly conform to
  * the JSON syntax rules. The constructors are more forgiving in the texts they

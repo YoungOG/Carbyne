@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.staff.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -31,17 +32,17 @@ public class FreezeCommand extends BaseCommand {
             return;
         }
 
-        if (!getStaffManager().getFrozen().contains(target.getUniqueId())) {
+        if (!StaticClasses.staffManager.getFrozen().contains(target.getUniqueId())) {
             MessageManager.sendMessage(sender, "&aYou have frozen &5" + target.getName() + "&a.");
 
-            getStaffManager().freezePlayer(target);
+            StaticClasses.staffManager.freezePlayer(target);
             return;
         }
 
-        if (getStaffManager().getFrozen().contains(target.getUniqueId())) {
+        if (StaticClasses.staffManager.getFrozen().contains(target.getUniqueId())) {
             MessageManager.sendMessage(sender, "&aYou have un-frozen &5" + target.getName() + "&a.");
 
-            getStaffManager().unfreezePlayer(target);
+            StaticClasses.staffManager.unfreezePlayer(target);
         }
     }
 }

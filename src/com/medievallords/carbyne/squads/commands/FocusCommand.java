@@ -2,6 +2,7 @@ package com.medievallords.carbyne.squads.commands;
 
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -23,7 +24,7 @@ public class FocusCommand extends BaseCommand {
     public void onCommand(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (args.length != 1) {
             MessageManager.sendMessage(player, "&cUsage: /focus <name>");
@@ -47,8 +48,8 @@ public class FocusCommand extends BaseCommand {
             return;
         }
 
-        if (getSquadManager().getSquad(target.getUniqueId()) != null) {
-            Board board = Board.getByPlayer(player);
+        if (StaticClasses.squadManager.getSquad(target.getUniqueId()) != null) {
+            Board board = Board.getByPlayer(player.getUniqueId());
 
             if (board != null) {
                 BoardCooldown targetCooldown = board.getCooldown("target");
@@ -59,7 +60,7 @@ public class FocusCommand extends BaseCommand {
                     new BoardCooldown(board, "target", 30.0D);
 
                     for (UUID id : squad.getMembers()) {
-                        Board memberBoard = Board.getByPlayer(Bukkit.getPlayer(id));
+                        Board memberBoard = Board.getByPlayer(id);
 
                         if (memberBoard != null) {
                             BoardCooldown memberTargetCooldown = memberBoard.getCooldown("target");
@@ -69,17 +70,17 @@ public class FocusCommand extends BaseCommand {
                         }
                     }
 
-                    squad.setTargetSquad(getSquadManager().getSquad(target.getUniqueId()));
+                    squad.setTargetSquad(StaticClasses.squadManager.getSquad(target.getUniqueId()));
                     squad.setTargetUUID(null);
 
                     MessageManager.sendMessage(player, "&aYou have targeted &c" + target.getName() + "&a's Squad.");
                     squad.sendMembersMessage("&5" + player.getName() + " &ahas targeted &c" + target.getName() + "&a's Squad!");
 
-                    getSquadManager().getSquad(target.getUniqueId()).sendAllMembersMessage("&aYou are being targeted by &c" + player.getName() + "&a's Squad.");
+                    StaticClasses.squadManager.getSquad(target.getUniqueId()).sendAllMembersMessage("&aYou are being targeted by &c" + player.getName() + "&a's Squad.");
                 }
             }
         } else {
-            Board board = Board.getByPlayer(player);
+            Board board = Board.getByPlayer(player.getUniqueId());
 
             if (board != null) {
                 BoardCooldown targetCooldown = board.getCooldown("target");
@@ -90,7 +91,7 @@ public class FocusCommand extends BaseCommand {
                     new BoardCooldown(board, "target", 30.0D);
 
                     for (UUID id : squad.getMembers()) {
-                        Board memberBoard = Board.getByPlayer(Bukkit.getPlayer(id));
+                        Board memberBoard = Board.getByPlayer(id);
 
                         if (memberBoard != null) {
                             BoardCooldown memberTargetCooldown = memberBoard.getCooldown("target");

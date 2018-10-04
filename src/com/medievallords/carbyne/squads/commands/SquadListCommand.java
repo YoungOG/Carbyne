@@ -4,6 +4,7 @@ import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.utils.JSONMessage;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -28,7 +29,7 @@ public class SquadListCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         CommandSender sender = commandArgs.getSender();
 
-        if (getSquadManager().getSquads().size() <= 0) {
+        if (StaticClasses.squadManager.getSquads().size() <= 0) {
             MessageManager.sendMessage(sender, "&cThere are no available squads to display.");
             return;
         }
@@ -46,7 +47,7 @@ public class SquadListCommand extends BaseCommand {
                 }
             }
 
-            int listSize = Math.round(getSquadManager().getSquads().size() / 10);
+            int listSize = Math.round(StaticClasses.squadManager.getSquads().size() / 10);
             if (listSize == 0) {
                 listSize = 1;
             }
@@ -58,8 +59,8 @@ public class SquadListCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&aSquad List &7[Page " + page + "/" + listSize + "]");
 
             for (int i = page * 10 - 10; i < page * 10; i++) {
-                if (getSquadManager().getSquads().size() > i) {
-                    Squad squad = getSquadManager().getSquads().get(i);
+                if (StaticClasses.squadManager.getSquads().size() > i) {
+                    Squad squad = StaticClasses.squadManager.getSquads().get(i);
 
                     JSONMessage message = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&7" + (i + 1) + ". &a" + Bukkit.getPlayer(squad.getLeader()).getName() + "'s Squad &7[&b" + squad.getAllPlayers().size() + "&7/5] [" + (squad.getType() == SquadType.PUBLIC ? "&bPublic" : "&cPrivate") + "&7]")).tooltip(getMessageForSquad(squad)).runCommand("/squad info " + squad.getLeader());
                     message.send(player);

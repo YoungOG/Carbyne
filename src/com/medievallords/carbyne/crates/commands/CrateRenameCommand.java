@@ -1,8 +1,10 @@
 package com.medievallords.carbyne.crates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.Crate;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -28,14 +30,14 @@ public class CrateRenameCommand extends BaseCommand {
         String currentName = args[0];
         String newName = args[1];
 
-        if (getCrateManager().getCrate(currentName) == null) {
+        if (StaticClasses.crateManager.getCrate(currentName) == null) {
             MessageManager.sendMessage(sender, Lang.CRATE_NOT_FOUND.toString().replace("{CURRENT_NAME}", currentName));
             return;
         }
 
-        Crate crate = getCrateManager().getCrate(currentName);
+        Crate crate = StaticClasses.crateManager.getCrate(currentName);
 
-        if (getCrateManager().getCrate(newName) != null) {
+        if (StaticClasses.crateManager.getCrate(newName) != null) {
             MessageManager.sendMessage(sender, Lang.CRATE_RENAME_NAME_EXISTS.toString().replace("{CURRENT_NAME}", currentName).replace("{NEW_NAME}", newName));
             return;
         }
@@ -43,9 +45,9 @@ public class CrateRenameCommand extends BaseCommand {
         currentName = crate.getName();
         crate.setName(newName);
 
-        getCarbyne().getCratesFileConfiguration().getConfigurationSection("Crates").set(currentName, newName);
+        Carbyne.getInstance().getCratesFileConfiguration().getConfigurationSection("Crates").set(currentName, newName);
 
-        crate.save(getCarbyne().getCratesFileConfiguration());
+        crate.save(Carbyne.getInstance().getCratesFileConfiguration());
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_RENAME.toString().replace("{CURRENT_NAME}", currentName).replace("{NEW_NAME}", newName));
     }

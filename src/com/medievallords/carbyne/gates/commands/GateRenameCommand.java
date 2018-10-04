@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.gates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -26,14 +28,14 @@ public class GateRenameCommand extends BaseCommand {
         String currentGateId = args[0];
         String newGateId = args[1];
 
-        if (getGateManager().getGate(currentGateId) == null) {
+        if (StaticClasses.gateManager.getGate(currentGateId) == null) {
             MessageManager.sendMessage(sender, "&cCould not find a gate with the ID \"" + currentGateId + "\".");
             return;
         }
 
-        Gate gate = getGateManager().getGate(currentGateId);
+        Gate gate = StaticClasses.gateManager.getGate(currentGateId);
 
-        if (getGateManager().getGate(newGateId) != null) {
+        if (StaticClasses.gateManager.getGate(newGateId) != null) {
             MessageManager.sendMessage(sender, "&cThere is already a with the ID \"" + newGateId + "\".");
             return;
         }
@@ -41,7 +43,7 @@ public class GateRenameCommand extends BaseCommand {
         currentGateId = gate.getGateId();
         gate.setGateId(newGateId);
 
-        getCarbyne().getGatesFileConfiguration().getConfigurationSection("Gates").set(currentGateId, newGateId);
+        Carbyne.getInstance().getGatesFileConfiguration().getConfigurationSection("Gates").set(currentGateId, newGateId);
 
         gate.saveGate();
 

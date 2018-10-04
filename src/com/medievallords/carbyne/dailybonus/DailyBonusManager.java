@@ -4,6 +4,7 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.*;
+import com.sk89q.worldedit.command.tool.BrushTool;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.*;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -21,22 +23,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class DailyBonusManager {
 
-    //Don't touch any of my code you little bastard.
-
-    private Carbyne main = Carbyne.getInstance();
-
     @Getter
     @Setter
     private HashMap<Integer, String> dailyBonusRewards = new HashMap<>();
     @Getter
     private HashMap<UUID, Hologram> playerHolograms = new HashMap<>();
+    @Getter
+    private HashSet<Profile> toUpdate = new HashSet<>();
 
     public DailyBonusManager() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (UUID id : playerHolograms.keySet()) {
-                    Profile profile = main.getProfileManager().getProfile(id);
+                for (Profile profile : toUpdate) {
                     String text;
 
                     if (profile.isDailyRewardsSetup()) {
@@ -50,11 +49,11 @@ public class DailyBonusManager {
                     } else
                         text = ChatColor.translateAlternateColorCodes('&', "&dDaily Bonus &7[&aStart Here&7]");
 
-                    playerHolograms.get(id).clearLines();
-                    playerHolograms.get(id).insertTextLine(0, text);
+                    playerHolograms.get(profile.getUniqueId()).clearLines();
+                    playerHolograms.get(profile.getUniqueId()).insertTextLine(0, text);
                 }
             }
-        }.runTaskTimer(main, 20L, 10L);
+        }.runTaskTimer(Carbyne.getInstance(), 20L, 20L);
 
         new BukkitRunnable() {
             private boolean reverse = false;
@@ -91,12 +90,12 @@ public class DailyBonusManager {
                 else if (y <= 0)
                     reverse = false;
             }
-        }.runTaskTimerAsynchronously(main, 0L, 1L);
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 1L);
     }
 
     public void openDailyBonusGui(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 27, ChatColor.translateAlternateColorCodes('&', "&bDaily Bonus&7:"));
-        Profile profile = main.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         for (int i = 0; i < inventory.getSize(); i++)
             inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE).durability(15).name("&bDaily Bonus")
@@ -210,7 +209,7 @@ public class DailyBonusManager {
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 20L);
 
         player.openInventory(inventory);
-        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1, .8f);
     }
 
     public boolean hasClaimedAllDays(Profile profile) {

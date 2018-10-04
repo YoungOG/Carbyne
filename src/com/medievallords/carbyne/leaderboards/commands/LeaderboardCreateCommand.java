@@ -2,6 +2,7 @@ package com.medievallords.carbyne.leaderboards.commands;
 
 import com.medievallords.carbyne.leaderboards.Leaderboard;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -23,13 +24,13 @@ public class LeaderboardCreateCommand extends BaseCommand {
             return;
         }
 
-        if (getLeaderboardManager().getLeaderboard(args[0]) != null) {
+        if (StaticClasses.leaderboardManager.getLeaderboard(args[0]) != null) {
             MessageManager.sendMessage(sender, "&cThere is already a leaderboard using this ID.");
             return;
         }
 
         Leaderboard leaderboard = new Leaderboard(args[0]);
-        getLeaderboardManager().getLeaderboards().add(leaderboard);
+        StaticClasses.leaderboardManager.getLeaderboards().add(leaderboard);
 
         MessageManager.sendMessage(sender, "&aSuccessfully created a new leaderboard with the ID \'&b" + leaderboard.getBoardId() + "&a\'.");
     }

@@ -3,6 +3,7 @@ package com.medievallords.carbyne.squads.commands;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -20,7 +21,7 @@ public class SquadJoinCommand extends BaseCommand {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
 
-        if (getSquadManager().getSquad(player.getUniqueId()) != null) {
+        if (StaticClasses.squadManager.getSquad(player.getUniqueId()) != null) {
             MessageManager.sendMessage(player, "&cYou are already in a squad.");
             return;
         }
@@ -28,7 +29,7 @@ public class SquadJoinCommand extends BaseCommand {
         if (args.length == 0) {
             Squad squad = null;
 
-            for (Squad parties : getSquadManager().getSquads())
+            for (Squad parties : StaticClasses.squadManager.getSquads())
                 if (parties.getInvitedPlayers().contains(player.getUniqueId())) {
                     squad = parties;
                     break;
@@ -59,7 +60,7 @@ public class SquadJoinCommand extends BaseCommand {
                 return;
             }
 
-            Squad squad = getSquadManager().getSquad(target.getUniqueId());
+            Squad squad = StaticClasses.squadManager.getSquad(target.getUniqueId());
 
             if (squad == null) {
                 MessageManager.sendMessage(player, "&cThat player is not in a squad.");

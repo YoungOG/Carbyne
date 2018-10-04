@@ -2,6 +2,7 @@ package com.medievallords.carbyne.commands;
 
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -33,16 +34,16 @@ public class IgnoreCommand extends BaseCommand implements Listener {
             return;
         }
 
-        if (getProfileManager().getProfile(player.getUniqueId()) == null) {
+        if (StaticClasses.profileManager.getProfile(player.getUniqueId()) == null) {
             MessageManager.sendMessage(player, "&cThere was an error");
             return;
         }
 
-        if (getProfileManager().getProfile(player.getUniqueId()).getIgnoredPlayers().contains(toIgnore.getUniqueId())) {
-            getProfileManager().getProfile(player.getUniqueId()).getIgnoredPlayers().remove(toIgnore.getUniqueId());
+        if (StaticClasses.profileManager.getProfile(player.getUniqueId()).getIgnoredPlayers().contains(toIgnore.getUniqueId())) {
+            StaticClasses.profileManager.getProfile(player.getUniqueId()).getIgnoredPlayers().remove(toIgnore.getUniqueId());
             MessageManager.sendMessage(player, "&6You are no longer ignoring &b" + toIgnore.getName());
         } else {
-            getProfileManager().getProfile(player.getUniqueId()).getIgnoredPlayers().add(toIgnore.getUniqueId());
+            StaticClasses.profileManager.getProfile(player.getUniqueId()).getIgnoredPlayers().add(toIgnore.getUniqueId());
             MessageManager.sendMessage(player, "&6You are now ignoring &b" + toIgnore.getName());
         }
     }
@@ -58,7 +59,7 @@ public class IgnoreCommand extends BaseCommand implements Listener {
                     return;
                 }
 
-                Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
                 if (profile.getIgnoredPlayers().contains(event.getPlayer().getUniqueId())) {
                     event.setCancelled(true);
                     MessageManager.sendMessage(event.getPlayer(), "&cThat player is ignoring you");
@@ -76,7 +77,7 @@ public class IgnoreCommand extends BaseCommand implements Listener {
                     return;
                 }
 
-                Profile profile = getProfileManager().getProfile(player.getUniqueId());
+                Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
                 if (profile.getIgnoredPlayers().contains(event.getPlayer().getUniqueId())) {
                     event.setCancelled(true);
                     MessageManager.sendMessage(event.getPlayer(), "&cThat player is ignoring you");

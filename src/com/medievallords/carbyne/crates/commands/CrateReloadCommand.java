@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.crates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.Lang;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,16 +29,16 @@ public class CrateReloadCommand extends BaseCommand {
             return;
         }
 
-        getCarbyne().reloadConfig();
-        Lang.setFile(YamlConfiguration.loadConfiguration(new File(getCarbyne().getDataFolder(), "lang.yml")));
+        Carbyne.getInstance().reloadConfig();
+        Lang.setFile(YamlConfiguration.loadConfiguration(new File(Carbyne.getInstance().getDataFolder(), "lang.yml")));
 
-        if (getCarbyne().getCratesFile() == null) {
-            getCarbyne().setCratesFile(new File(getCarbyne().getDataFolder(), "crates.yml"));
+        if (Carbyne.getInstance().getCratesFile() == null) {
+            Carbyne.getInstance().setCratesFile(new File(Carbyne.getInstance().getDataFolder(), "crates.yml"));
         }
 
-        getCarbyne().setCratesFileConfiguration(YamlConfiguration.loadConfiguration(getCarbyne().getCratesFile()));
+        Carbyne.getInstance().setCratesFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getCratesFile()));
 
-        getCrateManager().load(YamlConfiguration.loadConfiguration(getCarbyne().getCratesFile()));
+        StaticClasses.crateManager.load(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getCratesFile()));
 
         MessageManager.sendMessage(sender, Lang.SUCCESS_CRATE_RELOAD.toString());
     }

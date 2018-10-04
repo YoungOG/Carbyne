@@ -79,7 +79,7 @@ public class BastionOfHealth implements Special {
             if (entity instanceof Player) {
                 Player to = (Player) entity;
                 if (isOnSameTeam(player, to) || player.getUniqueId().equals(to.getUniqueId())) {
-                    to.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 1));
+                    to.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 2));
                 }
             }
         }

@@ -42,7 +42,7 @@ public class ReportCommand extends BaseCommand {
             for (Player all : PlayerUtility.getOnlinePlayers()) {
                 if (all.hasPermission("carbyne.staff")) {
                     JSONMessage message = JSONMessage.create(ChatColor.translateAlternateColorCodes('&', "&7[&bReport&7] &6" + player.getName() + " &chas reported &6" + target.getName() + " &cfor &e" + reportMessage + "&c."));
-                    message.tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to teleport to " + target.getDisplayName() + "&a."));
+                    message.tooltip(ChatColor.translateAlternateColorCodes('&', "&aClick to teleport to &f" + target.getDisplayName() + "&a."));
                     message.runCommand("/teleport " + target.getName());
                     message.send(all);
                 }

@@ -3,9 +3,9 @@ package com.medievallords.carbyne.gear.specials.types;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -22,7 +22,7 @@ public class HinderingShot implements Special {
 
     @Override
     public int getRequiredCharge() {
-        return 50;
+        return 70;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class HinderingShot implements Special {
                 final double z = vector.getZ() * t;
                 loc.add(x, y, z);
 
-                if (t > 175 || loc.getBlock().getType() != Material.AIR) {
+                if (t > 175 || loc.getBlock().getType().isSolid()) {
                     this.cancel();
                     loc.getWorld().playEffect(loc, Effect.EXPLOSION_HUGE, 1);
                     ParticleEffect.LAVA.display(0f, 0f, 0f, 1f, 5, loc, 30, false);
@@ -56,11 +56,11 @@ public class HinderingShot implements Special {
                     }
                 }
 
-                for (final Entity entity : loc.getWorld().getNearbyEntities(loc, 1.4, 1.4, 1.4)) {
-                    if (entity instanceof LivingEntity && !entity.equals(caster)) {
-                        damageEntity((LivingEntity) entity, 10);
-                    }
-                }
+//                for (final Entity entity : loc.getWorld().getNearbyEntities(loc, 1.4, 1.4, 1.4)) {
+//                    if (entity instanceof LivingEntity && !entity.equals(caster)) {
+//                        damageEntity((LivingEntity) entity, 10);
+//                    }
+//                }
 
                 ParticleEffect.FLAME.display(0f, 0f, 0f, 0f, 2, loc, 40, false);
                 loc.subtract(x, y, z);
@@ -73,7 +73,9 @@ public class HinderingShot implements Special {
     public void damageEntity(final LivingEntity entity, final double damage) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                entity.damage(entity.getHealth() * 0.7);
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(entity.getUniqueId());
+                playerHealth.setHealth(playerHealth.getHealth() * 0.4, (Player) entity);
+                entity.damage(0.0);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
                 entity.setFireTicks(20 * 5);
                 return;

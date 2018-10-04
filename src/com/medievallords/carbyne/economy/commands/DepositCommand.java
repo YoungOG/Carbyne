@@ -1,15 +1,23 @@
 package com.medievallords.carbyne.economy.commands;
 
+import com.medievallords.carbyne.quests.Task;
+import com.medievallords.carbyne.quests.types.DepositMoneyTask;
+import com.medievallords.carbyne.quests.types.GatherResourceTask;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
+import java.util.UUID;
 
 public class DepositCommand extends BaseCommand {
 
@@ -23,7 +31,7 @@ public class DepositCommand extends BaseCommand {
             return;
         }
 
-        if (getEconomyManager().isEconomyHalted()) {
+        if (StaticClasses.economyManager.isEconomyHalted()) {
             MessageManager.sendMessage(player, "&cThe economy is temporarily disabled. The administrators will let you know when it is re-enabled.");
             return;
         }
@@ -44,7 +52,8 @@ public class DepositCommand extends BaseCommand {
 
                 int totalPrice = nuggets.getPrice() + ingots.getPrice() + blocks.getPrice();
 
-                getEconomyManager().deposit(player.getUniqueId(), totalPrice);
+                StaticClasses.economyManager.deposit(player.getUniqueId(), totalPrice);
+                handleEvent(player.getUniqueId(), totalPrice);
                 PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_NUGGET), nuggets.getAmount());
                 PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_INGOT), ingots.getAmount());
                 PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_BLOCK), blocks.getAmount());
@@ -62,7 +71,8 @@ public class DepositCommand extends BaseCommand {
                 int price = dp.getPrice();
                 int amount = dp.getAmount();
 
-                getEconomyManager().deposit(player.getUniqueId(), price);
+                StaticClasses.economyManager.deposit(player.getUniqueId(), price);
+                handleEvent(player.getUniqueId(), price);
                 PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_NUGGET), amount);
                 player.updateInventory();
                 MessageManager.sendMessage(player, "&7You have deposited &c" + amount + " &7gold ingots in your account for &c\u00A9" + price + " &7credits.");
@@ -74,8 +84,9 @@ public class DepositCommand extends BaseCommand {
                 int amount = dp.getAmount();
                 int price = dp.getPrice();
 
-                getEconomyManager().deposit(player.getUniqueId(), dp.getPrice());
-                PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_INGOT), dp.getAmount());
+                StaticClasses.economyManager.deposit(player.getUniqueId(), price);
+                handleEvent(player.getUniqueId(), price);
+                PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_INGOT), amount);
                 player.updateInventory();
                 MessageManager.sendMessage(player, "&7You have deposited &c" + amount + " &7gold ingots in your account for &c\u00A9" + price + " &7credits.");
             } else if (args[0].equalsIgnoreCase("block") || args[0].equalsIgnoreCase("blocks") || args[0].equalsIgnoreCase("b")) {
@@ -86,13 +97,23 @@ public class DepositCommand extends BaseCommand {
                 int amount = dp.getAmount();
                 int price = dp.getPrice();
 
-                getEconomyManager().deposit(player.getUniqueId(), price);
+                StaticClasses.economyManager.deposit(player.getUniqueId(), price);
+                handleEvent(player.getUniqueId(), price);
                 PlayerUtility.removeItems(player.getInventory(), new ItemStack(Material.GOLD_BLOCK), amount);
                 MessageManager.sendMessage(player, "&7You have deposited &c" + amount + " &7gold ingots in your account for &c\u00A9" + price + " &7credits.");
             } else
                 MessageManager.sendMessage(player, "&cUsage: /deposit <all/ingots/blocks> [amount]");
         } else
             MessageManager.sendMessage(player, "&cUsage: /deposit <all/ingots/blocks> [amount]");
+    }
+
+    private void handleEvent(UUID uuid, int amount) {
+        List<Task> tasks = StaticClasses.questHandler.getTasks(uuid);
+        for (Task task : tasks) {
+            if (task instanceof DepositMoneyTask) {
+                task.incrementProgress(uuid, amount);
+            }
+        }
     }
 
     private DepositObject sellBlocks(String argument, Player player) {
@@ -121,6 +142,10 @@ public class DepositCommand extends BaseCommand {
                 }
         }
 
+        if (itemAmount <= 0) {
+            return new DepositObject(0, 0);
+        }
+
         if (argument.equalsIgnoreCase("all"))
             amount = itemAmount;
         else {
@@ -147,7 +172,7 @@ public class DepositCommand extends BaseCommand {
             return null;
         }
 
-        totalPrice = amount * 81 * getEconomyManager().getGoldWorth();
+        totalPrice = amount * 81 * StaticClasses.economyManager.getGoldWorth();
         return new DepositObject(totalPrice, amount);
     }
 
@@ -158,9 +183,9 @@ public class DepositCommand extends BaseCommand {
         ItemStack itemStack = null;
 
         for (ItemStack item : player.getInventory().all(Material.GOLD_INGOT).values())
-            if (!item.hasItemMeta() && !(item.getItemMeta().hasDisplayName() || item.getItemMeta().hasLore())) {
+            if (!item.hasItemMeta() && !(item.getItemMeta().hasDisplayName() || item.getItemMeta().hasLore()))
                 itemAmount += item.getAmount();
-            } else {
+            else {
                 attemptDupe = true;
                 itemStack = item;
             }
@@ -173,6 +198,10 @@ public class DepositCommand extends BaseCommand {
                     MessageManager.sendMessage(all, "&c[&4Dupe Attempt&c]: " + player.getName() + " attempted to dupe gold.");
                     MessageManager.sendMessage(all, "&cDisplayName: " + itemStack.getItemMeta().getDisplayName());
                 }
+        }
+
+        if (itemAmount <= 0) {
+            return new DepositObject(0, 0);
         }
 
         if (argument.equalsIgnoreCase("all"))
@@ -201,7 +230,7 @@ public class DepositCommand extends BaseCommand {
             return null;
         }
 
-        price = amount * 9 * getEconomyManager().getGoldWorth();
+        price = amount * 9 * StaticClasses.economyManager.getGoldWorth();
         return new DepositObject(price, amount);
     }
 
@@ -212,9 +241,9 @@ public class DepositCommand extends BaseCommand {
         ItemStack itemStack = null;
 
         for (ItemStack item : player.getInventory().all(Material.GOLD_NUGGET).values())
-            if (!item.hasItemMeta() && !(item.getItemMeta().hasDisplayName() || item.getItemMeta().hasLore())) {
+            if (!item.hasItemMeta() && !(item.getItemMeta().hasDisplayName() || item.getItemMeta().hasLore()))
                 itemAmount += item.getAmount();
-            } else {
+            else {
                 attemptDupe = true;
                 itemStack = item;
             }
@@ -228,6 +257,9 @@ public class DepositCommand extends BaseCommand {
                     MessageManager.sendMessage(all, "&cDisplayName: " + itemStack.getItemMeta().getDisplayName());
                 }
         }
+
+        if (itemAmount <= 0)
+            return new DepositObject(0, 0);
 
         if (argument.equalsIgnoreCase("all"))
             amount = itemAmount;
@@ -255,7 +287,7 @@ public class DepositCommand extends BaseCommand {
             return null;
         }
 
-        price = amount * getEconomyManager().getGoldWorth();
+        price = amount * StaticClasses.economyManager.getGoldWorth();
         return new DepositObject(price, amount);
     }
 

@@ -3,6 +3,7 @@ package com.medievallords.carbyne.lootchests;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Chunk;
@@ -17,10 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LootChest {
-
-
-    private Carbyne main = Carbyne.getInstance();
-    private LootChestManager lootChestManager;
     @Getter
     private String chestConfigName;
     private String lootTableName;
@@ -35,8 +32,7 @@ public class LootChest {
     @Setter
     private BlockFace face;
 
-    public LootChest(LootChestManager lootChestManager, String chestConfigName, String lootTableName, Location location, String respawnTimeString, int maxItems, BlockFace face) {
-        this.lootChestManager = lootChestManager;
+    public LootChest(String chestConfigName, String lootTableName, Location location, String respawnTimeString, int maxItems, BlockFace face) {
         this.chestConfigName = chestConfigName;
         this.lootTableName = lootTableName;
         this.location = location;
@@ -51,9 +47,18 @@ public class LootChest {
 
     public List<ItemStack> getLoot() {
         List<ItemStack> loots = new ArrayList<>();
-        lootChestManager.getLootTables().get(lootTableName).forEach(l -> {
+        StaticClasses.lootChestManager.getLootTables().get(lootTableName).forEach(l -> {
             if (l.shouldSpawnItem())
                 loots.add(l.getItem());
+        });
+        return loots;
+    }
+
+    public List<Loot> getLootLoot() {
+        List<Loot> loots = new ArrayList<>();
+        StaticClasses.lootChestManager.getLootTables().get(lootTableName).forEach(l -> {
+            if (l.shouldSpawnItem())
+                loots.add(l);
         });
         return loots;
     }
@@ -68,7 +73,7 @@ public class LootChest {
         try {
             respawnTime = DateUtil.parseDateDiff(respawnTimeString, true);
             hidden = true;
-            location.getWorld().playSound(location, Sound.CHEST_OPEN, 10, 1);
+            location.getWorld().playSound(location, Sound.BLOCK_CHEST_OPEN, 10, 1);
             ParticleEffect.SMOKE_NORMAL.display(1f, 1f, 1f, 0.02f, 15, center, 50, true);
         } catch (Exception ignored) {
         }
@@ -94,6 +99,6 @@ public class LootChest {
                         chunk.unload();
                 }
             }
-        }.runTask(main);
+        }.runTask(Carbyne.getInstance());
     }
 }

@@ -5,6 +5,7 @@ import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.WordUtils;
@@ -30,9 +31,6 @@ import java.util.logging.Level;
 @Getter
 @Setter
 public class Leaderboard {
-
-    private Carbyne main = Carbyne.getInstance();
-
     private String boardId;
     private LeaderboardType leaderboardType;
     private Location primarySignLocation;
@@ -54,7 +52,7 @@ public class Leaderboard {
             public void run() {
                 updateSigns(leaderboardType);
             }
-        }.runTaskTimer(main, 5 * 20L, 5 * 20L);
+        }.runTaskTimer(Carbyne.getInstance(), 5 * 20L, 5 * 20L);
     }
 
     public void stop() {
@@ -136,7 +134,7 @@ public class Leaderboard {
                 break;
             case KILLS:
                 List<String> killProfileNames = new ArrayList<>();
-                List<Profile> killProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> killProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 killProfiles.sort(Comparator.comparingInt(Profile::getKills).reversed());
 
@@ -183,7 +181,7 @@ public class Leaderboard {
             case CARBYNE_KILLS:
                 List<String> carbyneProfileNames = new ArrayList<>();
 
-                List<Profile> carbyneKillProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneKillProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 carbyneKillProfiles.sort(Comparator.comparingInt(Profile::getCarbyneKills).reversed());
 
@@ -229,7 +227,7 @@ public class Leaderboard {
                 break;
             case DEATHS:
                 List<String> deathProfileNames = new ArrayList<>();
-                List<Profile> deathProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> deathProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 deathProfiles.sort(Comparator.comparingInt(Profile::getDeaths).reversed());
 
@@ -275,7 +273,7 @@ public class Leaderboard {
                 break;
             case CARBYNE_DEATHS:
                 List<String> carbyneDeathProfileNames = new ArrayList<>();
-                List<Profile> carbyneDeathProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneDeathProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 carbyneDeathProfiles.sort(Comparator.comparingInt(Profile::getCarbyneDeaths).reversed());
 
@@ -321,7 +319,7 @@ public class Leaderboard {
                 break;
             case KDRATIO:
                 List<String> KDRatioProfileNames = new ArrayList<>();
-                List<Profile> KDRatioProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> KDRatioProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 KDRatioProfiles.sort(Comparator.comparingDouble(Profile::getKDR).reversed());
 
@@ -367,7 +365,7 @@ public class Leaderboard {
                 break;
             case CARBYNE_KDRATIO:
                 List<String> carbyneKDRatioProfileNames = new ArrayList<>();
-                List<Profile> carbyneKDRatioProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> carbyneKDRatioProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 carbyneKDRatioProfiles.sort(Comparator.comparingDouble(Profile::getCarbyneKDR).reversed());
 
@@ -413,7 +411,7 @@ public class Leaderboard {
                 break;
             case KILLSTREAK:
                 List<String> killstreakProfileNames = new ArrayList<>();
-                List<Profile> killstreakProfiles = new ArrayList<>(main.getProfileManager().getLoadedProfiles());
+                List<Profile> killstreakProfiles = new ArrayList<>(StaticClasses.profileManager.getLoadedProfiles());
 
                 killstreakProfiles.sort(Comparator.comparingDouble(Profile::getKillStreak).reversed());
 
@@ -521,9 +519,9 @@ public class Leaderboard {
                                                 skull.update();
                                                 skull.update(true);
                                             }
-                                        }.runTask(main);
+                                        }.runTask(Carbyne.getInstance());
                                     }
-                                }.runTaskAsynchronously(main);
+                                }.runTaskAsynchronously(Carbyne.getInstance());
                             }
                         }
                     }
@@ -546,14 +544,14 @@ public class Leaderboard {
                             skull.update();
                             skull.update(true);
                         }
-                    }.runTaskAsynchronously(main);
+                    }.runTaskAsynchronously(Carbyne.getInstance());
                 }
             }
         }
     }
 
     public void save() {
-        ConfigurationSection section = main.getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards");
+        ConfigurationSection section = Carbyne.getInstance().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards");
 
         if (!section.isSet(boardId)) {
             section.createSection(boardId);
@@ -596,10 +594,10 @@ public class Leaderboard {
         }
 
         try {
-            main.getLeaderboardFileConfiguration().save(main.getLeaderboardFile());
+            Carbyne.getInstance().getLeaderboardFileConfiguration().save(Carbyne.getInstance().getLeaderboardFile());
         } catch (IOException e) {
             e.printStackTrace();
-            main.getLogger().log(Level.WARNING, "Failed to save leaderboard " + boardId + "!");
+            Carbyne.getInstance().getLogger().log(Level.WARNING, "Failed to save leaderboard " + boardId + "!");
         }
     }
 

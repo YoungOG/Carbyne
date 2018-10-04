@@ -1,7 +1,13 @@
 package com.medievallords.carbyne.utils;
 
+import com.medievallords.carbyne.Carbyne;
 import org.bukkit.ChatColor;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -234,5 +240,29 @@ public class StringUtils {
 
     public enum Alignment {
         LEFT, CENTER, RIGHT,
+    }
+
+    public static void logToFile(String message, String fileName) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    File saveTo = new File(Carbyne.getInstance().getDataFolder(), fileName);
+
+                    if (!saveTo.exists()) {
+                        saveTo.createNewFile();
+                    }
+
+                    FileWriter fw = new FileWriter(saveTo, true);
+
+                    PrintWriter pw = new PrintWriter(fw);
+                    pw.println(message);
+                    pw.flush();
+                    pw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskAsynchronously(Carbyne.getInstance());
     }
 }

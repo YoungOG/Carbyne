@@ -85,7 +85,7 @@ public class SpellMenuManager {
                         .addLore("&aDuration&b: 10 seconds")
                         .addLore("&aRange&b: 20 Blocks")
                         .addLore("&aReagent Cost&c: 2 Redstone Dust")
-                        .addLore("&aCooldown&d: 25 seconds")
+                        .addLore("&aCooldown&d: 35 seconds")
                         .addLore("")
                         .addLore("&aDescription&7: ")
                         .addLore("&7  Applies a lethal poisonous dose")
@@ -156,7 +156,7 @@ public class SpellMenuManager {
         }
 
         player.openInventory(inventory);
-        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1, .8f);
     }
 
     public void openSpellSubMenu(Player player, String spellName) {
@@ -167,11 +167,12 @@ public class SpellMenuManager {
 
         inventory.setItem(0, new ItemBuilder(Material.ENCHANTMENT_TABLE)
                 .name("&a&lConfigure")
-                .addLore("&7Click to bind or unbind the &5" + spellName + " &7spell to an item")
+                .addLore("&7Click to bind or unbind the")
+                .addLore("&5" + spellName + " &7spell to an item")
                 .addLore("&7in your inventory.")
                 .addLore("")
-                .addLore("&c&lPlease note that you can only have a max of &4&l5")
-                .addLore("&c&lspells at any given time.")
+                .addLore("&c&lPlease note that you can only have")
+                .addLore("a max of &4&l5 &c&lspells at any given time.")
                 .build());
 
         inventory.setItem(4, new ItemBuilder(Material.REDSTONE)
@@ -186,7 +187,7 @@ public class SpellMenuManager {
         SpellMenuListeners.getSpellSubMenuUsers().add(player.getUniqueId());
 
         player.openInventory(inventory);
-        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1, .8f);
     }
 
     public void openSpellConfigurationMenu(Player player, String spellName) {
@@ -222,7 +223,8 @@ public class SpellMenuManager {
                             .addLore("")
                             .addLore("&bThe &5" + spell.getName() + " &bspell is not bound to this item.")
                             .addLore("")
-                            .addLore("&7&lClick this item to &c&lunbind &7&lthe &5&l" + spell.getName() + " &7&lspell")
+                            .addLore("&7&lClick this item to &c&lunbind &7&lthe")
+                            .addLore("&7&lthe &5&l" + spell.getName() + " &7&lspell")
                             .addLore("&7&lfrom this item.");
 
                     inventory.setItem(i, new ItemBuilder(itemBuilder.build()).hideGlow().build());
@@ -232,9 +234,10 @@ public class SpellMenuManager {
 
                     itemBuilder
                             .addLore("")
-                            .addLore("&bThe &5" + spell.getName() + " &bspell is bound to this item.")
+                            .addLore("&bThe &5" + spell.getName() + " &bspell is not bound to this item.")
                             .addLore("")
-                            .addLore("&7&lClick this item to &a&lbind &7&lthe &5&l" + spell.getName() + " &7&lspell")
+                            .addLore("&7&lClick this item to &c&lunbind &7&lthe")
+                            .addLore("&7&lthe &5&l" + spell.getName() + " &7&lspell")
                             .addLore("&7&lfrom this item.");
 
                     inventory.setItem(i, new ItemBuilder(itemBuilder.build()).addGlow().build());
@@ -247,6 +250,6 @@ public class SpellMenuManager {
         SpellMenuListeners.getSpellConfigurationMenuUsers().put(player.getUniqueId(), spellName);
 
         player.openInventory(inventory);
-        player.playSound(player.getLocation(), Sound.CHEST_OPEN, 1, .8f);
+        player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 1, .8f);
     }
 }

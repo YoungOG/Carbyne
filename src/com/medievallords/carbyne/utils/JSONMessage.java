@@ -7,6 +7,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.minecraft.server.v1_12_R1.ChatMessageType;
+import net.minecraft.server.v1_12_R1.PacketPlayOutChat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -54,7 +56,7 @@ public class JSONMessage {
         stylesToNames = builder.build();
     }
 
-    private List<MessagePart> parts = new ArrayList<MessagePart>();
+    private List<MessagePart> parts = new ArrayList<>();
 
     /**
      * Creates a new JSONChat object
@@ -293,12 +295,28 @@ public class JSONMessage {
 
     /**
      * Adds another part to this JSONChat
-     * 
+     *
      * @param text the text to start with
      * @return this
      */
     public JSONMessage then(String text) {
         return then(new MessagePart(text));
+    }
+
+    /**
+     * Adds another part to this JSONChat
+     *
+     * @param text the text to start with
+     * @return this
+     */
+    public JSONMessage thenWithNewLine(String text) {
+        String[] split = text.split(" ");
+
+        for (String string : split)
+            if (string.equalsIgnoreCase("\n") || string.contains("\n"))
+                then("\n");
+
+        return then(new MessagePart(text.replace("\n", "")));
     }
 
     /**
@@ -309,6 +327,14 @@ public class JSONMessage {
      */
     public JSONMessage then(MessagePart nextPart) {
         parts.add(nextPart);
+        return this;
+    }
+
+    public JSONMessage remove(String text) {
+        for (MessagePart part : parts)
+            if (part.toString().contains(text))
+                parts.remove(part);
+
         return this;
     }
 
@@ -711,7 +737,7 @@ public class JSONMessage {
                 throw new IllegalStateException("ReflectionHelper is not set up!");
             }
             Object packet = createTextPacket(message);
-            set("b", packet, (byte) 2);
+            set("b", packet, ChatMessageType.a((byte) 2));
             return packet;
         }
 
@@ -722,7 +748,7 @@ public class JSONMessage {
             try {
                 Object packet = packetPlayOutChat.newInstance();
                 set("a", packet, fromJson(message));
-                set("b", packet, (byte) 1);
+                set("b", packet, ChatMessageType.a((byte) 1));
                 return packet;
             } catch (Exception e) {
                 e.printStackTrace();

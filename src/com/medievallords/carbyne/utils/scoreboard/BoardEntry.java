@@ -25,20 +25,17 @@ public class BoardEntry {
         final Scoreboard scoreboard = this.board.getScoreboard();
         this.text = ChatColor.translateAlternateColorCodes('&', this.text);
         String teamName = this.key;
-        if (teamName.length() > 16) {
+
+        if (teamName.length() > 16)
             teamName = teamName.substring(0, 16);
-        }
-        if (scoreboard.getTeam(teamName) != null) {
+        if (scoreboard.getTeam(teamName) != null)
             this.team = scoreboard.getTeam(teamName);
-        } else {
+        else
             this.team = scoreboard.registerNewTeam(teamName);
-        }
-        if (!this.team.getEntries().contains(this.key)) {
+        if (!this.team.getEntries().contains(this.key))
             this.team.addEntry(this.key);
-        }
-        if (!this.board.getEntries().contains(this)) {
+        if (!this.board.getEntries().contains(this))
             this.board.getEntries().add(this);
-        }
         return this;
     }
 
@@ -47,20 +44,19 @@ public class BoardEntry {
         if (this.text.length() > 16) {
             this.team.setPrefix(this.text.substring(0, 16));
             String suffix = ChatColor.getLastColors(this.team.getPrefix()) + this.text.substring(16, this.text.length());
-            if (suffix.length() > 16) {
+            if (suffix.length() > 16)
                 if (suffix.length() - 2 <= 16) {
                     suffix = this.text.substring(16, this.text.length());
                     this.team.setSuffix(suffix);
-                } else {
+                } else
                     this.team.setSuffix(suffix.substring(0, 16));
-                }
-            } else {
+            else
                 this.team.setSuffix(suffix);
-            }
         } else {
             this.team.setSuffix("");
             this.team.setPrefix(this.text);
         }
+
         final Score score = objective.getScore(this.key);
         score.setScore(position);
         return this;

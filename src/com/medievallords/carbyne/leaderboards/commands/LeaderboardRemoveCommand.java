@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.leaderboards.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.leaderboards.Leaderboard;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -23,7 +25,7 @@ public class LeaderboardRemoveCommand extends BaseCommand {
             return;
         }
 
-        Leaderboard leaderboard = getLeaderboardManager().getLeaderboard(args[0]);
+        Leaderboard leaderboard = StaticClasses.leaderboardManager.getLeaderboard(args[0]);
 
         if (leaderboard == null) {
             MessageManager.sendMessage(sender, "&cCould not find the requested leaderboard.");
@@ -31,10 +33,10 @@ public class LeaderboardRemoveCommand extends BaseCommand {
         }
 
         leaderboard.getBukkitTask().cancel();
-        getLeaderboardManager().getLeaderboards().remove(leaderboard);
+        StaticClasses.leaderboardManager.getLeaderboards().remove(leaderboard);
 
-        if (getCarbyne().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").contains(leaderboard.getBoardId()))
-            getCarbyne().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").set(leaderboard.getBoardId(), null);
+        if (Carbyne.getInstance().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").contains(leaderboard.getBoardId()))
+            Carbyne.getInstance().getLeaderboardFileConfiguration().getConfigurationSection("Leaderboards").set(leaderboard.getBoardId(), null);
 
         MessageManager.sendMessage(sender, "&aThe leaderboard has been removed.");
     }

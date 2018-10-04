@@ -3,6 +3,7 @@ package com.medievallords.carbyne.squads.commands;
 
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -27,7 +28,7 @@ public class SquadLeaveCommand extends BaseCommand {
             return;
         }
 
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (squad == null) {
             MessageManager.sendMessage(player, "&cYou are not in a squad.");
@@ -55,7 +56,7 @@ public class SquadLeaveCommand extends BaseCommand {
 
         squad.sendAllMembersMessage("&b" + player.getName() + " &chas left the squad.");
 
-        Board board = Board.getByPlayer(Bukkit.getPlayer(player.getUniqueId()));
+        Board board = Board.getByPlayer(player.getUniqueId());
 
         if (board != null) {
             BoardCooldown targetCooldown = board.getCooldown("target");

@@ -2,6 +2,7 @@ package com.medievallords.carbyne.staff.commands;
 
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -22,7 +23,7 @@ public class ResetPinCommand extends BaseCommand {
             return;
         }
 
-        Profile profile = getProfileManager().getProfile(commandArgs.getArgs(0));
+        Profile profile = StaticClasses.profileManager.getProfile(commandArgs.getArgs(0));
 
         if (profile == null) {
             MessageManager.sendMessage(sender, "&cThat player could not be found.");

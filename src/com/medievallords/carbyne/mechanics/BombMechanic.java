@@ -2,6 +2,7 @@ package com.medievallords.carbyne.mechanics;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;
 import io.lumine.xikage.mythicmobs.adapters.AbstractLocation;
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;
@@ -11,11 +12,9 @@ import io.lumine.xikage.mythicmobs.skills.ITargetedLocationSkill;
 import io.lumine.xikage.mythicmobs.skills.SkillMechanic;
 import io.lumine.xikage.mythicmobs.skills.SkillMetadata;
 import org.bukkit.FireworkEffect;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -111,7 +110,16 @@ public class BombMechanic extends SkillMechanic implements ITargetedEntitySkill,
     private void explode(final Location location, final double damage, final double radius) {
         ParticleEffect.EXPLOSION_HUGE.display(0, 0, 0, 0, 1, location, 40, true);
         for (Entity entity : location.getWorld().getNearbyEntities(location, radius, radius, radius)) {
-            if (entity instanceof LivingEntity) {
+            if (entity instanceof Player) {
+                Player player = (Player) entity;
+                if (player.getGameMode() != GameMode.SURVIVAL || player.getGameMode() != GameMode.ADVENTURE) {
+                    return;
+                }
+
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
+                playerHealth.setHealth(playerHealth.getHealth() - damage, player);
+                player.damage(0.0);
+            } else if (entity instanceof LivingEntity) {
                 ((LivingEntity) entity).damage(damage);
             }
         }

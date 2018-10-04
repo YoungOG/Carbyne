@@ -1,8 +1,8 @@
 package com.medievallords.carbyne.lootchests;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.utils.ItemBuilder;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -48,21 +48,21 @@ public class Loot {
 
             if (gear.length > 1) {
                 int random = new Random().nextInt(gear.length);
-                CarbyneGear carbyneGear = Carbyne.getInstance().getGearManager().getCarbyneGear(gear[random]);
+                CarbyneGear carbyneGear = StaticClasses.gearManager.getCarbyneGear(gear[random]);
 
                 if (carbyneGear != null) {
                     return carbyneGear.getItem(false);
                 }
             }
 
-            if (Carbyne.getInstance().getGearManager().getCarbyneGear(displayName) != null) {
-                return Carbyne.getInstance().getGearManager().getCarbyneGear(displayName).getItem(false);
+            if (StaticClasses.gearManager.getCarbyneGear(displayName) != null) {
+                return StaticClasses.gearManager.getCarbyneGear(displayName).getItem(false);
             } else if (displayName.contains("randomGear")) {
                 String name = displayName;
                 String[] split = name.split(":");
 
                 if (split.length > 1) {
-                    return Carbyne.getInstance().getGearManager().getRandomCarbyneGear(Boolean.parseBoolean(split[1])).getItem(false);
+                    return StaticClasses.gearManager.getRandomCarbyneGear(Boolean.parseBoolean(split[1])).getItem(false);
                 }
             }
         }

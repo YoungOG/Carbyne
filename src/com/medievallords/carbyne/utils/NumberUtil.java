@@ -33,4 +33,8 @@ public class NumberUtil {
         }
         return true;
     }
+
+    public static int getCompatibleSize(int value) {
+        return (value < 9) ? 9 : ((value > 54) ? 54 : ((value + 8) / 9 * 9));
+    }
 }

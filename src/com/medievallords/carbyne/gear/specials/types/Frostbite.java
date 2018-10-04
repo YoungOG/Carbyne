@@ -3,6 +3,7 @@ package com.medievallords.carbyne.gear.specials.types;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -93,7 +94,7 @@ public class Frostbite implements Special {
                         damageEntity(livingEntity);
                     }
                 }
-                loc.getWorld().playSound(loc, Sound.GLASS, 3f, (float) Math.random());
+                loc.getWorld().playSound(loc, Sound.BLOCK_GLASS_BREAK, 3f, (float) Math.random());
                 if (times > 10) {
                     this.cancel();
                 }
@@ -125,7 +126,9 @@ public class Frostbite implements Special {
     private final void damageEntity(final LivingEntity entity) {
         if (!isInSafeZone(entity)) {
             if (entity instanceof Player) {
-                entity.damage(entity.getHealth() * 0.1);
+                PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(entity.getUniqueId());
+                playerHealth.setHealth(playerHealth.getHealth() * 0.9, (Player) entity);
+                entity.damage(0.0);
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 1));
             } else {
                 entity.damage(1);

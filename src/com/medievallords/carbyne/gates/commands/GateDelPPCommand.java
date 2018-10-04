@@ -2,6 +2,7 @@ package com.medievallords.carbyne.gates.commands;
 
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -25,19 +26,19 @@ public class GateDelPPCommand extends BaseCommand {
             return;
         }
 
-        if (!player.getTargetBlock((HashSet<Byte>) null, 50).getType().toString().contains("PLATE")) {
+        if (!player.getTargetBlock(null, 50).getType().toString().contains("PLATE")) {
             MessageManager.sendMessage(player, "&cYou must be looking at a Pressure Plate.");
             return;
         }
 
-        Gate gate = getGateManager().getGate(player.getTargetBlock((HashSet<Byte>) null, 50).getLocation());
+        Gate gate = StaticClasses.gateManager.getGate(player.getTargetBlock(null, 50).getLocation());
 
         if (gate == null) {
             MessageManager.sendMessage(player, "&cThere is no gate that is using that Pressure Plate.");
             return;
         }
 
-        gate.getPressurePlateMap().remove(player.getTargetBlock((HashSet<Byte>) null,  50).getLocation());
+        gate.getPressurePlateMap().remove(player.getTargetBlock(null,  50).getLocation());
         gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have deleted a Pressure Plate from the gate &b" + gate.getGateId() + "&a.");
     }

@@ -112,6 +112,7 @@ public class TrailManager
                 player.hasPermission(AdvancedEffect.scannerPermission) ? new ItemBuilder(Material.STAINED_GLASS).name("&5Scanner").build() : new ItemBuilder(Material.STAINED_GLASS).name("&5Scanner").addLore("&cYou have not unlocked this effect").build(),
                 player.hasPermission(AdvancedEffect.emeraldTwirlPemission) ? new ItemBuilder(Material.EMERALD).name("&aEmerald Twirl").build() : new ItemBuilder(Material.EMERALD).name("&aEmerald Twirl").addLore("&cYou have not unlocked this effect").build(),
                 player.hasPermission(AdvancedEffect.boxPermission) ? new ItemBuilder(Material.IRON_BLOCK).name("&dBox of &4&lDOOM").build() : new ItemBuilder(Material.IRON_BLOCK).name("&dBox of &4DOOM").addLore("&cYou have not unlocked this effect").build(),
+                player.hasPermission(AdvancedEffect.starPermission) ? new ItemBuilder(Material.NETHER_STAR).name("&eShining Star").build() : new ItemBuilder(Material.NETHER_STAR).name("&eShining Star").addLore("&cYou have not unlocked this effect").build(),
                 null, null,
                 new ItemBuilder(Material.COMMAND).name("&2&lTurn off effect").build()
         });

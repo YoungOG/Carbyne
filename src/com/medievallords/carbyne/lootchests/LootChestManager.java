@@ -116,7 +116,7 @@ public class LootChestManager {
                     String respawnString = fc.getString("LootChests." + lootChest + ".RespawnTime");
                     int maxItems = fc.getInt("LootChests." + lootChest + ".MaxItems");
                     BlockFace blockFace = BlockFace.valueOf(fc.getString("LootChests." + lootChest + ".Face"));
-                    lootChests.put(location, new LootChest(this, lootChest, lootTableName, location, respawnString, maxItems, blockFace));
+                    lootChests.put(location, new LootChest(lootChest, lootTableName, location, respawnString, maxItems, blockFace));
                     totalChests++;
                 } catch (Exception e) {
                     main.getLogger().log(Level.SEVERE, "Failed to load loot chest with the name " + lootChest + "!");

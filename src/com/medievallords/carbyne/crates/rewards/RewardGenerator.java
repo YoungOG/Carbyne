@@ -2,8 +2,10 @@ package com.medievallords.carbyne.crates.rewards;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.Crate;
+import com.medievallords.carbyne.crates.animations.LegacyAnimation;
 import com.medievallords.carbyne.utils.InventoryWorkaround;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -19,12 +21,11 @@ import java.util.UUID;
 
 public class RewardGenerator {
 
-    private Carbyne main = Carbyne.getInstance();
     private HashMap<UUID, BukkitTask> inventoryTID = new HashMap<>();
     private HashMap<UUID, BukkitTask> startDelayTID = new HashMap<>();
     private HashMap<UUID, BukkitTask> finishDelayTID = new HashMap<>();
 
-    private Crate crate;
+    private LegacyAnimation legacyAnimation;
     private Player player;
     private Inventory inventory;
     private List<ItemStack> items;
@@ -34,8 +35,8 @@ public class RewardGenerator {
     private int slot;
     private boolean ran;
 
-    public RewardGenerator(Crate crate, Player player, Inventory inventory, int slot, int delay, int time, List<ItemStack> items, Reward chosenReward) {
-        this.crate = crate;
+    public RewardGenerator(LegacyAnimation legacyAnimation, Player player, Inventory inventory, int slot, int delay, int time, List<ItemStack> items, Reward chosenReward) {
+        this.legacyAnimation = legacyAnimation;
         this.player = player;
         this.inventory = inventory;
         this.slot = slot;
@@ -49,7 +50,7 @@ public class RewardGenerator {
             public void run() {
                 startScheduler(player);
             }
-        }.runTaskLater(main, delay));
+        }.runTaskLater(Carbyne.getInstance(), delay));
     }
 
     public void startScheduler(Player player) {
@@ -65,12 +66,12 @@ public class RewardGenerator {
                 if (item == null || prev().equals(item)) {
                     inventory.setItem(slot, get());
 
-                    if (main.getCrateManager().getSounds().size() > 0)
-                        for (Sound s : main.getCrateManager().getSounds().keySet())
-                            player.playSound(player.getLocation(), s, main.getCrateManager().getSounds().get(s)[0].floatValue(), main.getCrateManager().getSounds().get(s)[1].floatValue());
+                    if (StaticClasses.crateManager.getSounds().size() > 0)
+                        for (Sound s : StaticClasses.crateManager.getSounds().keySet())
+                            player.playSound(player.getLocation(), s, StaticClasses.crateManager.getSounds().get(s)[0].floatValue(), StaticClasses.crateManager.getSounds().get(s)[1].floatValue());
                 }
             }
-        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, main.getConfig().getInt("crates.crate-opening-speed")));
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, Carbyne.getInstance().getConfig().getInt("crates.crate-opening-speed")));
 
         finishDelayTID.put(player.getUniqueId(), new BukkitRunnable() {
             @Override
@@ -78,7 +79,7 @@ public class RewardGenerator {
                 ran = true;
                 stopScheduler(player, false);
             }
-        }.runTaskLater(main, time * 20L));
+        }.runTaskLater(Carbyne.getInstance(), time * 20L));
     }
 
     public void stopScheduler(Player player, boolean cancelled) {
@@ -118,21 +119,22 @@ public class RewardGenerator {
 
                             return;
                         }
-                    } else if (chosenReward.getCommands().size() > 0)
-                        for (String cmd : chosenReward.getCommands())
-                            main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
+                    }
 
-                    if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
-                        if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
-                            if (crate.getCrateOpenersAmount().get(player.getUniqueId()) > 0)
-                                crate.getCrateOpenersAmount().put(player.getUniqueId(), crate.getCrateOpenersAmount().get(player.getUniqueId()) - 1);
+                    for (String cmd : chosenReward.getCommands())
+                        Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
+
+                    if (legacyAnimation.getCrateOpeners().keySet().contains(player.getUniqueId()))
+                        if (legacyAnimation.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
+                            if (legacyAnimation.getCrateOpenersAmount().get(player.getUniqueId()) > 0)
+                                legacyAnimation.getCrateOpenersAmount().put(player.getUniqueId(), legacyAnimation.getCrateOpenersAmount().get(player.getUniqueId()) - 1);
                             else {
-                                crate.getCrateOpeners().remove(player.getUniqueId());
-                                crate.getCrateOpenersAmount().remove(player.getUniqueId());
+                                legacyAnimation.getCrateOpeners().remove(player.getUniqueId());
+                                legacyAnimation.getCrateOpenersAmount().remove(player.getUniqueId());
                                 player.closeInventory();
                             }
                 }
-            }.runTaskLater(main, 3 * 20L);
+            }.runTaskLater(Carbyne.getInstance(), 3 * 20L);
         } else {
             inventory.clear();
 
@@ -155,14 +157,14 @@ public class RewardGenerator {
                 } else {
                     if (chosenReward.getCommands().size() > 0)
                         for (String cmd : chosenReward.getCommands())
-                            main.getServer().dispatchCommand(main.getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
+                            Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), cmd.replace("/", "").replace("%player%", player.getName()).replace("%item%", (rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : rewardItem.getType().name())));
                 }
 
-                if (crate.getCrateOpeners().keySet().contains(player.getUniqueId()))
-                    crate.getCrateOpeners().remove(player.getUniqueId());
+                if (legacyAnimation.getCrateOpeners().keySet().contains(player.getUniqueId()))
+                    legacyAnimation.getCrateOpeners().remove(player.getUniqueId());
 
-                if (crate.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
-                    crate.getCrateOpenersAmount().remove(player.getUniqueId());
+                if (legacyAnimation.getCrateOpenersAmount().keySet().contains(player.getUniqueId()))
+                    legacyAnimation.getCrateOpenersAmount().remove(player.getUniqueId());
             }
         }
     }

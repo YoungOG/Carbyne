@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.crates;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.crates.animations.CrateAnimation;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.crates.rewards.RewardGenerator;
 import com.medievallords.carbyne.utils.*;
@@ -23,16 +24,13 @@ import java.util.logging.Level;
 @Setter
 public class Crate {
 
-    private Carbyne main = Carbyne.getInstance();
-    private CrateManager crateManager = main.getCrateManager();
-
     private String name;
     private Location location;
     private ArrayList<Reward> rewards = new ArrayList<>();
-    private HashMap<UUID, Inventory> crateOpeners = new HashMap<>();
-    private HashMap<UUID, Integer> crateOpenersAmount = new HashMap<>();
     private ArrayList<UUID> editors = new ArrayList<>();
     private int rewardsAmount;
+    private CrateAnimation animation;
+    private int taskID;
 
     public Crate(String name) {
         this.name = name;
@@ -60,10 +58,10 @@ public class Crate {
             configurationSection.set(name + ".RewardsAmount", rewardsAmount);
 
         try {
-            crateFileConfiguration.save(main.getCratesFile());
+            crateFileConfiguration.save(Carbyne.getInstance().getCratesFile());
         } catch (IOException e) {
             e.printStackTrace();
-            main.getLogger().log(Level.WARNING, "Failed to save the crate " + name + "!");
+            Carbyne.getInstance().getLogger().log(Level.WARNING, "Failed to save the crate " + name + "!");
         }
     }
 
@@ -95,6 +93,17 @@ public class Crate {
         player.openInventory(inventory);
     }
 
+    public void generateRewards(Player player, boolean dailyBonus) {
+        if (!dailyBonus)
+            if (player.getInventory().getItemInMainHand().getAmount() > 1) {
+                player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount() - 1);
+                player.setItemInHand(player.getInventory().getItemInMainHand());
+            } else
+                player.setItemInHand(new ItemStack(Material.AIR));
+
+        animation.generateRewards(player);
+    }
+
     public void showRewards(Player player) {
         Inventory inventory = Bukkit.createInventory(player, 54, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
         HashMap<Integer, Boolean> randomGear = new HashMap<>();
@@ -119,125 +128,14 @@ public class Crate {
                 }
 
                 for (int p : randomGear.keySet()) {
-                    ItemStack randomCarbyne = main.getGearManager().getRandomCarbyneGear(randomGear.get(p)).getItem(false);
+                    ItemStack randomCarbyne = StaticClasses.gearManager.getRandomCarbyneGear(randomGear.get(p)).getItem(false);
 
                     inventory.setItem(p, randomCarbyne);
                 }
             }
-        }.runTaskTimer(main, 0, 10);
+        }.runTaskTimer(Carbyne.getInstance(), 0, 10);
     }
 
-    public void generateRewards(Player player, boolean dailyBonus) {
-        int openTime = main.getConfig().getInt("crates.crate-opening-time");
-        int fillerId = main.getConfig().getInt("crates.filler-itemid");
-        int fillerPeriod = main.getConfig().getInt("crates.filler-period");
-
-        Inventory inventory = Bukkit.createInventory(player, 27, ChatColor.AQUA + "" + ChatColor.BOLD + "Crate Rewards");
-
-        if (!dailyBonus)
-            if (player.getItemInHand().getAmount() > 1) {
-                player.getItemInHand().setAmount(player.getItemInHand().getAmount() - 1);
-                player.setItemInHand(player.getItemInHand());
-            } else
-                player.setItemInHand(new ItemStack(Material.AIR));
-
-        InstantFirework.spawn(player.getLocation(), FireworkEffect.builder().withColor(Color.BLUE).withColor(Color.RED).withColor(Color.GREEN).withColor(Color.YELLOW).withColor(Color.PURPLE).withFade(Color.TEAL).build());
-
-        crateOpeners.put(player.getUniqueId(), inventory);
-        crateOpenersAmount.put(player.getUniqueId(), rewardsAmount - 1);
-
-        new BukkitRunnable() {
-            int runTime = openTime * fillerPeriod;
-
-            @Override
-            public void run() {
-                if (runTime > 0)
-                    runTime--;
-                else {
-                    cancel();
-                    return;
-                }
-
-                if (rewardsAmount == 1)
-                    for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 13)
-                            continue;
-
-                        inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
-                    }
-                else if (rewardsAmount == 2)
-                    for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 12 || i == 14)
-                            continue;
-
-                        inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
-                    }
-                else if (rewardsAmount == 3)
-                    for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i >= 12 && i <= 14)
-                            continue;
-
-                        inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
-                    }
-                else if (rewardsAmount == 5)
-                    for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i >= 11 && i <= 15)
-                            continue;
-
-                        inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
-                    }
-                else
-                    for (int i = 0; i < inventory.getSize(); i++) {
-                        if (i == 13)
-                            continue;
-
-                        inventory.setItem(i, new ItemBuilder(Material.getMaterial(fillerId)).name("").durability(new Random().nextInt(16)).build());
-                    }
-            }
-        }.runTaskTimerAsynchronously(main, 0L, fillerPeriod);
-
-        ArrayList<RewardGenerator> rewardGenerators = new ArrayList<>();
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!crateOpeners.containsKey(player.getUniqueId())) {
-                    for (RewardGenerator rewardGenerator : rewardGenerators)
-                        if (!rewardGenerator.hasRan())
-                            rewardGenerator.stopScheduler(player, true);
-
-                    cancel();
-                }
-            }
-        }.runTaskTimer(main, 0L, 1L);
-
-        List<ItemStack> rewardItems = new ArrayList<>();
-        for (Reward reward : rewards)
-            rewardItems.add(reward.getItem(false));
-
-
-        List<Reward> chosenRewards = getRewards(rewardsAmount);
-
-        if (rewardsAmount == 1)
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
-        else if (rewardsAmount == 2) {
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 12, 0, openTime, rewardItems, chosenRewards.get(0)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 14, 10, openTime, rewardItems, chosenRewards.get(1)));
-        } else if (rewardsAmount == 3) {
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 12, 0, openTime, rewardItems, chosenRewards.get(0)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 10, openTime, rewardItems, chosenRewards.get(1)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 14, 20, openTime, rewardItems, chosenRewards.get(2)));
-        } else if (rewardsAmount == 5) {
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 11, 0, openTime, rewardItems, chosenRewards.get(0)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 12, 10, openTime, rewardItems, chosenRewards.get(1)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 20, openTime, rewardItems, chosenRewards.get(2)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 14, 30, openTime, rewardItems, chosenRewards.get(3)));
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 15, 40, openTime, rewardItems, chosenRewards.get(4)));
-        } else
-            rewardGenerators.add(new RewardGenerator(this, player, inventory, 13, 0, openTime, rewardItems, chosenRewards.get(0)));
-
-        player.openInventory(inventory);
-    }
 
     public void knockbackPlayer(Player player, Location relative) {
         double xpower = 0.25;
@@ -252,63 +150,63 @@ public class Crate {
         player.setVelocity(nv2);
     }
 
-    public Reward getReward() {
-        int totalPercentage = 0;
-
-        for (Reward reward : getRewards())
-            totalPercentage += reward.getChance();
-
-        int index = -1;
-        double random = Maths.randomNumberBetween(totalPercentage, 0);
-
-        double last = 0;
-        for (int i = 0; i < rewards.size(); i++) {
-            Reward reward = getRewards().get(i);
-            double value = reward.getChance();
-
-            if (random > last && random < value + last) {
-                index = i;
-                break;
-            } else
-                last = last + value;
-        }
-
-        return rewards.get(index);
-    }
-
-    public ArrayList<Reward> getRewards(int amount) {
-        ArrayList<Reward> rewards = new ArrayList<>();
-
-        int totalPercentage = 0;
-
-        for (Reward reward : getRewards())
-            totalPercentage += reward.getChance();
-
-        for (int a = 0; a < amount; a++) {
-            double random = Maths.randomNumberBetween(totalPercentage, 0);
-            double last = 0;
-            for (int i = 0; i < getRewards().size(); i++) {
-                Reward reward = getRewards().get(i);
-                double value = reward.getChance();
-
-                if (random >= last && random < value + last) {
-                    rewards.add(reward);
-                    break;
-                } else
-                    last = value + last;
-            }
-        }
-
-        return rewards;
-    }
-
-    public Reward getReward(int id) {
-        for (Reward reward : rewards)
-            if (reward.getId() == id)
-                return reward;
-
-        return null;
-    }
+//    public Reward getReward() {
+//        int totalPercentage = 0;
+//
+//        for (Reward reward : getRewards())
+//            totalPercentage += reward.getChance();
+//
+//        int index = -1;
+//        double random = Maths.randomNumberBetween(totalPercentage, 0);
+//
+//        double last = 0;
+//        for (int i = 0; i < rewards.size(); i++) {
+//            Reward reward = getRewards().get(i);
+//            double value = reward.getChance();
+//
+//            if (random > last && random < value + last) {
+//                index = i;
+//                break;
+//            } else
+//                last = last + value;
+//        }
+//
+//        return rewards.get(index);
+//    }
+//
+//    public ArrayList<Reward> getRewards(int amount) {
+//        ArrayList<Reward> rewards = new ArrayList<>();
+//
+//        int totalPercentage = 0;
+//
+//        for (Reward reward : getRewards())
+//            totalPercentage += reward.getChance();
+//
+//        for (int a = 0; a < amount; a++) {
+//            double random = Maths.randomNumberBetween(totalPercentage, 0);
+//            double last = 0;
+//            for (int i = 0; i < getRewards().size(); i++) {
+//                Reward reward = getRewards().get(i);
+//                double value = reward.getChance();
+//
+//                if (random >= last && random < value + last) {
+//                    rewards.add(reward);
+//                    break;
+//                } else
+//                    last = value + last;
+//            }
+//        }
+//
+//        return rewards;
+//    }
+//
+//    public Reward getReward(int id) {
+//        for (Reward reward : rewards)
+//            if (reward.getId() == id)
+//                return reward;
+//
+//        return null;
+//    }
 
     public void runEffect(String crateName) {
         switch (crateName) {
@@ -322,7 +220,7 @@ public class Crate {
     }
 
     private void runMysticalEffect() {
-        new BukkitRunnable() {
+        this.taskID = Bukkit.getScheduler().scheduleAsyncRepeatingTask(Carbyne.getInstance(), new Runnable() {
             private double theta = 0, radius = 0.55;
             private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
 
@@ -343,11 +241,11 @@ public class Crate {
                 ParticleEffect.REDSTONE.display(purple, loc, 40, false);
                 loc.add(x, -y, z);
             }
-        }.runTaskTimerAsynchronously(main, 0, 1);
+        }, 0, 1);
     }
 
     private void runViciousEffect() {
-        new BukkitRunnable() {
+        this.taskID = Bukkit.getScheduler().scheduleAsyncRepeatingTask(Carbyne.getInstance(), new Runnable() {
             private double theta = 0, radius = 0.55;
             private Location loc = getLocation().clone().add(0.5, 0.5, 0.5);
 
@@ -368,6 +266,6 @@ public class Crate {
                 ParticleEffect.REDSTONE.display(purple, loc, 40, false);
                 loc.add(x, -y, z);
             }
-        }.runTaskTimerAsynchronously(main, 0, 1);
+        }, 0, 1);
     }
 }

@@ -1,6 +1,8 @@
 package com.medievallords.carbyne.mechanics;
 
+import com.medievallords.carbyne.mechanics.conditions.PlayerCountCondition;
 import com.medievallords.carbyne.mechanics.targeters.RandomPlayerInRadius;
+import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicConditionLoadEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMechanicLoadEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicTargeterLoadEvent;
 import org.bukkit.event.EventHandler;
@@ -32,6 +34,9 @@ public class MechanicListener implements Listener {
             case "playsound":
                 event.register(new PlaySoundMechanic(event.getMechanicName(), event.getConfig(), 1));
                 break;
+            case "cgdamage":
+                event.register(new DamageMechanic(event.getMechanicName(), event.getConfig(), 1));
+                break;
         }
     }
 
@@ -40,6 +45,15 @@ public class MechanicListener implements Listener {
         switch (event.getTargeterName().toLowerCase()) {
             case "RPIR":
                 event.register(new RandomPlayerInRadius(event.getConfig()));
+                break;
+        }
+    }
+
+    @EventHandler
+    public void onLoadCondition(MythicConditionLoadEvent event) {
+        switch (event.getConditionName().toLowerCase()) {
+            case "playercount":
+                event.register(new PlayerCountCondition(event.getConditionName(), event.getConfig()));
                 break;
         }
     }

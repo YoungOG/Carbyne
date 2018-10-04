@@ -3,6 +3,7 @@ package com.medievallords.carbyne.squads.commands;
 import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -18,7 +19,7 @@ public class SquadSetCommand extends BaseCommand{
     public void execute(CommandArgs commandArgs) {
         String[] args = commandArgs.getArgs();
         Player player = commandArgs.getPlayer();
-        Squad squad = getSquadManager().getSquad(player.getUniqueId());
+        Squad squad = StaticClasses.squadManager.getSquad(player.getUniqueId());
 
         if (args.length > 1) {
             MessageManager.sendMessage(player, "&cUsage: /squad");

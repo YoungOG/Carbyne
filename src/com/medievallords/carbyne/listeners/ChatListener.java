@@ -2,10 +2,7 @@ package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.utils.Cooldowns;
-import com.medievallords.carbyne.utils.JSONMessage;
-import com.medievallords.carbyne.utils.MessageManager;
-import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.utils.webhook.DiscordMessage;
 import com.medievallords.carbyne.utils.webhook.StaffHook;
 import com.palmergames.bukkit.towny.TownyEconomyHandler;
@@ -35,6 +32,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.nibor.autolink.LinkExtractor;
 import org.nibor.autolink.LinkSpan;
 import org.nibor.autolink.LinkType;
@@ -57,45 +56,44 @@ import java.util.regex.Pattern;
  */
 public class ChatListener implements Listener {
 
-    private Carbyne carbyne = Carbyne.getInstance();
-    private ArrayList<UUID> notMoved = new ArrayList<>();
+    //private ArrayList<UUID> notMoved = new ArrayList<>();
     private HashMap<UUID, String> lastMessage = new HashMap<>();
     private StaffHook staffHook;
 
     public ChatListener() {
-        staffHook = new StaffHook("https://discordapp.com/api/webhooks/472710997900132353/7UQTFZZvoph_ws63v_Y_dA3D1lGA2I1SvrAAvAghGxs8KATvm0cfVHs1gITDB_idev4n");
+        staffHook = new StaffHook("https://discordapp.com/api/webhooks/484263323244691456/vEjKOUvn7EWoqhAxhEIVm3pDXh2IqS-jUrPBGY814cYicxOocDm9Ps_ClJbrk7IMWKg5");
     }
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        if (!event.getPlayer().hasPermission("carbyne.staff"))
-            notMoved.add(event.getPlayer().getUniqueId());
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        Location from = event.getFrom();
-        Location to = event.getTo();
-
-        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()))
-            notMoved.remove(event.getPlayer().getUniqueId());
-    }
+//    @EventHandler
+//    public void onJoin(PlayerJoinEvent event) {
+//        if (!event.getPlayer().hasPermission("carbyne.staff"))
+//            notMoved.add(event.getPlayer().getUniqueId());
+//    }
+//
+//    @EventHandler
+//    public void onMove(PlayerMoveEvent event) {
+//        Location from = event.getFrom();
+//        Location to = event.getTo();
+//
+//        if ((from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()))
+//            notMoved.remove(event.getPlayer().getUniqueId());
+//    }
 
     @EventHandler(ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
-        if (!player.hasPermission("carbyne.staff")) {
-            RegionManager regionManager = carbyne.getWorldGuardPlugin().getRegionManager(player.getWorld());
-            ApplicableRegionSet regionSet = regionManager.getApplicableRegions(player.getLocation());
-
-            for (ProtectedRegion region : regionSet.getRegions())
-                if (region.getId().equalsIgnoreCase("SpawnNoTalk")) {
-                    MessageManager.sendMessage(player, "&cYou cannot talk in this region.");
-                    event.setCancelled(true);
-                    return;
-                }
-        }
+//        if (!player.hasPermission("carbyne.staff")) {
+//            RegionManager regionManager = Carbyne.getInstance().getWorldGuardPlugin().getRegionManager(player.getWorld());
+//            ApplicableRegionSet regionSet = regionManager.getApplicableRegions(player.getLocation());
+//
+//            for (ProtectedRegion region : regionSet.getRegions())
+//                if (region.getId().equalsIgnoreCase("SpawnNoTalk")) {
+//                    MessageManager.sendMessage(player, "&cYou cannot talk in this region.");
+//                    event.setCancelled(true);
+//                    return;
+//                }
+//        }
 
         event.setMessage(event.getMessage().replace("<love>", "\u2764"));
         event.setMessage(event.getMessage().replace("<happy>", "\u263a"));
@@ -116,34 +114,34 @@ public class ChatListener implements Listener {
                     event.setMessage(event.getMessage().toLowerCase());
                 }
 
-        if (carbyne.getStaffManager().getStaffChatPlayers().contains(player.getUniqueId())) {
+        if (StaticClasses.staffManager.getStaffChatPlayers().contains(player.getUniqueId())) {
             MessageManager.sendStaffMessage(player, event.getMessage());
             event.setCancelled(true);
             return;
         }
 
-        if (carbyne.getStaffManager().isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff")) {
+        if (StaticClasses.staffManager.isChatMuted() && !event.getPlayer().hasPermission("carbyne.staff")) {
             event.setCancelled(true);
             MessageManager.sendMessage(event.getPlayer(), "&cThe chat is currently muted.");
             return;
         }
 
-        if (carbyne.getStaffManager().getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff"))
-            if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD", carbyne.getStaffManager().getSlowChatTime() * 1000)) {
+        if (StaticClasses.staffManager.getSlowChatTime() > 0 && !event.getPlayer().hasPermission("carbyne.staff"))
+            if (!Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "slowChatCD", StaticClasses.staffManager.getSlowChatTime() * 1000)) {
                 MessageManager.sendMessage(event.getPlayer(), "&cYou may speak again in " + (Cooldowns.getCooldown(event.getPlayer().getUniqueId(), "slowChatCD") / 1000) + " seconds");
                 event.setCancelled(true);
                 return;
             }
 
         if (player.hasPermission("carbyne.staff.pin")) {
-            Profile profile = carbyne.getProfileManager().getProfile(player.getUniqueId());
+            Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
             if (!profile.hasPin()) {
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&7You cannot chat until you entered your PIN.");
             }
 
-            if (carbyne.getStaffManager().getFrozenStaff().contains(player.getUniqueId())) {
+            if (StaticClasses.staffManager.getFrozenStaff().contains(player.getUniqueId())) {
                 event.setCancelled(true);
 
                 if (!isFourDigitCode(event.getMessage())) {
@@ -156,7 +154,14 @@ public class ChatListener implements Listener {
                     return;
                 }
 
-                carbyne.getStaffManager().getFrozenStaff().remove(player.getUniqueId());
+                StaticClasses.staffManager.getFrozenStaff().remove(player.getUniqueId());
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        player.setWalkSpeed(0.2f);
+                        player.removePotionEffect(PotionEffectType.JUMP);
+                    }
+                }.runTask(Carbyne.getInstance());
                 MessageManager.sendMessage(player, "&7You have been successfully authenticated.");
                 return;
             }
@@ -168,26 +173,27 @@ public class ChatListener implements Listener {
             return;
         }
 
-        if (notMoved.contains(event.getPlayer().getUniqueId())) {
-            event.setCancelled(true);
-            MessageManager.sendMessage(player, "&cYou must move before chatting.");
-            return;
-        }
+//        if (notMoved.contains(event.getPlayer().getUniqueId())) {
+//            event.setCancelled(true);
+//            //WHAT IS THE PURPOSE OF THIS AGAIN?
+//            MessageManager.sendMessage(player, "&cYou must move before chatting.");
+//            return;
+//        }
 
         JSONMessage newMessage = JSONMessage.create("");
 
-        Profile profile = carbyne.getProfileManager().getProfile(player.getUniqueId());
+        Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
 
         if (profile != null) {
             switch (profile.getProfileChatChannel()) {
                 case LOCAL:
-                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&b[Local] &f"));
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f[&bLocal&f] "));
                     break;
                 case TOWN:
-                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&a[Town] &f"));
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f[&aTown&f] "));
                     break;
                 case NATION:
-                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&d[Nation] &f"));
+                    newMessage.then(ChatColor.translateAlternateColorCodes('&', "&f[&dNation&f] "));
                     break;
             }
         }
@@ -251,14 +257,14 @@ public class ChatListener implements Listener {
         //String chatFix = "";
         for (String s : msg) {
             if (s.equalsIgnoreCase("%item%") && player.hasPermission("carbyne.donator")) {
-                ItemStack item = player.getItemInHand();
+                ItemStack item = player.getInventory().getItemInMainHand();
                 String type = item.getType().name().substring(0, 1).toUpperCase();
                 String sl = type + item.getType().name().substring(1).toLowerCase().replace("_", " ");
 
                 StringBuilder toolTip;
 
                 toolTip = new StringBuilder((item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : sl) + "\n");
-                for (Enchantment enchantment : player.getItemInHand().getEnchantments().keySet())
+                for (Enchantment enchantment : player.getInventory().getItemInMainHand().getEnchantments().keySet())
                     toolTip.append("&7").append(MessageManager.getEnchantmentFriendlyName(enchantment)).append(" &7").append(MessageManager.getPotionAmplifierInRomanNumerals(item.getEnchantments().get(enchantment))).append("\n");
 
                 if (item.getItemMeta().hasLore())
@@ -287,23 +293,24 @@ public class ChatListener implements Listener {
 
 
                 } else {
-                    newMessage.then((player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('&', s) : s) + " ");
+                    newMessage.then((player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('&',  s) : s) + " ");
                 }
             }
         }
 
-        /*if (chatFix.length() > 0) {
-            newMessage.then(player.hasPermission("carbyne.chatcolors") ? ChatColor.translateAlternateColorCodes('^', chatFix) : chatFix);
-        }*/
-
-
-
         if (profile != null) {
             switch (profile.getProfileChatChannel()) {
                 case LOCAL:
-                    for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 35))
-                        if (!Carbyne.getInstance().getProfileManager().getProfile(all.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId()))
+                    for (Player all : PlayerUtility.getPlayersInRadius(player.getLocation(), 35)) {
+                        if (all.getUniqueId().equals(player.getUniqueId())) {
                             newMessage.send(all);
+                        } else {
+                            Profile other = StaticClasses.profileManager.getProfile(all.getUniqueId());
+                            if (!other.getIgnoredPlayers().contains(player.getUniqueId()) && other.isChatEnabled()) {
+                                newMessage.send(all);
+                            }
+                        }
+                    }
 
                     break;
                 case TOWN:
@@ -335,8 +342,16 @@ public class ChatListener implements Listener {
                         townResidents.add(p);
                     }
 
-                    for (Player all : townResidents)
-                        newMessage.send(all);
+                    for (Player all : townResidents) {
+                        if (all.getUniqueId().equals(player.getUniqueId())) {
+                            newMessage.send(all);
+                        } else {
+                            Profile other = StaticClasses.profileManager.getProfile(all.getUniqueId());
+                            if (other.isChatEnabled()) {
+                                newMessage.send(all);
+                            }
+                        }
+                    }
 
                     break;
                 case NATION:
@@ -374,14 +389,29 @@ public class ChatListener implements Listener {
                         nationResidents.add(p);
                     }
 
-                    for (Player p : nationResidents)
-                        newMessage.send(p);
+                    for (Player p : nationResidents) {
+                        if (p.getUniqueId().equals(player.getUniqueId())) {
+                            newMessage.send(p);
+                        } else {
+                            Profile other = StaticClasses.profileManager.getProfile(p.getUniqueId());
+                            if (other.isChatEnabled()) {
+                                newMessage.send(p);
+                            }
+                        }
+                    }
 
                     break;
                 case GLOBAL:
-                    for (Player all : PlayerUtility.getOnlinePlayers())
-                        if (!Carbyne.getInstance().getProfileManager().getProfile(all.getUniqueId()).getIgnoredPlayers().contains(player.getUniqueId()))
+                    for (Player all : PlayerUtility.getOnlinePlayers()) {
+                        if (all.getUniqueId().equals(player.getUniqueId())) {
                             newMessage.send(all);
+                        } else {
+                            Profile other = StaticClasses.profileManager.getProfile(all.getUniqueId());
+                            if (!other.getIgnoredPlayers().contains(player.getUniqueId()) && other.isChatEnabled()) {
+                                newMessage.send(all);
+                            }
+                        }
+                    }
 
                     break;
             }

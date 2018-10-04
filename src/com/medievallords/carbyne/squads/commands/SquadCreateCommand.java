@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.squads.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -22,6 +23,6 @@ public class SquadCreateCommand extends BaseCommand {
             return;
         }
 
-        getSquadManager().createSquad(player.getUniqueId());
+        StaticClasses.squadManager.createSquad(player.getUniqueId());
     }
 }

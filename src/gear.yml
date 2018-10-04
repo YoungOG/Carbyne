@@ -48,7 +48,16 @@ PolishItem:
     - '&aWhen Applied:'
     - '&r &7- &bIncreases Armor Durability'
     - '&r &7- &bAdds a cosmetic fade'
-Protection-Values:
+PrizeEgg:
+  ItemId: 122
+  ItemData: 0
+  Code: 'prizeegg'
+  DisplayName: '&4P&bR&3I&aZ&fE&cD &cE&bG&3G'
+  Lore:
+  - '&7Prize Egg!'
+Damage-Resistance: 0.05
+Hidden-Gear-Chance: 0.1
+ForgeLocations:
 Carbyne-Armor:
   1:
     Helmet:
@@ -791,6 +800,7 @@ Carbyne-Weapons:
     Hidden: true
     Cost: 10000
     GearCode: 'prizedSword'
+Artifacts:
 #
 # This section is for configuring the default Minecraft armours and adding Carbyne versions of them
 #

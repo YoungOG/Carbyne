@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.staff.commands;
 
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -16,11 +17,11 @@ public class StaffChatCommand extends BaseCommand {
     public void onCommand(CommandArgs commandArgs) {
         if (commandArgs.isPlayer()) {
             if (commandArgs.length() == 0) {
-                if (!getStaffManager().getStaffChatPlayers().contains(commandArgs.getPlayer().getUniqueId())) {
-                    getStaffManager().getStaffChatPlayers().add(commandArgs.getPlayer().getUniqueId());
+                if (!StaticClasses.staffManager.getStaffChatPlayers().contains(commandArgs.getPlayer().getUniqueId())) {
+                    StaticClasses.staffManager.getStaffChatPlayers().add(commandArgs.getPlayer().getUniqueId());
                     MessageManager.sendMessage(commandArgs.getPlayer(), "&aYou have entered Staff Chat.");
                 } else {
-                    getStaffManager().getStaffChatPlayers().remove(commandArgs.getPlayer().getUniqueId());
+                    StaticClasses.staffManager.getStaffChatPlayers().remove(commandArgs.getPlayer().getUniqueId());
                     MessageManager.sendMessage(commandArgs.getPlayer(), "&cYou have left Staff Chat.");
                 }
             } else {

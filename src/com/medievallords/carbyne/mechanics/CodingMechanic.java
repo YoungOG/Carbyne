@@ -1,5 +1,6 @@
 package com.medievallords.carbyne.mechanics;
 
+import com.destroystokyo.paper.Title;
 import com.medievallords.carbyne.Carbyne;
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;
 import io.lumine.xikage.mythicmobs.io.MythicLineConfig;
@@ -10,7 +11,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.github.paperspigot.Title;
 
 /**
  * Created by WE on 2017-08-26.

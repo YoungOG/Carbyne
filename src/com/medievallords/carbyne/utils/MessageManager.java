@@ -64,11 +64,9 @@ public class MessageManager {
     }
 
     public static void sendStaffMessage(CommandSender sender, String message) {
-        for (Player all : PlayerUtility.getOnlinePlayers()) {
-            if (all.hasPermission("carbyne.staff")) {
+        for (Player all : PlayerUtility.getOnlinePlayers())
+            if (all.hasPermission("carbyne.staff"))
                 all.sendMessage(ChatColor.translateAlternateColorCodes('&', "&d" + sender.getName() + ": ") + message);
-            }
-        }
 
         Carbyne.getInstance().getLogger().log(Level.INFO, "[Staff Message]: " + sender.getName() + ": " + message);
     }
@@ -84,21 +82,19 @@ public class MessageManager {
     public static String format(double amount) {
         DecimalFormat formatter = new DecimalFormat("#,##0.00");
         String formatted = formatter.format(amount);
-        if(formatted.endsWith(".")) {
+
+        if (formatted.endsWith("."))
             formatted = formatted.substring(0, formatted.length() - 1);
-        }
 
         return formatted;
     }
 
     public static String replaceSymbols(String input) {
-        if (input == null || input.length() == 0) {
+        if (input == null || input.length() == 0)
             return input;
-        }
 
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+        for (Map.Entry<String, String> entry : placeholders.entrySet())
             input = input.replace(entry.getKey(), entry.getValue());
-        }
 
         return ChatColor.translateAlternateColorCodes('&', input);
     }

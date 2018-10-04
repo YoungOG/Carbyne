@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.leaderboards;
 
 import com.medievallords.carbyne.Carbyne;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -15,7 +16,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class LeaderboardListeners implements Listener {
 
     private Carbyne main = Carbyne.getInstance();
-    private LeaderboardManager leaderboardManager = main.getLeaderboardManager();
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
@@ -25,8 +25,8 @@ public class LeaderboardListeners implements Listener {
             if (event.getClickedBlock().getType() == Material.SIGN || event.getClickedBlock().getType() == Material.SIGN_POST || event.getClickedBlock().getType() == Material.WALL_SIGN) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
 
-                if (leaderboardManager.getLeaderboard(sign.getLocation()) != null)
-                    if (main.getProfileManager().getProfile(sign.getLine(2)) != null)
+                if (StaticClasses.leaderboardManager.getLeaderboard(sign.getLocation()) != null)
+                    if (StaticClasses.profileManager.getProfile(sign.getLine(2)) != null)
                         player.performCommand("stats " + sign.getLine(2));
             }
         }

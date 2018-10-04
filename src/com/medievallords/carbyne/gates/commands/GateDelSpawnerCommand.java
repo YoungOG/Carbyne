@@ -1,7 +1,9 @@
 package com.medievallords.carbyne.gates.commands;
 
+import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gates.Gate;
 import com.medievallords.carbyne.utils.MessageManager;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
@@ -23,12 +25,12 @@ public class GateDelSpawnerCommand extends BaseCommand {
             return;
         }
 
-        if (!getCarbyne().isMythicMobsEnabled()) {
+        if (!Carbyne.getInstance().isMythicMobsEnabled()) {
             MessageManager.sendMessage(player, "&cMythicMobs is not enabled.");
             return;
         }
 
-        Gate gate = getGateManager().getGate(args[0]);
+        Gate gate = StaticClasses.gateManager.getGate(args[0]);
 
         if (gate == null) {
             MessageManager.sendMessage(player, "&cCould not find a gate with the ID \"" + args[0] + "\".");
