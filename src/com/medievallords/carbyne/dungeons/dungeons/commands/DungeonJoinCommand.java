@@ -143,7 +143,6 @@ public class DungeonJoinCommand extends BaseCommand {
         new BukkitRunnable() {
             private int timer = 10;
             private final Location current = toJoin.getLocation();
-
             @Override
             public void run() {
                 if (!toJoin.getLocation().getBlock().equals(current.getBlock())) {

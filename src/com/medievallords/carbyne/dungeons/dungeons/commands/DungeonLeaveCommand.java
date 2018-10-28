@@ -40,7 +40,6 @@ public class DungeonLeaveCommand extends BaseCommand {
             new BukkitRunnable() {
                 private int timer = 5;
                 private final Location current = player.getLocation();
-
                 @Override
                 public void run() {
                     if (!player.getLocation().getBlock().equals(current.getBlock())) {

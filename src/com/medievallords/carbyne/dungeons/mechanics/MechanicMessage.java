@@ -7,7 +7,6 @@ import com.medievallords.carbyne.utils.DungeonLineConfig;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
-
 @Getter
 public class MechanicMessage extends Mechanic implements ITargetEntity {
 
