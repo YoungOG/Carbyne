@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.recipes;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,7 +11,8 @@ public class RecipeListener implements Listener {
     @EventHandler
     public void onItemCraftEvent(PrepareItemCraftEvent event) {
 
-        if (event.getInventory().getResult() == null || event.getInventory().getResult().getType() == Material.AIR) return;
+        if (event.getInventory().getResult() == null || event.getInventory().getResult().getType() == Material.AIR)
+            return;
 
         CustomRecipe customRecipe = CustomRecipe.getCustomRecipe(event.getInventory().getResult());
 

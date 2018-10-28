@@ -12,8 +12,7 @@ public class PortalEnterEvent extends Event {
     private Player player;
     private Portal portal;
 
-    public PortalEnterEvent(Player player, Portal portal)
-    {
+    public PortalEnterEvent(Player player, Portal portal) {
         this.player = player;
         this.portal = portal;
     }

@@ -70,27 +70,27 @@ public class DungeonInstance {
             if (trigger instanceof InteractTrigger) {
                 cloned = new InteractTrigger(triggerName, copyLoc, ((InteractTrigger) trigger).getState());
             } else if (trigger instanceof DistanceTrigger) {
-                cloned = new DistanceTrigger(triggerName, copyLoc, ((DistanceTrigger) trigger).getState(),((DistanceTrigger) trigger).getDistance(), 100);
+                cloned = new DistanceTrigger(triggerName, copyLoc, ((DistanceTrigger) trigger).getState(), ((DistanceTrigger) trigger).getDistance(), 100);
             } else if (trigger instanceof MobTrigger) {
-                cloned = new MobTrigger(triggerName, copyLoc, ((MobTrigger)trigger).getMobType(), ((MobTrigger) trigger).getState());
+                cloned = new MobTrigger(triggerName, copyLoc, ((MobTrigger) trigger).getMobType(), ((MobTrigger) trigger).getState());
             }
 
             List<Mechanic> mechanics = new ArrayList<>();
             Mechanic newMechanic = null;
             for (Mechanic mechanic : trigger.getMechanics()) {
-                 if (mechanic instanceof MechanicRedstone) {
-                     newMechanic= new MechanicRedstone("redstone", Target.getTarget(mechanic.getTarget().getType()), ((MechanicRedstone) mechanic).getLocation());
+                if (mechanic instanceof MechanicRedstone) {
+                    newMechanic = new MechanicRedstone("redstone", Target.getTarget(mechanic.getTarget().getType()), ((MechanicRedstone) mechanic).getLocation());
                 } else if (mechanic instanceof MechanicTeleport) {
-                     newMechanic = new MechanicTeleport("teleport", Target.getTarget(mechanic.getTarget().getType()), ((MechanicTeleport) mechanic).getLocation());
+                    newMechanic = new MechanicTeleport("teleport", Target.getTarget(mechanic.getTarget().getType()), ((MechanicTeleport) mechanic).getLocation());
                 } else if (mechanic instanceof MechanicMessage) {
-                     newMechanic = new MechanicMessage("message", Target.getTarget(mechanic.getTarget().getType()), ((MechanicMessage) mechanic).getMessage());
-                }  else if (mechanic instanceof MechanicSpawnEntity) {
-                     newMechanic = new MechanicSpawnEntity("spawnentity", Target.getTarget(mechanic.getTarget().getType()), ((MechanicSpawnEntity) mechanic).getEntities());
-                 } else {
-                     continue;
-                 }
+                    newMechanic = new MechanicMessage("message", Target.getTarget(mechanic.getTarget().getType()), ((MechanicMessage) mechanic).getMessage());
+                } else if (mechanic instanceof MechanicSpawnEntity) {
+                    newMechanic = new MechanicSpawnEntity("spawnentity", Target.getTarget(mechanic.getTarget().getType()), ((MechanicSpawnEntity) mechanic).getEntities());
+                } else {
+                    continue;
+                }
 
-                 mechanics.add(newMechanic);
+                mechanics.add(newMechanic);
             }
 
             cloned.getMechanics().addAll(mechanics);
@@ -284,7 +284,7 @@ public class DungeonInstance {
         dPlayer.getBukkitPlayer().setGameMode(GameMode.CREATIVE);
         Zombie zombie = dPlayer.getBukkitPlayer().getWorld().spawn(dPlayer.getBukkitPlayer().getLocation(), Zombie.class);
         zombie.setBaby(false);
-        AttributeInstance attributes = (((CraftLivingEntity)zombie).getHandle()).getAttributeInstance(GenericAttributes.ATTACK_DAMAGE);
+        AttributeInstance attributes = (((CraftLivingEntity) zombie).getHandle()).getAttributeInstance(GenericAttributes.ATTACK_DAMAGE);
         if (attributes != null) {
             attributes.setValue(StaticClasses.gearManager.calculateDamage(dPlayer.getBukkitPlayer()) * 2.0);
         }

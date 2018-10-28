@@ -17,7 +17,7 @@ public class QuestForceCommand extends BaseCommand {
         Player player = commandArgs.getPlayer();
         String[] args = commandArgs.getArgs();
 
-        if(args.length != 1) {
+        if (args.length != 1) {
             MessageManager.sendMessage(player, "&cUsage: &7/quest force <player>");
             return;
         }

@@ -2,11 +2,10 @@ package com.medievallords.carbyne.quests.types;
 
 import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.quests.config.QuestLineConfig;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class EnterPortalTask extends Task  {
+public class EnterPortalTask extends Task {
 
     private String portal;
 

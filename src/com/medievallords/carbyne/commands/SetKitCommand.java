@@ -1,17 +1,12 @@
 package com.medievallords.carbyne.commands;
 
 import com.medievallords.carbyne.kits.Kit;
-import com.medievallords.carbyne.kits.KitManager;
-import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.profiles.ProfileManager;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -41,7 +36,7 @@ public class SetKitCommand extends BaseCommand {
             MessageManager.sendMessage(player, "&cThe material data needs to be in this format&7: <material;data>");
             return;
         }
-        
+
         if (materialData.split(";").length != 2) {
             MessageManager.sendMessage(player, "&cThe material data needs to be in this format&7: <material;data>");
             return;
@@ -94,7 +89,7 @@ public class SetKitCommand extends BaseCommand {
         try {
             for (String s : list)
                 Integer.parseInt(s);
-        } catch(NumberFormatException | NullPointerException e) {
+        } catch (NumberFormatException | NullPointerException e) {
             return false;
         }
 

@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.crates.rewards;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.crates.Crate;
 import com.medievallords.carbyne.crates.animations.LegacyAnimation;
 import com.medievallords.carbyne.utils.InventoryWorkaround;
 import com.medievallords.carbyne.utils.MessageManager;

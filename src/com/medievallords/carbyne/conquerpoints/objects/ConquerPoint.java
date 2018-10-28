@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.conquerpoints.objects;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.conquerpoints.objects.ConquerPointState;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.Nation;
@@ -9,19 +8,17 @@ import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
 import lombok.Setter;
-import me.lucko.luckperms.api.LocalizedNode;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Random;
-import java.util.UUID;
 
 @Getter
 @Setter

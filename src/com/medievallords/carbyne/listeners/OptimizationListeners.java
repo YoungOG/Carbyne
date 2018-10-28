@@ -652,7 +652,7 @@ public class OptimizationListeners implements Listener {
     @EventHandler
     public void onFish(PlayerFishEvent event) {
         Entity entity = event.getCaught();
-        
+
         if (entity == null)
             return;
 

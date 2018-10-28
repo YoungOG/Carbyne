@@ -37,7 +37,7 @@ public class CustomRecipe {
             if (ingredients.get(i) == null || ingredients.get(i).getType() == Material.AIR) continue;
             MaterialData materialData = new MaterialData(ingredients.get(i).getType());
             materialData.setData((byte) ingredients.get(i).getDurability());
-            recipe.setIngredient((char)(i+'a'), materialData);
+            recipe.setIngredient((char) (i + 'a'), materialData);
         }
 
         Bukkit.getServer().addRecipe(this.recipe);

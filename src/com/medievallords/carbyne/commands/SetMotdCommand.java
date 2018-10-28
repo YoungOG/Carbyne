@@ -2,9 +2,11 @@ package com.medievallords.carbyne.commands;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.events.ListenerOptions;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedServerPing;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
@@ -18,12 +20,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.server.ServerListPingEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -97,7 +96,7 @@ public class SetMotdCommand extends BaseCommand implements Listener {
                     return;
                 }
 
-                motd[index-1] = message;
+                motd[index - 1] = message;
                 Carbyne.getInstance().getConfig().set("Motd", motd);
                 Carbyne.getInstance().saveConfig();
                 MessageManager.sendMessage(sender, "&aYou have set the Motd Index: &b" + index + " &ato: &b" + message + "&a.");

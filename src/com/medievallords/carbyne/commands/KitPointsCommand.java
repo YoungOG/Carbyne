@@ -96,7 +96,7 @@ public class KitPointsCommand extends BaseCommand {
                 MessageManager.sendMessage(player, "&aYou have given &5" + args[1] + " &b" + args[2] + " &akit points.");
             } else if (args[0].equalsIgnoreCase("set")) {
                 if (args.length != 3) {
-                    MessageManager.sendMessage(player,"&cUsage: /kitpoints set <player> <amount>");
+                    MessageManager.sendMessage(player, "&cUsage: /kitpoints set <player> <amount>");
                     return;
                 }
 
@@ -121,7 +121,7 @@ public class KitPointsCommand extends BaseCommand {
                 MessageManager.sendMessage(player, "&aYou have set &5" + args[1] + "'s &akit points to &b" + args[2] + "&a.");
             } else if (args[0].equalsIgnoreCase("take") || args[0].equalsIgnoreCase("remove")) {
                 if (args.length != 3) {
-                    MessageManager.sendMessage(player,"&cUsage: /kitpoints take <player> <amount>");
+                    MessageManager.sendMessage(player, "&cUsage: /kitpoints take <player> <amount>");
                     return;
                 }
 
@@ -146,7 +146,7 @@ public class KitPointsCommand extends BaseCommand {
                 MessageManager.sendMessage(player, "&aYou have taken &b" + args[2] + " &akit points from &5" + args[1] + "&a.");
             } else if (args[0].equalsIgnoreCase("reset")) {
                 if (args.length != 2) {
-                    MessageManager.sendMessage(player,"&cUsage: /kitpoints reset <player>>");
+                    MessageManager.sendMessage(player, "&cUsage: /kitpoints reset <player>>");
                     return;
                 }
 

@@ -4,12 +4,9 @@ import com.medievallords.carbyne.dungeons.mechanics.Mechanic;
 import com.medievallords.carbyne.dungeons.mechanics.data.MechanicData;
 import com.medievallords.carbyne.utils.DungeonLineConfig;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +29,7 @@ public class InteractTrigger extends Trigger {
         this.state = dlc.getInt("state", 1);
     }
 
-    public InteractTrigger(String name, Location location,int state) {
+    public InteractTrigger(String name, Location location, int state) {
         super(name, location, null);
 
         this.state = state;

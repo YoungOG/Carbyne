@@ -67,9 +67,7 @@ public class Reward {
         Artifact artifact = StaticClasses.gearManager.getArtifact(displayName);
         if (artifact != null) {
             return artifact.getCustomRecipe().getResult();
-        }
-
-        else
+        } else
             return new ItemBuilder(Material.getMaterial(itemId)).durability(itemData).amount(amount).name(displayName).setLore(lore).addEnchantments(enchantments).build();
         //return null;
     }

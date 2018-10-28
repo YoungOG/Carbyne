@@ -54,7 +54,7 @@ public class Quest {
     public void takeQuest(Player player) {
         Profile profile = StaticClasses.profileManager.getProfile(player.getUniqueId());
         profile.checkQuestNext();
-        if (profile.getQuestsLeft() <= 0){
+        if (profile.getQuestsLeft() <= 0) {
             MessageManager.sendMessage(player, "&cYou can more take more quests in &7" + profile.getQuestNextString());
             return;
         }
@@ -166,7 +166,7 @@ public class Quest {
         }
 
         builder.name(difficulty.getColor() + "&l" + displayName);
-        builder.addLore("&dDifficulty&7: " + difficulty.getColor() + "" +WordUtils.capitalizeFully(difficulty.name()));
+        builder.addLore("&dDifficulty&7: " + difficulty.getColor() + "" + WordUtils.capitalizeFully(difficulty.name()));
         builder.addLore("");
         if (!questTaken) {
             for (String s : informationLore) {

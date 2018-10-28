@@ -11,8 +11,6 @@ import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
-import java.util.HashSet;
-
 public class CrateSetLocationCommand extends BaseCommand {
 
     @Command(name = "crate.setlocation", permission = "utils.commands.crate.location", aliases = {"crate.setblock", "crate.location", "crate.block"}, inGameOnly = true)

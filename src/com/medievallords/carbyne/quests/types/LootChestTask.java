@@ -5,7 +5,6 @@ import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.quests.config.QuestLineConfig;
 import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;

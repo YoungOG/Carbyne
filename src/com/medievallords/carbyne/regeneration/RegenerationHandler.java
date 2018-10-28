@@ -1,12 +1,10 @@
 package com.medievallords.carbyne.regeneration;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.listeners.PlayerListeners;
 import com.medievallords.carbyne.utils.DateUtil;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.WorldCoord;

@@ -45,6 +45,7 @@ public class BreathOfIce implements Special, Listener {
     public void callSpecial(Player caster) {
         new BukkitRunnable() {
             double t = 0;
+
             @Override
             public void run() {
                 t++;

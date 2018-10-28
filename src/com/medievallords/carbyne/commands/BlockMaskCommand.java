@@ -1,46 +1,26 @@
 package com.medievallords.carbyne.commands;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.economy.objects.Account;
-import com.medievallords.carbyne.gear.types.CarbyneGear;
-import com.medievallords.carbyne.gear.types.GearState;
-import com.medievallords.carbyne.utils.*;
+import com.medievallords.carbyne.utils.InstantFirework;
+import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import com.palmergames.bukkit.towny.db.TownyDataSource;
 import com.palmergames.bukkit.towny.exceptions.EconomyException;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.exceptions.TownyException;
 import com.palmergames.bukkit.towny.object.Town;
-import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.*;
-import org.bukkit.block.*;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.AnvilInventory;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.*;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class BlockMaskCommand extends BaseCommand implements Listener {
 
@@ -327,7 +307,7 @@ public class BlockMaskCommand extends BaseCommand implements Listener {
                 double parse() {
                     nextChar();
                     double x = parseExpression();
-                    if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char)ch);
+                    if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char) ch);
                     return x;
                 }
 
@@ -339,8 +319,8 @@ public class BlockMaskCommand extends BaseCommand implements Listener {
 
                 double parseExpression() {
                     double x = parseTerm();
-                    for (;;) {
-                        if      (eat('+')) x += parseTerm(); // addition
+                    for (; ; ) {
+                        if (eat('+')) x += parseTerm(); // addition
                         else if (eat('-')) x -= parseTerm(); // subtraction
                         else return x;
                     }
@@ -348,8 +328,8 @@ public class BlockMaskCommand extends BaseCommand implements Listener {
 
                 double parseTerm() {
                     double x = parseFactor();
-                    for (;;) {
-                        if      (eat('*')) x *= parseFactor(); // multiplication
+                    for (; ; ) {
+                        if (eat('*')) x *= parseFactor(); // multiplication
                         else if (eat('/')) x /= parseFactor(); // division
                         else return x;
                     }
@@ -377,7 +357,7 @@ public class BlockMaskCommand extends BaseCommand implements Listener {
                         else if (func.equals("tan")) x = Math.tan(x);
                         else throw new RuntimeException("Unknown function: " + func);
                     } else {
-                        throw new RuntimeException("Unexpected: " + (char)ch);
+                        throw new RuntimeException("Unexpected: " + (char) ch);
                     }
 
                     if (eat('^')) x = Math.pow(x, parseFactor()); // exponentiation
@@ -386,7 +366,6 @@ public class BlockMaskCommand extends BaseCommand implements Listener {
                 }
             }.parse();
         }
-
 
 
     }

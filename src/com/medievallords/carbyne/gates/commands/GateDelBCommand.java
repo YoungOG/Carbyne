@@ -8,8 +8,6 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-
 /**
  * Created by Calvin on 1/31/2017
  * for the Carbyne-Gear project.
@@ -31,14 +29,14 @@ public class GateDelBCommand extends BaseCommand {
             return;
         }
 
-        Gate gate = StaticClasses.gateManager.getGate(player.getTargetBlock( null, 50).getLocation());
+        Gate gate = StaticClasses.gateManager.getGate(player.getTargetBlock(null, 50).getLocation());
 
         if (gate == null) {
             MessageManager.sendMessage(player, "&cThere is no gate that is using that Button.");
             return;
         }
 
-        gate.getButtonLocations().remove(player.getTargetBlock(null,  50).getLocation());
+        gate.getButtonLocations().remove(player.getTargetBlock(null, 50).getLocation());
         gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have deleted a Button from the gate &b" + gate.getGateId() + "&a.");
     }

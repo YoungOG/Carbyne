@@ -1,9 +1,9 @@
 package com.medievallords.carbyne.staff.listeners;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
+import com.medievallords.carbyne.utils.StaticClasses;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -32,7 +32,7 @@ import java.util.HashMap;
  */
 public class VanishListeners implements Listener {
 
-    private StaffManager staffManager = Carbyne.getInstance().getStaffManager();
+    private StaffManager staffManager = StaticClasses.staffManager;
 
     private HashMap<Player, Boolean> silentOpens = new HashMap<>();
 

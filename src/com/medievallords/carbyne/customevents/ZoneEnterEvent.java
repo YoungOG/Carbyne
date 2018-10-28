@@ -12,8 +12,7 @@ public class ZoneEnterEvent extends Event {
     private Player player;
     private Zone zone;
 
-    public ZoneEnterEvent(Player player, Zone zone)
-    {
+    public ZoneEnterEvent(Player player, Zone zone) {
         this.player = player;
         this.zone = zone;
     }

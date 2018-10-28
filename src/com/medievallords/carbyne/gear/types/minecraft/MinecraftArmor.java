@@ -30,7 +30,7 @@ public class MinecraftArmor extends CarbyneGear {
 
 
 	@Override
-	public boolean load(ConfigurationSection cs, String type, GearManager gearManager) {
+    public boolean load(ConfigurationSection cs, String type, GearManager gearManager) {
 		material = cs.getName();
 
 		if ((this.type = type) == null)
@@ -78,9 +78,9 @@ public class MinecraftArmor extends CarbyneGear {
 	public void damageItem(Player wielder, ItemStack itemStack) {
         int durability = getDurability(itemStack);
 
-		if (durability == -1) {
-			return;
-		}
+        if (durability == -1) {
+            return;
+        }
 
         double chance = 1;
 
@@ -114,7 +114,7 @@ public class MinecraftArmor extends CarbyneGear {
             Bukkit.getPluginManager().callEvent(event);
 			wielder.getInventory().remove(itemStack);
             wielder.updateInventory();
-			wielder.playSound(wielder.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
+            wielder.playSound(wielder.getLocation(), Sound.ENTITY_ITEM_BREAK, 1, 1);
         }
     }
 
@@ -137,7 +137,7 @@ public class MinecraftArmor extends CarbyneGear {
             lore.addAll(this.lore);
             Namer.setLore(itemStack, lore);
             //ez.printStackTrace();
-			return maxDurability;
+            return maxDurability;
 		}
 	}
 

@@ -3,7 +3,6 @@ package com.medievallords.carbyne.dailybonus.listeners;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.quests.Task;
-import com.medievallords.carbyne.quests.types.CreateNationTask;
 import com.medievallords.carbyne.quests.types.DailyBonusStreakTask;
 import com.medievallords.carbyne.utils.Cooldowns;
 import com.medievallords.carbyne.utils.StaticClasses;
@@ -19,9 +18,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by Calvin on 11/18/2017

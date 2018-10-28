@@ -185,7 +185,7 @@ public class Profile {
             return "now";
         }
 
-        long timeLeft =  - (questNext + 1728000) - System.currentTimeMillis();
+        long timeLeft = -(questNext + 1728000) - System.currentTimeMillis();
         if (timeLeft <= 0) {
             return "now";
         } else {

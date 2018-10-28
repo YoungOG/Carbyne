@@ -33,7 +33,7 @@ public class Kit {
             MessageManager.sendMessage(player, "&cYou do not have permission to use this kit.");
             return;
         }
-        
+
         Profile profile = profileManager.getProfile(player.getUniqueId());
         long nextUse = getNextUse(profile);
 

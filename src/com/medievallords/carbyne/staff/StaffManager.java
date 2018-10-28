@@ -20,9 +20,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -114,22 +111,21 @@ public class StaffManager {
 //                Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " false");
 
             MessageManager.sendMessage(player, "&cYou have disabled staff mode and are now visible!");
-        } else
-            if (PlayerUtility.isInventoryEmpty(player.getInventory())) {
+        } else if (PlayerUtility.isInventoryEmpty(player.getInventory())) {
                 toggleGamemode(player, true);
-                staffModePlayers.add(id);
-                player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, air, toggleVanishTool, randomTeleportTool});
+            staffModePlayers.add(id);
+            player.getInventory().setContents(new ItemStack[]{thruTool, inspectInventoryTool, freezeTool, air, wand, air, air, toggleVanishTool, randomTeleportTool});
                 vanishPlayer(player);
 
 //                for (String permissionNode : truePerms.keySet())
 //                    Carbyne.getInstance().getServer().dispatchCommand(Carbyne.getInstance().getServer().getConsoleSender(), "permissions player " + player.getName() + " set " + permissionNode + " true");
 
                 MessageManager.sendMessage(player, "&cYou have enabled staff mode and have vanished!");
-                StaticClasses.trailManager.getAdvancedEffects().remove(player.getUniqueId());
-                StaticClasses.trailManager.getActivePlayerEffects().remove(player.getUniqueId());
+            StaticClasses.trailManager.getAdvancedEffects().remove(player.getUniqueId());
+            StaticClasses.trailManager.getActivePlayerEffects().remove(player.getUniqueId());
 
-            } else
-                MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
+        } else
+            MessageManager.sendMessage(player, "&cYou need an empty inventory to enter staff mode!");
     }
 
     /**

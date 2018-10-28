@@ -5,7 +5,6 @@ import com.medievallords.carbyne.quests.Quest;
 import com.medievallords.carbyne.quests.QuestHandler;
 import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.utils.StaticClasses;
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;

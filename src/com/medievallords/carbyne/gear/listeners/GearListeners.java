@@ -85,7 +85,7 @@ public class GearListeners implements Listener {
 //            if (duel != null && duel.getDuelStage().equals(DuelStage.FIGHTING)) {
 //                event.setCancelled(false);
 //            } else
-                if (TownyUniverse.getTownBlock(player.getLocation()) != null && !TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp) {
+            if (TownyUniverse.getTownBlock(player.getLocation()) != null && !TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp) {
                 event.setCancelled(true);
                 return;
             } else if (event.isCancelled()) {
@@ -230,11 +230,11 @@ public class GearListeners implements Listener {
     @EventHandler
     public void onArrow(EntityShootBowEvent event) {
         double damage = 200.0;
-        
+
         if (event.getBow() != null)
             damage += event.getBow().getEnchantmentLevel(Enchantment.ARROW_DAMAGE) * (GearManager.POWER_DAMAGE);
 
-         damage*= (double) event.getForce();
+        damage *= (double) event.getForce();
 
         event.getProjectile().setMetadata("damage", new FixedMetadataValue(Carbyne.getInstance(), damage));
     }
@@ -253,7 +253,7 @@ public class GearListeners implements Listener {
 //            if (duel != null && duel.getDuelStage().equals(DuelStage.FIGHTING)) {
 //                event.setCancelled(false);
 //            } else
-                if (TownyUniverse.getTownBlock(player.getLocation()) != null && !TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp) {
+            if (TownyUniverse.getTownBlock(player.getLocation()) != null && !TownyUniverse.getTownBlock(player.getLocation()).getPermissions().pvp) {
                 event.setCancelled(true);
                 return;
             } else if (event.isCancelled()) {
@@ -592,7 +592,7 @@ public class GearListeners implements Listener {
 
         if (itemStack.getType().name().contains("LEATHER_")) {
             LeatherArmorMeta meta = (LeatherArmorMeta) itemStack.getItemMeta();
-            if (!meta.getColor().equals(Color.fromRGB(160,101,64))) {
+            if (!meta.getColor().equals(Color.fromRGB(160, 101, 64))) {
                 event.setCancelled(true);
                 MessageManager.sendMessage(player, "&cYou cannot color leather armor.");
                 return;

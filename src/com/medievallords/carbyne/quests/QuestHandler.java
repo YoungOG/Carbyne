@@ -24,10 +24,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 
 @Getter
@@ -97,7 +94,7 @@ public class QuestHandler {
                     tasks.add(new DiscoverZoneTask(key, new QuestLineConfig(line), commands));
                     break;
                 case "enterdungeon":
-                    tasks.add(new EnterDungeonTask(key,  new QuestLineConfig(line), commands));
+                    tasks.add(new EnterDungeonTask(key, new QuestLineConfig(line), commands));
                     break;
                 case "interactnpc":
                     tasks.add(new InteractWithNPCTask(key, new QuestLineConfig(line), commands));
@@ -385,7 +382,7 @@ public class QuestHandler {
                     infoString = infoString + ChatColor.translateAlternateColorCodes('&', info) + " ";
                 }
 
-                String text = quest.getDifficulty().getColor() + "§l" + quest.getDisplayName() + "     "+ "\n";
+                String text = quest.getDifficulty().getColor() + "§l" + quest.getDisplayName() + "     " + "\n";
                 text += "§0(" + quest.getDifficulty().getColor() + WordUtils.capitalizeFully(quest.getDifficulty().name()) + "§0)\n";
 //                        text += "\n";
 //                        //text += "§6Quest§0:\n" +

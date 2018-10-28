@@ -2,7 +2,6 @@ package com.medievallords.carbyne.portals.commands;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.portals.Portal;
-import com.medievallords.carbyne.utils.HiddenStringUtils;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;
@@ -11,13 +10,10 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class PortalEditCommands extends BaseCommand {

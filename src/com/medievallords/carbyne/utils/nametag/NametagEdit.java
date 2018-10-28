@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.utils.nametag;
 
 import net.minecraft.server.v1_12_R1.PacketPlayOutScoreboardTeam;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
@@ -93,7 +92,7 @@ public class NametagEdit {
      */
 
     public void setParam(NametagParam param){
-        this.setField("i",param.getParam());
+        this.setField("i", param.getParam());
     }
 
     public void setName(String name){

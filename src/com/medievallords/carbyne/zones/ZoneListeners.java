@@ -61,16 +61,15 @@ public class ZoneListeners implements Listener {
 
             if (lastZone != null)
                 lastZone.getPlayersInZone().remove(event.getPlayer().getUniqueId());
-        } else
-            if (currentZone != lastZone) {
-                if (lastZone != null)
-                    lastZone.getPlayersInZone().remove(event.getPlayer().getUniqueId());
+        } else if (currentZone != lastZone) {
+            if (lastZone != null)
+                lastZone.getPlayersInZone().remove(event.getPlayer().getUniqueId());
 
-                currentZone.getPlayersInZone().add(event.getPlayer().getUniqueId());
-                playerHealth.setZone(currentZone);
-                ZoneEnterEvent zoneEnterEvent = new ZoneEnterEvent(event.getPlayer(), currentZone);
-                Bukkit.getPluginManager().callEvent(zoneEnterEvent);
-            }
+            currentZone.getPlayersInZone().add(event.getPlayer().getUniqueId());
+            playerHealth.setZone(currentZone);
+            ZoneEnterEvent zoneEnterEvent = new ZoneEnterEvent(event.getPlayer(), currentZone);
+            Bukkit.getPluginManager().callEvent(zoneEnterEvent);
+        }
     }
 
     private Zone getZone(final Location location) {

@@ -2,7 +2,6 @@ package com.medievallords.carbyne.economy.commands;
 
 import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.quests.types.DepositMoneyTask;
-import com.medievallords.carbyne.quests.types.GatherResourceTask;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.StaticClasses;
@@ -12,7 +11,6 @@ import com.medievallords.carbyne.utils.command.CommandArgs;
 import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 

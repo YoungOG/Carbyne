@@ -1,8 +1,6 @@
 package com.medievallords.carbyne.customevents;
 
-import com.medievallords.carbyne.dungeons.dungeons.Dungeon;
 import com.medievallords.carbyne.dungeons.dungeons.instance.DungeonInstance;
-import com.medievallords.carbyne.profiles.Profile;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -14,8 +12,7 @@ public class DungeonEnterEvent extends Event {
     private Player player;
     private DungeonInstance instance;
 
-    public DungeonEnterEvent(Player player, DungeonInstance instance)
-    {
+    public DungeonEnterEvent(Player player, DungeonInstance instance) {
         this.player = player;
         this.instance = instance;
     }

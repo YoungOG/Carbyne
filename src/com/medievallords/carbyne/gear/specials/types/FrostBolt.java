@@ -4,8 +4,6 @@ import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
 import com.medievallords.carbyne.utils.Maths;
 import com.medievallords.carbyne.utils.ParticleEffect;
-import com.medievallords.carbyne.utils.PlayerHealth;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -39,6 +37,7 @@ public class FrostBolt implements Special {
             final Vector vector = loc.getDirection().normalize();
             double t = 0;
             boolean cancel = false;
+
             @Override
             public void run() {
                 t++;
@@ -69,16 +68,17 @@ public class FrostBolt implements Special {
                                             public void run() {
                                                 player.sendBlockChange(otherLoc, otherLoc.getBlock().getType(), otherLoc.getBlock().getData());
                                             }
-                                        }.runTaskLaterAsynchronously(Carbyne.getInstance(),  200);
+                                        }.runTaskLaterAsynchronously(Carbyne.getInstance(), 200);
                                     }
                                 }
                                 new BukkitRunnable() {
                                     double times = 0;
+
                                     public void run() {
                                         if (times > 9) {
                                             this.cancel();
                                         }
-                                        ParticleEffect.SNOWBALL.display(0f,0.9f,0f,0.5f,1, otherLoc, 20, false);
+                                        ParticleEffect.SNOWBALL.display(0f, 0.9f, 0f, 0.5f, 1, otherLoc, 20, false);
                                         times += 0.25;
                                     }
                                 }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0, 5);
@@ -114,13 +114,13 @@ public class FrostBolt implements Special {
                 }
 
                 Location l = loc.clone();
-                for(double phi = 0; phi < Math.PI; phi += Math.PI / 4) {
-                    for(double theta = 0; theta < Math.PI * 2; theta += Math.PI / 8) {
+                for (double phi = 0; phi < Math.PI; phi += Math.PI / 4) {
+                    for (double theta = 0; theta < Math.PI * 2; theta += Math.PI / 8) {
                         double x2 = Math.cos(theta) * Math.sin(phi);
                         double y2 = Math.cos(phi) + 1.5;
                         double z2 = Math.sin(theta) * Math.sin(phi);
 
-                        l.add(x2,y2,z2);
+                        l.add(x2, y2, z2);
                         ParticleEffect.SNOWBALL.display(Maths.randomNumberBetween(2, 0) - 1,
                                 Maths.randomNumberBetween(2, 0) - 1,
                                 Maths.randomNumberBetween(2, 0) - 1, 1f, 1, l, 70, false);

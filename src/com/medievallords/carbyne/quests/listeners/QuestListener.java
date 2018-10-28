@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.quests.listeners;
 
-import com.boydti.fawe.util.TaskManager;
 import com.medievallords.carbyne.customevents.*;
 import com.medievallords.carbyne.lootchests.Loot;
 import com.medievallords.carbyne.profiles.Profile;
@@ -10,7 +9,6 @@ import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.quests.types.*;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;
-import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.palmergames.bukkit.towny.event.NewNationEvent;
@@ -19,11 +17,9 @@ import com.palmergames.bukkit.towny.event.TownAddResidentEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
-import okhttp3.internal.Internal;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,8 +29,6 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 

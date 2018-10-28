@@ -64,7 +64,7 @@ public class ToggleCommand extends BaseCommand {
                     playerHealth.setSkillsToggled(true);
                     MessageManager.sendMessage(player, "&aSkills have been enabled.");
                 }
-            }  else if (args[0].equalsIgnoreCase("chat")) {
+            } else if (args[0].equalsIgnoreCase("chat")) {
                 if (profile.isChatEnabled()) {
                     profile.setChatEnabled(false);
                     MessageManager.sendMessage(player, "&cYou have disabled chat messages.");
@@ -93,7 +93,7 @@ public class ToggleCommand extends BaseCommand {
                     profile.setShowTab(false);
                     MessageManager.sendMessage(player, "&aCustom tablist has been disabled. Relog to apply changes.");
                 }
-            }  else if (args[0].equalsIgnoreCase("vanisheffect")) {
+            } else if (args[0].equalsIgnoreCase("vanisheffect")) {
                 if (!profile.isVanishEffect()) {
                     profile.setVanishEffect(true);
                     MessageManager.sendMessage(player, "&aYou are now using the vanish teleportation effect.");

@@ -121,7 +121,7 @@ public class Dungeon {
                 public void run() {
                     if (size() < minJoin) {
                         cancel();
-                        sendAllTitle("&cEntering the dungeon","&cCancelled");
+                        sendAllTitle("&cEntering the dungeon", "&cCancelled");
                         return;
                     }
 
@@ -140,7 +140,7 @@ public class Dungeon {
 
                         StaticClasses.dungeonQueuer.startDungeon(players, name);
                     } else {
-                        sendAllTitle("&cEntering the dungeon.","&a" + countdown);
+                        sendAllTitle("&cEntering the dungeon.", "&a" + countdown);
                         sendAllSound(Sound.BLOCK_NOTE_PLING, 1, 1.2F);
                         countdown--;
                     }
@@ -193,7 +193,7 @@ public class Dungeon {
         HashMap<MythicMob, Integer> mobsToSpawn = new HashMap<>();
         int sum = 0;
         for (MobData mobData : mobs.values()) {
-            for (MythicMob mob  : mobData.getMobs().keySet()) {
+            for (MythicMob mob : mobData.getMobs().keySet()) {
                 int chance = mobData.getMobs().get(mob);
                 sum += chance;
                 mobsToSpawn.put(mob, chance);
@@ -218,7 +218,7 @@ public class Dungeon {
     public MythicMob getRandomMob(MobData mobData) {
         HashMap<MythicMob, Integer> mobsToSpawn = new HashMap<>();
         int sum = 0;
-        for (MythicMob mob  : mobData.getMobs().keySet()) {
+        for (MythicMob mob : mobData.getMobs().keySet()) {
             int chance = mobData.getMobs().get(mob);
             sum += chance;
             mobsToSpawn.put(mob, chance);

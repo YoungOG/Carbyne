@@ -2,26 +2,16 @@ package com.medievallords.carbyne.dungeons.dungeons.commands;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.dungeons.dungeons.Dungeon;
-import com.medievallords.carbyne.dungeons.triggers.DistanceTrigger;
-import com.medievallords.carbyne.dungeons.triggers.InteractTrigger;
-import com.medievallords.carbyne.dungeons.triggers.MobTrigger;
 import com.medievallords.carbyne.dungeons.triggers.Trigger;
-import com.medievallords.carbyne.utils.DungeonLineConfig;
-import com.medievallords.carbyne.utils.LocationSerialization;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class TriggerRemoveCommand extends BaseCommand {
 

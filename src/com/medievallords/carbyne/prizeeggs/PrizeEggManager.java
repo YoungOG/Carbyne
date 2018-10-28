@@ -2,22 +2,24 @@ package com.medievallords.carbyne.prizeeggs;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.rewards.Reward;
-import com.medievallords.carbyne.utils.*;
+import com.medievallords.carbyne.utils.LocationSerialization;
+import com.medievallords.carbyne.utils.Maths;
+import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 public class PrizeEggManager {
@@ -290,11 +292,11 @@ public class PrizeEggManager {
                             if (distance <= 1)
                                 knockbackPlayer(player, altarLoc);
                         }
-                }
+                    }
             }
         }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 10L);
     }
-    
+
     private void runAltarEffect() {
         for (Location location : altarLocations) {
             altarIDS.add(Bukkit.getScheduler().scheduleAsyncRepeatingTask(Carbyne.getInstance(), new Runnable() {

@@ -1,7 +1,6 @@
 package com.medievallords.carbyne.crates.animations;
 
 import com.boydti.fawe.util.TaskManager;
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.gear.types.CarbyneGear;
 import com.medievallords.carbyne.gear.types.GearState;
@@ -38,7 +37,7 @@ public class SelectData {
         this.sa = sa;
     }
 
-    private void updateRare(int slot, double delay, ItemStack itemStack,  Iterator<CarbyneGear> i) {
+    private void updateRare(int slot, double delay, ItemStack itemStack, Iterator<CarbyneGear> i) {
         if (delay < 30) {
             velD += adder;
         } else {

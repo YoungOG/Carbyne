@@ -3,11 +3,16 @@ package com.medievallords.carbyne.crates;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.crates.animations.CrateAnimation;
 import com.medievallords.carbyne.crates.rewards.Reward;
-import com.medievallords.carbyne.crates.rewards.RewardGenerator;
-import com.medievallords.carbyne.utils.*;
+import com.medievallords.carbyne.utils.ItemBuilder;
+import com.medievallords.carbyne.utils.LocationSerialization;
+import com.medievallords.carbyne.utils.ParticleEffect;
+import com.medievallords.carbyne.utils.StaticClasses;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -17,7 +22,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 
 @Getter

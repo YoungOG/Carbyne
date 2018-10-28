@@ -3,7 +3,6 @@ package com.medievallords.carbyne.quests;
 import com.medievallords.carbyne.quests.config.QuestLineConfig;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;

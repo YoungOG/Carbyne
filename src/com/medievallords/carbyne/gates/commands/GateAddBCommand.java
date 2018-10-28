@@ -6,11 +6,7 @@ import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.command.BaseCommand;
 import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by Calvin on 1/31/2017
@@ -47,7 +43,7 @@ public class GateAddBCommand extends BaseCommand {
             return;
         }
 
-        gate.getButtonLocations().add(player.getTargetBlock(null,  50).getLocation());
+        gate.getButtonLocations().add(player.getTargetBlock(null, 50).getLocation());
         gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have added a Button to the gate &b" + gate.getGateId() + "&a.");
     }

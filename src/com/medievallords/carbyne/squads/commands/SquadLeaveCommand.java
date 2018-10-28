@@ -9,7 +9,6 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**

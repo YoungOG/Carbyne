@@ -21,7 +21,7 @@ public class MechanicDropItem extends Mechanic implements ITargetLocation {
     private List<ItemStack> items = new ArrayList<>();
 
     public MechanicDropItem(String type, DungeonLineConfig lineConfig) {
-        super(type,lineConfig);
+        super(type, lineConfig);
 
         String[] splitItems = lineConfig.getString("items", "DIAMOND:1,").split(",");
         for (String key : splitItems) {

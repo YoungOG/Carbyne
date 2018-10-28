@@ -40,6 +40,7 @@ public class DungeonLeaveCommand extends BaseCommand {
             new BukkitRunnable() {
                 private int timer = 5;
                 private final Location current = player.getLocation();
+
                 @Override
                 public void run() {
                     if (!player.getLocation().getBlock().equals(current.getBlock())) {
@@ -52,7 +53,7 @@ public class DungeonLeaveCommand extends BaseCommand {
                         player.sendTitle(new Title.Builder()
                                 .title(ChatColor.translateAlternateColorCodes('&', "&cPreparing to exit the dungeon."))
                                 .subtitle(ChatColor.translateAlternateColorCodes('&', "&a" + timer
-                        )).stay(7).build());
+                                )).stay(7).build());
                         timer--;
                     } else {
                         player.sendTitle(new Title.Builder().title("").subtitle(ChatColor.translateAlternateColorCodes('&', "&aYou have left the dungeon")).stay(7).build());

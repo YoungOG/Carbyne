@@ -22,8 +22,8 @@ public class TeleportWorldCommand extends BaseCommand {
 
         World world = Bukkit.getWorld(args[0]);
         if (world == null) {
-          MessageManager.sendMessage(player, "&cCould not find that world.");
-          return;
+            MessageManager.sendMessage(player, "&cCould not find that world.");
+            return;
         }
 
         player.teleport(world.getSpawnLocation());

@@ -251,7 +251,7 @@ public class CarbyneWeapon extends CarbyneGear {
         if (enchantmentHashMap.containsKey(Enchantment.DAMAGE_ALL))
             totalDamage += enchantmentHashMap.get(Enchantment.DAMAGE_ALL) * GearManager.SHARPNESS_DAMAGE;
 
-        loreDupe.add("&aDamage&7: &c" + ((int) (totalDamage)) + "-" + ((int) totalDamage + (int)(totalDamage * 0.8)));
+        loreDupe.add("&aDamage&7: &c" + ((int) (totalDamage)) + "-" + ((int) totalDamage + (int) (totalDamage * 0.8)));
 
         if (special != null)
             loreDupe.add("&aSpecial&7: &c" + special.getSpecialName().replace("_", " "));

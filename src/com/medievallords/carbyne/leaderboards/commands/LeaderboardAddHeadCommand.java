@@ -12,8 +12,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-
 /**
  * Created by Calvin on 1/23/2017
  * for the Carbyne-Gear project.

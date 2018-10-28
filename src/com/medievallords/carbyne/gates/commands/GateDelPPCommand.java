@@ -8,8 +8,6 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-
 /**
  * Created by Calvin on 1/31/2017
  * for the Carbyne-Gear project.
@@ -38,7 +36,7 @@ public class GateDelPPCommand extends BaseCommand {
             return;
         }
 
-        gate.getPressurePlateMap().remove(player.getTargetBlock(null,  50).getLocation());
+        gate.getPressurePlateMap().remove(player.getTargetBlock(null, 50).getLocation());
         gate.saveGate();
         MessageManager.sendMessage(player, "&aYou have deleted a Pressure Plate from the gate &b" + gate.getGateId() + "&a.");
     }

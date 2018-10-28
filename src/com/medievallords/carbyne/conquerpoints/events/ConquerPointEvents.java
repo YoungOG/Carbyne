@@ -2,19 +2,8 @@ package com.medievallords.carbyne.conquerpoints.events;
 
 import com.medievallords.carbyne.conquerpoints.ConquerPointManager;
 import com.medievallords.carbyne.conquerpoints.objects.ConquerPoint;
-import com.medievallords.carbyne.utils.Cooldowns;
-import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.HashMap;
 import java.util.UUID;

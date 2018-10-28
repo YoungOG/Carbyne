@@ -1,15 +1,11 @@
 package com.medievallords.carbyne.gear.specials.types;
 
-import com.boydti.fawe.util.TaskManager;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.specials.Special;
-import com.medievallords.carbyne.utils.ParticleEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,16 +41,17 @@ public class TestBlockSpecial implements Special, Listener {
             final Location loc = caster.getLocation();
             final Vector vector = loc.getDirection().normalize();
             double t = 0;
+
             @Override
             public void run() {
-                t+=3;
+                t += 3;
                 final double x = vector.getX() * t;
                 final double y = 0.0;
                 final double z = vector.getZ() * t;
                 loc.add(x, y, z);
 
                 for (Location location : getBlocksInRadius(loc, 3)) {
-                    FallingBlock fallingBlock = location.getWorld().spawnFallingBlock(location.add(0.1,0,0.1), location.getBlock().getType(), (byte) 0);
+                    FallingBlock fallingBlock = location.getWorld().spawnFallingBlock(location.add(0.1, 0, 0.1), location.getBlock().getType(), (byte) 0);
                     fallingBlock.setVelocity(new Vector(0, 1, 0));
                     entities.add(fallingBlock);
                 }

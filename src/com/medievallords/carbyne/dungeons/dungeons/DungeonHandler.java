@@ -17,13 +17,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -123,7 +120,7 @@ public class DungeonHandler {
                             continue;
                         }
 
-                        if (triggerSection.getConfigurationSection(triggerName + ".Mechanics") != null)  {
+                        if (triggerSection.getConfigurationSection(triggerName + ".Mechanics") != null) {
                             ConfigurationSection mechanicSection = triggerSection.getConfigurationSection(triggerName + ".Mechanics");
                             for (String mechanicName : mechanicSection.getKeys(false)) {
                                 if (mechanicSection.getStringList(mechanicName) != null) {
@@ -240,8 +237,8 @@ public class DungeonHandler {
     }
 
     private void saveConfig() {
-       // main.setDungeonsFile(new File(main.getDataFolder(), "dungeons.yml"));
-       // main.setDungeonsFileConfiguration(YamlConfiguration.loadConfiguration(main.getDungeonsFile()));
+        // main.setDungeonsFile(new File(main.getDataFolder(), "dungeons.yml"));
+        // main.setDungeonsFileConfiguration(YamlConfiguration.loadConfiguration(main.getDungeonsFile()));
 
         try {
             Carbyne.getInstance().setDungeonsFileConfiguration(YamlConfiguration.loadConfiguration(Carbyne.getInstance().getDungeonsFile()));

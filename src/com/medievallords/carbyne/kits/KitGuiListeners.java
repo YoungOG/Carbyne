@@ -2,7 +2,6 @@ package com.medievallords.carbyne.kits;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.StaticClasses;
-import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;

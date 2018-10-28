@@ -3,7 +3,6 @@ package com.medievallords.carbyne.quests.types;
 import com.medievallords.carbyne.quests.Task;
 import com.medievallords.carbyne.quests.config.QuestLineConfig;
 import lombok.Getter;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.quests.commands;
 
-import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.quests.Quest;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;

@@ -1,7 +1,10 @@
 package com.medievallords.carbyne.crates;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.crates.animations.*;
+import com.medievallords.carbyne.crates.animations.CrateAnimation;
+import com.medievallords.carbyne.crates.animations.LegacyAnimation;
+import com.medievallords.carbyne.crates.animations.MemoryAnimation;
+import com.medievallords.carbyne.crates.animations.SelectAnimation;
 import com.medievallords.carbyne.crates.keys.Key;
 import com.medievallords.carbyne.crates.rewards.Reward;
 import com.medievallords.carbyne.utils.LocationSerialization;

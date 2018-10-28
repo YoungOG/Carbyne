@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.zones;
 
-import com.medievallords.carbyne.conquerpoints.objects.ConquerPoint;
 import com.medievallords.carbyne.customevents.LootChestLootEvent;
 import com.medievallords.carbyne.lootchests.Loot;
 import com.medievallords.carbyne.region.Selection;

@@ -6,10 +6,7 @@ import com.medievallords.carbyne.dungeons.mechanics.data.MechanicData;
 import com.medievallords.carbyne.utils.DungeonLineConfig;
 import lombok.Getter;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
-
-import java.io.File;
 
 @Getter
 public class MobTrigger extends Trigger {

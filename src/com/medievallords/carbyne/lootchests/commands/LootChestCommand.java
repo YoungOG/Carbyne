@@ -15,7 +15,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.HashSet;
 
 public class LootChestCommand extends BaseCommand {
 

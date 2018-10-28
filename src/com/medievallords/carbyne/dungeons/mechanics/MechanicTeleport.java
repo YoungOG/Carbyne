@@ -5,9 +5,9 @@ import com.medievallords.carbyne.dungeons.mechanics.targeters.instances.ITargetE
 import com.medievallords.carbyne.utils.DungeonLineConfig;
 import com.medievallords.carbyne.utils.LocationSerialization;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+
 @Getter
 public class MechanicTeleport extends Mechanic implements ITargetEntity {
 

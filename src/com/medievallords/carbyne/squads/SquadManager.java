@@ -2,7 +2,6 @@ package com.medievallords.carbyne.squads;
 
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.quests.Task;
-import com.medievallords.carbyne.quests.types.CastSpellTask;
 import com.medievallords.carbyne.quests.types.CreateSquadTask;
 import com.medievallords.carbyne.utils.MessageManager;
 import com.medievallords.carbyne.utils.StaticClasses;

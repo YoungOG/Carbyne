@@ -398,16 +398,16 @@ public class PlayerListeners implements Listener {
 //                    pileDrive(damaged, damager);
 //            } else {
 
-                TownBlock townBlock = TownyUniverse.getTownBlock(damaged.getLocation());
+            TownBlock townBlock = TownyUniverse.getTownBlock(damaged.getLocation());
 
-                if (townBlock != null) {
-                    if (townBlock.getPermissions().pvp)
-                        if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
-                            pileDrive(damaged, damager);
-                } else {
+            if (townBlock != null) {
+                if (townBlock.getPermissions().pvp)
                     if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
                         pileDrive(damaged, damager);
-                }
+            } else {
+                if (playerHealth.isPiledriveBoolReady() && playerHealth.getStamina() >= 60)
+                    pileDrive(damaged, damager);
+            }
             //}
         }
     }

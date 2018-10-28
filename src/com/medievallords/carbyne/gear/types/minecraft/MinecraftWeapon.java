@@ -48,7 +48,7 @@ public class MinecraftWeapon extends CarbyneGear {
 
         this.lore = new ArrayList<>();
         this.lore.add(0, HiddenStringUtils.encodeString(maxDurability + ""));
-        this.lore.add("&aDamage&7: &c" + ((int) (damage)) + "-" + ((int) damage + (int)(damage * 0.8)));
+        this.lore.add("&aDamage&7: &c" + ((int) (damage)) + "-" + ((int) damage + (int) (damage * 0.8)));
 
         cost = cs.getInt(type + ".Cost");
 

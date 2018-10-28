@@ -103,7 +103,7 @@ public class PrizeEggListeners implements Listener {
                         .withColor(Color.fromRGB(Maths.randomNumberBetween(256, 0), Maths.randomNumberBetween(256, 0), Maths.randomNumberBetween(256, 0)))
                         .withFade(Color.fromRGB(Maths.randomNumberBetween(256, 0), Maths.randomNumberBetween(256, 0), Maths.randomNumberBetween(256, 0)))
                         .build());
-                
+
                 new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -111,7 +111,7 @@ public class PrizeEggListeners implements Listener {
                             ItemStack itemStack = reward.getItem(false);
                             CarbyneGear gear = StaticClasses.gearManager.getCarbyneGear(itemStack);
                             if (gear != null) {
-                                if (gear.getState() == GearState.HIDDEN){
+                                if (gear.getState() == GearState.HIDDEN) {
                                     Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&8[&d&lPrize Egg&8] &a" + event.getPlayer().getName() + " &7has found " + itemStack.getItemMeta().getDisplayName() + " &7in a prize egg!"));
                                     if (Cooldowns.tryCooldown(event.getPlayer().getUniqueId(), "prizeEgg:effect", 5000))
                                         runRareEffect(center, getFireworkEffect());
@@ -129,7 +129,7 @@ public class PrizeEggListeners implements Listener {
                                         cancel();
                                         return;
                                     }
-                                    
+
                                     item.setVelocity(item.getVelocity().setY(-0.2));
 
                                     ParticleEffect.FLAME.display(0, 0, 0, 0, 1, item.getLocation(), 40, false);
@@ -194,7 +194,7 @@ public class PrizeEggListeners implements Listener {
     public FireworkEffect[] getFireworkEffect() {
         FireworkEffect effect = FireworkEffect.builder().flicker(false).trail(false).withColor(Color.PURPLE).withFade(Color.BLACK).with(FireworkEffect.Type.BURST).build();
         FireworkEffect effect1 = FireworkEffect.builder().trail(false).flicker(false).withColor(Color.PURPLE).withFade(Color.BLACK).with(FireworkEffect.Type.BALL).build();
-        return new FireworkEffect[] {
+        return new FireworkEffect[]{
                 effect, effect1
         };
     }

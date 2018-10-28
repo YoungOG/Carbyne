@@ -6,7 +6,6 @@ import com.medievallords.carbyne.dungeons.triggers.MobTrigger;
 import com.medievallords.carbyne.dungeons.triggers.Trigger;
 import com.medievallords.carbyne.utils.StaticClasses;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;

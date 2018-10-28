@@ -21,12 +21,12 @@ public abstract class CarbyneGear {
 	protected String type = "";
 	protected final String secretCode = "carbyne-gear";
 	protected int maxDurability = -1;
-	protected GearState state = GearState.VISIBLE;
+    protected GearState state = GearState.VISIBLE;
 	protected int cost = 0;
     protected Material repairType = Material.NETHER_STAR;
     protected int repairData = 0, repairCost = 1;
 
-	public abstract boolean load(ConfigurationSection cs, String type, GearManager gearManager);
+    public abstract boolean load(ConfigurationSection cs, String type, GearManager gearManager);
 	
 	public abstract ItemStack getItem(boolean storeItem);
 
