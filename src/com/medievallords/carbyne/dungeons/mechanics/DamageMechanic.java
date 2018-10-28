@@ -1,6 +1,5 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
-import com.boydti.fawe.util.TaskManager;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.PlayerHealth;
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;

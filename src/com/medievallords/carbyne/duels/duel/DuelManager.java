@@ -1,13 +1,5 @@
 package com.medievallords.carbyne.duels.duel;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.duels.arena.Arena;
-import com.medievallords.carbyne.duels.duel.request.DuelRequest;
-import com.medievallords.carbyne.duels.duel.types.RegularDuel;
-import com.medievallords.carbyne.duels.duel.types.SquadDuel;
-import com.medievallords.carbyne.utils.LocationSerialization;
-import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.Arrays;

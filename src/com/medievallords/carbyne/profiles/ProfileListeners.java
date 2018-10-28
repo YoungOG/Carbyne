@@ -25,12 +25,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -232,7 +229,10 @@ public class ProfileListeners implements Listener {
             else
                 profile.setPvpTimePaused(false);
         } catch (NotRegisteredException e) {
-            profile.setPvpTimePaused(false);
+            if (profile != null) {
+                Bukkit.broadcastMessage("Profile: " + profile.getUniqueId());
+                profile.setPvpTimePaused(false);
+            }
         }
     }
 }

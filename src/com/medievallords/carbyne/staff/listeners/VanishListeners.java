@@ -72,9 +72,12 @@ public class VanishListeners implements Listener {
     public void onTeleport(PlayerTeleportEvent event) {
         if (!StaticClasses.staffManager.isVanished(event.getPlayer())) {
             Profile profile = StaticClasses.profileManager.getProfile(event.getPlayer().getUniqueId());
-            if (!profile.isVanishEffect()) {
+
+            if (profile == null)
                 return;
-            }
+
+            if (!profile.isVanishEffect())
+                return;
 
             if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || event.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
                 if (event.getPlayer().isOp()) {
@@ -185,7 +188,7 @@ public class VanishListeners implements Listener {
                 event.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    //@EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
 
@@ -225,9 +228,9 @@ public class VanishListeners implements Listener {
 
         int size = container.getBukkitView().getTopInventory().getSize();
 
-        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, IChatBaseComponent.ChatSerializer.a("Chest"), size, 1));
-        player.getBukkitEntity().getHandle().activeContainer = container;
-        player.getBukkitEntity().getHandle().activeContainer.addSlotListener(player);
+        player.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, windowType, IChatBaseComponent.ChatSerializer.a("{'text': 'Chest'}"), size));
+        player.activeContainer = container;
+        player.activeContainer.addSlotListener(player);
     }
 
     @EventHandler

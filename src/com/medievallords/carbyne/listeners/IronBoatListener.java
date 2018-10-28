@@ -21,11 +21,8 @@ import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
-
-import java.util.HashSet;
 
 public class IronBoatListener implements Listener {
 
@@ -35,8 +32,8 @@ public class IronBoatListener implements Listener {
         ItemStack ironboat = new ItemBuilder(Material.MINECART).name("&7Iron Boat").build();
 
 
-        ShapedRecipe s1 = new ShapedRecipe(ironboat).shape("III", "IMI", "III").setIngredient('I', Material.IRON_INGOT).setIngredient('M', Material.MINECART);
-        main.getServer().addRecipe(s1);
+        //ShapedRecipe s1 = new ShapedRecipe(null, ironboat).shape("III", "IMI", "III").setIngredient('I', Material.IRON_INGOT).setIngredient('M', Material.MINECART);
+        //main.getServer().addRecipe(s1);
     }
 
     @EventHandler

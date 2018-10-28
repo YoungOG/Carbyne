@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;

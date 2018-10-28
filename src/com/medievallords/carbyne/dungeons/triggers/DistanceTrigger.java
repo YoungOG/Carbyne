@@ -119,7 +119,14 @@ public class DistanceTrigger extends Trigger {
     }
 
     private Entity playerIsNearby() {
+        if (getLocation() != null)
+            return null;
+
         World world = getLocation().getWorld();
+
+        if (world != null)
+            return null;
+
         for (Entity entity : world.getNearbyEntities(getLocation(), distance, distance, distance)) {
             if (entity instanceof Player)
                 return entity;
@@ -128,7 +135,6 @@ public class DistanceTrigger extends Trigger {
 
         return null;
     }
-
 
     public void trigger(Entity entity) {
         if (state == 1 && interacts >= 1) {

@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
 import com.nisovin.magicspells.util.BlockUtils;
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;

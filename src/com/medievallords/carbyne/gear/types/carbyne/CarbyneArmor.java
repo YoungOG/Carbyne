@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.gear.types.carbyne;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.gear.GearManager;
 import com.medievallords.carbyne.gear.artifacts.Artifact;
 import com.medievallords.carbyne.gear.effects.carbyne.CarbyneEffect;
@@ -11,17 +10,11 @@ import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.*;
-import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -196,7 +189,6 @@ public class CarbyneArmor extends CarbyneGear {
                     int resultItemData = itemSection.contains("ItemData") ? itemSection.getInt("ItemData") : 0;
                     int resultItemAmount = itemSection.contains("Amount") ? itemSection.getInt("Amount") : 1;
                     List<String> resultItemLore = itemSection.contains("Lore") ? itemSection.getStringList("Lore") : new ArrayList<>();
-
                     ItemBuilder itemBuilder = new ItemBuilder(resultItemMaterial);
                     itemBuilder.durability(resultItemData);
                     if (!resultItemDisplay.isEmpty()) {

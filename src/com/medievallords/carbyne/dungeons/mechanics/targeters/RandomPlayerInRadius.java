@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics.targeters;
+package com.medievallords.carbyne.dungeons.mechanics.targeters;
 
 import com.medievallords.carbyne.utils.Maths;
 import io.lumine.xikage.mythicmobs.adapters.AbstractEntity;

@@ -1,7 +1,7 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
-import com.medievallords.carbyne.mechanics.conditions.PlayerCountCondition;
-import com.medievallords.carbyne.mechanics.targeters.RandomPlayerInRadius;
+import com.medievallords.carbyne.dungeons.mechanics.conditions.PlayerCountCondition;
+import com.medievallords.carbyne.dungeons.mechanics.targeters.RandomPlayerInRadius;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicConditionLoadEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMechanicLoadEvent;
 import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicTargeterLoadEvent;

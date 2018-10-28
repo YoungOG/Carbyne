@@ -1,26 +1,18 @@
 package com.medievallords.carbyne.utils;
 
-import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.gear.types.carbyne.CarbyneWeapon;
-import com.medievallords.carbyne.listeners.CombatTagListeners;
 import com.medievallords.carbyne.profiles.Profile;
-import com.medievallords.carbyne.squads.Squad;
-import com.medievallords.carbyne.squads.SquadType;
 import com.medievallords.carbyne.staff.StaffManager;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
 import com.medievallords.carbyne.utils.scoreboard.BoardFormat;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  * Created by Calvin on 3/13/2017
@@ -30,7 +22,7 @@ import java.util.logging.Level;
 public class CarbyneBoardAdapter {
 
     //private Carbyne main;
-    private String title = "&b&lMedieval Lords";
+    private String title = " &b&lMedieval Lords ";
     //private ProfileManager profileManager;
     //private SquadManager squadManager;
     //private ColorScrollPlus colorScrollPlus;
@@ -60,7 +52,70 @@ public class CarbyneBoardAdapter {
         this.title = title;
     }
 
-    public List<String> getScoreboard(Profile profile, Player player, Board board, Set<BoardCooldown> set) {
+    public List<String> getScoreboard(final Profile profile, final Player player, final Board board, final Set<BoardCooldown> set) {
+        ArrayList<String> lines = new ArrayList<>();
+        Iterator itr = set.iterator();
+
+        PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(player.getUniqueId());
+
+        /*lines.add("         &a&lHealth");
+        lines.add("           &7" + (int) playerHealth.getHealth());
+        lines.add("  ");
+
+        lines.add("        &e&lStamina");
+        lines.add("           &7" + playerHealth.getStamina());
+        lines.add("  ");
+
+        if (playerHealth.getZone() != null) {
+            lines.add("         &c&lZone");
+            lines.add("          &7" + playerHealth.getZone().getDisplayName());
+            lines.add("  ");
+        }
+
+        while (itr.hasNext()) {
+            BoardCooldown cooldown = (BoardCooldown) itr.next();
+
+            if (cooldown.getId().equals("skill")) {
+                lines.add("          &d&lSkill");
+                lines.add("           &7" + cooldown.getFormattedString(BoardFormat.SECONDS));
+                lines.add("  ");
+            }
+        }*/
+
+        //lines.add(" ");
+        lines.add("&a&lHealth");
+        lines.add("&c❤&r&7 " + (int) playerHealth.getHealth());
+        lines.add("  ");
+
+        lines.add("&d&lStamina");
+        lines.add("&e⚡&r&7 " + playerHealth.getStamina());
+        lines.add("  ");
+
+        if (playerHealth.getZone() != null) {
+            lines.add("&c&lZone");
+            lines.add("&7" + playerHealth.getZone().getDisplayName());
+            lines.add("  ");
+        }
+
+        while (itr.hasNext()) {
+            BoardCooldown cooldown = (BoardCooldown) itr.next();
+
+            if (cooldown.getId().equals("skill")) {
+                lines.add("&6&lSkill");
+                lines.add("&b⧖&r&7 " + cooldown.getFormattedString(BoardFormat.SECONDS));
+                lines.add("  ");
+            }
+        }
+
+        lines.add(0, "&7&l&m--------------");
+        //lines.add("&7&l&m---------");
+        //lines.add(" ");
+
+        return lines;
+    }
+
+
+    /*public List<String> getScoreboard(Profile profile, Player player, Board board, Set<BoardCooldown> set) {
         ArrayList<String> lines = new ArrayList<>();
         Iterator itr = set.iterator();
 
@@ -175,7 +230,7 @@ public class CarbyneBoardAdapter {
         }
 
         return lines;
-    }
+    }*/
 
     private List<String> staffScoreboard(Player player) {
         StaffManager staffManager = StaticClasses.staffManager;

@@ -12,14 +12,12 @@ import com.medievallords.carbyne.utils.command.Command;
 import com.medievallords.carbyne.utils.command.CommandArgs;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
 import java.io.IOException;
 
 public class GearCommands extends BaseCommand {
@@ -72,9 +70,6 @@ public class GearCommands extends BaseCommand {
                     return;
                 }
 
-                StaticClasses.gearManager.loadTokenOptions(Carbyne.getInstance().getGearFileConfiguration());
-                StaticClasses.gearManager.loadPolishOptions(Carbyne.getInstance().getGearFileConfiguration());
-                StaticClasses.gearManager.loadPrizeEggOptions(Carbyne.getInstance().getGearFileConfiguration());
                 StaticClasses.gearManager.load(Carbyne.getInstance().getGearFileConfiguration());
 
                 //StaticClasses.gearManager.getGearGuiManager().reloadStoreGuis();

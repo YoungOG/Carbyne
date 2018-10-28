@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.zones;
 
 import com.medievallords.carbyne.customevents.ZoneEnterEvent;
+import com.medievallords.carbyne.utils.PlayerHealth;
 import com.medievallords.carbyne.utils.StaticClasses;
 import com.palmergames.bukkit.towny.event.PlayerChangePlotEvent;
 import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;
@@ -17,32 +18,32 @@ import java.util.List;
 public class ZoneListeners implements Listener {
 
     @EventHandler
-    public void onMobSpawn(CreatureSpawnEvent event) {
-        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.SPAWNER) {
+    public void onMobSpawn(final CreatureSpawnEvent event) {
+        if (event.getSpawnReason() != CreatureSpawnEvent.SpawnReason.SPAWNER)
             return;
-        }
 
-        Zone zone = getZone(event.getLocation());
-        if (zone == null) {
+        final Zone zone = getZone(event.getLocation());
+
+        if (zone == null)
             return;
-        }
 
         event.getEntity().remove();
 
-        List<MobData> mobData = zone.getMobs().get(event.getEntity().getType());
+        final List<MobData> mobData = zone.getMobs().get(event.getEntity().getType());
+
         if (mobData == null) {
-            MythicMob randomMob = zone.getRandomMob();
-            if (randomMob != null) {
+            final MythicMob randomMob = zone.getRandomMob();
+
+            if (randomMob != null)
                 randomMob.spawn(BukkitAdapter.adapt(event.getLocation()), 1);
-            }
 
             return;
         }
 
-        MythicMob randomMob = zone.getRandomMob(mobData);
-        if (randomMob != null) {
+        final MythicMob randomMob = zone.getRandomMob(mobData);
+
+        if (randomMob != null)
             randomMob.spawn(BukkitAdapter.adapt(event.getLocation()), 1);
-        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -50,7 +51,14 @@ public class ZoneListeners implements Listener {
         final Zone lastZone = getZone(event.getPlayer());
         final Zone currentZone = getZone(event.getMoveEvent().getTo());
 
+        final PlayerHealth playerHealth = PlayerHealth.getPlayerHealth(event.getPlayer().getUniqueId());
+
+        if (playerHealth == null)
+            return;
+
         if (currentZone == null) {
+            playerHealth.setZone(null);
+
             if (lastZone != null)
                 lastZone.getPlayersInZone().remove(event.getPlayer().getUniqueId());
         } else
@@ -59,13 +67,14 @@ public class ZoneListeners implements Listener {
                     lastZone.getPlayersInZone().remove(event.getPlayer().getUniqueId());
 
                 currentZone.getPlayersInZone().add(event.getPlayer().getUniqueId());
+                playerHealth.setZone(currentZone);
                 ZoneEnterEvent zoneEnterEvent = new ZoneEnterEvent(event.getPlayer(), currentZone);
                 Bukkit.getPluginManager().callEvent(zoneEnterEvent);
             }
     }
 
     private Zone getZone(final Location location) {
-        for (Zone zone : StaticClasses.zoneManager.getZones())
+        for (final Zone zone : StaticClasses.zoneManager.getZones())
             if (zone.isInZone(location))
                 return zone;
 
@@ -73,7 +82,7 @@ public class ZoneListeners implements Listener {
     }
 
     private Zone getZone(final Player player) {
-        for (Zone zone : StaticClasses.zoneManager.getZones())
+        for (final Zone zone : StaticClasses.zoneManager.getZones())
             if (zone.getPlayersInZone().contains(player.getUniqueId()))
                 return zone;
 

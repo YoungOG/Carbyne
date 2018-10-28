@@ -4,10 +4,12 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.utils.*;
-import com.sk89q.worldedit.command.tool.BrushTool;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,7 +34,7 @@ public class DailyBonusManager {
     private HashSet<Profile> toUpdate = new HashSet<>();
 
     public DailyBonusManager() {
-        new BukkitRunnable() {
+        /*new BukkitRunnable() {
             @Override
             public void run() {
                 for (Profile profile : toUpdate) {
@@ -90,7 +92,7 @@ public class DailyBonusManager {
                 else if (y <= 0)
                     reverse = false;
             }
-        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 1L);
+        }.runTaskTimerAsynchronously(Carbyne.getInstance(), 0L, 1L);*/
     }
 
     public void openDailyBonusGui(Player player) {

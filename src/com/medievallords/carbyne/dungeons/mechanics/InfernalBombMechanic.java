@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
 /**
  * Created by Williams on 2017-09-05

@@ -1,17 +1,12 @@
 package com.medievallords.carbyne.gear.artifacts;
 
-import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.recipes.CustomRecipe;
 import com.medievallords.carbyne.utils.ItemBuilder;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.material.MaterialData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,14 +29,11 @@ public class Artifact {
         this.rare = cs.contains("Rare") && cs.getBoolean("Rare");
 
         // Load artifact recipe data
-
-        if (!cs.contains("ArtifactRecipeIngredients")) {
+        if (!cs.contains("ArtifactRecipeIngredients"))
             return;
-        }
 
-        if (!cs.contains("ArtifactRecipeResult")) {
+        if (!cs.contains("ArtifactRecipeResult"))
             return;
-        }
 
         // Artifact Crafting Recipe Format
 
@@ -64,12 +56,11 @@ public class Artifact {
 
             ItemBuilder itemBuilder = new ItemBuilder(resultItemMaterial);
             itemBuilder.durability(resultItemData);
-            if (!resultItemDisplay.isEmpty()) {
+            if (!resultItemDisplay.isEmpty())
                 itemBuilder.name(resultItemDisplay);
-            }
-            if (!resultItemLore.isEmpty()) {
+
+            if (!resultItemLore.isEmpty())
                 itemBuilder.setLore(resultItemLore);
-            }
 
             itemBuilder.amount(resultItemAmount);
 
@@ -84,7 +75,6 @@ public class Artifact {
             }
 
             ingredients.add(itemBuilder.build());
-
         }
 
         ConfigurationSection resultSection = cs.getConfigurationSection("ArtifactRecipeResult");

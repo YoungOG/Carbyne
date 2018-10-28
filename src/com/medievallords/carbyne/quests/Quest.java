@@ -1,6 +1,5 @@
 package com.medievallords.carbyne.quests;
 
-import com.comphenix.protocol.PacketType;
 import com.medievallords.carbyne.profiles.Profile;
 import com.medievallords.carbyne.quests.config.QuestLineConfig;
 import com.medievallords.carbyne.quests.rewards.QuestReward;
@@ -9,13 +8,14 @@ import com.medievallords.carbyne.utils.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -180,7 +180,7 @@ public class Quest {
             for (QuestRewardItem rewardItem : reward.getRewardItems()) {
                 String name;
                 if (rewardItem.getDisplayName().isEmpty()) {
-                    name = "&8- &b" + WordUtils.capitalizeFully(rewardItem.getMaterial().name().replace("_", ""));
+                    name = "&8- &b" + WordUtils.capitalizeFully(rewardItem.getMaterial().name().replace("_", " "));
                 } else {
                     name = "&8- " + rewardItem.getDisplayName();
                 }

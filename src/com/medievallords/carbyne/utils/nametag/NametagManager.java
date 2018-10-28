@@ -4,6 +4,8 @@ import com.medievallords.carbyne.squads.Squad;
 import com.medievallords.carbyne.utils.PlayerUtility;
 import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.StringUtils;
+import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownyUniverse;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -90,7 +92,16 @@ public class NametagManager {
         }
         */
 
-        nametag.setPrefix(ChatColor.GOLD + "");
+        nametag.setPrefix(ChatColor.GRAY + "");
+
+        TownBlock townBlock = TownyUniverse.getTownBlock(toRefresh.getLocation());
+
+        if (townBlock == null) {
+            nametag.setPrefix(ChatColor.GOLD + "");
+        } else if (!townBlock.getPermissions().pvp) {
+            nametag.setPrefix(ChatColor.RED + "");
+        }
+
         //Squad
         Squad toRefreshSquad = StaticClasses.squadManager.getSquad(toRefresh.getUniqueId());
         Squad refreshForSquad = StaticClasses.squadManager.getSquad(refreshFor.getUniqueId());

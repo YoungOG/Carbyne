@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics;
+package com.medievallords.carbyne.dungeons.mechanics;
 
 import com.destroystokyo.paper.Title;
 import com.medievallords.carbyne.Carbyne;

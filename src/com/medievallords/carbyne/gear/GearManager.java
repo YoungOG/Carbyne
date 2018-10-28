@@ -17,26 +17,19 @@ import com.medievallords.carbyne.recipes.CustomRecipe;
 import com.medievallords.carbyne.region.Region;
 import com.medievallords.carbyne.utils.*;
 import com.medievallords.carbyne.zones.Zone;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
-import net.minecraft.server.v1_12_R1.NBTTagCompound;
-import net.minecraft.server.v1_12_R1.NBTTagList;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -97,9 +90,6 @@ public class GearManager {
     public GearManager() {
         gearEffects = new GearEffects();
 
-        loadTokenOptions(Carbyne.getInstance().getGearFileConfiguration());
-        loadPolishOptions(Carbyne.getInstance().getGearFileConfiguration());
-        loadPrizeEggOptions(Carbyne.getInstance().getGearFileConfiguration());
         load(Carbyne.getInstance().getGearFileConfiguration());
 
         gearGuiManager = new GearGuiManager(this);
@@ -112,6 +102,10 @@ public class GearManager {
         Bukkit.resetRecipes();
         CustomRecipe.recipes.clear();
         CustomCarbyneRecipe.carbyneRecipes.clear();
+
+        loadTokenOptions(configuration);
+        loadPolishOptions(configuration);
+        loadPrizeEggOptions(configuration);
 
         specials.add(new FireStorm());
         specials.add(new LightningStorm());
@@ -999,7 +993,7 @@ public class GearManager {
         if (itemStack.getType() == Material.BOW) {
             damage = 100;
             damage += itemStack.getEnchantmentLevel(Enchantment.ARROW_DAMAGE) * POWER_DAMAGE;
-            return (int)(damage * 0.5) + "-" + (int)damage;
+            return (int) (damage * 0.5) + "-" + (int) damage;
         }
 
         damage += itemStack.getEnchantmentLevel(Enchantment.DAMAGE_ALL) * SHARPNESS_DAMAGE;
@@ -1021,7 +1015,7 @@ public class GearManager {
         switch (event.getCause()) {
             case FIRE_TICK:
                 flatDamage = FIRE_DAMAGE;
-                for(ItemStack item: player.getInventory().getArmorContents()) {
+                for (ItemStack item : player.getInventory().getArmorContents()) {
                     if (item != null && item.containsEnchantment(Enchantment.PROTECTION_FIRE)) {
                         flatDamage -= item.getEnchantmentLevel(Enchantment.PROTECTION_FIRE);
                     }

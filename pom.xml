@@ -45,12 +45,6 @@
             <url>http://pex-repo.aoeu.xyz</url>
         </repository>
 
-        <!-- Tabbed Repo -->
-        <repository>
-            <id>avicus-public</id>
-            <url>https://repo.avicus.net/content/groups/public/</url>
-        </repository>
-
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -58,20 +52,6 @@
     </repositories>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.github.thekeenant</groupId>
-            <artifactId>tabbed</artifactId>
-            <version>v1.8</version>
-        </dependency>
-
-        <!--&lt;!&ndash; Spigot API &ndash;&gt;-->
-        <!--<dependency>-->
-        <!--<groupId>org.spigotmc</groupId>-->
-        <!--<artifactId>spigot-api</artifactId>-->
-        <!--<version>1.8.8-R0.1-SNAPSHOT</version>-->
-        <!--<scope>provided</scope>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.nibor.autolink</groupId>
@@ -84,16 +64,6 @@
             <artifactId>http-request</artifactId>
             <version>6.0</version>
         </dependency>
-
-        <!--Bukkit API
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.8.8-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency> -->
-
-        <!-- CombatTagPlus plugin -->
 
         <!-- ProtocolLib plugin -->
         <dependency>
@@ -113,13 +83,6 @@
             </exclusions>
         </dependency>
 
-        <!-- PermissionsEx plugin
-        <dependency>
-            <groupId>ru.tehkode</groupId>
-            <artifactId>PermissionsEx</artifactId>
-            <version>1.22.7</version>
-        </dependency> -->
-
         <!-- Vault plugin -->
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
@@ -137,8 +100,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- MythicMobs plugin -->
 
         <!-- EffectLibs library -->
         <dependency>
@@ -173,12 +134,6 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
             <version>3.4.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.keenant</groupId>
-            <artifactId>tabbed</artifactId>
-            <version>1.7-SNAPSHOT</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->

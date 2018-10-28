@@ -1,17 +1,14 @@
 package com.medievallords.carbyne.listeners;
 
 import com.medievallords.carbyne.Carbyne;
-import com.medievallords.carbyne.dungeons.dungeons.instance.DungeonInstance;
 import com.medievallords.carbyne.utils.*;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyUniverse;
-import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -117,14 +114,24 @@ public class OptimizationListeners implements Listener {
             event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
-        event.setJoinMessage(null);
+        if (StaticClasses.staffManager.isVanished(event.getPlayer())) {
+            event.setJoinMessage(null);
+            return;
+        }
+
+        event.setJoinMessage("§a" + event.getPlayer().getName() + " §7has joined.");
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        event.setQuitMessage(null);
+        if (StaticClasses.staffManager.isVanished(event.getPlayer())) {
+            event.setQuitMessage(null);
+            return;
+        }
+
+        event.setQuitMessage("§c" + event.getPlayer().getName() + " §7has left.");
     }
 
     @EventHandler

@@ -18,9 +18,9 @@ public class CustomCarbyneRecipe {
         this.name = name; // The name of the recipe. It has no special meaning.
         int amount = ingredients.size();
         this.ingredients = new ItemStack[amount];
-        for (int i = 0; i < amount; i++) { // Requires 10 items - 9 items for the fragment part + an artifact.
+
+        for (int i = 0; i < amount; i++) // Requires 10 items - 9 items for the fragment part + an artifact.
             this.ingredients[i] = ingredients.get(i);
-        }
 
         this.result = item; // The item that you get from crafting using this recipe.
 
@@ -30,21 +30,18 @@ public class CustomCarbyneRecipe {
     public static CustomCarbyneRecipe getRecipe(ItemStack[] ingredients, ItemStack artifact) {
         for (CustomCarbyneRecipe recipe : carbyneRecipes) { // Go through all created recipes to check if there is a recipe from the specified ingredients
             boolean found = true;
-            for (int i = 0; i < 9; i++) {
+
+            for (int i = 0; i < 9; i++)
                 if (!ingredients[i].isSimilar(recipe.ingredients[i])) {
                     found = false;
                     break;
                 }
-            }
 
-            if (found) {
-                if (recipe.ingredients[9].isSimilar(artifact)) {
+            if (found)
+                if (recipe.ingredients[9].isSimilar(artifact))
                     return recipe;
-                }
-            }
         }
 
         return null;
     }
-
 }

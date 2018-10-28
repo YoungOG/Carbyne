@@ -3,6 +3,7 @@ package com.medievallords.carbyne.utils;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.utils.scoreboard.Board;
 import com.medievallords.carbyne.utils.scoreboard.BoardCooldown;
+import com.medievallords.carbyne.zones.Zone;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ public class PlayerHealth {
     public static final HashMap<UUID, PlayerHealth> players = new HashMap<>();
 
     private double health, maxHealth, divider, lastDamage;
+    private Zone zone;
 
     private int
             professionLevel = 1,

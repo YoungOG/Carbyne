@@ -1,4 +1,4 @@
-package com.medievallords.carbyne.mechanics.conditions;
+package com.medievallords.carbyne.dungeons.mechanics.conditions;
 
 import com.medievallords.carbyne.utils.PlayerUtility;
 import io.lumine.xikage.mythicmobs.adapters.AbstractLocation;

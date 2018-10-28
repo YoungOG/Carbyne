@@ -3,16 +3,14 @@ package com.medievallords.carbyne.profiles;
 import com.medievallords.carbyne.Carbyne;
 import com.medievallords.carbyne.economy.objects.Account;
 import com.medievallords.carbyne.listeners.PlayerListeners;
-import com.medievallords.carbyne.quests.Quest;
-import com.medievallords.carbyne.quests.Task;
-import com.medievallords.carbyne.squads.Squad;
-import com.medievallords.carbyne.utils.*;
+import com.medievallords.carbyne.staff.StaffManager;
+import com.medievallords.carbyne.utils.DateUtil;
+import com.medievallords.carbyne.utils.LagTask;
+import com.medievallords.carbyne.utils.StaticClasses;
 import com.medievallords.carbyne.utils.tabbed.item.TextTabItem;
 import com.medievallords.carbyne.utils.tabbed.tablist.TableTabList;
+import com.medievallords.carbyne.utils.tabbed.util.Skins;
 import com.medievallords.carbyne.zones.Zone;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.object.Resident;
-import com.palmergames.bukkit.towny.object.TownyUniverse;
 import lombok.Getter;
 import lombok.Setter;
 import me.lucko.luckperms.LuckPerms;
@@ -304,6 +302,7 @@ public class Profile {
     public static class PlayerTabRunnable extends BukkitRunnable {
 
         private static final GroupManager api = LuckPerms.getApi().getGroupManager();
+        private static final StaffManager staffManager = StaticClasses.staffManager;
 
         //private DropPointManager dropPointManager = Carbyne.getInstance().getDropPointManager();
         private final Profile profile;
@@ -313,7 +312,7 @@ public class Profile {
         private final TableTabList tab;
         private final User user;
 
-        public PlayerTabRunnable(Player player, Profile profile, Account account, TableTabList tab) {
+        public PlayerTabRunnable(final Player player, final Profile profile, final Account account, final TableTabList tab) {
             this.player = player;
             this.account = account;
             this.profile = profile;
@@ -323,26 +322,67 @@ public class Profile {
         }
 
         public void run() {
-            tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1));
+            tab.set(0, 1, new TextTabItem("§b§lPlayer Info:", 1, Skins.getDot(ChatColor.AQUA)));
 
-            Group group = api.getGroup(user.getPrimaryGroup());
-            String display = "Default";
-            if (group != null) {
-                display = group.getDisplayName();
+            final Group group = api.getGroup(user.getPrimaryGroup());
+            final String display = group != null ? group.getDisplayName() : "Default";
+            tab.set(0, 2, new TextTabItem(" §d§lRank§7: " + ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', display)), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 3, new TextTabItem(" §d§lBalance§7: \u00A9" + (int) account.getBalance(), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 4, new TextTabItem(" §d§lKit Points§7: " + profile.getKitPoints(), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 5, new TextTabItem(" §d§lPing§7: " + entityPlayer.ping, 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+
+            tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1, Skins.getDot(ChatColor.AQUA)));
+            final double tps = LagTask.getTPS();
+            tab.set(0, 8, new TextTabItem(" §d§lTPS§7: " + new DecimalFormat("##.00").format(BigDecimal.valueOf(tps)) + " §7\u2758 §d§lLag§7: " + Math.round((1.0D - tps / 20.0D) * 100.0D) + "%", 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 9, new TextTabItem(" §d§lPlayers Online§7: " + (Bukkit.getOnlinePlayers().size() - StaticClasses.staffManager.getVanish().size()), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 10, new TextTabItem(" §d§lStaff Online§7: " + StaticClasses.staffManager.getStaff().size(), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+            tab.set(0, 11, new TextTabItem(" §d§lConsecutive Votes§7: " + PlayerListeners.getVoteCount(), 1, Skins.getDot(ChatColor.LIGHT_PURPLE)));
+
+            for (int x = 1; x < 4; x++) {
+                for (int y = 0; y < 20; y++) {
+                    tab.remove(x, y);
+                }
             }
-            tab.set(0, 2, new TextTabItem(" §d§lRank§7: " + ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', display)), 1));
-            tab.set(0, 3, new TextTabItem(" §d§lBalance§7: \u00A9" + (int) account.getBalance(), 1));
-            tab.set(0, 4, new TextTabItem(" §d§lKit Points§7: " + profile.getKitPoints(), 1));
-            tab.set(0, 5, new TextTabItem(" §d§lPing§7: " + entityPlayer.ping, 1));
 
-            tab.set(0, 7, new TextTabItem("§b§lServer Info:", 1));
-            tab.set(0, 8, new TextTabItem(" §d§lTPS§7: " + new DecimalFormat("##.00").format(BigDecimal.valueOf(LagTask.getTPS())) + " §7\u2758 §d§lLag§7: " + Math.round((1.0D - LagTask.getTPS() / 20.0D) * 100.0D) + "%", 1));
-            tab.set(0, 9, new TextTabItem(" §d§lPlayers Online§7: " + (Bukkit.getOnlinePlayers().size() - StaticClasses.staffManager.getVanish().size()), 1));
-            tab.set(0, 10, new TextTabItem(" §d§lStaff Online§7: " + StaticClasses.staffManager.getStaff().size(), 1));
-            tab.set(0, 11, new TextTabItem(" §d§lConsecutive Votes§7: " + PlayerListeners.getVoteCount(), 1));
+            int x = 1;
+            int y = 0;
+            if (this.player.hasPermission("carbyne.seevanished")) {
+                for (final Player player : Bukkit.getOnlinePlayers()) {
+                    if (y >= 20) {
+                        x++;
+                        y = 0;
+                    }
 
+                    if (x >= 4) {
+                        break;
+                    }
 
-            tab.set(0, 13, new TextTabItem("§b§lFriends:", 1));
+                    if (staffManager.isVanished(player)) {
+                        tab.set(x, y++, new TextTabItem("§7" + player.getName() + " §oVanished", ((CraftPlayer) player).getHandle().ping, Skins.getPlayer(player.getUniqueId())));
+                    } else {
+                        tab.set(x, y++, new TextTabItem("§7" + player.getName(), ((CraftPlayer) player).getHandle().ping, Skins.getPlayer(player.getUniqueId())));
+                    }
+                }
+            } else {
+                for (final Player player : Bukkit.getOnlinePlayers()) {
+                    if (staffManager.isVanished(player)) {
+                        continue;
+                    }
+
+                    if (y >= 20) {
+                        x++;
+                        y = 0;
+                    }
+
+                    if (x >= 4) {
+                        break;
+                    }
+
+                    tab.set(x, y++, new TextTabItem("§7" + player.getName(), ((CraftPlayer) player).getHandle().ping, Skins.getPlayer(player.getUniqueId())));
+                }
+            }
+
+            /*tab.set(0, 13, new TextTabItem("§b§lFriends:", 1));
             Resident resident = null;
             try {
                 resident = TownyUniverse.getDataSource().getResident(player.getName());
@@ -449,7 +489,7 @@ public class Profile {
                 tab.set(3, index++, new TextTabItem("   §aZ§7: " + dropPoint.getMainLocation().getZ(), 1));
             }*/
 
-            tab.set(2, 1, new TextTabItem("§b§lQuests:", 1));
+            /*tab.set(2, 1, new TextTabItem("§b§lQuests:", 1));
             for (int i = 2; i < 20; i++) {
                 tab.set(2, i, new TextTabItem("", 1));
             }
@@ -476,7 +516,7 @@ public class Profile {
                         }
                     }
                 }
-            }
+            }*/
         }
 
         private String getZone(Player player) {

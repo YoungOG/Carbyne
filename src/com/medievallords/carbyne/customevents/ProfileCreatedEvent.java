@@ -1,6 +1,7 @@
 package com.medievallords.carbyne.customevents;
 
 import com.medievallords.carbyne.profiles.Profile;
+import com.medievallords.carbyne.utils.MessageManager;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -26,11 +27,12 @@ public class ProfileCreatedEvent extends Event implements Cancellable
     private Profile playerProfile;
     private boolean isCancelled;
 
-    public ProfileCreatedEvent(Player player, Profile playerProfile)
-    {
+    public ProfileCreatedEvent(Player player, Profile playerProfile) {
         this.player = player;
         this.playerProfile = playerProfile;
         this.isCancelled = false;
+
+        MessageManager.broadcastMessage("&8&l[&6&l!&8&l]: &7A new profile has been created for &5" + player.getName() + "&7!", "carbyne.staff");
     }
 
     @Override

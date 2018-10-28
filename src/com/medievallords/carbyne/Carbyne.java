@@ -54,7 +54,6 @@ import com.medievallords.carbyne.listeners.*;
 import com.medievallords.carbyne.lootchests.LootChestListeners;
 import com.medievallords.carbyne.lootchests.LootChestManager;
 import com.medievallords.carbyne.lootchests.commands.LootChestCommand;
-import com.medievallords.carbyne.mechanics.MechanicListener;
 import com.medievallords.carbyne.portals.PortalListeners;
 import com.medievallords.carbyne.portals.PortalManager;
 import com.medievallords.carbyne.portals.commands.PortalCreateCommand;
@@ -337,7 +336,6 @@ public class Carbyne extends JavaPlugin {
         pm.registerEvents(new TrailListener(), this);
         pm.registerEvents(new SetDamageCommand(), this);
         pm.registerEvents(new FollowCommand(), this);
-        pm.registerEvents(new MechanicListener(), this);
         pm.registerEvents(new IgnoreCommand(), this);
         pm.registerEvents(new StaffLogging(), this);
         pm.registerEvents(new IronBoatListener(), this);

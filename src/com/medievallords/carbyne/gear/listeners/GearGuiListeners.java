@@ -47,9 +47,8 @@ public class GearGuiListeners implements Listener {
 
     @EventHandler
     public void onInt(InventoryDragEvent event) {
-        if (!event.getInventory().getTitle().equals(GearGuiManager.TITLE)) {
+        if (!event.getInventory().getTitle().equals(GearGuiManager.TITLE))
             return;
-        }
 
         final Player player = (Player) event.getWhoClicked();
 
@@ -69,11 +68,9 @@ public class GearGuiListeners implements Listener {
                 ingredients[7] = event.getInventory().getItem(31);
                 ingredients[8] = event.getInventory().getItem(32);
 
-                for (int i = 0; i < 9; i++) {
-                    if (ingredients[i] == null) {
+                for (int i = 0; i < 9; i++)
+                    if (ingredients[i] == null)
                         ingredients[i] = new ItemStack(Material.AIR);
-                    }
-                }
 
                 final ItemStack artifact = event.getInventory().getItem(19);
 
@@ -81,19 +78,30 @@ public class GearGuiListeners implements Listener {
 
                 if (artifact != null && artifact.getType() != Material.AIR) {
                     Artifact actualArtifact = StaticClasses.gearManager.getArtifact(artifact);
+
                     if (actualArtifact != null) {
                         ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(5)
-                                .name("&4Artifact found")
-                                .addLore("Placeholder lore message")
+                                .name("&4&lArtifact found")
+                                .addLore("&7An artifact has been found, you can now craft an")
+                                .addLore("&7armor type of your choice.")
+                                .addLore("")
+                                .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                                .addLore("in the center section.")
                                 .build();
                         event.getInventory().setItem(1, pane);
                         event.getInventory().setItem(10, pane);
                         event.getInventory().setItem(28, pane);
                         event.getInventory().setItem(37, pane);
+
+
                     } else {
                         ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                                .name("&4Artifact found")
-                                .addLore("Placeholder lore message")
+                                .name("&4&lArtifact found")
+                                .addLore("&7An artifact has been found, you can now craft an")
+                                .addLore("&7armor type of your choice.")
+                                .addLore(" ")
+                                .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                                .addLore("in the center section.")
                                 .build();
                         event.getInventory().setItem(1, pane);
                         event.getInventory().setItem(10, pane);
@@ -102,8 +110,12 @@ public class GearGuiListeners implements Listener {
                     }
                 } else {
                     ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                            .name("&4Artifact found")
-                            .addLore("Placeholder lore message")
+                            .name("&4&lArtifact found")
+                            .addLore("&7An artifact has been found, you can now craft an")
+                            .addLore("&7armor type of your choice.")
+                            .addLore(" ")
+                            .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                            .addLore("in the center section.")
                             .build();
                     event.getInventory().setItem(1, pane);
                     event.getInventory().setItem(10, pane);
@@ -111,22 +123,30 @@ public class GearGuiListeners implements Listener {
                 }
 
                 if (recipe == null) {
-                    event.getInventory().setItem(25, null);
-                    ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                            .name("&4Place Artifact in the &7empty &4slot.")
-                            .addLore("Placeholder lore message")
-                            .build();
-                    event.getInventory().setItem(3, pane);
-                    event.getInventory().setItem(4, pane);
-                    event.getInventory().setItem(5, pane);
-                    event.getInventory().setItem(39, pane);
-                    event.getInventory().setItem(40, pane);
-                    event.getInventory().setItem(41, pane);
+                    GearManager gearManager = StaticClasses.gearManager;
 
-                    event.getInventory().setItem(7, pane);
-                    event.getInventory().setItem(16, pane);
-                    event.getInventory().setItem(34, pane);
-                    event.getInventory().setItem(43, pane);
+                    event.getInventory().setItem(25, null);
+
+                    ItemBuilder paneBuilder = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
+                            .name("&4&lPlace an Artifact in the &7&7empty &4&lslot.")
+                            .addLore("&7Place an Artifact in the first slot section")
+                            .addLore("&7on the far left to continue.")
+                            .addLore(" ")
+                            .addLore("&a&lAvailable Artifacts&7&l(&6&l" + gearManager.getArtifacts().values().size() + "&7&l): ");
+                    for (Artifact artifact1 : gearManager.getArtifacts().values())
+                        paneBuilder.addLore("  &7&l- &r" + artifact1.getCustomRecipe().getResult().getItemMeta().getDisplayName());
+
+                    event.getInventory().setItem(3, paneBuilder.build());
+                    event.getInventory().setItem(4, paneBuilder.build());
+                    event.getInventory().setItem(5, paneBuilder.build());
+                    event.getInventory().setItem(39, paneBuilder.build());
+                    event.getInventory().setItem(40, paneBuilder.build());
+                    event.getInventory().setItem(41, paneBuilder.build());
+
+                    event.getInventory().setItem(7, paneBuilder.build());
+                    event.getInventory().setItem(16, paneBuilder.build());
+                    event.getInventory().setItem(34, paneBuilder.build());
+                    event.getInventory().setItem(43, paneBuilder.build());
                     return;
                 }
 
@@ -160,13 +180,11 @@ public class GearGuiListeners implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null) {
+        if (event.getClickedInventory() == null)
             return;
-        }
 
-        if (!event.getClickedInventory().getTitle().equals(GearGuiManager.TITLE)) {
+        if (!event.getClickedInventory().getTitle().equals(GearGuiManager.TITLE))
             return;
-        }
 
         if (!contains(numbers, event.getSlot())) {
             event.setCancelled(true);
@@ -190,11 +208,9 @@ public class GearGuiListeners implements Listener {
             items[8] = event.getInventory().getItem(32);
             items[9] = event.getInventory().getItem(19);
 
-            for (int i = 0; i < 10; i++) {
-                if (items[i] != null) {
+            for (int i = 0; i < 10; i++)
+                if (items[i] != null)
                     items[i].setAmount(items[i].getAmount() - 1);
-                }
-            }
 
 
             Location location = StaticClasses.gearManager.getForgeByDistance(player.getLocation()).clone().add(0.5, 1.15, 0.5);
@@ -207,7 +223,6 @@ public class GearGuiListeners implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-
                 final ItemStack[] ingredients = new ItemStack[9];
 
                 ingredients[0] = event.getInventory().getItem(12);
@@ -220,11 +235,9 @@ public class GearGuiListeners implements Listener {
                 ingredients[7] = event.getInventory().getItem(31);
                 ingredients[8] = event.getInventory().getItem(32);
 
-                for (int i = 0; i < 9; i++) {
-                    if (ingredients[i] == null) {
+                for (int i = 0; i < 9; i++)
+                    if (ingredients[i] == null)
                         ingredients[i] = new ItemStack(Material.AIR);
-                    }
-                }
 
                 final ItemStack artifact = event.getInventory().getItem(19);
 
@@ -232,20 +245,31 @@ public class GearGuiListeners implements Listener {
 
                 if (artifact != null && artifact.getType() != Material.AIR) {
                     Artifact actualArtifact = StaticClasses.gearManager.getArtifact(artifact);
+
                     if (actualArtifact != null) {
                         ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(5)
-                                .name("&4Artifact found")
-                                .addLore("Placeholder lore message")
+                                .name("&4&lArtifact found")
+                                .addLore("&7An artifact has been found, you can now craft an")
+                                .addLore("&7armor type of your choice.")
+                                .addLore("")
+                                .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                                .addLore("&7in the center section.")
                                 .build();
+
                         event.getInventory().setItem(1, pane);
                         event.getInventory().setItem(10, pane);
                         event.getInventory().setItem(28, pane);
                         event.getInventory().setItem(37, pane);
                     } else {
                         ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                                .name("&4Artifact found")
-                                .addLore("Placeholder lore message")
+                                .name("&4&lArtifact found")
+                                .addLore("&7An artifact has been found, you can now craft an")
+                                .addLore("&7armor type of your choice.")
+                                .addLore("")
+                                .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                                .addLore("&7in the center section.")
                                 .build();
+
                         event.getInventory().setItem(1, pane);
                         event.getInventory().setItem(10, pane);
                         event.getInventory().setItem(28, pane);
@@ -253,9 +277,14 @@ public class GearGuiListeners implements Listener {
                     }
                 } else {
                     ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                            .name("&4Artifact found")
-                            .addLore("Placeholder lore message")
+                            .name("&4&lArtifact found")
+                            .addLore("&7An artifact has been found, you can now craft an")
+                            .addLore("&7armor type of your choice.")
+                            .addLore("")
+                            .addLore("&7You can craft armor using &b&lCarbyne Tokens&7")
+                            .addLore("&7in the center section.")
                             .build();
+
                     event.getInventory().setItem(1, pane);
                     event.getInventory().setItem(10, pane);
                     event.getInventory().setItem(28, pane);
@@ -263,22 +292,30 @@ public class GearGuiListeners implements Listener {
                 }
 
                 if (recipe == null) {
-                    event.getInventory().setItem(25, null);
-                    ItemStack pane = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
-                            .name("&4Place Artifact in the &7empty &4slot.")
-                            .addLore("Placeholder lore message")
-                            .build();
-                    event.getInventory().setItem(3, pane);
-                    event.getInventory().setItem(4, pane);
-                    event.getInventory().setItem(5, pane);
-                    event.getInventory().setItem(39, pane);
-                    event.getInventory().setItem(40, pane);
-                    event.getInventory().setItem(41, pane);
+                    GearManager gearManager = StaticClasses.gearManager;
 
-                    event.getInventory().setItem(7, pane);
-                    event.getInventory().setItem(16, pane);
-                    event.getInventory().setItem(34, pane);
-                    event.getInventory().setItem(43, pane);
+                    event.getInventory().setItem(25, null);
+
+                    ItemBuilder paneBuilder = new ItemBuilder(Material.STAINED_GLASS_PANE).durability(14)
+                            .name("&4&lPlace an Artifact in the &7&7empty &4&lslot.")
+                            .addLore("&7Place an Artifact in the first slot section")
+                            .addLore("&7on the far left to continue.")
+                            .addLore(" ")
+                            .addLore("&a&lAvailable Artifacts&7&l(&6&l" + gearManager.getArtifacts().values().size() + "&7&l): ");
+                    for (Artifact artifact1 : gearManager.getArtifacts().values())
+                        paneBuilder.addLore("  &7&l- &r" + artifact1.getCustomRecipe().getResult().getItemMeta().getDisplayName());
+
+                    event.getInventory().setItem(3, paneBuilder.build());
+                    event.getInventory().setItem(4, paneBuilder.build());
+                    event.getInventory().setItem(5, paneBuilder.build());
+                    event.getInventory().setItem(39, paneBuilder.build());
+                    event.getInventory().setItem(40, paneBuilder.build());
+                    event.getInventory().setItem(41, paneBuilder.build());
+
+                    event.getInventory().setItem(7, paneBuilder.build());
+                    event.getInventory().setItem(16, paneBuilder.build());
+                    event.getInventory().setItem(34, paneBuilder.build());
+                    event.getInventory().setItem(43, paneBuilder.build());
                     return;
                 }
 
@@ -311,9 +348,8 @@ public class GearGuiListeners implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        if (!event.getInventory().getTitle().equals(GearGuiManager.TITLE)) {
+        if (!event.getInventory().getTitle().equals(GearGuiManager.TITLE))
             return;
-        }
 
         final Player player = (Player) event.getPlayer();
 
@@ -329,49 +365,43 @@ public class GearGuiListeners implements Listener {
         ingredients[8] = event.getInventory().getItem(32);
         ingredients[9] = event.getInventory().getItem(19);
 
-        for (int i = 0; i < 10; i++) {
-            if (ingredients[i] != null) {
+        for (int i = 0; i < 10; i++)
+            if (ingredients[i] != null)
                 player.getInventory().addItem(ingredients[i]);
-            }
-        }
     }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-        }
 
-        if (event.getClickedBlock() == null || event.getClickedBlock().getType() == Material.AIR) {
+        if (event.getClickedBlock() == null || event.getClickedBlock().getType() == Material.AIR)
             return;
-        }
 
         Location clicked = event.getClickedBlock().getLocation();
         Location forge = StaticClasses.gearManager.getForge(clicked);
+
         if (forge != null) {
             event.getPlayer().openInventory(gearGuiManager.getForgeInventory());
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_CHEST_OPEN, 1, .8f);
             event.setCancelled(true);
         }
-
     }
 
     private boolean contains(int[] n, int i) {
-        for (int nu : n) {
-            if (nu == i) {
+        for (int nu : n)
+            if (nu == i)
                 return true;
-            }
-        }
 
         return false;
     }
 
     private void forgeGear(final Player player, final CarbyneGear gear, final Location location) {
-
         final Item item = player.getWorld().dropItem(location, gear.getItem(false));
         item.setPickupDelay(Integer.MAX_VALUE);
 
-        MessageManager.sendMessage(player, "&8[&5&lForge&8] &cYour item is now being forged.");
+        MessageManager.sendMessage(player, "&8[&5&lForge&8]: &aYour item is now being forged. This action will take time.");
+
         new BukkitRunnable() {
             int i = -1;
             boolean far = false;
@@ -382,43 +412,38 @@ public class GearGuiListeners implements Listener {
 
                 if ((!player.getWorld().getName().equals(location.getWorld().getName()) && !far) || ((player.getWorld().getName().equals(location.getWorld().getName()) && (player.getLocation().distance(location) >= 9 && !far)))) {
                     far = true;
-                    MessageManager.sendMessage(player, "&8[&5&lForge&8] &cYou are too far from the anvil, your item will be dropped on the ground.");
+                    MessageManager.sendMessage(player, "&8[&5&lForge&8]: You are too far from the forge (anvil), your item will be dropped on the ground.");
                 }
 
                 if (player.getWorld().getName().equals(location.getWorld().getName()) && (far && player.getLocation().distance(location) < 9)) {
                     far = false;
-                    MessageManager.sendMessage(player, "&8[&5&lForge&8] &aYou are no longer too far away.");
+                    MessageManager.sendMessage(player, "&8[&5&lForge&8]: &aYou are no longer too far away.");
                 }
 
                 if (i >= 20) {
                     cancel();
 
-                    //ItemStack itemStack = gear.getItem(false).clone();
                     if (!player.isOnline() || far) {
                         location.getWorld().dropItem(location, gear.getItem(false));
 
-                        if (item != null) {
+                        if (item != null)
                             item.remove();
-                        }
 
-                        if (player.isOnline()) {
-                            MessageManager.sendMessage(player, "&8[&5&lForge&8] &aYour item has been forged.");
-                        }
+                        if (player.isOnline())
+                            MessageManager.sendMessage(player, "&8[&5&lForge&8]: &aYour item has been forged.");
                     } else {
                         if (player.getInventory().getItemInMainHand() != null) {
-                            if (player.getInventory().firstEmpty() == -1) {
+                            if (player.getInventory().firstEmpty() == -1)
                                 player.getWorld().dropItem(player.getLocation(), gear.getItem(false));
-                            } else {
+                            else
                                 player.getInventory().addItem(gear.getItem(false));
-                            }
                         } else
                             player.setItemInHand(gear.getItem(false));
 
-                        MessageManager.sendMessage(player, "&8[&5&lForge&8] &aYour item has been forged.");
+                        MessageManager.sendMessage(player, "&8[&5&lForge&8]: &aYour item has been forged.");
 
-                        if (item != null) {
+                        if (item != null)
                             item.remove();
-                        }
                     }
                 }
 
@@ -427,174 +452,4 @@ public class GearGuiListeners implements Listener {
             }
         }.runTaskTimer(Carbyne.getInstance(), 0, 20);
     }
-
-//    @EventHandler
-//    public void onClick(InventoryClickEvent e) {
-//        Player p = (Player) e.getWhoClicked();
-//
-//        if (gearGuiManager.isCustomInventory(e.getInventory()))
-//            e.setCancelled(true);
-//
-//
-//        if (e.getInventory().getSize() == 9) {
-//            if (!(e.getRawSlot() < e.getView().getTopInventory().getSize()))
-//                return;
-//        } else if (e.getRawSlot() != e.getSlot())
-//                return;
-//
-//        if (e.getCurrentItem() == null)
-//            return;
-//
-//        if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getStoreGui().getTitle())) {
-//            e.setCancelled(true);
-//
-//            if (e.getCurrentItem().getType() == Material.DIAMOND_SWORD)
-//                p.openInventory(gearGuiManager.getWeaponsGui());
-//            else if (e.getCurrentItem().getType() == Material.LEATHER_CHESTPLATE)
-//                p.openInventory(gearGuiManager.getArmorGui());
-//        } else if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getWeaponsGui().getTitle())) {
-//            e.setCancelled(true);
-//
-//            if (e.getCurrentItem().getType() == Material.BARRIER)
-//                p.openInventory(gearGuiManager.getStoreGui());
-//            else {
-//                if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
-//                    CarbyneWeapon carbyneWeapon = StaticClasses.gearManager.getCarbyneWeapon(e.getCurrentItem());
-//
-//                    if (carbyneWeapon == null) {
-//                        MessageManager.sendMessage(p, "&cAn error has occurred while purchasing this item. (Error code: 1)");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (carbyneWeapon.getState() == GearState.HIDDEN && (!p.hasPermission("carbyne.administrator") || !p.isOp())) {
-//                        MessageManager.sendMessage(p, "&cThis weapon is not purchasable.");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (p.getInventory().firstEmpty() == -1) {
-//                        MessageManager.sendMessage(p, "&cYour inventory is full.");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (p.hasPermission("carbyne.administrator") || p.isOp()) {
-//                        p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
-//                        StringUtils.logToFile("[Carbyne OP] " + new Date().toString() + " --> " + p.getName() + " has purchased " + carbyneWeapon.getDisplayName(), "carbyneItemLog.txt");
-//                        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-//                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &4" + carbyneWeapon.getDisplayName() + "&a.");
-//                        return;
-//                    }
-//
-//                    if (canBuy(p, carbyneWeapon.getCost())) {
-//                        int total = 0;
-//
-//                        for (ItemStack item : p.getInventory().all(StaticClasses.gearManager.getTokenMaterial()).values())
-//                            if (item.hasItemMeta() && item.getItemMeta().hasLore())
-//                                total += item.getAmount();
-//
-//                        if (total < carbyneWeapon.getCost()) {
-//                            MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
-//                            p.closeInventory();
-//                            return;
-//                        }
-//
-//                        PlayerUtility.removeItems(p.getInventory(), StaticClasses.gearManager.getTokenItem(), carbyneWeapon.getCost());
-//
-//                        p.getInventory().addItem(carbyneWeapon.getItem(false).clone());
-//                        StringUtils.logToFile("[Carbyne] " + new Date().toString() + " --> " + p.getName() + " has purchased " + carbyneWeapon.getDisplayName(), "carbyneItemLog.txt");
-//                        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-//                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneWeapon.getDisplayName() + " &afor &c" + carbyneWeapon.getCost() + " &aof &b" + ChatColor.stripColor(StaticClasses.gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
-//                    } else {
-//                        MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
-//                        p.closeInventory();
-//                    }
-//                }
-//            }
-//        } else if (e.getInventory().getTitle().equalsIgnoreCase(gearGuiManager.getArmorGui().getTitle())) {
-//            e.setCancelled(true);
-//
-//            if (e.getCurrentItem().getType() == Material.BARRIER)
-//                p.openInventory(gearGuiManager.getStoreGui());
-//            else {
-//                if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
-//                    CarbyneArmor carbyneArmor = StaticClasses.gearManager.getCarbyneArmor(e.getCurrentItem());
-//
-//                    if (carbyneArmor == null) {
-//                        MessageManager.sendMessage(p, "&cAn error has occurred while purchasing this item. (Error code: 1)");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (gearGuiManager.getArmorGuiList().keySet().contains(carbyneArmor.getDisplayName()))
-//                        p.openInventory(gearGuiManager.getArmorGuiList().get(carbyneArmor.getDisplayName()));
-//                }
-//            }
-//        } else if (ChatColor.stripColor(e.getInventory().getTitle()).contains("Purchase Armor") || ChatColor.stripColor(e.getInventory().getTitle()).equalsIgnoreCase("Purchase Armor")) {
-//            e.setCancelled(true);
-//
-//            if (e.getCurrentItem().getType() == Material.BARRIER)
-//                p.openInventory(gearGuiManager.getArmorGui());
-//            else {
-//                if (e.getCurrentItem() != null && e.getCurrentItem().getType() != Material.AIR) {
-//                    CarbyneArmor carbyneArmor = StaticClasses.gearManager.getCarbyneArmor(e.getCurrentItem());
-//
-//                    if (carbyneArmor == null) {
-//                        MessageManager.sendMessage(p, "&cAn error has occurred while purchasing this item. (Error code: 1)");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (carbyneArmor.getState() == GearState.HIDDEN && (!p.hasPermission("carbyne.administrator") || !p.isOp())) {
-//                        MessageManager.sendMessage(p, "&cThis armor set is not purchasable.");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (p.getInventory().firstEmpty() == -1) {
-//                        MessageManager.sendMessage(p, "&cYour inventory is full.");
-//                        p.closeInventory();
-//                        return;
-//                    }
-//
-//                    if (p.hasPermission("carbyne.administrator") || p.isOp()) {
-//                        p.getInventory().addItem(carbyneArmor.getItem(false).clone());
-//                        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-//                        StringUtils.logToFile("[Carbyne OP] " + new Date().toString() + " --> " + p.getName() + " has purchased " + carbyneArmor.getDisplayName(), "carbyneItemLog.txt");
-//                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + "&a.");
-//                        return;
-//                    }
-//
-//                    if (canBuy(p, carbyneArmor.getCost())) {
-//                        int total = 0;
-//
-//                        for (ItemStack item : p.getInventory().all(StaticClasses.gearManager.getTokenMaterial()).values())
-//                            if (item.hasItemMeta() && item.getItemMeta().hasLore())
-//                                total += item.getAmount();
-//
-//                        if (total < carbyneArmor.getCost()) {
-//                            MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
-//                            p.closeInventory();
-//                            return;
-//                        }
-//
-//                        PlayerUtility.removeItems(p.getInventory(), StaticClasses.gearManager.getTokenItem(), carbyneArmor.getCost());
-//
-//                        p.getInventory().addItem(carbyneArmor.getItem(false).clone());
-//                        StringUtils.logToFile("[Carbyne] " + new Date().toString() + " --> " + p.getName() + " has purchased " + carbyneArmor.getDisplayName(), "carbyneItemLog.txt");
-//                        p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-//                        MessageManager.sendMessage(p, "&aSuccessfully purchased a &5" + carbyneArmor.getDisplayName() + " &afor &c" + carbyneArmor.getCost() + " &aof &b" + ChatColor.stripColor(StaticClasses.gearManager.getTokenItem().getItemMeta().getDisplayName()) + "&a.");
-//                    } else {
-//                        MessageManager.sendMessage(p, "&cYou do not have enough armor tokens to purchase this item.");
-//                        p.closeInventory();
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    public boolean canBuy(Player player, int cost) {
-//        return player.getInventory().containsAtLeast(StaticClasses.gearManager.getTokenItem(), cost);
-//    }
 }
